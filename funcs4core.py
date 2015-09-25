@@ -52,7 +52,6 @@ def get_dir( input, loc='earth0' ):
         home = '/Users/Tomas/'
         d = { 
         'rwd'  :home+'PhD/Data/MUTD_iGEOS-Chem_output/',
-        'irwd' : home+'PhD/Data/MUTD_iGEOS-Chem_output/',
         'dwd'  :  home+'PhD/Data/' ,
         'npwd' : home+'PhD/Data/np_arrs/' ,
         'tpwd' : home+'GITHub/tools_progs/' ,
@@ -64,7 +63,6 @@ def get_dir( input, loc='earth0' ):
         home =  '/work/home/ts551/'
         d = { 
         'rwd'  : home +'data/all_model_simulations/iodine_runs/',
-        'irwd' : home + 'data/all_model_simulations/iodine_runs/iodine_runs/',  #Error?               
         'dwd'  :  home +'data/',
         'fwd' : home+ 'labbook/tools_progs/d_fast-J_JX/data/',
         'lwd'  :  home +'labbook/',
@@ -210,9 +208,8 @@ def find_nearest(array,value):
 # --------------                                                                                 
 # 1.99 - Reference data (lon, lat, and alt) adapted from gchem - credit: GK (Gerrit Kuhlmann )             
 # -------------                                                                                  
-"""
-    Updated to dictionary from gchemgrid with addition grid adds
-"""                                                                                        
+""" Updated to dictionary from gchemgrid (credit: Gerrit Kuhlmann ) with 
+     addition grid adds """                                                                                        
 
 def gchemgrid(input=None, rtn_dict=False, debug=False):
     d = {
