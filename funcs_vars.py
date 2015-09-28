@@ -34,9 +34,9 @@
 
 # --------------- ------------- ------------- -------------
 # ---- Section 4 ----- GeosChem (bpch) general variables
- # 4.01 - v9-2 species in input.geos from num
+# 4.01 - v9-2 species in input.geos from num
 # 4.02 - Get Species Mass 
-# 4.03 - Get Species stioch ***
+# 4.03 - Get Species stoichiometry 
 # 4.04 - GEOS-Chem/ctm.bpch values (current main dict ) ***
 # 4.05 - latex species name
 # 4.06 - converts P/L tracer mulitpler to 1
@@ -48,13 +48,12 @@
 # 4.12 - Return lat, lon, alt for a given resolution
 # 4.13 - Get model array dimension for a given resolution
 # 4.14 - Convert gamap category/species name to Iris/bpch name
-# 4.99 - Reference data, (inc. grid data) from gchem - credit: GK (Gerrit Kuhlmann )
+# 4.99 - Reference data, (inc. grid data) from gchem 
 
 # --------------- ------------- ------------- -------------
 # ---- Section 5 ----- Misc
-# 5.01 - dir store (for standard dirs on different computers )
+# 5.01 - dir store (standard directories on different servers )
 # 5.02 - Store of  constants for use by funcs/progs
-
 
 # --------------- ------------- ------------- -------------
 # ---- Section 6 ----- Dynamic prod/loss dictionary processing ( For GEOS-Chem)
@@ -76,13 +75,13 @@
 # 7.02 - BAE flight ID dictionary
 # 7.03 - CAST flight dictionary for CIMS/CIMSII
 # 7.04 - Iodocarbon obs. meta data
-# 7.05 - Stores locations for use by funcs/progs - LON, LAT,   ALT - double up? ( with 5.02 ?? )
+# 7.05 - Stores locations for use by funcs/progs - LON, LAT, ALT - double up? ( with 5.02 ?? )
 # 7.06 - Get Locations of observations (lats, lons, alts ) for given sites
 # 7.07 - sonde station variables (list of 432 sondes)
 # 7.08 - returns  (lat, lon, alt (press), timezone (UTC) ) for a given site
 
 
-# ------------------------------------------- Section 0 -------------------------------------------
+# ------------------ Section 0 -----------------------------------
 # -------------- Required modules:
 #
 #!/usr/bin/python
@@ -178,7 +177,6 @@ def pf_var( input, ver='1.7', ntracers=85 ):
         missing = [ 'TRA_{:0>2}'.format( i)  for i in missing ]
         species = species  + missing
 
-
     # Construct dictionary
     d= {    
     'species' : species,
@@ -197,19 +195,26 @@ def pf_var( input, ver='1.7', ntracers=85 ):
     'slist_v10_1.7_allspecs': all_species_not_TRA +TRAs+ JREAs +metvars
       } 
 
-    # 
+    # retrieve variable list from dictionary
     vars = d[input]
+    
+    # return unique list
     vars = sorted( list( set( vars) ) )
     print vars
 
     return vars
 
 # --------------
-# 1.02 - What GEOS-Chem (GC) Species am i? takes TRA_## & returns GC ID or other wayround 
+# 1.02 - Translator for planeflight species to GEOS-Chem species
 # -------------
 def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, \
             ver='1.7', special_case=None, invert=False, rtn_dict=False, \
             debug=False ) :
+    """
+            What GEOS-Chem (GC) Species am i? 
+            takes TRA_## & returns GC ID or other wayround 
+    """
+
 
     # select correct naming dictionary
     var ={  \
