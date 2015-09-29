@@ -920,7 +920,7 @@ def get_unit_scaling( units ):
 def MUTD_runs( standard=True, sensitivity=False, titles=False, \
        IO_obs=False,no_I2Ox=False, respun=True,            \
        preindustrial=False, skip3=False, v10v92comp=False,              \
-       nested_EU=False, just_bcase_no_hal=False, \
+       nested_EU=False, just_bcase_no_hal=False, just_std=False, \
        just_bcase_std=False, ver='1.6', res='4x5',    \
        debug=False): 
 
@@ -962,6 +962,8 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
         elif just_bcase_no_hal:
             l = [ 'no_hal',  'run' ]
 #            l = [ 'no_hal',  'no_I2Ox' ]
+        elif just_std:
+            l = [ 'Just_Br' ]
         else:
             if ver == '1.7':
 #                l = ['no_hal', 'run' ]

@@ -71,6 +71,8 @@ def get_day_fraction(date):
 # 1.02 - numpy.datetime64 to datetime.datetime (assuming UTC )
 # ------------- 
 def dt64_2_dt( dt64 ):
+    """  ACTION NEEDED: Convert this to work as a lamdba function for 
+            scalability"""
     ns = 1e-9 # number of seconds in a nanosecond
     return  [ datetime_.utcfromtimestamp(i.astype(int) * ns) for i in dt64 ]
 

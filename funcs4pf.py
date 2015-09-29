@@ -559,20 +559,29 @@ def pro_raw_pf( wd, site='CVO', ext='', run='', frac=False, diurnal=True, \
 # --------------
 # 3.01 - Process time/date to datetime equivalent
 # -------------
-def pf2datetime(model):
+def pf2datetime( model, debug=False ):
     """
-        NEEDS CHECKING ( updated to pandas mapping, but not checked )
+        Takes planeflight as numpy "model" array 
     """
 
+    # Make sure input is in integer form 
+    vars = [ i.astype(np.int64) for i in model[:,0], model[:,1] ] 
+    if debug:
+        print [ i[:10] for i in vars ], model.shape
+
     # make pandas dataframe 
-    df = DataFrame( data=[model[:,0], model[:,1]], 
+    df = DataFrame( data=np.array(vars).T, 
         columns=['YYYYMMDD', 'HHMM' ])
 
     # convert to datetime and retrun 
     df = DF_YYYYMMDD_HHMM_2_dt( df )
 
-    return df.index
-#    return YYYYMMDD_HHMM_2_datetime(  ) 
+    # convert datetime 64 to datetime <= map this for scalability
+    dates =  [ i.to_datetime() for i in df.index ]
+    if debug:
+        print 2, df.index, type( df.index[0] ), type( dates[0] )
+    
+    return dates
 
 # --------------                                                                                                                                             
 # 3.02 - list cv days in data (days since 2006) 
