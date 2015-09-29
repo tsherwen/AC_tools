@@ -51,9 +51,9 @@ import datetime as datetime
 from datetime import datetime as datetime_
 
 # --- Extras
-from funcs4core import *
-from funcs_vars import *
-from funcs4generic import *
+from AC_tools.funcs4core import *
+from AC_tools.funcs_vars import *
+from AC_tools.funcs4generic import *
 
 # ------------------------------------------- Section 6 -------------------------------------------
 # -------------- Time Processing

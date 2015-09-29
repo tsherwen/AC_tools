@@ -40,7 +40,7 @@ from AC_tools.funcs4generic import *
 from AC_tools.funcs4time import *
 from funcs4obs import * #( need: get_CVO_DOAS_obs ... )
 from AC_tools.funcs4pf import *
-from funcs4GEOSC import * # wd2ctms
+from AC_tools.funcs4GEOSC import * # wd2ctms
 
 # colormaps
 from option_c import test_cm as cmc

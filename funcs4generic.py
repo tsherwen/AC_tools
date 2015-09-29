@@ -22,8 +22,8 @@ import time
 from math import radians, sin, cos, asin, sqrt, pi, atan2
 
 # --- tms modules
-from funcs4core import *
-from funcs_vars import *
+from AC_tools.funcs4core import *
+from AC_tools.funcs_vars import *
 
 # --------------- ------------- ------------- ------------- ------------- 
 # ---- Section 1 ----- Generic processing 

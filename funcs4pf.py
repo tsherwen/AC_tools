@@ -58,15 +58,15 @@ import numpy as np
 
 # General fucntions
 from AC_tools.funcs4core import *
-from funcs4generic import *
+from AC_tools.funcs4generic import *
 #from funcs4GEOSC import *
 
 # Time functions
-from funcs4time import *
+from AC_tools.funcs4time import *
 import datetime as datetime
 
 # vars
-from funcs_vars import *
+from AC_tools.funcs_vars import *
 
 # ------------------------------------------- Section 1 -------------------------------------------
 # -------------- Planeflight Setup tools
