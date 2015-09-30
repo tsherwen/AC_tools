@@ -1,10 +1,8 @@
-"""
-    Generic functions for use with GEOS-Chem/Data Analysis.
+""" Generic functions for use with GEOS-Chem/Data Analysis.
     
     These functions were written whilst learning python, vestigial 
     inefficient code is being removed/updated. 
-    Where external code is used credit is given.
-"""
+    Where external code is used credit is given. """
 
 # ------------------------- Section 0 -----------------------------------------
 # -------------- Required modules:

@@ -1,8 +1,5 @@
-
-"""
-    Core functions used to be used by all function levels of 
-    GEOS-Chem/Data analysis
-"""
+""" Core functions used to be used by all function levels of 
+    GEOS-Chem/Data analysis in AC_Tools """
 
 # --------------- ------------- ------------- ------------- ------------- 
 # ---- Section 0 ----- Modules required
@@ -87,6 +84,7 @@ def get_dir( input, loc='earth0' ):
 # 1.02 -  Get Latitude as GC grid box number in dimension                                                                                                                  
 # ----                                                                                                                                                        
 def get_gc_lat(lat, res='4x5',debug=False):
+    """ Get index of lat for given resolution """
     NIU, lat_c, NIU = get_latlonalt4res(res=res)
     del NIU
     return find_nearest( lat_c, lat )
@@ -95,6 +93,7 @@ def get_gc_lat(lat, res='4x5',debug=False):
 # 1.03 -  Get Longitude as GC grid box number in dimension                                                                                                       
 # ----                                                                                                                                                        
 def get_gc_lon(lon, res='4x5',debug=False):
+    """ Get index of lon for given resolution """
     lon_c, NIU, NIU = get_latlonalt4res( res=res )
     del NIU
     return find_nearest( lon_c, lon )
@@ -104,6 +103,8 @@ def get_gc_lon(lon, res='4x5',debug=False):
 # --------                                                                                          
 def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
         just2D=False, debug=False):
+    """ Get dimension of GEOS-Chem output for given resolution """
+
     dims = {
     '4x5' :  (72,46,47), 
     '2x2.5':(144,91,47) , 
@@ -144,6 +145,10 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
 # ----                                                                                                                                                        
 def get_latlonalt4res(res='4x5', centre=True, hPa=False, nest=None, \
             debug=False):
+    """ Return lon, lat, and alt for a given resolution. 
+        This function uses an updated version of gchem's variable 
+        dictionaries """ 
+    
     if debug:
         print res, centre, hPa, nest
 
@@ -189,6 +194,7 @@ def get_latlonalt4res(res='4x5', centre=True, hPa=False, nest=None, \
 # 1.06 - Convert from hPa to km or vice versa.
 # -------------
 def hPa_to_Km(input, reverse=False, debug=False):
+    """ hPa/km convertor"""
     if reverse:
          return [ np.exp(  np.float(i) /-7.6)*1013. for i in input ]
     else:
@@ -199,8 +205,8 @@ def hPa_to_Km(input, reverse=False, debug=False):
 # --------
 def find_nearest(array,value):
     """
-        Find nearest point. Adapted from HappyLeapSecond's Stackoverflow 
-        answer. http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
+        Find nearest point. Adapted from HappyLeapSecond's 
+        Stackoverflow answer.  http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
     """
     idx = (np.abs(array-value)).argmin()
     return idx
@@ -208,8 +214,32 @@ def find_nearest(array,value):
 # --------------                                                                                 
 # 1.99 - Reference data (lon, lat, and alt) adapted from gchem - credit: GK (Gerrit Kuhlmann )             
 # -------------                                                                                  
-""" Updated to dictionary from gchemgrid (credit: Gerrit Kuhlmann ) with 
-     addition grid adds """                                                                                        
+"""
+ Updated to dictionary from gchemgrid (credit: Gerrit Kuhlmann ) with 
+     addition grid adds 
+
+    This [function] contains (some) grid coordinates used within GEOS-Chem 
+    as numpy arrays
+
+# Distribution advice from gchem:
+
+# Python Script Collection for GEOS-Chem Chemistry Transport Model (gchem)
+# Copyright (C) 2012 Gerrit Kuhlmann
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""                                                                                        
 
 def gchemgrid(input=None, rtn_dict=False, debug=False):
     d = {
