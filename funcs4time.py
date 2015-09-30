@@ -32,7 +32,8 @@
 # 1.26 - Translate from time to datetime
 # 1.27 - translate abrev. month name to num ( or vice versa ) 
 # 1.28 - convert times to datetime from HHMM and YYYYMMDD
-
+# 1.29 - Convert datetime.datetine to  Unix time
+# 1.30 - Process time/date to CV days equivilent 
 
 # - Math/Analysis                                                                                   
 import numpy as np
@@ -535,7 +536,7 @@ def DF_YYYYMMDD_HHMM_2_dt(df, date_header='YYYYMMDD',
     return df
 
 # -------------- 
-#  1.28 - Use Unix time
+#  1.29 - Convert datetime.datetine to  Unix time
 # ----------
 def unix_time(dt):
     """ time from epoch - datetime.datetime(1970, 1, 1, 0, 0) """
@@ -543,3 +544,21 @@ def unix_time(dt):
     delta = dt - epoch
 #    return delta.total_seconds()
     return delta.days*86400+delta.seconds+delta.microseconds/1e6
+    
+    
+# --------------
+# 1.30 - Process time/date to CV days equivilent - mje
+# -------------
+# translate year to "since2006" function
+def year_to_since_2006(model):
+    year=(model[:,0]//10000)
+    month=((model[:,0]-year*10000)//100)
+    day=(model[:,0]-year*10000-month*100)
+    hour=model[:,1]//100
+    min=(model[:,1]-hour*100)
+    doy=[ datetime.datetime(np.int(year[i]),np.int(month[i]),np.int(day[i]),\
+                                np.int(hour[i]),np.int(min[i]),0)- \
+              datetime.datetime(2006,1,1,0,0,0) \
+              for i in range(len(year))]
+    since2006=[doy[i].days+doy[i].seconds/(24.*60.*60.) for i in range(len(doy))]
+    return since2006
