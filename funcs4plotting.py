@@ -434,7 +434,8 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, \
 # --------   
 # 1.05 - Lat plot
 # --------
-def lat_plot(fig, ax, arr, title=None, f_size=10, units='ppbv', scale='linear', debug=False ):
+def lat_plot(fig, ax, arr, title=None, f_size=10, units='ppbv', \
+            scale='linear', debug=False ):
     NIU, lat, NIU = get_latlonalt4res( res=res )
     del NIU
     plt.plot( lat, arr )
@@ -460,10 +461,12 @@ def diurnal_boxplot(fig, ax,  dates, data, pos=1, posn =1,  bin_size=2/24.,
     dates = np.array( [ get_day_fraction(i) for i in dates ] )
 
     # bin data
-    binned, bins_used, b_all = avg_n_bin_y_by_x(data, dates, bin_size, binned_data=True, debug=debug)
+    binned, bins_used, b_all = avg_n_bin_y_by_x(data, dates, bin_size, \
+        binned_data=True, debug=debug)
 
     # Generate positions
-    positions=[ i+(bin_size*.75/posn)+( (bin_size*.75/posn)*float(pos)) for i in bins_used ]
+    positions=[ i+(bin_size*.75/posn)+( (bin_size*.75/posn)*float(pos)) \
+        for i in bins_used ]
 
     # Plot
     bp = ax.boxplot( b_all,  positions=positions, widths=widths, \
@@ -490,13 +493,12 @@ def diurnal_boxplot(fig, ax,  dates, data, pos=1, posn =1,  bin_size=2/24.,
 # --------   
 # 1.07 - Diurnal plot
 # --------
-def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  bin_size=2/24.,widths=0.01, \
-                 ls='-', color=None, fractional=False, diurnal=False, mean=True, 
-                 rmax=False, \
-                 xlabel = True, r_avgs=False, marker=None, label=None, markersize=1, \
-                 title=None, f_size=10, units='ppbv', scale='linear', 
-                 lw=1,lgnd_f_size=None, \
-                 alpha=1, debug=False ):
+def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
+            bin_size=2/24.,widths=0.01, rmax=False, \
+            ls='-', color=None, fractional=False, diurnal=False, mean=True, \
+            xlabel = True, r_avgs=False, marker=None, label=None, \
+            markersize=1, title=None, f_size=10, units='ppbv', scale='linear', \
+            lw=1,lgnd_f_size=None, alpha=1, debug=False ):
 
     # Convert datetime to fractional day
     dates = np.array( [ get_day_fraction(i) for i in dates ] )
@@ -565,7 +567,6 @@ def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  bin_size=2/24.,widths=0
     if r_avgs:
         return avgs 
 
-
 # --------   
 # 1.11 - Plot up Sonde data
 # --------
@@ -609,7 +610,8 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False,
         if stddev:
             ax.errorbar(arr[:,0] , alt, xerr=arr[:,3], fmt='o', color=color )
         else:
-            ax.errorbar(arr[:,0] , alt, xerr=[arr[:,1], arr[:,2]], fmt='o', color=color )
+            ax.errorbar(arr[:,0] , alt, xerr=[arr[:,1], arr[:,2]], fmt='o', \
+                color=color )
 
     # Beautify plot ( e.g. add hPa, units,  etc... )
     if ancillary:
@@ -639,7 +641,8 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False,
 # --------------
 # 1.12 - plot up monthly from data provided from DB netCDF
 # -------------
-def obs_month_plot(data, color=None, title=None, rtn_data=False, plt_day=True, debug=False):
+def obs_month_plot(data, color=None, title=None, rtn_data=False, \
+            plt_day=True, debug=False):
     day_time= [i+float(1/23) for i in range(23) ]
     if debug:
         print data.shape
@@ -657,14 +660,15 @@ def obs_month_plot(data, color=None, title=None, rtn_data=False, plt_day=True, d
 	else :
 		if debug:
 			print ' not - rtn_data'
-		plt.plot( day_time, np.ma.mean(data[:,:],axis=1) , lw=3 , color=color, label=title)
+		plt.plot( day_time, np.ma.mean(data[:,:],axis=1) , lw=3 , color=color, \
+		     label=title)
 		return plt
 
 # --------------
 # 1.13 - plot up monthly from data provided from DB netCDF
 # -------------
-def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, 
-                  title=None, subtitle=None, legend=False, xrotation=90, 
+def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
+                  title=None, subtitle=None, legend=False, xrotation=90, \
                   window=False, label=None, ylabel=None, loc='upper right' ):
 
     if color == None:
@@ -1037,8 +1041,10 @@ def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False,
     parallels = np.arange(-90,91,20*interval)
 #    meridians = np.arange(-180,181,20*interval)
     meridians = np.arange(-180,180,20*interval)
-    m.drawparallels( parallels, labels=[False,False,False,False], fontsize=f_size*.25 )
-    m.drawmeridians(meridians, labels=[True,False,True,True], fontsize=f_size*.25 )
+    m.drawparallels( parallels, labels=[False,False,False,False], \
+        fontsize=f_size*.25 )
+    m.drawmeridians(meridians, labels=[True,False,True,True], \
+        fontsize=f_size*.25 )
                     
     if debug:
         print 2, 'len:',  [ len(i) for i in x,y,lat,lon ]
@@ -1345,7 +1351,7 @@ def plot_specs_zonal_change_monthly2pdf( Vars, res='4x5', dpi=160, \
                        no_dstr=no_dstr )
 
 # --------
-# 1.22 - PDF of monthly column change plots for given species - SET ARRAY TO BE SAME SHAPE and use SURFACE plot. 
+# 1.22 - 
 # --------
 
 # --------
@@ -1812,7 +1818,8 @@ def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
     plt.ylabel( Y_title )
     if  line121:
         print lim_min, lim_max
-        plt.plot( np.arange(lim_min, lim_max*1.5 )  , np.arange(lim_min, lim_max*1.5  ), linestyle='--', color=(0.5, 0.5, 0.5))
+        plt.plot( np.arange(lim_min, lim_max*1.5 )  , np.arange(lim_min, \
+            lim_max*1.5  ), linestyle='--', color=(0.5, 0.5, 0.5))
     
     # add color bar if using z - [left, bottom, width, height],
     if z != None:
@@ -2026,8 +2033,9 @@ def plot_gc_bin_bands(facecolor='#B0C4DE'):
 # 4.10 - line styles 
 # -------------       
 def get_ls(num):
-    return [':', '--', '-.', '-', ':', '--', '-.', '-', ':', ':', '--', '-.', '-', ':', \
-        '--', '-.', '-', ':'][:num]
+    ls =[   ':', '--', '-.', '-', ':', '--', '-.', '-', ':', ':', '--', '-.', '-', ':', '--', '-.', '-', ':'
+    ]
+    return ls[:num]
                         
 # --------   
 # 4.21 - takes time in troposphere diagnostic array (46, 47) overlayes 
@@ -2055,9 +2063,9 @@ def adjust_subplots( fig ):
     left  = 0.125  # the left side of the subplots of the figure
     right = 0.9    # the right side of the subplots of the figure
     bottom = 0.1   # the bottom of the subplots of the figure
-    top = 0.9      # the top of the subplots of the figure
-    wspace = 0.2   # the amount of width reserved for blank space between subplots
-    hspace = 0.5   # the amount of height reserved for white space between subplots
+    top = 0.9  # the top of the subplots of the figure
+    wspace = 0.2 # the amount of width reserved for blank space between subplots
+    hspace = 0.5 # the amount of height reserved for white space between subplots
 
     fig.subplots_adjust(left=None, bottom=None, right=None, top=None, \
         wspace=None, hspace=None)
@@ -2067,8 +2075,8 @@ def adjust_subplots( fig ):
 # 4.24 - setup diunal
 # ----
 def setup_diurnal(years, months, f_size=20):
-    plt.title('Monthly Diurnal Obs (2008-2011) vs. Model ({}{}-{}{}) '.format( years[0],     \
-                                                                                                            months[0],years[1],months[1]   ) )
+    plt.title('Monthly Diurnal Obs (2008-2011) vs. Model ({}{}-{}{}) '.format( \
+        years[0], months[0],years[1],months[1]   ) )
     plt.legend(loc='lower left')
     plt.ylabel('Delta O3 (UT 17:00-09:00) /  p.p.b.v')
     plt.xlabel('Hours')
@@ -2088,13 +2096,17 @@ def add_logos_NCAS_york_bottom(fig):
     logo_list= ['NCAS_national_centre_logo.gif', 'nerclogo1000.gif' , 'york_uni_shield.tif' ,   \
                             'york_uni_name.tif' ]
 
+    # Setup logo 1
     logo1 = Image.open( wd1 + logo_list[3])  # York name
-    ax2=fig.add_axes([0.01, 0.015, 0.55, 0.055], frameon=False)  # [left, bottom, width, height]
+    # [left, bottom, width, height]
+    ax2=fig.add_axes([0.01, 0.015, 0.55, 0.055], frameon=False)  
     ax2.imshow(logo1,interpolation="bilinear")
     ax2.axis('off')
 
+    # Setup logo 2
     logo2 = Image.open( wd1 + logo_list[0]) # NCAS logo
-    ax3 = fig.add_axes([0.7, 0.01, 0.25, 0.1], frameon=False) # [left, bottom, width, height]
+    # [left, bottom, width, height]
+    ax3 = fig.add_axes([0.7, 0.01, 0.25, 0.1], frameon=False) 
     ax3.imshow(logo2,interpolation="bilinear")
     ax3.axis('off')
     return fig
@@ -2111,7 +2123,8 @@ def mask_not_obs( loc='Denmark', res='4x5', debug=False ):
     lats, lons  = get_obs_loc( loc )
         
     # Unmask locations
-    lats, lons =[ get_gc_lat(i, res=res) for i in lats] , [ get_gc_lon(i,res=res) for i in lons ]
+    lats = [ get_gc_lat(i, res=res) for i in lats] 
+    lons = [ get_gc_lon(i,res=res) for i in lons ]
     for n, lat in enumerate( lats ):
         arr[lons[n],lat,:] = 1
     
@@ -2126,7 +2139,8 @@ def annotate_gc_grid(ax, res='4x5', f_size=6.5, loc_list=[ [-9999,-9999] ],
     # Get Vars
     lon, lat, alt = get_latlonalt4res(res=res)
     if  res == '0.5x0.666':
-        adjust_window, interval, nticks, nbins, resolution,shrink  = 3, 0.5, int(nticks/3), int(nbins/2), 'l', 0.6
+        adjust_window, interval, nticks, nbins, resolution,shrink  = 3, 0.5, \
+             int(nticks/3), int(nbins/2), 'l', 0.6
     glat = [get_gc_lat(i, res=res) for i in lat ]
     glon = [get_gc_lon(i, res=res) for i in lon ]
 
@@ -2147,7 +2161,8 @@ def annotate_gc_grid(ax, res='4x5', f_size=6.5, loc_list=[ [-9999,-9999] ],
                 else:
                     color= 'blue'
                     fontweight ='normal'
-                ax.text( lo+1, la+1, '{},{}'.format(glon[nn], glat[n]) , fontsize=f_size, color=color )
+                ax.text( lo+1, la+1, '{},{}'.format(glon[nn], glat[n]),\
+                     fontsize=f_size, color=color )
 
 # --------
 # 4.31 - Func for centering colorbar
@@ -2349,14 +2364,14 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
 # --------
 # 4.36 - Create base map for plotting
 # --------
-def get_basemap( lat, lon, resolution, projection='cyl', res='4x5',everyother=1,
-            f_size=10, interval=1, label_y=False, drawcountries=False ):
+def get_basemap( lat, lon, resolution, projection='cyl', res='4x5',\
+            everyother=1, f_size=10, interval=1, label_y=False, \
+            drawcountries=False ):
 
     m = Basemap(projection=projection,llcrnrlat=lat[0],urcrnrlat=lat[-1],\
                         llcrnrlon=lon[0],\
                         urcrnrlon=lon[-1],\
                         resolution=resolution  )
-
 
     if label_y:
         plt.ylabel('Latitude', fontsize = f_size*.75)
@@ -2370,7 +2385,6 @@ def get_basemap( lat, lon, resolution, projection='cyl', res='4x5',everyother=1,
         meridians = np.arange(-180,181,30*interval/3)  #.3125)
 #        parallels = np.arange(-90,91, .25)
 #        meridians = np.arange(-180,181, .3125)
-
 
         # use small font size for greater the runs with more axis labele
 #        f_size = f_size*.25
@@ -2389,8 +2403,8 @@ def get_basemap( lat, lon, resolution, projection='cyl', res='4x5',everyother=1,
 # --------
 # 4.37 - Provide an appropriate colormap for given data
 # --------
-def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, npoints=100, 
-            cb='CMRmap_r', maintain_scaling=True,
+def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
+            npoints=100, cb='CMRmap_r', maintain_scaling=True, \
             negative=False, positive=False, debug=False ):
     """ 
     Check whether array contains just +ve or -ve or both 
@@ -2520,7 +2534,6 @@ def make_segments(x, y):
     for LineCollection: an array of the form numlines x (points per line) x 2 (x
     and y) array
     """
-
     points = np.array([x, y]).T.reshape(-1, 1, 2)
     segments = np.concatenate([points[:-1], points[1:]], axis=1)
     return segments
@@ -2588,12 +2601,13 @@ def colorline( x, y, z=None, cmap=plt.get_cmap('copper'),  \
 
     return lc
 
- 
- 
 # -------------
-# 4.99 - Input for plotting  (Takes: spec, filename, category, start date , end date )
+# 4.99 - Input for plotting  
 # -------------
 def get_input_vars(debug=False):
+    """ Get input from command line arguments 
+        Takes: spec, filename, category, start date , end date  """
+
     try:
         wd = sys.argv[1]
         print '$>'*5, sys.argv
@@ -2669,6 +2683,3 @@ def get_input_vars(debug=False):
         wd += '/'
 
     return wd, fn, cat_, spec, start, end
-
-
-
