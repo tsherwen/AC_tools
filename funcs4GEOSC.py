@@ -461,7 +461,7 @@ def get_CH4_mean( wd, debug=False ):
 # 1.09 - Calculated X-section printer/
 # -------------
 def readfile_calc_Xsect(filename, species):
-    """ Read X-sections from given file """
+        """ Read X-sections from given file """
 
         for files in filename:
             #        print files
@@ -1056,7 +1056,7 @@ def get_spec_pf_hdf_surface_procesor( run_name='run', spec='O3', \
 # 1.21 - Process species for given arrays to (v/v) in respective scale + DU
 # ---
 def process_data4specs( specs=None, just_bcase_std=True, \
-            just_bcase_no_hal=False, res='4x5', ver='1.6', diff=True, \ 
+            just_bcase_no_hal=False, res='4x5', ver='1.6', diff=True, \
             pcent=True, tight_constraints=True, trop_limit=True, debug=False ): 
     """ Return species values in v/v and DU. Also return datetimes for CTM 
         output and time in troposphere diagnostics  """
@@ -1694,7 +1694,7 @@ def get_trop_burden( ctm, spec='O3', a_m=None, t_p=None, Iodine=False,
 # 2.10 - Get prod/Loss (change) ( [molec/cm3/s] =>  Gg I /s => Gg/  per month )
 # -------------
 def get_pl_in_Gg(ctm_f, specs, years=None, months=None, monthly=False,\
-            Iodine=True, IO=False, I=False, res='4x5', vol=None, spec='O3', \ 
+            Iodine=True, IO=False, I=False, res='4x5', vol=None, spec='O3', \
             ver='1.6', debug=False  ):
     """ Return prod/loss diagnostic for griven p/l species/tags
         Note: this approach is not comparible with PyGChem >0.3.0"""
