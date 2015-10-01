@@ -75,6 +75,9 @@ from AC_tools.funcs_vars import *
 # 1.00 - Read in file of GAW sites as lists
 # -------------
 def readin_gaw_sites(filename, all=False):
+    """ Read in list format csv, with details of sites to output planeflight for
+        REDUNDENT? """
+
     with open(filename,'rb') as f:
         reader = csv.reader(f, delimiter=',') 
         for row in reader:
@@ -101,6 +104,9 @@ def readin_gaw_sites(filename, all=False):
 # 1.01 - Read in file of site lists -  
 # -------------
 def read_in_kml_sites(filename, limter=10, ind=[0, 3, 1, 2 ], debug=False):
+    """ Read in list format csv, with details of sites to output planeflight for
+        double up of function 1.00
+    """
     if debug:
         print 'read_in_kml_sites called'
     reader = csv.reader(open(filename,'rb'), delimiter=',') 
@@ -153,6 +159,7 @@ def read_in_kml_sites(filename, limter=10, ind=[0, 3, 1, 2 ], debug=False):
 # 1.01 - Read files from Dix et al/Volkamer et al
 # -------------
 def read_TOR_IO_files(filename, debug = False):
+    """ Read in csv files from TORERO campaign """
     reader = csv.reader(open(filename,'rb'), delimiter=',') 
     print reader, filename
     data_line = False
@@ -189,6 +196,7 @@ def read_TOR_IO_files(filename, debug = False):
 # ----
 def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
             Kludge_fortan_output=False, debug=False):
+    """ Read in sites from files in a given working directory """
 
     print wd, spec, location, scale
 
@@ -216,7 +224,8 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
     if debug:
         print location, spec, k, len(data)
 
-    # Provide data and Altitude for vertical measurements (and ancillaries for if r_datetime == True )
+    # Provide data and Altitude for vertical measurements 
+    # (and ancillaries for if r_datetime == True )
     if  any( [(location == i)  for i in 'TOR', 'BAE', 'GCV', 'CGV' ] ):
         j =names.index( 'PRESS' )
         press = model[:,j]
@@ -229,16 +238,21 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
         else:
             return data, km 
 
-    # Provide data and extra vars " [ 'LAT', 'LON', 'YYYYMMDD', 'HHMM' ]" for surface measuremnets
-    if any([ (location == i) for i in surface_data] ): # data, lat, lon, date, time 
-        vars = [ model[:,names.index( i) ] for i in [ 'LAT', 'LON', 'YYYYMMDD', 'HHMM' ]]
+    # Provide data and extra vars for surface measuremnets
+    # " [ 'LAT', 'LON', 'YYYYMMDD', 'HHMM' ]" 
+    # data, lat, lon, date, time 
+    if any([ (location == i) for i in surface_data] ): 
+        vars = [ model[:,names.index( i) ] \
+            for i in [ 'LAT', 'LON', 'YYYYMMDD', 'HHMM' ]]
         return [data] + vars
 
 # -------------- 
 # 2.02 - Basic planeflight Output reader - mje
 # -------------- 
 # readfile function
-def readfile_basic(files, location, debug=False, Kludge_fortan_output=False, rm_empty=False):
+def readfile_basic(files, location, debug=False, \
+            Kludge_fortan_output=False, rm_empty=False):
+    """ basic readfile function for planeflight output in csv"""
     if debug:
     	print "files: {}, Location: {}".format( files, location )
     for file in files:
@@ -270,7 +284,9 @@ def readfile_basic(files, location, debug=False, Kludge_fortan_output=False, rm_
 # --------------
 # 2.03 - date specific (Year,Month,Day) planeflight output reader - tms
 # -------------
-def readfile( files, location, years, months, days, plot_all_data=False, debug=False, **kwargs):
+def readfile( files, location, years, months, days, plot_all_data=False, 
+            debug=False, **kwargs):
+    """ Date specific readfile function for planeflight output in csv"""
     plot_all_data=False
     print 'readfile called, for {} files, with 1st filename: {}'.format(len(files), files[0])
     big, names = [],[]
@@ -345,6 +361,9 @@ def readfile( files, location, years, months, days, plot_all_data=False, debug=F
 # 2.04 - files sent by a selected read of files
 # ----------
 def process_files_to_read(files, location, big, names, debug = True):
+    """ Function to extract data from GEOS-Chem planeflight csv 
+            output to list form  """
+
     if ( debug ):
         print 'process_files_to_read called'
         print files
@@ -386,7 +405,7 @@ def process_files_to_read(files, location, big, names, debug = True):
 # 2.06 - Get headers for a given pf file (return var names, and points )
 # ----------
 def get_pf_headers(file, debug=False):
-    
+    """ Extract column headers from a GEOS-Chem planeflight csv file """
     if debug:
         print file
     # open pf file 
@@ -409,10 +428,8 @@ def get_pf_headers(file, debug=False):
 # 2.07 - pf 2 pandas binary
 # ----------
 def pf2pandas(wd, files, vars=None, npwd=None, rmvars=None,   \
-                             debug=False):
-
-    """
-           Read in GEOS-Chem planeflight output and convert to HDF format
+            debug=False):
+    """ Read in GEOS-Chem planeflight output and convert to HDF format
             - Converts date and time columns to datetime format indexes
             - the resultant HDF is in 2D list form 
                 ( aka further processing required to 3D /2D output  )
@@ -456,7 +473,6 @@ def pf2pandas(wd, files, vars=None, npwd=None, rmvars=None,   \
             print hdf['d1'].shape, hdf['d1'].index
         del df
     hdf.close()
-
 
 # -------------- 
 # X.0X - converts planeflight.dat file to pandas array
@@ -513,8 +529,12 @@ def pf_csv2pandas( file=None, vars=None, epoch=False, r_vars=False, \
 # 2.10 - Extract all pf data for a given site.
 # ----
 def wd_pf_2_gaw_arr( wd, spec='O3', location='CVO', scale=1E9 ):
+    """ Extract all data rom a GEOS-Chem planeflight csv files in given 
+          working directory, returning this in numpy array form """
+
     print wd
-    model, names = readfile_basic( sorted(glob.glob(wd +'/plane_flight_logs/plane.log.2*')), location, debug=True )
+    files  =  sorted(glob.glob(wd +'/plane_flight_logs/plane.log.2*'))
+    model, names = readfile_basic( files, location, debug=True )
     data = np.float64( model[:,names.index( spec )]*1E9 )
     date = np.int64( model[:,names.index( 'YYYYMMDD' )] )
     time = np.int64( model[:,names.index( 'HHMM' )] )
@@ -522,10 +542,12 @@ def wd_pf_2_gaw_arr( wd, spec='O3', location='CVO', scale=1E9 ):
     return data, date, time
 
 # ----
-#  3.11 - gaw site data for comp
+#  3.11 - Process "raw" csv files from GEOS-Chem planeflight output
 # ----
 def pro_raw_pf( wd, site='CVO', ext='', run='', frac=False, diurnal=True, \
-                             res='4x5', debug=False ):
+            res='4x5', debug=False ):
+    """ Process csv rom GEOS-Chem planeflight output and save these as
+        numpy memory arrays """
     np_wd  = get_dir('npwd' )
 
     # Open & get data
@@ -560,9 +582,8 @@ def pro_raw_pf( wd, site='CVO', ext='', run='', frac=False, diurnal=True, \
 # 3.01 - Process time/date to datetime equivalent
 # -------------
 def pf2datetime( model, debug=False ):
-    """
-        Takes planeflight as numpy "model" array 
-    """
+    """ Takes planeflight as numpy "model" array and returns list 
+        of datetimes """
 
     # Make sure input is in integer form 
     vars = [ i.astype(np.int64) for i in model[:,0], model[:,1] ] 
@@ -587,6 +608,8 @@ def pf2datetime( model, debug=False ):
 # 3.02 - list cv days in data (days since 2006) 
 # ------------- 
 def cv_days_in_data(cv_dates):
+    """ Get unique list of cv days in output 
+        just use "set" fucntion instead? - REDUNDENT? """
     cv_dates =  [ int(i) for i in cv_dates ]
     for date in cv_dates:
         try:
@@ -600,6 +623,7 @@ def cv_days_in_data(cv_dates):
 # 3.03 - adjust non UT times to UT
 # ------------- 
 def pf_UT_2_local_t(time_s, site='CVO', half_hour=None, debug=False):
+    """ Adjust pf time in UT to local time"""
     if debug:
         print 'pf_UT_2_local_t'
     #  UT diff library for sites ....
@@ -627,6 +651,8 @@ def pf_UT_2_local_t(time_s, site='CVO', half_hour=None, debug=False):
 # -------------
 # translate year to "since2006" function
 def year_to_since_2006(model):
+            """ convert model time outputted by geos-chem planeflight into 
+            Cape Verde Observation (CVO) days """
             year=(model[:,0]//10000)
             month=((model[:,0]-year*10000)//100)
             day=(model[:,0]-year*10000-month*100)
@@ -643,6 +669,7 @@ def year_to_since_2006(model):
 # 3.05 - Process A month of pf hourly files into an array of lat, lon (index) time (datetime) 
 # -------------
 def process_ATOM_pfs( year, month, debug=False, wd=None):
+    """ Process ATOM planeflight output into pandas panels """
 
     if isinstance( wd, type(None) ):
         wd = get_dir('rwd')                                            

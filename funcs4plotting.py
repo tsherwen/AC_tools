@@ -129,7 +129,6 @@ def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
         - plot settings
             set_window  ( True ... )
 
-
         - basemasp settings:
             resolution ( 'c' = coarse, 'f' = fine ...  )
 
