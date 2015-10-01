@@ -122,6 +122,8 @@ def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
             extend='neither', degrade_resolution=False, 
             lon_0=None, lon_1=None, lat_0=None, lat_1=None, **Kwargs):
     """
+        Plots Global/regional 2D (lon, lat) slices. Takes a numpy array and the 
+        resolution of the output. The plot extent is then set by this output.
 
         - GEOS-Chem output configuration
             res ( '4x5' etc... )
@@ -310,6 +312,11 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, \
     rotatecbunits='horizontal', extend='neither', ylabel=True, \
     set_window=False, lat_0=None, lat_1=None, lat40_2_40=False, \
     xlabel=True, debug=False ):
+    """ Creates a zonal plot from provide array of CTM output (lon, lat)
+        Input resolution must be provide for non-default (4x5) output 
+        
+        This function will also apply maskes if set in arguments """
+    
     
     # Create axis if not provided <= is this back comparible?
     if isinstance( ax, type(None) ): 
@@ -435,6 +442,8 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, \
 # --------
 def lat_plot(fig, ax, arr, title=None, f_size=10, units='ppbv', \
             scale='linear', debug=False ):
+    """ Creates a latitude plot on given figure and axis """
+
     NIU, lat, NIU = get_latlonalt4res( res=res )
     del NIU
     plt.plot( lat, arr )
@@ -449,14 +458,17 @@ def lat_plot(fig, ax, arr, title=None, f_size=10, units='ppbv', \
     
     
 # --------   
-# 1.06 - Diurnal pboxlot
+# 1.06 - Diurnal boxplot
 # --------
-def diurnal_boxplot(fig, ax,  dates, data, pos=1, posn =1,  bin_size=2/24.,
-            widths=0.01, 
-            white_fill=True, alpha=0.1, linewidth=0.5, showmeans=False,
-            title=None, f_size=10, units='ppbv', scale='linear', debug=False ):
+def diurnal_boxplot(fig, ax,  dates, data, pos=1, posn =1,  bin_size=2/24.,\
+            widths=0.01, white_fill=True, alpha=0.1, linewidth=0.5, \
+            showmeans=False, title=None, f_size=10, units='ppbv', \
+            scale='linear', debug=False ):
+    """ Creates a diurnal plot of boxplots (hourly) for given data and dates. 
+            Data and dates must be in numpy array form. 
+            Dates must also be datetime.datetime objects """
 
-    # get_day_fraction(i) 
+    # Convert datetime to fractional day <= set this to map on array at once?
     dates = np.array( [ get_day_fraction(i) for i in dates ] )
 
     # bin data
@@ -486,7 +498,8 @@ def diurnal_boxplot(fig, ax,  dates, data, pos=1, posn =1,  bin_size=2/24.,
 
     # --- Highlight bins        
     bs = np.arange(0, 24, bin_size )#[ bs[0] - bin_size ] + bs 
-    [ plt.axvline( x=i, color='k', linewidth=linewidth, alpha=alpha, linestyle='dashed' ) for i in bs ]
+    [ plt.axvline( x=i, color='k', linewidth=linewidth, alpha=alpha, \
+         linestyle='dashed' ) for i in bs ]
 
 
 # --------   
@@ -498,8 +511,11 @@ def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
             xlabel = True, r_avgs=False, marker=None, label=None, \
             markersize=1, title=None, f_size=10, units='ppbv', scale='linear', \
             lw=1,lgnd_f_size=None, alpha=1, debug=False ):
+    """ Creates a diurnal plot for given data and dates. 
+            Data and dates must be in numpy array form. 
+            Dates must also be datetime.datetime objects """
 
-    # Convert datetime to fractional day
+    # Convert datetime to fractional day <= set this to map on array at once?
     dates = np.array( [ get_day_fraction(i) for i in dates ] )
 
     # asectics
@@ -569,12 +585,13 @@ def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
 # --------   
 # 1.11 - Plot up Sonde data
 # --------
-def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, 
-            f_size=10, color=None, 
-            rasterized=True, err_bar=False, obs=True, legend=False, 
-            units='ppbv' , c_l=[ 'k', 'red','green', 'blue' , 'purple'],
-            hPa_labels=True, stddev=True, xlimit=None, loc='upper left',
-            c_off = 37, label=None, ancillary=True, debug=False ):
+def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
+            f_size=10, color=None, rasterized=True, err_bar=False, obs=True, \
+            legend=False, units='ppbv', hPa_labels=True, stddev=True, \
+            c_l=[ 'k', 'red','green', 'blue' , 'purple'], xlimit=None, \
+            loc='upper left', c_off = 37, label=None, ancillary=True, \
+            debug=False ):
+    """ Create plot of vertical data for sonde observations/model """
 
     # Get overall vars
     alt, press = [ gchemgrid(i) for i in 'c_km_geos5_r' , 'c_hPa_geos5_r']
@@ -642,6 +659,9 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False,
 # -------------
 def obs_month_plot(data, color=None, title=None, rtn_data=False, \
             plt_day=True, debug=False):
+    """ Plot up seaonal (monthly ) data. Requires data, and dates in numpy 
+        array form. Dates must be as datetime.datetime objects. 
+         - REDUNDENT? (see 1.13) """
     day_time= [i+float(1/23) for i in range(23) ]
     if debug:
         print data.shape
@@ -669,18 +689,21 @@ def obs_month_plot(data, color=None, title=None, rtn_data=False, \
 def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
                   title=None, subtitle=None, legend=False, xrotation=90, \
                   window=False, label=None, ylabel=None, loc='upper right' ):
-
+    """ Plot up seaonal (monthly ) data. Requires data, and dates in numpy 
+        array form. Dates must be as datetime.datetime objects. """
+            
     if color == None:
         color = color_list( posn )[ pos ]
 
     if window:
         f_size=int(f_size/2)
     # Plot
-#    plt.plot( np.arange(2,len(data)+2), data, color=color, lw=lw, ls=ls, label=label )
-    plt.plot( np.arange(1,len(data)+1), data, color=color, lw=lw, ls=ls, label=label )
+    plt.plot( np.arange(1,len(data)+1), data, color=color, lw=lw, ls=ls, \
+        label=label )
 
     # Beautify
-    ax.set_xticklabels( [i.strftime("%b") for i in [datetime.datetime(2009, int(i), 01) for i in np.arange(1,13 ) ] ] )
+    ax.set_xticklabels( [i.strftime("%b") for i in [datetime.datetime(2009, \
+        int(i), 01) for i in np.arange(1,13 ) ] ] )
     plt.xticks(range(1,13),  fontsize=f_size )
     plt.xlim(0.5,12.5)
     plt.xticks(rotation=xrotation)
@@ -706,6 +729,8 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
             title=None, legend=False, everyother=24,  x_nticks=12, \
             window=False, label=None, ylabel=None, loc='upper right',  \
             lw=1,ls='-', color=None, showmeans=False, debug=False ):
+    """ Plot up timeseries of seasonal data. Requires data, and dates in numpy
+        array form. Dates must be as datetime.datetime objects. """
 
     # Process data - reduce resolution to daily, and get std
     df = DataFrame(data,index=dates )
@@ -738,6 +763,8 @@ def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,
                 white_fill=True, alpha=0.1, linewidth=0.5,xlabel=True, 
                 title=None, f_size=7.5, units='ppbv', scale='linear', \
                 showmeans=False, debug=False ):
+    """ Plot up daily timeseries of values. Requires data, and dates in numpy 
+        array form. Dates must be as datetime.datetime objects. """
 
     # get_day_fraction(i) 
     dates = np.array( [ get_day_fraction(i) for i in dates ] )
@@ -778,12 +805,8 @@ def timeseries_May_Sept_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
             window=False, label=None, ylabel=None, loc='upper right',  \
             lw=1,ls='-', color=None, start_month=5, end_month=9, 
             boxplot=True, showmeans=False, debug=False ):
-
-    """
-         Timeseries plot. Takes numpy arrays of datetimes and data as arguemnts.
-         
-         
-    """
+    """ Timeseries plot. Takes numpy arrays of datetimes and data as
+          arguemnts. """
 
     # Process data - reduce resolution to daily, and get std
     df = DataFrame(data={'data':data},index=dates )
@@ -841,6 +864,8 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
             lw=1,ls='-', color=None, start_month=7, end_month=7, \
             boxplot=True, showmeans=False, alt_text=None, r_plt=False, \
             unitrotation=45, color_by_z=False, fig=None,  debug=False ):
+    """ Plot up month timeseries of values. Requires data, and dates in numpy 
+        array form. Dates must be as datetime.datetime objects. """
 
     # Process data - reduce resolution to daily, and get std
     df = DataFrame( data, index=dates )
@@ -894,18 +919,18 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
 # --------
 # 1.18 - North Pole surface plot
 # --------
-def north_pole_surface_plot( arr, return_m=False, grid=True, centre=False, 
-            cmap=None, format='%.2f', m=None, 
-             fixcb=False,  nbins=25, nticks=10, 
-             res='4x5', ax=None, alpha=1, 
-             drawcountries=True, set_cb_ticks=True, title=None, 
+def north_pole_surface_plot( arr, return_m=False, grid=True, centre=False, \
+            cmap=None, format='%.2f', m=None, fixcb=False,  nbins=25, \
+             res='4x5', ax=None, alpha=1, nticks=10, everyother=1,\
+             drawcountries=True, set_cb_ticks=True, title=None, \
 #             rotatecbunits='horizontal', extend='neither', 
-             interval=1, resolution='l', shrink=0.4, window=False, everyother=1, 
-            lon_0=0, boundinglat=40,
-             degrade_resolution=False,              
-             no_cb=False, cb=None, 
-             units=None, f_size=20,              
-             debug=False,  **Kwargs):    
+             interval=1, resolution='l', shrink=0.4, window=False, \
+            lon_0=0, boundinglat=40, degrade_resolution=False, \
+            no_cb=False, cb=None, units=None, f_size=20, \
+            debug=False,  **Kwargs):    
+    """ Plot up data at north pole 2D slice.
+        Requires data (arr) as numpy array. Arr should be full global size 
+        (lon, lat) for given resolution """
 
     # ---- Grid/Mesh values for Lat, lon, & alt + cb
     if isinstance( cmap, type(None) ):
@@ -1011,6 +1036,9 @@ def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False,
              no_cb=False, cb=None, 
              units=None, f_size=20, 
              debug=False,  **Kwargs):    
+    """ Plot up data at south pole 2D slice.
+        Requires data (arr) as numpy array. Arr should be full global size 
+        (lon, lat) for given resolution """
 
     # ---- Grid/Mesh values for Lat, lon, & alt + cb
     if isinstance( cmap, type(None) ):
@@ -1107,7 +1135,8 @@ def plot_specs_surface_change_monthly2pdf( arr, res='4x5', dpi=160, \
         savetitle='', diff=False, extend='neither', column=False, \
         scale=1, units=None, set_window=False, lat_0=None, lat_1=None, \
         debug=False):   
-
+        """ Create multipage PDF with each page containing a 2D (lon,lat) slice     
+             plot for given species in list of "specs" """
         print 'plot_specs_surface_change_monthly2pdf called'
 
         # setup pdfs + titles
@@ -1226,6 +1255,8 @@ def plot_specs_zonal_change_monthly2pdf( Vars, res='4x5', dpi=160, \
         t_ps=None, savetitle='', diff=False, extend='neither', 
         set_window=False, lat_0=None, lat_1=None,
         set_lon=None, units=None, debug=False):
+        """ Create multipage PDF with each page containing a zonal      
+             plot for given species in list of "specs" """
 
         savetitle = 'Zonal_by_spec'+savetitle 
         pdff = plot2pdfmulti( title=savetitle, open=True, \
@@ -1361,10 +1392,8 @@ def plot_specs_poles_change_monthly2pdf(  specs=None,\
             diff=False, dlist=None, savetitle='', units=None, \
             perspective='north', format=None,\
             extend='neither', boundinglat=50, debug=False):
-        """
-            takes a 5D array ( species, lon, lat, alt, time ) and plots up the 
-            output by spcies  by month , and save this as a pdf 
-
+        """ Takes a 5D np.array ( species, lon, lat, alt, time ) and plots up
+             the output by spcies  by month , and saves this as a mulitpage pdf
         """
 
         if debug:
@@ -1492,11 +1521,8 @@ def create_plot4case( fig, ax, dates, data, spec, f_size=20, lw=None, ls=None, \
             loc=True, legend=True, units='', boxplot=False, lname='Weyborne', \
             run_name='run', start_month=7, end_month=7, plot_type='daily', \
             case=None, l_dict=None, label=None, alt_text=None, color=None): 
-
-    """
-            Coupler for timeseries data (dates as datetimes + data) to be 
-            converted multiple graph forms with just change of case 
-    """
+    """ Coupler for timeseries data (dates as datetimes + data) to be 
+            converted multiple graph forms with just change of case    """
 
     # --- select frequency
     # select case
@@ -1563,12 +1589,10 @@ def PDF_obs_vs_mod( ax, dates, data, f_size=20, pos=0, posn=1,  \
             window=False, label=None, ylabel=None, loc='upper right',  \
             lw=1,ls='-', color=None, start_month=1, end_month=12, 
             unitrotation=45, alpha=.5, bins=100, alt_text=None, debug=False ):
-
-    """
-        Constructs a PDF plot with given dates and data.
-        
+    """Constructs a PDF plot with given dates and data.
         If not provided with axis etc, then these are made.
-
+        data and dates need to be as a np.array, 
+        with dates as datetime.datetim objects
     """
 
     # Process data - reduce resolution to daily, and get std
@@ -1606,7 +1630,7 @@ def X_Y_scatter( x, y, z=None, fig=None, ax=None, vmin=None, vmax=None, \
             left= 0.1, width=0.60, bottom=0.1, height=0.60, widthII=0.2,  \
             lim2std=10,trendline=True, f_size=20, lw=10, title=None, \
             line121=True, Trend_line=True, X_title=None, Y_title=None ):
-
+    """ Plot up a X Y scatter plot of x vs. y """
 #    rect_scatter = [left, bottom, width, height]    
             
     if isinstance( fig, type(None) ):
@@ -1759,6 +1783,7 @@ def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
             left= 0.1, width=0.60, bottom=0.1, height=0.60, widthII=0.2, \
             fit = 0.02, binwidth=0.1, Trend_line = False, cmap=cm.gnuplot2, \
             X_title='X title'  , Y_title='Y title' , f_size=5 , line121=False ):
+    """ Plots a X vs. Y histogram """
 
     # Use hist code 
     nullfmt   = NullFormatter()         # no labels
@@ -1913,6 +1938,8 @@ def moving_average(x, n, type='simple'):
 # 4.03 -  color list for rainbow plots
 # -------------
 def color_list(length, cb='gist_rainbow' ):
+    """ Create a list of colours to generate colors for plots contain multiple 
+          datasets """
     cm = plt.get_cmap(cb)
     color = [cm(1.*i/length) for i in range(length)]
     return color
@@ -1921,6 +1948,8 @@ def color_list(length, cb='gist_rainbow' ):
 # 4.04 - weighted average
 # -------------
 def weighted_average( data, interval , bins_used=False, debug=False):
+    """ Calculate a weighed average of data fro a given interval """
+
     min_v, max_v = int( data.min() ), int( data.max() ) 
     bins = np.arange(min_v, max_v, interval)
     if debug:
@@ -1960,7 +1989,7 @@ def r_squared(x, y):
 # -------------
 def set_bp( bp, num, c_list=['k', 'red'], white_fill=True, set_all=True,
                     median_color='white', linewidth=5, debug=False ):
-        
+    """ Manual set properties of boxplot ("bp") """
     if debug:
         print num, c_list
     if set_all:
@@ -1979,6 +2008,7 @@ def set_bp( bp, num, c_list=['k', 'red'], white_fill=True, set_all=True,
 # 4.07 - Get all marker types
 # -------------
 def markers_list(rm_plain_markers=False):
+    """ Create a list of available markers for use in plots """
     from matplotlib.lines import Line2D
     markers = []
     for m in Line2D.markers:
@@ -1998,7 +2028,7 @@ def markers_list(rm_plain_markers=False):
 # -------------
 def Trendline( ax, X, Y, order =1, intervals= 700, f_size=20, 
             color='blue', lw=1 ):
-
+        """ Add a trend line to existing plot """
         params, xp = np.polyfit( X, Y, order  ), \
             np.linspace( min(np.ma.min(X), np.ma.min(Y) ), \
             max(np.ma.max(X), np.ma.max(Y) ), intervals )
@@ -2023,15 +2053,17 @@ def Trendline( ax, X, Y, order =1, intervals= 700, f_size=20,
 # 4.09 - plot_gc_bin_bands - plot up Fast-J  bins  ( 7 longest nm bins)
 # -------------   
 def plot_gc_bin_bands(facecolor='#B0C4DE'):
+    """ Plot highlighted lines of GEOS-Chem/Fast-J photolysis bins """
     vars = [ GC_var(i) for i in 'FastJ_lower' , 'FastJ_upper']
     alphas = [ 0.3,0.1 ]*len(vars[0])
-    [ plt.axvspan( vars[0][n], vars[1][n], facecolor=facecolor, alpha=alphas[n]) \
-        for n in range(len(vars[0])) ]
+    [ plt.axvspan( vars[0][n], vars[1][n], facecolor=facecolor, \
+        alpha=alphas[n]) for n in range(len(vars[0])) ]
 
 # --------------
 # 4.10 - line styles 
 # -------------       
 def get_ls(num):
+    """ Get a list of available line styles """
     ls =[   ':', '--', '-.', '-', ':', '--', '-.', '-', ':', ':', '--', '-.', '-', ':', '--', '-.', '-', ':'
     ]
     return ls[:num]
@@ -2041,6 +2073,9 @@ def get_ls(num):
 # --------
 def greyoutstrat( fig,  arr, axn=[1,1,1], ax=None, cmap=cm.bone_r, \
             res='4x5', rasterized=True, debug=False):
+    """ Grey out stratosphere in existing zonal plot. This is used to highlight 
+        tropospherically focused work. This function requires the array of "time 
+        in the troposphere" diagnostic (lon,lat, alt) """
     # Get overall vars
     lon, lat, alt = get_latlonalt4res( res=res )
     alt  = [ i[:len(arr[0,:])] for i in [ alt ]  ][0]
@@ -2058,6 +2093,7 @@ def greyoutstrat( fig,  arr, axn=[1,1,1], ax=None, cmap=cm.bone_r, \
 # 4.22 - adjust subplots
 # --------
 def adjust_subplots( fig ):
+    """ Set subplot adjust in provide figure """
 
     left  = 0.125  # the left side of the subplots of the figure
     right = 0.9    # the right side of the subplots of the figure
@@ -2074,6 +2110,8 @@ def adjust_subplots( fig ):
 # 4.24 - setup diunal
 # ----
 def setup_diurnal(years, months, f_size=20):
+    """ Setup figure for diurnal plot """
+
     plt.title('Monthly Diurnal Obs (2008-2011) vs. Model ({}{}-{}{}) '.format( \
         years[0], months[0],years[1],months[1]   ) )
     plt.legend(loc='lower left')
@@ -2087,9 +2125,8 @@ def setup_diurnal(years, months, f_size=20):
 # -------------
 # 4.27 -  print NCAS & York logos in the bottom corners
 # -------------
-"""  setup for a figsize=(15,10) and data with an ax of fig.add_axes([0.1,0.15,0.8,0.75])  
-    # [left, bottom, width, height]                                                                                                     """
 def add_logos_NCAS_york_bottom(fig):
+    """ Add NCAS + York logo for external plots used externally """
     
     wd1 = get_dir ('dwd') +'misc/logos/'
     logo_list= ['NCAS_national_centre_logo.gif', 'nerclogo1000.gif' , 'york_uni_shield.tif' ,   \
@@ -2114,6 +2151,7 @@ def add_logos_NCAS_york_bottom(fig):
 # 4.28 - Iodine deposition mask (for sites... e.g Denmark, Germany, Norfolk )
 # --------
 def mask_not_obs( loc='Denmark', res='4x5', debug=False ):
+    """ provide a mask of all regions apart from the location given """
 
     # Start with all zeros
     arr=np.zeros(get_dims4res(res))
@@ -2134,6 +2172,7 @@ def mask_not_obs( loc='Denmark', res='4x5', debug=False ):
 # -------------
 def annotate_gc_grid(ax, res='4x5', f_size=6.5, loc_list=[ [-9999,-9999] ],
                                         everyother=1 , label_gc_grid=True):
+    """ Annotate grid with GEOS-Chem indices """
 
     # Get Vars
     lon, lat, alt = get_latlonalt4res(res=res)
@@ -2250,7 +2289,9 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     extend='neither', norm=None, log=False,  format=None, cmap=None,\
     vmin=0, vmax=10, cb_ax=None, ticklocation='auto', extendfrac=.075, \
     debug=False):
-
+    """ Create Colorbar. This allows for avoidance of basemap's issues with 
+        spacing definitions when conbining with colorbar objects within a plot 
+    """
     # Get colormap (by feeding get_colormap array of min and max )
     if isinstance(cmap, type(None)):
         cmap = get_colormap( arr=np.array( [vmin,vmax]   ) )
@@ -2366,6 +2407,8 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
 def get_basemap( lat, lon, resolution, projection='cyl', res='4x5',\
             everyother=1, f_size=10, interval=1, label_y=False, \
             drawcountries=False ):
+    """ Create basemap. This should be used for first slide in python animated 
+            videos to save computation """
 
     m = Basemap(projection=projection,llcrnrlat=lat[0],urcrnrlat=lat[-1],\
                         llcrnrlon=lon[0],\
@@ -2405,9 +2448,9 @@ def get_basemap( lat, lon, resolution, projection='cyl', res='4x5',\
 def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
             npoints=100, cb='CMRmap_r', maintain_scaling=True, \
             negative=False, positive=False, debug=False ):
-    """ 
-    Check whether array contains just +ve or -ve or both 
-    then prescribe color map  accordingly
+    """ Create correct color map for values given array.
+        This function checks whether array contains just +ve or -ve or both 
+        then prescribe color map  accordingly
     """
     
     # make sure array has a mask
@@ -2480,6 +2523,8 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
 # 4.38 - Retrieves color by grouping of sensitivity study
 # --------
 def color4sensitstudy( title=None, rtn_dict=False):
+    """ function to define plot colouring used for iodine mechanism 
+    paper in ACPD"""
     d =  {
     'I$_{2}$Ox X-sections x2': 'red',
      'I$_{2}$Ox exp. X-sections': 'red',
@@ -2504,6 +2549,9 @@ def color4sensitstudy( title=None, rtn_dict=False):
 # 4.39 - Retrieves color by grouping of sensitivity study
 # --------
 def markers4sensitstudy( title=None, rtn_dict=False):
+    """ function to define markers used for iodine mechanism
+     paper in ACPD"""
+
     d =  {
     'I$_{2}$Ox X-sections x2': 'd',
      'I$_{2}$Ox exp. X-sections': 'h',

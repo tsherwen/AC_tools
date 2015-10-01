@@ -658,11 +658,12 @@ def year_to_since_2006(model):
             day=(model[:,0]-year*10000-month*100)
             hour=model[:,1]//100
             min=(model[:,1]-hour*100)
-            doy=[ datetime.datetime(np.int(year[i]),np.int(month[i]),np.int(day[i]),\
-                                        np.int(hour[i]),np.int(min[i]),0)- \
-                      datetime.datetime(2006,1,1,0,0,0) \
-                      for i in range(len(year))]
-            since2006=[doy[i].days+doy[i].seconds/(24.*60.*60.) for i in range(len(doy))]
+            doy=[datetime.datetime(np.int(year[i]), np.int(month[i]), \
+                            np.int(day[i]), np.int(hour[i]),np.int(min[i]),0)- \
+                            datetime.datetime(2006,1,1,0,0,0) \
+                            for i in range(len(year))] 
+            since2006=[doy[i].days+doy[i].seconds/(24.*60.*60.)  \
+                for i in range(len(doy))]
             return since2006
 
 # --------------
