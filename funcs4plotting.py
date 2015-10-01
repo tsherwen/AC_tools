@@ -2608,9 +2608,12 @@ def get_input_vars(debug=False):
     """ Get input from command line arguments 
         Takes: spec, filename, category, start date , end date  """
 
+    # If working directory (wd) provided, use command line arguments
     try:
         wd = sys.argv[1]
         print '$>'*5, sys.argv
+
+    # else prompt for input settings
     except:
         wd = raw_input("ctm.bpch dir: ")
         spec = raw_input("species (default = O3): ")
@@ -2633,6 +2636,8 @@ def get_input_vars(debug=False):
         else:
             end = datetime.datetime( *tuple( map( int, end.split('-')) ) )            
         print wd, fn, cat_, spec, start, end
+
+    # Has species file name been provided? ( e.g.  "O3" )
     try:
         spec = sys.argv[2]
     except:
@@ -2640,6 +2645,8 @@ def get_input_vars(debug=False):
             spec
         except:
             spec = 'O3'
+
+    # Has ctm.bpch file name been provided? ( e.g.  "ctm.bpch" )
     try:
         fn = sys.argv[3]
     except:
@@ -2648,6 +2655,7 @@ def get_input_vars(debug=False):
         except:
             fn = 'ctm.bpch'
 
+    # Has category been provided? ( e.g.  "IJ-AVG-$" )
     try:
         cat_ = sys.argv[4]
     except:
@@ -2656,7 +2664,8 @@ def get_input_vars(debug=False):
         except:
             cat_ = "IJ-AVG-$"
 
-    try:  # in form (YYYY, MM, DD)
+    # Has start date been provided? ( in form "YYYY, MM, DD" )
+    try:  
         print sys.argv[5].split('-')
         start = datetime.datetime( *tuple( map( int, sys.argv[5].split('-')) ) )
     except:
@@ -2665,7 +2674,8 @@ def get_input_vars(debug=False):
         except:
             start = None
 
-    try:  # in form (YYYY, MM, DD)
+    # Has end date been provided? ( in form "YYYY, MM, DD" )
+    try:  
         print sys.argv[6].split('-')
         end = datetime.datetime( *tuple( map( int, sys.argv[6].split('-')) ) )
     except:
@@ -2676,7 +2686,6 @@ def get_input_vars(debug=False):
 
     if debug:
         print '$>'*5, wd, fn, cat_, spec, start, end
-
 
     # if final character not '/' add this
     if wd[-1]  != '/':
