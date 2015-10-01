@@ -1,7 +1,7 @@
 # AC_tools
 
 This repository contains a portable collection of functions used for 
-working with global/regional chemical transport model (CTM) ouput amd
+working with global/regional chemical transport model (CTM) ouput and
 observations.
 
 The module is setup to be used as a submodule, with collections of
