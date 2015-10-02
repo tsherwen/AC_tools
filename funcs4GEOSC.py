@@ -1983,11 +1983,11 @@ def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
 # --------------
 # 2.20 - Gg Ox yr^-1 from individual PORL-L$ rxns ([molec/cm3/s] )
 # -------------
-def molec_cm3_s_2_Gg_Ox_np(arr, rxn, vol=None, ctm_f=None, \
+def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None, \
             Iodine=False, I=False, IO=False, months=None, years=None, wd=None, \
             year_eq=True, month_eq=False, spec=None, res='4x5',debug=False ):
-    """ get species/tag p/l  in Gg Ox yr^-1 from given PORL-L$ rxns 
-            ([molec/cm3/s] ) """ 
+    """ Convert species/tag prod/loss from molec/cm3/s] to Gg Ox yr^-1.
+        This is to work with diagnostic outputs from PORL-L$  """ 
 
     if debug:
         print ' molec_cm3_s_2_Gg_Ox_np  called'
@@ -2009,7 +2009,7 @@ def molec_cm3_s_2_Gg_Ox_np(arr, rxn, vol=None, ctm_f=None, \
             RMM =  species_mass(rxn) 
         else:
             RMM =  species_mass('O3')             
-        if (spec != None):
+        if not isinstance( spec, type(None) ):
             RMM = species_mass( spec  )
         arr = ( arr * vol[:,:,:38,:] ) / constants( 'AVG') * RMM /1E9
 
