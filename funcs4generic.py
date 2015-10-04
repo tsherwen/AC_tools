@@ -861,7 +861,7 @@ def mask_all_but( region=None, M_all=False, saizlopez=False, \
     # invert mask to leave exception unmasked...
     mask = np.logical_not(mask)
 
-    # Apply Saiz-Lopez Marine FT/UT
+    # Apply Saiz-Lopez Marine MFT/MUT?
     if M_all:
         mask = mask*land_mask(res=res)
 
