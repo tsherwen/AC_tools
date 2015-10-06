@@ -134,7 +134,7 @@ from datetime import datetime as datetime_
 from AC_tools.funcs4core import *
 from AC_tools.funcs4generic import *
 from AC_tools.funcs4time import *
-from funcs4obs import * #( need: get_CVO_DOAS_obs ... )
+#from funcs4obs import * #( need: get_CVO_DOAS_obs ... )
 from AC_tools.funcs4pf import *
 from AC_tools.funcs_vars import *
 
