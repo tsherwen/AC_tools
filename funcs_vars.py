@@ -108,7 +108,7 @@ from AC_tools.funcs4core import *
 # --------------
 # 1.01 - dictionary of variables used for planeflight_mod.F output
 # -------------
-def pf_var( input, ver='1.7', ntracers=85 ):
+def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
 
     # planeflight variable lists
     metvars = [
@@ -135,22 +135,29 @@ def pf_var( input, ver='1.7', ntracers=85 ):
     [ OH_Extras4nic.pop(ii) for ii in sorted([ OH_Extras4nic.index(i)  \
         for i in inactive_spec ])[::-1] ]
 
-    # Deal 
+    # Setup list of tracers
     if ver == '1.7':
         ntracers=85
+    if ver == '2.0':
+        ntracers=101
     if ver == 'johan_br.v92':
         ntracers=87
-        JREAs=[]
     TRAs = ['TRA_'+ str(i) for i in range(1, ntracers+1) ] 
 #    TRAs = ['TRA_{:0>2}'.format(i) for i in range(1, ntracers+1) ]
-    if ver == '1.7':
-        JREAs = ['REA_'+ str(i) for i in range(453, 529) ] 
-    if ver == '1.6':
-        JREAs = ['REA_'+ str(i) for i in range(453, 531) ] 
-    if ver == '1.6.1':
-        JREAs = ['REA_'+ str(i) for i in range(453, 530) ] 
+
+    # Setup list of reactions ( photolysis and general )
     if ver == '1.5':
-        JREAs = ['REA_'+ str(i) for i in range(455, 533) ] 
+        PHOT_1st, PHOT_last = 455, 533
+    if ver == '1.6':
+        PHOT_1st, PHOT_last = 453, 531
+    if ver == '1.6.1':
+        PHOT_1st, PHOT_last = 453, 530
+    if ver == '1.7':    
+        PHOT_1st, PHOT_last = 453, 529
+    if ver == '2.0':    
+        PHOT_1st, PHOT_last = 413, 614
+
+    JREAs = ['REA_'+ str(i) for i in range(PHOT_1st, PHOT_last) ] 
     REAs_all = ['REA_'+ str(i) for i in range(0, 533) ] 
 
     # reduced list for high time and spatial resolution
