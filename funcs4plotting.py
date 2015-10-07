@@ -43,8 +43,8 @@ from AC_tools.funcs4pf import *
 from AC_tools.funcs4GEOSC import * # wd2ctms
 
 # colormaps
-from option_c import test_cm as cmc
-from option_d import test_cm as cmd
+#from option_c import test_cm as cmc
+#from option_d import test_cm as cmd
 
 # --------------- ------------- ------------- ------------- ------------- 
 # ---- Section 1 ----- Common Plot Types

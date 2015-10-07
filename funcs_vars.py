@@ -173,6 +173,15 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
         'R4N2', 'MP', 'CH2O', 'MO2', 'ETO2', 'CO', 'C2H6', 'C3H8', 'PRPE', 'ALK4', 'ACET', 'ALD2', 'MEK', 'RCHO', 'MVK', 'DMS', 'MSA', 'ISOP'  
         ]) ]
 
+    if input =='slist_ClearFlo':
+        TRAs = 'CO', 'ACET', 'ALD2', 'ISOP', 'C2H6', 'C3H8', 'CH2O', \
+            'MACR', 'HNO2', 'HNO3', 'MVK', 'NO', 'NO2', 'PAN', 'O3',
+        TRAs= [ num2spec( i, ver=ver, invert=True) for i in TRAs ]
+        TRAs = [ 'TRA_{:0>2}'.format( i)  for i in TRAs ]
+        # mannually add ethanol
+        TRAs += [ 'TRA_86']  
+        species = [ 'OH', 'MO2','HO2' ]
+        
     if input =='slist_v9_2_NREA_red_NOy':
 # THIS IS NOT A GOOD APPROACH, use actual names an tranlate based on verison. 
 #        missing = [  'TRA_17', 'TRA_60', 'TRA_30', 'TRA_31', 'TRA_50', \
@@ -199,7 +208,8 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
      'slist_REAs_all_OH' :   species + TRAs  + metvars+OH_reactivity,
      'slist_REAs_all_OH_extras' :   all_species_not_TRA + TRAs  + metvars, 
     'slist_v9_2_NREA_red_NOy' : species + TRAs + metvars,
-    'slist_v10_1.7_allspecs': all_species_not_TRA +TRAs+ JREAs +metvars
+    'slist_v10_1.7_allspecs': all_species_not_TRA +TRAs+ JREAs +metvars,
+    'slist_ClearFlo': species + TRAs + metvars
       } 
 
     # retrieve variable list from dictionary
