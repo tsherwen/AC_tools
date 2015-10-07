@@ -88,7 +88,7 @@
 #
 # -- I/O / Low level                                                                                
 import re
-import platform
+#import platform
 import pandas as pd
 from netCDF4 import Dataset
 #import Scientific.IO.NetCDF as S
