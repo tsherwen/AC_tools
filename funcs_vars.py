@@ -108,7 +108,7 @@ from AC_tools.funcs4core import *
 # --------------
 # 1.01 - dictionary of variables used for planeflight_mod.F output
 # -------------
-def pf_var( input, ver='1.7', ntracers=85 ):
+def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
 
     # planeflight variable lists
     metvars = [
@@ -135,22 +135,29 @@ def pf_var( input, ver='1.7', ntracers=85 ):
     [ OH_Extras4nic.pop(ii) for ii in sorted([ OH_Extras4nic.index(i)  \
         for i in inactive_spec ])[::-1] ]
 
-    # Deal 
+    # Setup list of tracers
     if ver == '1.7':
         ntracers=85
+    if ver == '2.0':
+        ntracers=101
     if ver == 'johan_br.v92':
         ntracers=87
-        JREAs=[]
     TRAs = ['TRA_'+ str(i) for i in range(1, ntracers+1) ] 
 #    TRAs = ['TRA_{:0>2}'.format(i) for i in range(1, ntracers+1) ]
-    if ver == '1.7':
-        JREAs = ['REA_'+ str(i) for i in range(453, 529) ] 
-    if ver == '1.6':
-        JREAs = ['REA_'+ str(i) for i in range(453, 531) ] 
-    if ver == '1.6.1':
-        JREAs = ['REA_'+ str(i) for i in range(453, 530) ] 
+
+    # Setup list of reactions ( photolysis and general )
     if ver == '1.5':
-        JREAs = ['REA_'+ str(i) for i in range(455, 533) ] 
+        PHOT_1st, PHOT_last = 455, 533
+    if ver == '1.6':
+        PHOT_1st, PHOT_last = 453, 531
+    if ver == '1.6.1':
+        PHOT_1st, PHOT_last = 453, 530
+    if ver == '1.7':    
+        PHOT_1st, PHOT_last = 453, 529
+    if ver == '2.0':    
+        PHOT_1st, PHOT_last = 413, 614
+
+    JREAs = ['REA_'+ str(i) for i in range(PHOT_1st, PHOT_last) ] 
     REAs_all = ['REA_'+ str(i) for i in range(0, 533) ] 
 
     # reduced list for high time and spatial resolution
@@ -166,6 +173,15 @@ def pf_var( input, ver='1.7', ntracers=85 ):
         'R4N2', 'MP', 'CH2O', 'MO2', 'ETO2', 'CO', 'C2H6', 'C3H8', 'PRPE', 'ALK4', 'ACET', 'ALD2', 'MEK', 'RCHO', 'MVK', 'DMS', 'MSA', 'ISOP'  
         ]) ]
 
+    if input =='slist_ClearFlo':
+        TRAs = 'CO', 'ACET', 'ALD2', 'ISOP', 'C2H6', 'C3H8', 'CH2O', \
+            'MACR', 'HNO2', 'HNO3', 'MVK', 'NO', 'NO2', 'PAN', 'O3',
+        TRAs= [ num2spec( i, ver=ver, invert=True) for i in TRAs ]
+        TRAs = [ 'TRA_{:0>2}'.format( i)  for i in TRAs ]
+        # mannually add ethanol
+        TRAs += [ 'TRA_86']  
+        species = [ 'OH', 'MO2','HO2' ]
+        
     if input =='slist_v9_2_NREA_red_NOy':
 # THIS IS NOT A GOOD APPROACH, use actual names an tranlate based on verison. 
 #        missing = [  'TRA_17', 'TRA_60', 'TRA_30', 'TRA_31', 'TRA_50', \
@@ -192,7 +208,8 @@ def pf_var( input, ver='1.7', ntracers=85 ):
      'slist_REAs_all_OH' :   species + TRAs  + metvars+OH_reactivity,
      'slist_REAs_all_OH_extras' :   all_species_not_TRA + TRAs  + metvars, 
     'slist_v9_2_NREA_red_NOy' : species + TRAs + metvars,
-    'slist_v10_1.7_allspecs': all_species_not_TRA +TRAs+ JREAs +metvars
+    'slist_v10_1.7_allspecs': all_species_not_TRA +TRAs+ JREAs +metvars,
+    'slist_ClearFlo': species + TRAs + metvars
       } 
 
     # retrieve variable list from dictionary
@@ -479,7 +496,7 @@ def species_mass(spec):
     d = {
     'HIO3': 176.0, 'OCPO': 12.0, 'Br2': 160.0, 'OCPI': 12.0, 'O3': 48.0, 'PAN': 121.0, 'ACET': 12.0, 'RIP': 118.0, 'BrNO3': 142.0, 'Br': 80.0, 'HBr': 81.0, 'HAC': 74.0, 'ALD2': 12.0, 'HNO3': 63.0, 'HNO2': 47.0, 'C2H5I': 168.0, 'HNO4': 79.0, 'OIO': 159.0, 'MAP': 76.0, 'PRPE': 12.0, 'CH2I2': 268.0, 'IONO2': 189.0, 'NIT': 62.0, 'CH3Br': 95.0, 'C3H7I': 170.0, 'C3H8': 12.0, 'DMS': 62.0, 'CH2O': 30.0, 'CH3IT': 142.0, 'NO2': 46.0, 'NO3': 62.0, 'N2O5': 105.0, 'H2O2': 34.0, 'DST4': 29.0, 'DST3': 29.0, 'DST2': 29.0, 'DST1': 29.0, 'MMN': 149.0, 'HOCl': 52.0, 'NITs': 62.0, 'RCHO': 58.0, 'C2H6': 12.0, 'MPN': 93.0, 'INO': 157.0, 'MP': 48.0, 'CH2Br2': 174.0, 'SALC': 31.4, 'NH3': 17.0, 'CH2ICl': 167.0, 'IEPOX': 118.0, 'ClO': 51.0, 'NO': 30.0, 'SALA': 31.4, 'MOBA': 114.0, 'R4N2': 119.0, 'BrCl': 115.0, 'OClO': 67.0, 'PMN': 147.0, 'CO': 28.0, 'BCPI': 12.0, 'ISOP': 12.0, 'BCPO': 12.0, 'MVK': 70.0, 'BrNO2': 126.0, 'IONO': 173.0, 'Cl2': 71.0, 'HOBr': 97.0, 'PROPNN': 109.0, 'Cl': 35.0, 'I2O2': 286.0, 'I2O3': 302.0, 'I2O4': 318.0, 'I2O5': 338.0, 'MEK': 12.0, 'HI': 128.0, 'ISOPN': 147.0, 'SO4s': 96.0, 'I2O': 270.0, 'ALK4': 12.0, 'MSA': 96.0, 'I2': 254.0, 'PPN': 135.0, 'IBr': 207.0, 'MACR': 70.0, 'I': 127.0, 'AERI': 127.0, 'HOI': 144.0, 'BrO': 96.0, 'NH4': 18.0, 'SO2': 64.0, 'SO4': 96.0, 'IO': 143.0, 'CHBr3': 253.0, 'CH2IBr': 221.0, 'ICl': 162.0, 'GLYC': 60.0
     # species, not in tracer list
-    , 'HO2': 33.0, 'OH': 17.0,'CH4':16.0 , 'N':14.0, 'CH3I':142.0, 'CH2OO':46.0
+    , 'HO2': 33.0, 'OH': 17.0,'CH4':16.0 , 'N':14.0, 'CH3I':142.0, 'CH2OO':46.0, 'S': 32.0, 
     }
     
     return d[spec]

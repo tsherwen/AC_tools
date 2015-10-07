@@ -382,32 +382,40 @@ def get_Gg_species(ctm_f,species,air_mass,v_box, diagnostics=None,debug=False):
 # --------------
 # 1.07 - get air mass (4D) np.array  in kg
 # ------------- 
-def get_air_mass_np(ctm_f, times=None, debug=False):
+def get_air_mass_np( ctm_f=None, wd=None, times=None, trop_limit=True,\
+            debug=False ):
     """ Get array of air mass in kg
         Note: not compatible with PyGChem 0.3.0  """
 
     if debug:
         print 'called get air mass'
-    diagnostics = ctm_f.filter(name='AD', category="BXHGHT-$",time=times)
-    if debug:
-        print diagnostics
-    for diag in diagnostics:
-        # Grab data
-        scalar = np.array( diag.values[:,:,:] )[...,None]              
+
+    # retain PyGChem 0.2.0 version for back compatibility
+    if pygchem.__version__ == '0.2.0':
+        diagnostics = ctm_f.filter( name='AD', category="BXHGHT-$",time=times )
         if debug:
-            print diag.name ,'len(scalar)',len(scalar), 'type(scalar)',\
-                type(scalar), 'diag.scale', diag.scale, 'scalar.shape', \
-                scalar.shape,'diag.unit', diag.unit
-        try:
-            np_scalar = np.concatenate( (np_scalar, scalar), axis=3 )
-        except NameError:
-            np_scalar = scalar
+            print diagnostics
+        for diag in diagnostics:
+            # Extract data
+            scalar = np.array( diag.values[:,:,:] )[...,None]              
+            if debug:
+                print diag.name ,'len(scalar)',len(scalar), 'type(scalar)',\
+                    type(scalar), 'diag.scale', diag.scale, 'scalar.shape', \
+                    scalar.shape,'diag.unit', diag.unit
+            try:
+                arr = np.concatenate( (np_scalar, scalar), axis=3 )
+            except NameError:
+                arr = scalar
+
+    # Or use PyGChem 0.3.0 approach
+    else:
+        # Get air mass in kg
+        arr = get_GC_output( wd=wd, vars=['BXHGHT_S__AD'], \
+                            trop_limit=trop_limit, dtype=np.float64)
 
         if debug:
-            print 'np_scalar' , type(np_scalar), len(np_scalar),\
-                 np_scalar.shape, 'scalar', type(scalar), len(scalar), \
-                 scalar.shape
-    return np_scalar
+            print 'arr' , type(arr), len(arr), arr.shape
+    return arr
 
 # --------------
 # 1.08 - Get OH mean value - [1e5 molec/cm3]
@@ -650,9 +658,10 @@ def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, debug=False, \
     # Convert data
     molecs = ( ( (a_m*1E3) / RMM_air ) * AVG )   # molecules
     moles =  a_m*1E3 / RMM_air # mols 
+
     # only consider troposphere
-    molecs, a_m, vol, moles = [i[:,:,:38,:]*t_p[:,:,:38,:] for i in [molecs,\
-         a_m, vol, moles ]]  
+    molecs, a_m, vol, moles = [i[:,:,:38,:]*t_p[:,:,:38,:]  \
+                for i in [molecs, a_m, vol, moles ]]  
     if debug:
         print [ (i.shape, np.mean(i) ) for i in [ OH, HO2, molecs, moles, a_m, \
             vol ]]
@@ -1240,7 +1249,6 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
         https://github.com/benbovy/PyGChem_examples/blob/master/Tutorials/Datasets.ipynb        
     """
     
-    
     if debug:
         if not isinstance( vars, type(None) ):
             print 'Opening >{}<, for var: >{}<'.format( wd, ','.join(vars) ) + \
@@ -1290,7 +1298,8 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
             with Dataset( fname, 'r' ) as rootgrp:
                 arr = [ np.array(rootgrp[i]) for i in vars ]  
 
-                # files are stored in NetCDF at GC scaling. remove this for compatibility.
+                # files are stored in NetCDF at GC scaling. 
+                # ( This is different to ctm.bpch, rm for back compatibility. )
                 if restore_zero_scaling:
                     try:
                         arr =[ arr[n]/get_unit_scaling( rootgrp[i].ctm_units ) \
@@ -1390,9 +1399,10 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
         if dtype != np.float32:
             arr = arr.astype( dtype )
 
-    # Get res by comparing 1st 3 dims. against dict of GC dims.
+    # Get res by comparing 1st 2 dims. against dict of GC dims.
     if r_res:
-        res=get_dims4res( r_dims=True, trop_limit=trop_limit )[arr.shape[:3]]
+        res=get_dims4res( r_dims=True, trop_limit=trop_limit, \
+                    just2D=True )[arr.shape[:2]]
 
     if r_list:
         arr = [ arr[i,...] for i in range( len(vars) ) ]
@@ -1593,7 +1603,8 @@ def get_gc_months(ctm_f=None, wd=None, debug=False):
 # ----
 # 2.07 - Get gc datetime
 # -----
-def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', debug=False):
+def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
+            debug=False):
     """ Return list of dates in datetime output from CTM output """
 
     # REDUNDENT - retain for backwards compatibility
@@ -1628,7 +1639,7 @@ def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', debug=False)
         if debug:
             print starttime
 
-        # allow for single date output <= is there a better gotcha?
+        # allow for single date output <= is there a better gotcha than this?
         if len(dates.shape)== 0 :
             dates = [float(dates)] 
 
@@ -1657,8 +1668,9 @@ def iGEOSChem_ver(wd, debug=False):
 # --------------
 # 2.09 - Get tropospheric Burden - 
 # -------------
-def get_trop_burden( ctm, spec='O3', a_m=None, t_p=None, Iodine=False,
-         all_data=True, total_atmos=False , res='4x5', debug=False ):
+def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
+        Iodine=False, all_data=True, total_atmos=False , res='4x5',  \
+        trop_limit=True, debug=False ):
     """ Get Trosposheric burden. If requested (total_atmos=False)
         limit arrays to "chemical troposphere"  (level 38) and boxes that are in 
         the troposphere removed by multiplication of "time in troposphere"
@@ -1666,20 +1678,37 @@ def get_trop_burden( ctm, spec='O3', a_m=None, t_p=None, Iodine=False,
         REDUNDENT - use get_gc_burden instead """
 
     if not isinstance(a_m, np.ndarray):
-        a_m     =  get_air_mass_np( ctm, debug=debug )[:,:,:38,:]
+        a_m = get_air_mass_np( ctm_f=ctm, wd=wd, debug=debug )[...,:38,:]
     if not isinstance(t_p, np.ndarray):
-        t_p     =  get_gc_data_np( ctm, spec='TIMETROP', category='TIME-TPS',\
-             debug=debug)
-    ar = get_gc_data_np( ctm, spec, debug=debug )[:,:,:38,:]
+        # retain PyGChem 0.2.0 approach for back compatibility
+        if pygchem.__version__ == '0.2.0':
+            t_p = get_gc_data_np( ctm=ctm, spec='TIMETROP', \
+                category='TIME-TPS', debug=debug)
+        else:
+            t_p = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], \
+                            trop_limit=trop_limit  ) 
+
+    # retain PyGChem 0.2.0 approach for back compatibility
+    if pygchem.__version__ == '0.2.0':            
+        ar = get_gc_data_np( ctm, spec, debug=debug )[:,:,:38,:]
+    else:
+        ar = get_GC_output( wd, vars=['IJ_AVG_S__'+ spec], \
+                            trop_limit=trop_limit  ) 
+    if debug:
+        print [i.shape for i in ar, t_p, a_m ]
 
     # v/v * (mass total of air (kg)/ 1E3 (converted kg to g))  = moles of tracer
-    ar = ar* ( a_m[:,:,:38,:]*1E3 / constants( 'RMM_air')) 
+    ar = ar* ( a_m[...,:38,:]*1E3 / constants( 'RMM_air')) 
     if (Iodine):
-        ar = ar * float( species_mass('I') ) * spec_stoich(spec) /1E9 # convert moles to mass (* RMM) , then to Gg 
+        # convert moles to mass (* RMM) , then to Gg 
+        ar = ar * float( species_mass('I') ) * spec_stoich(spec) /1E9 
     else:
-        ar = ar * float( species_mass(spec) ) /1E9 # convert moles to mass (* RMM) , then to Gg 
+        # convert moles to mass (* RMM) , then to Gg 
+        ar = ar * float( species_mass(spec) ) /1E9 
+
+    # Cut off at the "chemical troposphere" ( defined by GC integrator as 38th)
     if (not total_atmos):        
-        ar = ar[:,:,:38,:] * t_p[:,:,:38,:]
+        ar = ar[...,:38,:] * t_p[...,:38,:]
     else:
         print '!'*200, 'TOTAL ATMOS'
 
@@ -1761,7 +1790,8 @@ def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
     # Kg/ s => "kg / monthly" 
     arr = arr * m_adjust
     # (Gg? - no ) I / month 
-    arr = arr*1E3/ species_mass(spec)*float(species_mass('I'))*float(spec_stoich(spec)) 
+    arr = arr*1E3/ species_mass(spec)* float(species_mass('I')) * \
+                    float(spec_stoich(spec)) 
 
     if nmonl_m2_d:
         # convert to / m2
@@ -1771,20 +1801,22 @@ def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
         arr  =  arr / (365./12.) 
 
         # convert to nmol 
-        arr  =  ( arr / float(species_mass('I') ) ) / float(spec_stoich(spec)) * 1E9 
+        arr  =  ( arr / float(species_mass('I') ) ) / float(spec_stoich(spec)) 
+        arr = arr*1E9
 
         if debug:
             print 'get_emiss - 2', arr.shape
 
     if molec_cm2_s:
-        # from  "I Gg / monthly" to  "I Gg / monthly/ cm/2" #convert to / m2 => cm/2
+        # from  "I Gg/month" to "I Gg/month/cm/2" #convert to /m2 => cm/2
         arr  =  arr / (s_area *10000.) 
 
         # convert to / day => hour => hour => minute => sec 
         arr  =  arr / (365./12.) / 24. / 60. / 60. 
 
         # convert to molecules 
-        arr  =  ( arr / float(species_mass('I') ) ) / float(spec_stoich(spec)) * constants('AVG')  
+        arr  =  ( arr / float(species_mass('I') ) ) /float(spec_stoich(spec)) *\
+                        constants('AVG')  
 
         if debug:
             print 'get_emiss - 3', arr.shape
@@ -1983,11 +2015,11 @@ def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
 # --------------
 # 2.20 - Gg Ox yr^-1 from individual PORL-L$ rxns ([molec/cm3/s] )
 # -------------
-def molec_cm3_s_2_Gg_Ox_np(arr, rxn, vol=None, ctm_f=None, \
+def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None, \
             Iodine=False, I=False, IO=False, months=None, years=None, wd=None, \
             year_eq=True, month_eq=False, spec=None, res='4x5',debug=False ):
-    """ get species/tag p/l  in Gg Ox yr^-1 from given PORL-L$ rxns 
-            ([molec/cm3/s] ) """ 
+    """ Convert species/tag prod/loss from molec/cm3/s] to Gg Ox yr^-1.
+        This is to work with diagnostic outputs from PORL-L$  """ 
 
     if debug:
         print ' molec_cm3_s_2_Gg_Ox_np  called'
@@ -2009,7 +2041,7 @@ def molec_cm3_s_2_Gg_Ox_np(arr, rxn, vol=None, ctm_f=None, \
             RMM =  species_mass(rxn) 
         else:
             RMM =  species_mass('O3')             
-        if (spec != None):
+        if not isinstance( spec, type(None) ):
             RMM = species_mass( spec  )
         arr = ( arr * vol[:,:,:38,:] ) / constants( 'AVG') * RMM /1E9
 
@@ -2241,10 +2273,10 @@ def get_DU_mean(s_area=None, a_m=None, t_p=None, O3_arr=None, \
         s_area  =  get_surface_area( res )[...,0]  # m2 land map
     if not isinstance(a_m, np.ndarray):
         print "Extracting a_m in 'get_DU_mean'" 
-        a_m     =  get_air_mass_np( ctm_f, debug=debug )
+        a_m = get_air_mass_np( ctm_f, debug=debug )
     if not isinstance(t_p, np.ndarray):
         print "Extracting t_p in 'get_DU_mean'" 
-        t_p =  get_gc_data_np( ctm_f, spec='TIMETROP', category='TIME-TPS', \
+        t_p = get_gc_data_np( ctm_f, spec='TIMETROP', category='TIME-TPS', \
                         debug=debug)
     if not isinstance(O3_arr, np.ndarray):
         print "Extracting arr in 'get_DU_mean'"     
