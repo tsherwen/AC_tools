@@ -3,7 +3,7 @@
 """
 
 # --------------- 
-# ---- Section 6 ----- Time processing
+# ---- Section 1 ----- Time processing
 # 1.01 - Datetime to fractional day 
 # 1.02 - numpy.datetime64 to datetime.datetime 
 # 1.03 - Non ISO date to ISO (sonde strings )
@@ -56,7 +56,7 @@ from AC_tools.funcs4core import *
 from AC_tools.funcs_vars import *
 from AC_tools.funcs4generic import *
 
-# ------------------------------------------- Section 6 -------------------------------------------
+# ----------------------- Section 1 -------------------------------------------
 # -------------- Time Processing
 #
 
