@@ -1383,10 +1383,10 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
             and ( (144, 91, 38) != arr[0].shape ) \
             # '0.25x0.3125':
             and ( (177, 115, 47) != arr[0].shape ) \
-            and ( (177, 115, 38) != arr[0].shape ) ) \
+            and ( (177, 115, 38) != arr[0].shape )  \
             # '0.5x0.666'
             and  ( (121, 81, 47) != arr[0].shape ) \
-            and ( (121, 81, 38) != arr[0].shape ) :
+            and ( (121, 81, 38) != arr[0].shape ) ):
 
             if debug:
                 print 'prior to roll axis: ', [i.shape for i in arr]
