@@ -1371,13 +1371,22 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
             if debug:
                 print 'post to roll axis: ', [i.shape for i in arr]
 
-        # convert to GC standard 3D fmt. - lon, lat, time 
-        # two reasons why 3D (  missing time dim  or  missing alt dim )
+        # convert to GC standard 3D fmt. - lon, lat, time   
+        # two reasons why 3D (  missing time dim  or  missing alt dim ) 
+        # <= update, there must be a better gotcha than this... 
         if ( (len((arr[0].shape)) == 3 ) \
+            # '4x5'
             and  ( (72, 46, 47) != arr[0].shape ) \
             and ( (72, 46, 38) != arr[0].shape ) \
+            # '2x2.5'
+            and  ( (144, 91, 47) != arr[0].shape ) \
+            and ( (144, 91, 38) != arr[0].shape ) \
+            # '0.25x0.3125':
             and ( (177, 115, 47) != arr[0].shape ) \
-            and ( (177, 115, 38) != arr[0].shape ) ) :
+            and ( (177, 115, 38) != arr[0].shape ) ) \
+            # '0.5x0.666'
+            and  ( (121, 81, 47) != arr[0].shape ) \
+            and ( (121, 81, 38) != arr[0].shape ) :
 
             if debug:
                 print 'prior to roll axis: ', [i.shape for i in arr]
