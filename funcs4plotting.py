@@ -885,12 +885,11 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
 
     if color_by_z:
         if debug:
-            print 'Coloring by z'
+            print 'Coloring line by normalised z values'
         print df.columns
         x = df.index
         y, z = [ df[ df.columns[i] ] for i in range(2) ]
         cmap = get_colormap( z.copy() )
-#        lc = 
         print [ ( i.min(), i.max() ) for i in x, y, z ]
         colorline(x, y, z, cmap=cmap, linewidth=lw, ax=ax, \
             norm=plt.Normalize( 0, 360 ), fig=fig ) #np.min(z), 1500))

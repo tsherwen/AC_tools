@@ -19,5 +19,4 @@ d_fast-J_JX/data/*
 *.o*
 MChem_bpch_plotter.py
 MChem_tools.py
-bpch2netCDF.py
 monthly_run
