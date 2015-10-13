@@ -369,19 +369,22 @@ def prod_loss_4_spec( wd, fam, all_clean=True, debug=False ):
             print [  i[:3] for i in nums, rxns, tags, Coe]
             print [ len(i) for i in nums, rxns, tags, Coe]
 
-        errs = ['LO3_36RD95' , 'ISOPNDPO3_50']
-        cerrs = [['LO3_36', 'RD95'], ['PO3_50'] ]
+        errs = ['LO3_36RD95' , 'ISOPNDPO3_50', 'ISOPNDLR40']
+        cerrs = [['LO3_36', 'RD95'], ['PO3_50'], ['LR40'] ]
         for n, e in enumerate( errs ):
             try:
-                ind = [ nn  for nn, i in enumerate( tags) if any([ ( e in ii) for ii in i ]) ] [0]
+                ind = [ nn  for nn, i in enumerate( tags) if \
+                                any([ ( e in ii) for ii in i ]) ] [0]
                 vars =  [ i[ind] for i in nums, rxns, tags, Coe]
                 if (debug):
-                    print 3, [ i[-1] for i in nums, rxns, tags, Coe], vars,  [ len(i) for i in nums, rxns, tags, Coe]
+                    print 3, [ i[-1] for i in nums, rxns, tags, Coe], vars,  \
+                            [ len(i) for i in nums, rxns, tags, Coe]
                 [i.pop(ind) for i in nums, rxns, tags, Coe ]
 
                 # add the cerrs values on the end
                 if (debug):
-                    print 4, [ i[-1] for i in nums, rxns, tags, Coe],  [ len(i) for i in nums, rxns, tags, Coe]
+                    print 4, [ i[-1] for i in nums, rxns, tags, Coe],  \
+                            [ len(i) for i in nums, rxns, tags, Coe]
                 nums +=  [ vars[0] ]
                 rxns   +=  [vars[1] ]
                 tags    += [cerrs[n]]
@@ -721,12 +724,14 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
 # 4.05 -  GEOS-Chem/ctm.bpch values
 # --------------
 def latex_spec_name(input_x, debug=False):
+    """ Formatted ( Latex ) strings for species and analysis  
+        REDUNDENT: no using class structure ( see MChem_tools ) """
     spec_dict = {
             'OIO': 'OIO', 'C3H7I': 'C$_{3}$H$_{7}$I', 'IO': 'IO', 'I': 'I', 'I2': 'I$_{2}$', 'CH2ICl': 'CH$_{2}$ICl', 'HOI': 'HOI', 'CH2IBr': 'CH$_{2}$IBr', 'C2H5I': 'C$_{2}$H$_{5}$I', 'CH2I2': 'CH$_{2}$I$_{2}$', 'CH3IT': 'CH$_{3}$I', 'IONO': 'IONO','HIO3': 'HIO$_{3}$', 'ICl': 'ICl', 'I2O3': 'I$_{2}$O$_{3}$', 'I2O4': 'I$_{2}$O$_{4}$', 'I2O5': 'I$_{2}$O$_{5}$', 'INO': 'INO', 'I2O': 'I$_{2}$O', 'IBr': 'IBr','I2O2': 'I$_{2}$O$_{2}$', 'IONO2': 'IONO$_{2}$', 'HI':'HI', 'BrO':'BrO','Br':'Br','HOBr':'HOBr','Br2':'Br$_{2}$','CH3Br':'CH$_{3}$Br','CH2Br2':'CH$_{2}$Br$_{2}$', 'CHBr3':'CHBr$_{3}$','O3':'O$_{3}$', 'CO':'CO' , 'DMS':'DMS', 'NOx':'NOx', 'NO':'NO', 'NO2':'NO$_{2}$', 'NO3':'NO$_{3}$','HNO3':'HNO$_{3}$', 'HNO4':'HNO$_{4}$','PAN':'PAN', 'HNO2':'HNO$_{2}$', 'N2O5':'N$_{2}$O$_{5}$','ALK4':'>= C4 alkanes','ISOP':'Isoprene' ,'H2O2':'H$_{2}$O$_{2}$','ACET':'CH$_{3}$C(O)CH$_{3}$', 'MEK':'>C3 ketones', 'ALD2':'CH$_{3}$CHO', 'RCHO': 'CH$_{3}$CH$_{2}$CHO', 'MVK':'CH$_{2}$=CHC(O)CH$_{3}$', 'MACR':'Methacrolein', 'PMN':'CH$_{2}$=C(CH$_{3}$)C(O)OONO$_{2}$', 'PPN':'CH$_{3}$CH$_{2}$C(O)OONO$_{2}$', 'R4N2':'>= C4 alkylnitrates','PRPE':'>= C4 alkenes', 'C3H8':'C$_{3}$H$_{8}$','CH2O':'CH$_{2}$O', 'C2H6':'C$_{2}$H$_{6}$', 'MP':'CH$_{3}$OOH', 'SO2':'SO$_{2}$', 'SO4':'SO$_{4}$','SO4s':'SO$_{4}$ on SSA', 'MSA':'CH$_{4}$SO$_{3}$','NH3':'NH$_{3}$', 'NH4': 'NH$_{4}$', 'NIT': 'InOrg N', 'NITs': 'InOrg N on SSA', 'BCPI':'BCPI', 'OCPI':'OCPI', 'BCPO':'BCPO','OCPO':'OCPO', 'DST1':'DST1', 'DST2':'DST2','DST3':'DST3','DST4':'DST4','SALA':'SALA', 'SALC':'SALC',  'HBr':'HBr', 'BrNO2': 'BrNO$_{2}$', 'BrNO3': 'BrNO$_{3}$', 'MPN':'CH$_{3}$ON$_{2}$', 'ISOPN':'ISOPN', 'MOBA':'MOBA', 'PROPNN':'PROPNN', 'HAC':'HAC', 'GLYC':'GLYC', 'MMN':'MMN', 'RIP':'RIP', 'IEPOX':'IEPOX','MAP':'MAP', 'AERI':'Aerosol Iodine' , 'Cl2':'Cl$_{2}$', 'Cl':'Cl','HOCl':'HOCl','ClO':'ClO','OClO':'OClO','BrCl':'BrCl', 'HI+OIO+IONO+INO':'HI+OIO+IONO+INO','CH2IX':'CH$_{2}$IX', 'IxOy':'I$_{2}$O$_{X}$ ($_{X}$=2,3,4)', 'CH3I':'CH$_{3}$I', 'OH':'OH', 'HO2':'HO$_{2}$', 'MO2':'MO$_{2}$', 'RO2':'RO$_{2}$'
 
             ,'RD01':r'I + O$_{3}$ $\rightarrow$ IO + O$_{2}$'
             # Analysis names 
-            ,'iodine_all':'All Iodine', 'Iy': 'I$_{Y}$', 'IOy': 'IO$_{Y}$', 'IyOx': 'I$_{Y}$O$_{X}$', 'IOx': 'IO$_{X}$','iodine_all_A':'All Iodine (Inc. AERI)', 'I2Ox': 'I$_{2}$O$_{X}$' , 'AERI/SO4': 'AERI/SO4', 'EOH':'Ethanol'
+            ,'iodine_all':'All Iodine', 'Iy': 'I$_{Y}$', 'IOy': 'IO$_{Y}$', 'IyOx': 'I$_{Y}$O$_{X}$', 'IOx': 'IO$_{X}$','iodine_all_A':'All Iodine (Inc. AERI)', 'I2Ox': 'I$_{2}$O$_{X}$' , 'AERI/SO4': 'AERI/SO4', 'EOH':'Ethanol','OH reactivity / s-1': 'OH reactivity / s$^{-1}$'
             , 'PSURF': 'Pressure at the bottom of level', 'GMAO_TEMP' : 'Temperature', 'TSKIN' : 'Temperature at 2m', 'GMAO_UWND':'Zonal Wind', 'GMAO_VWND':'Meridional Wind', 'U10M':'10m Meridional Wind', 'V10M': '10m Zonal Wind', 'CH2OO':'CH$_{2}$OO',
         # Family Names
            'N_specs' : 'NOy', 'NOy' :  'NO$_Y$', 
@@ -1145,7 +1150,7 @@ def rxns_in_pl( wd, spec='LOX', debug=False ):
         row = row.split()
         if all( [ i in row for i in 'Family','coefficient' , 'rxns', spec] ):
             readrxn=True
-        if len(row) < 1 :
+        if (len(row) < 1) or ( 'REACTANTS:' in row ):
             readrxn=False
         if  readrxn:
             try:
@@ -1160,6 +1165,7 @@ def rxns_in_pl( wd, spec='LOX', debug=False ):
         
     # -- remove 'Family' 
     rxns = [ i for i in rxns if (  'Family' not in i ) ]
+    print '!'*20, len( rxns )
     n = [int(rxn[1]) for rxn in rxns ]
     rxns = [rxn[2:] for rxn in rxns ]
 

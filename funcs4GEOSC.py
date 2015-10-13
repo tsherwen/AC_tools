@@ -2376,7 +2376,7 @@ def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
     if debug:
         print ver 
 
-    # get prod/loss in [molec/cm3/s
+    # get prod/loss in [molec/cm3/s]
     if pygchem.__version__ ==  '0.2.0':
         arrs = [ np.concatenate( [get_gc_data_np( ctm, spec=PLO3_to_PD(spec, \
             ver=ver, fp=True),category="PORL-L=$", debug=debug) \
