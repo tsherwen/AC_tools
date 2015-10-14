@@ -130,6 +130,11 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
     'OH', 'MCO3', 'A3O2', 'PO2', 'R4O2', 'R4O2', 'R4N1', 'ATO2', 'KO2', 'RIO2', 'VRO2', 'MRO2', 'MAN2', 'B3O2', 'INO2', 'ISNOOA', 'ISNOOB', 'ISNOHOO', 'PRN1', 'RCO3', 'MAO3', 'IEPOXOO', 'MAOPO2', 'MAOPO2', 'HC5OO', 'HC5OO', 'ISOPNDO2', 'ISOPNDO2', 'ISOPNBO2', 'ISOPNBO2', 'DIBOO', 'DIBOO', 'MOBAOO', 'MOBAOO', 'H2', 'CH4', 'HCOOH', 'MOH', 'ACTA', 'EOH', 'VRP'
     ]
 
+    OH_rxns_17_EOH = [
+    328, 2, 387, 6, 7, 136, 9, 10, 407, 14, 15, 16, 408, 402, 403, 406, 23, 152, 25, 27, 28, 30, 415, 33, 35, 164, 167, 40, 169, 43, 172, 173, 48, 49, 178, 179, 52, 201, 58, 60, 394, 62, 319, 320, 66, 323, 196, 197, 198, 199, 200, 177, 202, 203, 204, 333, 206, 210, 211, 212, 334, 214, 215, 176, 345, 346, 347, 94, 357, 226, 101, 102, 103, 365, 113, 114, 153, 378, 379, 380, 364
+    ]
+    OH_rxns_17_EOH =  [ 'REA_{}'.format(i) for i in  OH_rxns_17_EOH ]
+
     # remove inactive species 
     inactive_spec = ['ACTA', 'CH4', 'EOH', 'H2', 'HCOOH', 'MOH']
     [ OH_Extras4nic.pop(ii) for ii in sorted([ OH_Extras4nic.index(i)  \
@@ -209,7 +214,8 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
      'slist_REAs_all_OH_extras' :   all_species_not_TRA + TRAs  + metvars, 
     'slist_v9_2_NREA_red_NOy' : species + TRAs + metvars,
     'slist_v10_1.7_allspecs': all_species_not_TRA +TRAs+ JREAs +metvars,
-    'slist_ClearFlo': species + TRAs + metvars
+    'slist_ClearFlo': species + TRAs + metvars, 
+    'slist_ClearFlo_OH_rxn': species + TRAs + metvars + OH_rxns_17_EOH
       } 
 
     # retrieve variable list from dictionary
@@ -912,10 +918,10 @@ def diagnosticname_gamap2iris( x  ):
 # --------   
 # 4.14 - Get scaling for a given unit
 # --------
-def get_unit_scaling( units ):
+def get_unit_scaling( units, scaleby=1 ):
 
         misc = 'K', 'm/s', 'unitless', 'kg' ,'m', 'm2','kg/m2/s', \
-            'molec/cm2/s', 'mol/cm3/s',  'kg/s', 'hPa'
+            'molec/cm2/s', 'mol/cm3/s',  'kg/s', 'hPa', 'atoms C/cm2/s'
 
         if any( [ (units ==  i) for i in 'pptv', 'pptC' ]):
             scaleby = 1E12
