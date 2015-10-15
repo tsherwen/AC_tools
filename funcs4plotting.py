@@ -121,8 +121,7 @@ def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
             interval=1, resolution='c', shrink=0.4, window=False, everyother=1,\
             extend='neither', degrade_resolution=False, 
             lon_0=None, lon_1=None, lat_0=None, lat_1=None, **Kwargs):
-    """
-        Plots Global/regional 2D (lon, lat) slices. Takes a numpy array and the 
+    """ Plots Global/regional 2D (lon, lat) slices. Takes a numpy array and the 
         resolution of the output. The plot extent is then set by this output.
 
         - GEOS-Chem output configuration
@@ -131,14 +130,13 @@ def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
         - plot settings
             set_window  ( True ... )
 
+        Kwargs:
         - basemasp settings:
             resolution ( 'c' = coarse, 'f' = fine ...  )
 
         - colorbar settings
             extend ( 'both', 'min', 'both' ... )
-            shrink ( size of colorbar )
-            
-    """
+            shrink ( size of colorbar )    """
 
     if debug:
         print [ [ i.min(), i.max(), i.mean(), type(i) ] for i in [arr] ]
