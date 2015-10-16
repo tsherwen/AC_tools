@@ -129,16 +129,17 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
     OH_Extras4nic = [
     'OH', 'MCO3', 'A3O2', 'PO2', 'R4O2', 'R4O2', 'R4N1', 'ATO2', 'KO2', 'RIO2', 'VRO2', 'MRO2', 'MAN2', 'B3O2', 'INO2', 'ISNOOA', 'ISNOOB', 'ISNOHOO', 'PRN1', 'RCO3', 'MAO3', 'IEPOXOO', 'MAOPO2', 'MAOPO2', 'HC5OO', 'HC5OO', 'ISOPNDO2', 'ISOPNDO2', 'ISOPNBO2', 'ISOPNBO2', 'DIBOO', 'DIBOO', 'MOBAOO', 'MOBAOO', 'H2', 'CH4', 'HCOOH', 'MOH', 'ACTA', 'EOH', 'VRP'
     ]
-
-    OH_rxns_17_EOH = [
+    OH_rxns_17_EOH = [ 21, 
     328, 2, 387, 6, 7, 136, 9, 10, 407, 14, 15, 16, 408, 402, 403, 406, 23, 152, 25, 27, 28, 30, 415, 33, 35, 164, 167, 40, 169, 43, 172, 173, 48, 49, 178, 179, 52, 201, 58, 60, 394, 62, 319, 320, 66, 323, 196, 197, 198, 199, 200, 177, 202, 203, 204, 333, 206, 210, 211, 212, 334, 214, 215, 176, 345, 346, 347, 94, 357, 226, 101, 102, 103, 365, 113, 114, 153, 378, 379, 380, 364
     ]
     OH_rxns_17_EOH =  [ 'REA_{}'.format(i) for i in  OH_rxns_17_EOH ]
 
+    # OH reaction species and tracers
+    OH_rxn_tras = ['HBr', 'HOI', 'I2', 'CH2O', 'NO2', 'HNO3', 'CH3IT', 'NO', 'HNO3', 'HNO2', 'PRPE', 'PMN', 'HNO4', 'GLYC', 'NO3', 'C3H8', 'DMS', 'ALK4', 'SO2', 'MVK', 'ISOP', 'CHBr3', 'BrO', 'ISOP', 'CH2Br2', 'CH3Br', 'ACET', 'MEK', 'H2O2', 'CO', 'PROPNN', 'MP', 'MACR', 'HAC', 'ALD2', 'MOBA', 'RIP', 'Br2', 'IEPOX', 'MAP', 'R4N2', 'RCHO']
+    OH_rxn_specs = ['GLYX', 'MGLY', 'HCOOH', 'MOH', 'O2', 'DHMOB', 'HO2', 'OH', 'H2', 'CH4', 'ETHLN', 'EOH', 'ATOOH', 'R4P', 'INPN', 'RA3P', 'RB3P', 'RP', 'PP', 'IAP', 'VRP', 'MRP', 'MAOP', 'ISN1', 'HC5', 'ACTA', 'ISOPNB', 'ROH', 'ISNP', 'MVKN', 'MACRN', 'ISOPND']
+
     # remove inactive species 
-    inactive_spec = ['ACTA', 'CH4', 'EOH', 'H2', 'HCOOH', 'MOH']
-    [ OH_Extras4nic.pop(ii) for ii in sorted([ OH_Extras4nic.index(i)  \
-        for i in inactive_spec ])[::-1] ]
+    inactive_spec = ['ACTA', 'CH4', 'EOH', 'H2', 'HCOOH', 'MOH', 'O2']
 
     # Setup list of tracers
     if ver == '1.7':
@@ -164,7 +165,7 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
 
     JREAs = ['REA_'+ str(i) for i in range(PHOT_1st, PHOT_last) ] 
     REAs_all = ['REA_'+ str(i) for i in range(0, 533) ] 
-
+    
     # reduced list for high time and spatial resolution
     if any( [ input ==i for i in 'slist_v9_2_NREA_red', 
         'slist_v9_2_NREA_red_NOy'] ):
@@ -215,7 +216,7 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
     'slist_v9_2_NREA_red_NOy' : species + TRAs + metvars,
     'slist_v10_1.7_allspecs': all_species_not_TRA +TRAs+ JREAs +metvars,
     'slist_ClearFlo': species + TRAs + metvars, 
-    'slist_ClearFlo_OH_rxn': species + TRAs + metvars + OH_rxns_17_EOH
+    'slist_ClearFlo_OH_rxn': species + TRAs + metvars + OH_rxns_17_EOH + OH_rxn_tras + OH_rxn_specs
       } 
 
     # retrieve variable list from dictionary
@@ -223,6 +224,11 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
     
     # return unique list
     vars = sorted( list( set( vars) ) )
+
+    # remove inactive tracers/species
+    inactive_spec = [ n for n, i in enumerate( vars ) if (i in inactive_spec ) ]
+    print inactive_spec
+    [ vars.pop(i) for i in sorted( inactive_spec )[::-1] ]
     print vars
 
     return vars
@@ -689,9 +695,10 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
                     # adjust from GBC to ACP names
 #                    'no_hal': '(I-,Br-)', 'Just_Br': '(I-,Br+)', 
                     'no_hal': 'No Halogens', 'Just_Br': 'GEOS-Chem (v9-2)', 
+                    # Add for v10 ( 2.0 Cl/Br/I code )
+                    'run.Cl.Br.I.aerosol':  'GEOS-Chem (v10 Cl.Br.I)', 
                    # kludge for diurnal plot
                    'Iodine simulation.':'Iodine simulation.', '(I+,Br+)': 'Iodine simulation.','(I+,Br-)': 'Just Iodine', '(I-,Br+)': 'GEOS-Chem (v9-2)', '(I-,Br-)': 'No Halogens'},
-                    
                     # tracer unit handling
                     'spec_2_pptv' : ['I2', 'HOI', 'IO', 'OIO', 'HI', 'IONO', 'IONO2', 'I2O2', 'CH3IT', 'CH2I2', 'IBr', 'ICl', 'I', 'HIO3', 'I2O', 'INO', 'I2O3', 'I2O4', 'I2O5', 'AERI', 'Cl2', 'Cl', 'HOCl', 'ClO', 'OClO', 'BrCl', 'CH2ICl', 'CH2IBr', 'C3H7I', 'C2H5I', 'Br2', 'Br', 'BrO', 'HOBr', 'HBr', 'BrNO2', 'BrNO3', 'CHBr3', 'CH2Br2', 'CH3Br','RCHO', 'MVK', 'MACR', 'PMN', 'PPN', 'R4N2', 'DMS', 'SO4s', 'MSA', 'NITs', 'BCPO', 'DST4', 'ISOPN', 'MOBA', 'PROPNN', 'HAC', 'GLYC', 'MMN', 'RIP', 'IEPOX', 'MAP' ,'N2O5','NO3'], # 'HNO4',  'HNO2'],
                     'spec_2_pptC' : ['PRPE', 'ISOP'],
@@ -967,9 +974,10 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
 #    '1.6':'iGEOSChem_1.6.1_G5/',  
     '1.6.1':'iGEOSChem_1.6.1_G5/',  
     '1.5': 'iGEOSChem_1.5_G5/' ,
-    '1.7': 'iGEOSChem_1.7_v10/'}, 
+    '1.7': 'iGEOSChem_1.7_v10/', 
+    '2.0' : 'iGEOSChem_2.0_v10/'}, 
     '2x2.5': {
-    '1.6':'iGEOSChem_1.6_G5_2x2.5/' 
+    '1.6':'iGEOSChem_1.6_G5_2x2.5/' ,
     } }[res]
     d=d[ver]
 
@@ -998,6 +1006,8 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             if ver == '1.7':
 #                l = ['no_hal', 'run' ]
                 l = ['Just_Br', 'run' ]
+            elif ver == '2.0':
+                l = ['no_hal', 'run.Cl.Br.I.aerosol' ]
             else:
                 l = ['no_hal', 'Just_Br', 'just_I', 'run' ]
 #        if any( [ (ver ==i) for i in  '1.5', '1.6' ] ) :
