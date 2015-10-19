@@ -20,3 +20,4 @@ d_fast-J_JX/data/*
 MChem_bpch_plotter.py
 MChem_tools.py
 monthly_run
+*.sh
