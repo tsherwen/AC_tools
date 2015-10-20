@@ -129,11 +129,17 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
     OH_Extras4nic = [
     'OH', 'MCO3', 'A3O2', 'PO2', 'R4O2', 'R4O2', 'R4N1', 'ATO2', 'KO2', 'RIO2', 'VRO2', 'MRO2', 'MAN2', 'B3O2', 'INO2', 'ISNOOA', 'ISNOOB', 'ISNOHOO', 'PRN1', 'RCO3', 'MAO3', 'IEPOXOO', 'MAOPO2', 'MAOPO2', 'HC5OO', 'HC5OO', 'ISOPNDO2', 'ISOPNDO2', 'ISOPNBO2', 'ISOPNBO2', 'DIBOO', 'DIBOO', 'MOBAOO', 'MOBAOO', 'H2', 'CH4', 'HCOOH', 'MOH', 'ACTA', 'EOH', 'VRP'
     ]
+    OH_rxns_17_EOH = [ 21, 
+    328, 2, 387, 6, 7, 136, 9, 10, 407, 14, 15, 16, 408, 402, 403, 406, 23, 152, 25, 27, 28, 30, 415, 33, 35, 164, 167, 40, 169, 43, 172, 173, 48, 49, 178, 179, 52, 201, 58, 60, 394, 62, 319, 320, 66, 323, 196, 197, 198, 199, 200, 177, 202, 203, 204, 333, 206, 210, 211, 212, 334, 214, 215, 176, 345, 346, 347, 94, 357, 226, 101, 102, 103, 365, 113, 114, 153, 378, 379, 380, 364
+    ]
+    OH_rxns_17_EOH =  [ 'REA_{}'.format(i) for i in  OH_rxns_17_EOH ]
+
+    # OH reaction species and tracers
+    OH_rxn_tras = ['HBr', 'HOI', 'I2', 'CH2O', 'NO2', 'HNO3', 'CH3IT', 'NO', 'HNO3', 'HNO2', 'PRPE', 'PMN', 'HNO4', 'GLYC', 'NO3', 'C3H8', 'DMS', 'ALK4', 'SO2', 'MVK', 'ISOP', 'CHBr3', 'BrO', 'ISOP', 'CH2Br2', 'CH3Br', 'ACET', 'MEK', 'H2O2', 'CO', 'PROPNN', 'MP', 'MACR', 'HAC', 'ALD2', 'MOBA', 'RIP', 'Br2', 'IEPOX', 'MAP', 'R4N2', 'RCHO']
+    OH_rxn_specs = ['GLYX', 'MGLY', 'HCOOH', 'MOH', 'O2', 'DHMOB', 'HO2', 'OH', 'H2', 'CH4', 'ETHLN', 'EOH', 'ATOOH', 'R4P', 'INPN', 'RA3P', 'RB3P', 'RP', 'PP', 'IAP', 'VRP', 'MRP', 'MAOP', 'ISN1', 'HC5', 'ACTA', 'ISOPNB', 'ROH', 'ISNP', 'MVKN', 'MACRN', 'ISOPND']
 
     # remove inactive species 
-    inactive_spec = ['ACTA', 'CH4', 'EOH', 'H2', 'HCOOH', 'MOH']
-    [ OH_Extras4nic.pop(ii) for ii in sorted([ OH_Extras4nic.index(i)  \
-        for i in inactive_spec ])[::-1] ]
+    inactive_spec = ['ACTA', 'CH4', 'EOH', 'H2', 'HCOOH', 'MOH', 'O2']
 
     # Setup list of tracers
     if ver == '1.7':
@@ -159,7 +165,7 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
 
     JREAs = ['REA_'+ str(i) for i in range(PHOT_1st, PHOT_last) ] 
     REAs_all = ['REA_'+ str(i) for i in range(0, 533) ] 
-
+    
     # reduced list for high time and spatial resolution
     if any( [ input ==i for i in 'slist_v9_2_NREA_red', 
         'slist_v9_2_NREA_red_NOy'] ):
@@ -209,7 +215,8 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
      'slist_REAs_all_OH_extras' :   all_species_not_TRA + TRAs  + metvars, 
     'slist_v9_2_NREA_red_NOy' : species + TRAs + metvars,
     'slist_v10_1.7_allspecs': all_species_not_TRA +TRAs+ JREAs +metvars,
-    'slist_ClearFlo': species + TRAs + metvars
+    'slist_ClearFlo': species + TRAs + metvars, 
+    'slist_ClearFlo_OH_rxn': species + TRAs + metvars + OH_rxns_17_EOH + OH_rxn_tras + OH_rxn_specs
       } 
 
     # retrieve variable list from dictionary
@@ -217,6 +224,11 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
     
     # return unique list
     vars = sorted( list( set( vars) ) )
+
+    # remove inactive tracers/species
+    inactive_spec = [ n for n, i in enumerate( vars ) if (i in inactive_spec ) ]
+    print inactive_spec
+    [ vars.pop(i) for i in sorted( inactive_spec )[::-1] ]
     print vars
 
     return vars
@@ -683,9 +695,10 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
                     # adjust from GBC to ACP names
 #                    'no_hal': '(I-,Br-)', 'Just_Br': '(I-,Br+)', 
                     'no_hal': 'No Halogens', 'Just_Br': 'GEOS-Chem (v9-2)', 
+                    # Add for v10 ( 2.0 Cl/Br/I code )
+                    'run.Cl.Br.I.aerosol':  'GEOS-Chem (v10 Cl.Br.I)', 
                    # kludge for diurnal plot
                    'Iodine simulation.':'Iodine simulation.', '(I+,Br+)': 'Iodine simulation.','(I+,Br-)': 'Just Iodine', '(I-,Br+)': 'GEOS-Chem (v9-2)', '(I-,Br-)': 'No Halogens'},
-                    
                     # tracer unit handling
                     'spec_2_pptv' : ['I2', 'HOI', 'IO', 'OIO', 'HI', 'IONO', 'IONO2', 'I2O2', 'CH3IT', 'CH2I2', 'IBr', 'ICl', 'I', 'HIO3', 'I2O', 'INO', 'I2O3', 'I2O4', 'I2O5', 'AERI', 'Cl2', 'Cl', 'HOCl', 'ClO', 'OClO', 'BrCl', 'CH2ICl', 'CH2IBr', 'C3H7I', 'C2H5I', 'Br2', 'Br', 'BrO', 'HOBr', 'HBr', 'BrNO2', 'BrNO3', 'CHBr3', 'CH2Br2', 'CH3Br','RCHO', 'MVK', 'MACR', 'PMN', 'PPN', 'R4N2', 'DMS', 'SO4s', 'MSA', 'NITs', 'BCPO', 'DST4', 'ISOPN', 'MOBA', 'PROPNN', 'HAC', 'GLYC', 'MMN', 'RIP', 'IEPOX', 'MAP' ,'N2O5','NO3'], # 'HNO4',  'HNO2'],
                     'spec_2_pptC' : ['PRPE', 'ISOP'],
@@ -727,7 +740,7 @@ def latex_spec_name(input_x, debug=False):
     """ Formatted ( Latex ) strings for species and analysis  
         REDUNDENT: no using class structure ( see MChem_tools ) """
     spec_dict = {
-            'OIO': 'OIO', 'C3H7I': 'C$_{3}$H$_{7}$I', 'IO': 'IO', 'I': 'I', 'I2': 'I$_{2}$', 'CH2ICl': 'CH$_{2}$ICl', 'HOI': 'HOI', 'CH2IBr': 'CH$_{2}$IBr', 'C2H5I': 'C$_{2}$H$_{5}$I', 'CH2I2': 'CH$_{2}$I$_{2}$', 'CH3IT': 'CH$_{3}$I', 'IONO': 'IONO','HIO3': 'HIO$_{3}$', 'ICl': 'ICl', 'I2O3': 'I$_{2}$O$_{3}$', 'I2O4': 'I$_{2}$O$_{4}$', 'I2O5': 'I$_{2}$O$_{5}$', 'INO': 'INO', 'I2O': 'I$_{2}$O', 'IBr': 'IBr','I2O2': 'I$_{2}$O$_{2}$', 'IONO2': 'IONO$_{2}$', 'HI':'HI', 'BrO':'BrO','Br':'Br','HOBr':'HOBr','Br2':'Br$_{2}$','CH3Br':'CH$_{3}$Br','CH2Br2':'CH$_{2}$Br$_{2}$', 'CHBr3':'CHBr$_{3}$','O3':'O$_{3}$', 'CO':'CO' , 'DMS':'DMS', 'NOx':'NOx', 'NO':'NO', 'NO2':'NO$_{2}$', 'NO3':'NO$_{3}$','HNO3':'HNO$_{3}$', 'HNO4':'HNO$_{4}$','PAN':'PAN', 'HNO2':'HNO$_{2}$', 'N2O5':'N$_{2}$O$_{5}$','ALK4':'>= C4 alkanes','ISOP':'Isoprene' ,'H2O2':'H$_{2}$O$_{2}$','ACET':'CH$_{3}$C(O)CH$_{3}$', 'MEK':'>C3 ketones', 'ALD2':'CH$_{3}$CHO', 'RCHO': 'CH$_{3}$CH$_{2}$CHO', 'MVK':'CH$_{2}$=CHC(O)CH$_{3}$', 'MACR':'Methacrolein', 'PMN':'CH$_{2}$=C(CH$_{3}$)C(O)OONO$_{2}$', 'PPN':'CH$_{3}$CH$_{2}$C(O)OONO$_{2}$', 'R4N2':'>= C4 alkylnitrates','PRPE':'>= C4 alkenes', 'C3H8':'C$_{3}$H$_{8}$','CH2O':'CH$_{2}$O', 'C2H6':'C$_{2}$H$_{6}$', 'MP':'CH$_{3}$OOH', 'SO2':'SO$_{2}$', 'SO4':'SO$_{4}$','SO4s':'SO$_{4}$ on SSA', 'MSA':'CH$_{4}$SO$_{3}$','NH3':'NH$_{3}$', 'NH4': 'NH$_{4}$', 'NIT': 'InOrg N', 'NITs': 'InOrg N on SSA', 'BCPI':'BCPI', 'OCPI':'OCPI', 'BCPO':'BCPO','OCPO':'OCPO', 'DST1':'DST1', 'DST2':'DST2','DST3':'DST3','DST4':'DST4','SALA':'SALA', 'SALC':'SALC',  'HBr':'HBr', 'BrNO2': 'BrNO$_{2}$', 'BrNO3': 'BrNO$_{3}$', 'MPN':'CH$_{3}$ON$_{2}$', 'ISOPN':'ISOPN', 'MOBA':'MOBA', 'PROPNN':'PROPNN', 'HAC':'HAC', 'GLYC':'GLYC', 'MMN':'MMN', 'RIP':'RIP', 'IEPOX':'IEPOX','MAP':'MAP', 'AERI':'Aerosol Iodine' , 'Cl2':'Cl$_{2}$', 'Cl':'Cl','HOCl':'HOCl','ClO':'ClO','OClO':'OClO','BrCl':'BrCl', 'HI+OIO+IONO+INO':'HI+OIO+IONO+INO','CH2IX':'CH$_{2}$IX', 'IxOy':'I$_{2}$O$_{X}$ ($_{X}$=2,3,4)', 'CH3I':'CH$_{3}$I', 'OH':'OH', 'HO2':'HO$_{2}$', 'MO2':'MO$_{2}$', 'RO2':'RO$_{2}$'
+            'OIO': 'OIO', 'C3H7I': 'C$_{3}$H$_{7}$I', 'IO': 'IO', 'I': 'I', 'I2': 'I$_{2}$', 'CH2ICl': 'CH$_{2}$ICl', 'HOI': 'HOI', 'CH2IBr': 'CH$_{2}$IBr', 'C2H5I': 'C$_{2}$H$_{5}$I', 'CH2I2': 'CH$_{2}$I$_{2}$', 'CH3IT': 'CH$_{3}$I', 'IONO': 'IONO','HIO3': 'HIO$_{3}$', 'ICl': 'ICl', 'I2O3': 'I$_{2}$O$_{3}$', 'I2O4': 'I$_{2}$O$_{4}$', 'I2O5': 'I$_{2}$O$_{5}$', 'INO': 'INO', 'I2O': 'I$_{2}$O', 'IBr': 'IBr','I2O2': 'I$_{2}$O$_{2}$', 'IONO2': 'IONO$_{2}$', 'HI':'HI', 'BrO':'BrO','Br':'Br','HOBr':'HOBr','Br2':'Br$_{2}$','CH3Br':'CH$_{3}$Br','CH2Br2':'CH$_{2}$Br$_{2}$', 'CHBr3':'CHBr$_{3}$','O3':'O$_{3}$', 'CO':'CO' , 'DMS':'DMS', 'NOx':'NOx', 'NO':'NO', 'NO2':'NO$_{2}$', 'NO3':'NO$_{3}$','HNO3':'HNO$_{3}$', 'HNO4':'HNO$_{4}$','PAN':'PAN', 'HNO2':'HNO$_{2}$', 'N2O5':'N$_{2}$O$_{5}$','ALK4':'>= C4 alkanes','ISOP':'Isoprene' ,'H2O2':'H$_{2}$O$_{2}$','ACET':'CH$_{3}$C(O)CH$_{3}$', 'MEK':'>C3 ketones', 'ALD2':'CH$_{3}$CHO', 'RCHO': 'CH$_{3}$CH$_{2}$CHO', 'MVK':'CH$_{2}$=CHC(O)CH$_{3}$', 'MACR':'Methacrolein', 'PMN':'CH$_{2}$=C(CH$_{3}$)C(O)OONO$_{2}$', 'PPN':'CH$_{3}$CH$_{2}$C(O)OONO$_{2}$', 'R4N2':'>= C4 alkylnitrates','PRPE':'>= C4 alkenes', 'C3H8':'C$_{3}$H$_{8}$','CH2O':'CH$_{2}$O', 'C2H6':'C$_{2}$H$_{6}$', 'MP':'CH$_{3}$OOH', 'SO2':'SO$_{2}$', 'SO4':'SO$_{4}$','SO4s':'SO$_{4}$ on SSA', 'MSA':'CH$_{4}$SO$_{3}$','NH3':'NH$_{3}$', 'NH4': 'NH$_{4}$', 'NIT': 'InOrg N', 'NITs': 'InOrg N on SSA', 'BCPI':'BCPI', 'OCPI':'OCPI', 'BCPO':'BCPO','OCPO':'OCPO', 'DST1':'DST1', 'DST2':'DST2','DST3':'DST3','DST4':'DST4','SALA':'SALA', 'SALC':'SALC',  'HBr':'HBr', 'BrNO2': 'BrNO$_{2}$', 'BrNO3': 'BrNO$_{3}$', 'MPN':'CH$_{3}$ON$_{2}$', 'ISOPN':'ISOPN', 'MOBA':'MOBA', 'PROPNN':'PROPNN', 'HAC':'HAC', 'GLYC':'GLYC', 'MMN':'MMN', 'RIP':'RIP', 'IEPOX':'IEPOX','MAP':'MAP', 'AERI':'Aerosol Iodine' , 'Cl2':'Cl$_{2}$', 'Cl':'Cl','HOCl':'HOCl','ClO':'ClO','OClO':'OClO','BrCl':'BrCl', 'HI+OIO+IONO+INO':'HI+OIO+IONO+INO','CH2IX':'CH$_{2}$IX', 'IxOy':'I$_{2}$O$_{X}$ ($_{X}$=2,3,4)', 'CH3I':'CH$_{3}$I', 'OH':'OH', 'HO2':'HO$_{2}$', 'MO2':'MO$_{2}$', 'RO2':'RO$_{2}$' , 'ISALA': 'Iodine on SALA',  'ISALC': 'Iodine on SALC'
 
             ,'RD01':r'I + O$_{3}$ $\rightarrow$ IO + O$_{2}$'
             # Analysis names 
@@ -758,7 +771,7 @@ def p_l_unity(rxn, debug=False):
 def tra_unit(x, scale=False, adjustment=False, adjust=True, \
             global_unit=False, ClearFlo_unit=False, debug=False ):
     tra_unit = {
-    'OCPI': 'ppbv', 'OCPO': 'ppbv', 'PPN': 'ppbv', 'HIO3': 'pptv', 'O3': 'ppbv', 'PAN': 'ppbv', 'ACET': 'ppbC', 'RIP': 'ppbv', 'BrNO3': 'pptv', 'Br': 'pptv', 'HBr': 'pptv', 'HAC': 'ppbv', 'ALD2': 'ppbC', 'HNO3': 'ppbv', 'HNO2': 'ppbv', 'C2H5I': 'pptv', 'HNO4': 'ppbv', 'OIO': 'pptv', 'MAP': 'ppbv', 'PRPE': 'ppbC', 'HI': 'pptv', 'CH2I2': 'pptv', 'IONO2': 'pptv', 'NIT': 'ppbv', 'CH3Br': 'pptv', 'C3H7I': 'pptv', 'C3H8': 'ppbC', 'DMS': 'ppbv', 'CH2O': 'ppbv', 'CH3IT': 'pptv', 'NO2': 'ppbv', 'NO3': 'ppbv', 'N2O5': 'ppbv', 'CHBr3': 'pptv', 'DST4': 'ppbv', 'DST3': 'ppbv', 'DST2': 'ppbv', 'DST1': 'ppbv', 'HOCl': 'ppbv', 'NITs': 'ppbv', 'RCHO': 'ppbv', 'C2H6': 'ppbC', 'MPN': 'ppbv', 'INO': 'pptv', 'MP': 'ppbv', 'CH2Br2': 'pptv', 'SALC': 'ppbv', 'NH3': 'ppbv', 'CH2ICl': 'pptv', 'IEPOX': 'ppbv', 'ClO': 'ppbv', 'NO': 'pptv', 'SALA': 'ppbv', 'MOBA': 'ppbv', 'R4N2': 'ppbv', 'BrCl': 'pptv', 'OClO': 'ppbv', 'PMN': 'ppbv', 'CO': 'ppbv', 'CH2IBr': 'pptv', 'ISOP': 'ppbC', 'BCPO': 'ppbv', 'MVK': 'ppbv', 'BrNO2': 'pptv', 'IONO': 'pptv', 'Cl2': 'ppbv', 'HOBr': 'pptv', 'PROPNN': 'ppbv', 'Cl': 'ppbv', 'I2O2': 'pptv', 'I2O3': 'pptv', 'I2O4': 'pptv', 'I2O5': 'pptv', 'MEK': 'ppbC', 'MMN': 'ppbv', 'ISOPN': 'ppbv', 'SO4s': 'ppbv', 'I2O': 'pptv', 'ALK4': 'ppbC', 'MSA': 'ppbv', 'I2': 'pptv', 'Br2': 'pptv', 'IBr': 'pptv', 'MACR': 'ppbv', 'I': 'pptv', 'AERI': 'pptv', 'HOI': 'pptv', 'BrO': 'pptv', 'NH4': 'ppbv', 'SO2': 'ppbv', 'SO4': 'ppbv', 'IO': 'pptv', 'H2O2': 'ppbv', 'BCPI': 'ppbv', 'ICl': 'pptv', 'GLYC': 'ppbv',
+    'OCPI': 'ppbv', 'OCPO': 'ppbv', 'PPN': 'ppbv', 'HIO3': 'pptv', 'O3': 'ppbv', 'PAN': 'ppbv', 'ACET': 'ppbC', 'RIP': 'ppbv', 'BrNO3': 'pptv', 'Br': 'pptv', 'HBr': 'pptv', 'HAC': 'ppbv', 'ALD2': 'ppbC', 'HNO3': 'ppbv', 'HNO2': 'ppbv', 'C2H5I': 'pptv', 'HNO4': 'ppbv', 'OIO': 'pptv', 'MAP': 'ppbv', 'PRPE': 'ppbC', 'HI': 'pptv', 'CH2I2': 'pptv', 'IONO2': 'pptv', 'NIT': 'ppbv', 'CH3Br': 'pptv', 'C3H7I': 'pptv', 'C3H8': 'ppbC', 'DMS': 'ppbv', 'CH2O': 'ppbv', 'CH3IT': 'pptv', 'NO2': 'ppbv', 'NO3': 'ppbv', 'N2O5': 'ppbv', 'CHBr3': 'pptv', 'DST4': 'ppbv', 'DST3': 'ppbv', 'DST2': 'ppbv', 'DST1': 'ppbv', 'HOCl': 'ppbv', 'NITs': 'ppbv', 'RCHO': 'ppbv', 'C2H6': 'ppbC', 'MPN': 'ppbv', 'INO': 'pptv', 'MP': 'ppbv', 'CH2Br2': 'pptv', 'SALC': 'ppbv', 'NH3': 'ppbv', 'CH2ICl': 'pptv', 'IEPOX': 'ppbv', 'ClO': 'ppbv', 'NO': 'pptv', 'SALA': 'ppbv', 'MOBA': 'ppbv', 'R4N2': 'ppbv', 'BrCl': 'pptv', 'OClO': 'ppbv', 'PMN': 'ppbv', 'CO': 'ppbv', 'CH2IBr': 'pptv', 'ISOP': 'ppbC', 'BCPO': 'ppbv', 'MVK': 'ppbv', 'BrNO2': 'pptv', 'IONO': 'pptv', 'Cl2': 'ppbv', 'HOBr': 'pptv', 'PROPNN': 'ppbv', 'Cl': 'ppbv', 'I2O2': 'pptv', 'I2O3': 'pptv', 'I2O4': 'pptv', 'I2O5': 'pptv', 'MEK': 'ppbC', 'MMN': 'ppbv', 'ISOPN': 'ppbv', 'SO4s': 'ppbv', 'I2O': 'pptv', 'ALK4': 'ppbC', 'MSA': 'ppbv', 'I2': 'pptv', 'Br2': 'pptv', 'IBr': 'pptv', 'MACR': 'ppbv', 'I': 'pptv', 'AERI': 'pptv', 'HOI': 'pptv', 'BrO': 'pptv', 'NH4': 'ppbv', 'SO2': 'ppbv', 'SO4': 'ppbv', 'IO': 'pptv', 'H2O2': 'ppbv', 'BCPI': 'ppbv', 'ICl': 'pptv', 'GLYC': 'ppbv','ISALA': 'pptv', 'ISALC': 'pptv', 
     # Extra diagnostics to allow for simplified processing 
     'CH3I':'pptv', 'Iy':'pptv', 'PSURF': 'hPa', 'OH':'pptv', 'HO2':'pptv',
     'MO2': 'pptv', 'NOy':'pptbv','EOH': 'ppbv' , 'CO':'ppbv', 'CH4':'ppbv', 
@@ -912,10 +925,10 @@ def diagnosticname_gamap2iris( x  ):
 # --------   
 # 4.14 - Get scaling for a given unit
 # --------
-def get_unit_scaling( units ):
+def get_unit_scaling( units, scaleby=1 ):
 
         misc = 'K', 'm/s', 'unitless', 'kg' ,'m', 'm2','kg/m2/s', \
-            'molec/cm2/s', 'mol/cm3/s',  'kg/s', 'hPa'
+            'molec/cm2/s', 'mol/cm3/s',  'kg/s', 'hPa', 'atoms C/cm2/s'
 
         if any( [ (units ==  i) for i in 'pptv', 'pptC' ]):
             scaleby = 1E12
@@ -961,9 +974,10 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
 #    '1.6':'iGEOSChem_1.6.1_G5/',  
     '1.6.1':'iGEOSChem_1.6.1_G5/',  
     '1.5': 'iGEOSChem_1.5_G5/' ,
-    '1.7': 'iGEOSChem_1.7_v10/'}, 
+    '1.7': 'iGEOSChem_1.7_v10/', 
+    '2.0' : 'iGEOSChem_2.0_v10/'}, 
     '2x2.5': {
-    '1.6':'iGEOSChem_1.6_G5_2x2.5/' 
+    '1.6':'iGEOSChem_1.6_G5_2x2.5/' ,
     } }[res]
     d=d[ver]
 
@@ -992,6 +1006,8 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             if ver == '1.7':
 #                l = ['no_hal', 'run' ]
                 l = ['Just_Br', 'run' ]
+            elif ver == '2.0':
+                l = ['no_hal', 'run.Cl.Br.I.aerosol' ]
             else:
                 l = ['no_hal', 'Just_Br', 'just_I', 'run' ]
 #        if any( [ (ver ==i) for i in  '1.5', '1.6' ] ) :

@@ -114,15 +114,14 @@ from AC_tools.funcs4GEOSC import * # wd2ctms
 # -----
 def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
             cmap=None, no_cb=False, cb=None, rotatecbunits='horizontal',  \
-            fixcb=False, nbins=25, nticks=10,  \
+            fixcb=False, nbins=25, nticks=10, mask_invalids=False,  \
             format='%.2f', adjust_window=0, f_size=20, alpha=1, \
             set_window=False, res='4x5', ax=None, case='default', units=None, \
             drawcountries=True, debug=False, set_cb_ticks=True, title=None,   \
             interval=1, resolution='c', shrink=0.4, window=False, everyother=1,\
             extend='neither', degrade_resolution=False, 
             lon_0=None, lon_1=None, lat_0=None, lat_1=None, **Kwargs):
-    """
-        Plots Global/regional 2D (lon, lat) slices. Takes a numpy array and the 
+    """ Plots Global/regional 2D (lon, lat) slices. Takes a numpy array and the 
         resolution of the output. The plot extent is then set by this output.
 
         - GEOS-Chem output configuration
@@ -131,17 +130,20 @@ def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
         - plot settings
             set_window  ( True ... )
 
+        Kwargs:
         - basemasp settings:
             resolution ( 'c' = coarse, 'f' = fine ...  )
 
         - colorbar settings
             extend ( 'both', 'min', 'both' ... )
-            shrink ( size of colorbar )
-            
-    """
+            shrink ( size of colorbar )    """
 
     if debug:
         print [ [ i.min(), i.max(), i.mean(), type(i) ] for i in [arr] ]
+
+    # Kludge, for pcent arrays with invalid within them, mask for these. 
+    if mask_invalids:
+        arr = np.ma.masked_invalid( arr )
 
     # --- Window plot settings
     if window:
@@ -311,12 +313,15 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, \
     log=False, fixcb=None, lower_limited=False, nlvls=25, xlimit =None, \
     rotatecbunits='horizontal', extend='neither', ylabel=True, \
     set_window=False, lat_0=None, lat_1=None, lat40_2_40=False, \
-    xlabel=True, debug=False ):
+    xlabel=True, mask_invalids=False, debug=False ):
     """ Creates a zonal plot from provide array of CTM output (lon, lat)
         Input resolution must be provide for non-default (4x5) output 
         
         This function will also apply maskes if set in arguments """
     
+    # Kludge, for pcent arrays with invalid within them, mask for these. 
+    if mask_invalids:
+        arr = np.ma.masked_invalid( arr )    
     
     # Create axis if not provided <= is this back comparible?
     if isinstance( ax, type(None) ): 
@@ -1133,9 +1138,10 @@ def plot_specs_surface_change_monthly2pdf( arr, res='4x5', dpi=160, \
         no_dstr=True, f_size=20, pcent=True, specs=None, dlist=None, \
         savetitle='', diff=False, extend='neither', column=False, \
         scale=1, units=None, set_window=False, lat_0=None, lat_1=None, \
-        debug=False):   
+        mask_invalids=False, debug=False):   
         """ Create multipage PDF with each page containing a 2D (lon,lat) slice     
-             plot for given species in list of "specs" """
+             plot for given species in list of "specs" 
+             Takes 5D array  ( species ,lon , lat, alt, time) """
         print 'plot_specs_surface_change_monthly2pdf called'
 
         # setup pdfs + titles
@@ -1166,6 +1172,7 @@ def plot_specs_surface_change_monthly2pdf( arr, res='4x5', dpi=160, \
             cbarr = arr[n,:,:,0,:].copy() * scale
 
             if pcent:
+                mask_invalids = True
 
                 # mask for changes greater than 500%
                 if len( cbarr[ cbarr>500 ]  ) > 0:
@@ -1223,7 +1230,7 @@ def plot_specs_surface_change_monthly2pdf( arr, res='4x5', dpi=160, \
                 map_plot( arr[n,:,:,0,m].T*scale, cmap=cmap, case=9, res=res,\
                     no_cb=True, f_size=f_size, fixcb=fixcb, window=True,\
                     set_window=set_window,lat_0=lat_0, lat_1=lat_1, \
-                    debug=debug)
+                    mask_invalids=mask_invalids, debug=debug)
                 plt.title(month.strftime("%b"), fontsize=f_size*2)
 
             # Add single colorbar
@@ -1251,11 +1258,12 @@ def plot_specs_surface_change_monthly2pdf( arr, res='4x5', dpi=160, \
 # --------
 def plot_specs_zonal_change_monthly2pdf( Vars, res='4x5', dpi=160, \
         no_dstr=True, f_size=20, pcent=False, specs=None, dlist=None, \
-        t_ps=None, savetitle='', diff=False, extend='neither', 
-        set_window=False, lat_0=None, lat_1=None,
+        t_ps=None, savetitle='', diff=False, extend='neither',  \
+        set_window=False, lat_0=None, lat_1=None, mask_invalids=False, \
         set_lon=None, units=None, debug=False):
         """ Create multipage PDF with each page containing a zonal      
-             plot for given species in list of "specs" """
+             plot for given species in list of "specs" 
+                          Takes 5D array  ( species ,lon , lat, alt, time) """
 
         savetitle = 'Zonal_by_spec'+savetitle 
         pdff = plot2pdfmulti( title=savetitle, open=True, \
@@ -1273,6 +1281,7 @@ def plot_specs_zonal_change_monthly2pdf( Vars, res='4x5', dpi=160, \
                 units, scale = tra_unit( spec, scale=True, global_unit=True )
             if pcent:
                 units, scale = '%', 1
+                mask_invalids=True
 
             # Set the correct title        
             ptitle = '{}'.format( latex_spec_name(spec) )
@@ -1350,8 +1359,8 @@ def plot_specs_zonal_change_monthly2pdf( Vars, res='4x5', dpi=160, \
                     title=month.strftime("%b"), debug=debug, tropics=False, \
                     units=units,f_size=f_size, c_off =37, no_cb=True, \
                     lat_0=lat_0, lat_1=lat_1, set_window=set_window,\
-                    fixcb=fixcb, extend=extend, window=True,
-                     lower_limited=True, res=res, \
+                    fixcb=fixcb, extend=extend, window=True, \
+                     lower_limited=True, res=res, mask_invalids=mask_invalids, \
                     cmap=cmap )
                 
                 # only show troposphere
@@ -1393,7 +1402,7 @@ def plot_specs_poles_change_monthly2pdf(  specs=None,\
             extend='neither', boundinglat=50, debug=False):
         """ Takes a 5D np.array ( species, lon, lat, alt, time ) and plots up
              the output by spcies  by month , and saves this as a mulitpage pdf
-        """
+                          Takes 5D array  ( species ,lon , lat, alt, time) """
 
         if debug:
             print arr, no_dstr, f_size, \

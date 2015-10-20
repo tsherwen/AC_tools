@@ -603,17 +603,16 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
     return m.mask
 
 # --------
-# 2.11 - Custom 2D (Lat) Maske
+# 2.11 - Custom 2D (Lat) Mask
 # --------
-def mask_2D( lowerlat, higher_lat, res='2x2.5', debug=False ):
+def mask_2D_lat2lat( lowerlat, higher_lat, res='2x2.5', debug=False ):
     """
     Takes a lower and higher latitude value and then creates 
     mask to given given limits.
     """
 
     # Get vars
-    if res =='2x2.5':
-        lat_c =  gchemgrid( 'c_lat_2x25' )
+    lon_c, lat_c, NIC = get_latlonalt4res( res=res, centre=True )
 
     # mask between upper and lower values
     lats =  [ i for i in lat_c if ( (i>=lowerlat) and (i<higher_lat) )]
@@ -871,3 +870,26 @@ def mask_all_but( region=None, M_all=False, saizlopez=False, \
 
     return mask
     
+# --------
+# 2.11 - Custom 2D (Lon) Mask
+# --------
+def mask_2D_lon2lon( lowerlon, higherlon, res='2x2.5', debug=False ):
+    """
+    Takes a lower and higher latitude value and then creates 
+    mask to given given limits.
+    """
+
+    # Get vars
+    lon_c, lat_c, NIC = get_latlonalt4res( res=res, centre=True )
+
+    # mask between upper and lower values
+    lats =  [ i for i in lon_c if ( (i>=lowerlon) and (i<higherlon) )]
+    lats = [ get_gc_lon(i, res=res) for i in  lats ]
+
+    # fill all lat and lon True or False
+    m=np.zeros(get_dims4res(res))[:,:,0]
+    print m.shape, np.sum(m)
+    for i in lats:
+        m[i,:] = 1
+    m = np.ma.masked_not_equal(m, 1)
+    return m.mask
