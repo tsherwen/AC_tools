@@ -1066,7 +1066,8 @@ def get_spec_pf_hdf_surface_procesor( run_name='run', spec='O3', \
 # ---
 def process_data4specs( specs=None, just_bcase_std=True, \
             just_bcase_no_hal=False, res='4x5', ver='1.6', diff=True, \
-            pcent=True, tight_constraints=True, trop_limit=True, debug=False ): 
+            pcent=True, tight_constraints=True, trop_limit=True, \
+            NOy_family=False, Bry_family=False, Iy_family=False, debug=False ): 
     """ Return species values in v/v and DU. Also return datetimes for CTM 
         output and time in troposphere diagnostics  """
 
@@ -1087,8 +1088,8 @@ def process_data4specs( specs=None, just_bcase_std=True, \
 
         # get molecs in troposphere
         molecs  = [ arr*1E3/constants( 'RMM_air')*constants('AVG') \
-            for arr in [np.concatenate([ get_air_mass_np(ctm) for ctm in ctms ], \
-            axis=3 ) for ctms in [r[0] for r in runs] ] ]
+            for arr in [np.concatenate([ get_air_mass_np(ctm) \
+            for ctm in ctms ], axis=3 ) for ctms in [r[0] for r in runs] ] ]
 
         res= runs[0][1]
         s_area  = get_surface_area( res=res, debug=debug )[:,:,0]
@@ -1194,6 +1195,65 @@ def process_data4specs( specs=None, just_bcase_std=True, \
                 print '!'*30, (DUarrs[n,nn,...]*tmp_s_area[0,0,...]).sum()/  \
                     tmp_s_area[0,0,...].sum()
 
+    # ---  Add familys to arrays by conbination of tracers
+    # Shape of Vars, DUarrs = [(65, 2, 72, 46, 38, 12), (65, 2, 72, 46, 1, 12)]
+    # (NOy_family, Bry_family, Iy_family ) 
+    def add_family2arrays( fam=None, Vars=None, DUarrs=None, 
+                I=False, N=False, Br=False, specs=None ):
+
+        # get species in family
+        d = { 'NOy':'N_specs', 'Iy':'Iy',  'Bry':'Bry' }
+        fam_specs = GC_var( d[fam] )
+        # Kludge
+        fam_specs = [i for i in fam_specs if (i in specs) ]
+
+        print '!1.1'*200, [ i.shape for i in Vars, DUarrs], fam, d[fam], \
+            fam_specs
+    
+        #  find indices and conctruct dictionary
+        fam_specs = [(i,n) for n,i in enumerate( specs ) if ( i in fam_specs ) ]
+        fam_specs = dict( fam_specs )
+
+        # Extract values and adjust to stiochmetry  ( Vars )
+        fam = [ Vars[fam_specs[i],...]*spec_stoich(i, I=I, N=N, Br=Br) \
+                for i in fam_specs.keys() ]
+        
+        # sum species in family and add to returned array ( Vars )
+        print np.array( [np.array(i) for i in fam] ).shape
+        fam = np.array( fam ).sum(axis=0)[None,...]
+        print [i.shape for i in fam, Vars ]
+        Vars = np.concatenate( (Vars, fam) , axis=0 )
+
+        print '!1.2'*200, [ i.shape for i in Vars, DUarrs]
+        del fam
+
+        # sum species in family and add to returned array ( DUarrs )
+        fam = [ DUarrs[fam_specs[i],...]*spec_stoich(i, I=I, N=N, Br=Br) \
+                for i in fam_specs.keys() ]
+
+        # sum species in family and add to returned array ( DUarrs )
+        fam = np.array( fam ).sum(axis=0)[None,...]
+        print [i.shape for i in fam, DUarrs ]
+        DUarrs = np.concatenate( (DUarrs, fam) , axis=0 )
+
+        print '!1.3'*200, [ i.shape for i in Vars, DUarrs]
+        del fam
+
+        return Vars, DUarrs
+
+    print '!0'*200, [ i.shape for i in Vars, DUarrs]    
+
+    if NOy_family:
+        Vars, DUarrs = add_family2arrays(  fam='NOy', N=True, Vars=Vars, \
+                                        DUarrs=DUarrs, specs=specs )
+    if Bry_family:
+        Vars, DUarrs = add_family2arrays(  fam='Bry', Br=True, Vars=Vars, \
+                                        DUarrs=DUarrs, specs=specs )
+    if Iy_family:
+        Vars, DUarrs = add_family2arrays(  fam='Iy', I=True, Vars=Vars, \
+                                        DUarrs=DUarrs, specs=specs )
+    print '!2'*200, [ i.shape for i in Vars, DUarrs]
+
     # consider difference in v/v and DU
     if diff:
         if pcent:
@@ -1210,6 +1270,9 @@ def process_data4specs( specs=None, just_bcase_std=True, \
         Vars = Vars[:,1,...] 
         DUarrs = DUarrs[:,1,...]
     print [i.shape for i in DUarrs, Vars ]
+
+    
+
 
     # Close/remove memory finished with
     del molecs, tmp_s_area, wds, titles
@@ -1667,12 +1730,13 @@ def iGEOSChem_ver(wd, debug=False):
     """ get GEOS-Chem verson - iGEOS-Chem """
 
     vers = [
-    '1.1','1.2', '1.3', '1.4', '1.5', '1.6', '1.7'
+    '1.1','1.2', '1.3', '1.4', '1.5', '1.6', '1.7', '2.0'
     ]
     v = [ (i in wd) for i in vers ]
     if debug:
         print vers, v
     return [vers[n] for n, i in enumerate(v) if i==True ][0]
+
 
 # --------------
 # 2.09 - Get tropospheric Burden - 
@@ -1687,7 +1751,8 @@ def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
         REDUNDENT - use get_gc_burden instead """
 
     if not isinstance(a_m, np.ndarray):
-        a_m = get_air_mass_np( ctm_f=ctm, wd=wd, debug=debug )[...,:38,:]
+        a_m = get_air_mass_np( ctm_f=ctm, wd=wd, debug=debug, \
+            dtype=np.float64 )[...,:38,:]
     if not isinstance(t_p, np.ndarray):
         # retain PyGChem 0.2.0 approach for back compatibility
         if pygchem.__version__ == '0.2.0':
@@ -1842,7 +1907,7 @@ def get_CH4_lifetime( ctm_f, wd, years=None, months=None, K=None, \
     if not isinstance(vol, np.ndarray):
         vol = get_volume_np( ctm_f ) # cm^3 
     if not isinstance(a_m, np.ndarray):
-        a_m = get_air_mass_np( ctm_f )  # Kg
+        a_m = get_air_mass_np( ctm_f, dtype=np.float64 )  # Kg
 
     #  number of moles in box
     moles     = ( a_m *1E3 ) / constants( 'RMM_air') * constants( 'AVG')  
@@ -1890,7 +1955,7 @@ def species_v_v_to_Gg(arr, spec, a_m=None, Iodine=True, All =False, \
     """ Convert array of species in v/v to Gg """
 
     if not isinstance(a_m, np.ndarray):
-        a_m     =  get_air_mass_np( ctm_f, debug=debug )  # kg
+        a_m     =  get_air_mass_np( ctm_f, dtype=np.float64, debug=debug )  # kg
      #  number of moles in box ( g / g mol-1 (air) )
     moles     = ( a_m *1E3 ) / constants( 'RMM_air')   
     if debug:
@@ -1915,7 +1980,7 @@ def species_v_v_to_Gg(arr, spec, a_m=None, Iodine=True, All =False, \
 def get_volume_np(ctm_f=None, box_height=None, s_area=None, res='4x5', \
             wd=None, trop_limit=False, debug=False):
     """ Get grid box volumes for CTM output in cm3 """
-    if(debug):
+    if debug:
         print 'get_volume_np called'
 
     if not isinstance(box_height, np.ndarray):
@@ -1937,6 +2002,10 @@ def get_volume_np(ctm_f=None, box_height=None, s_area=None, res='4x5', \
         s_area = get_surface_area(res=res)[...,None] 
         if debug:
             print '**'*100, s_area.shape
+
+    # Gotcha for 2D s_area array 
+    if len( s_area.shape) == 2:
+        s_area = s_area[..., None, None]
 
     # m3 ( *1E6 ) => cm3 
     volume = ( box_height * s_area ) *1E6  
@@ -2073,7 +2142,7 @@ def molec_cm2_s_2_Gg_Ox_np( arr, spec='O3', s_area=None, ctm_f=None, \
             debug=False):
     """ Convert 2D depositional array from [molec/cm2/s] to Gg Ox yr^-1 """
     
-    if(debug):
+    if debug:
         print ' molec_cm2_s_2_Gg_Ox_np  called'
 
     # Kludge and anti-kludge (  REMOVE THIS once 
@@ -2097,7 +2166,7 @@ def molec_cm2_s_2_Gg_Ox_np( arr, spec='O3', s_area=None, ctm_f=None, \
         print "giving 'year_eq' "
         arr = arr* 60*60*24*365  
 
-    if(debug):
+    if debug:
         print 'arr', arr.shape
     return arr
 
@@ -2160,7 +2229,8 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False, trop_limit=True, debug=
     s_area = get_surface_area(res=res)[...,0] # m2 land map           
   
     # Get air mass
-    a_m = get_GC_output( wd, vars=['BXHGHT_S__AD'], trop_limit=trop_limit) 
+    a_m = get_GC_output( wd, vars=['BXHGHT_S__AD'], trop_limit=trop_limit, \
+                    dtype=np.float64) 
 
     # Get volume
     vol  = get_volume_np( wd=wd, s_area=s_area[:,:,None, None], res=res )
@@ -2669,7 +2739,7 @@ def get_trop_Ox_loss( wd, pl_dict=None,  spec_l=None, ver='1.6' ,   \
 
     # Create Variable lists/dictionaries is not defined.
     if isinstance( pl_dict, type(None)):
-        pl_dict = get_pl_dict( wd, spec='LOX', rmx2=True )
+        pl_dict = get_pl_dict( wd, spec='LOX', ver=ver, rmx2=True )
     if isinstance( spec_l, type(None)):
         spec_l =  pl_dict.keys()
 
@@ -2719,13 +2789,13 @@ def get_trop_Ox_loss( wd, pl_dict=None,  spec_l=None, ver='1.6' ,   \
 # 2.36 - Split Tropospheric Ox loss routes 
 # -------------
 def split_Ox_loss_by_fam( wd, arr, r_t=None, pl_dict=None, \
-            NOy_as_HOx=True, as_numpy=True, debug=False ):
+            NOy_as_HOx=True, as_numpy=True, ver='1.6', debug=False ):
     """ Takes a n dimension array ( typically: 2D/4D) array, then splits this
     into a list of single arrays for each Ox family  """
 
     # Create Variable lists/dictionaries is not defined.
     if isinstance( pl_dict, type(None)):
-        pl_dict = get_pl_dict( wd, spec='LOX', rmx2=True )
+        pl_dict = get_pl_dict( wd, spec='LOX', ver=ver, rmx2=True )
     if isinstance( r_t, type(None)):
         if NOy_as_HOx:
             r_t  = [ 'Photolysis','HOx ','Bromine', 'Iodine' ] #+ ['Total']

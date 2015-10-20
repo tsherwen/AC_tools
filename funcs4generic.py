@@ -469,13 +469,16 @@ def ice_mask(res='4x5', debug=False):
 # --------
 # 2.04 - Surface mask
 # --------
-def surface_mask(res='4x5', debug=False):
+def surface_mask( res='4x5', trop_limit=False, debug=False ):
     """ Get surface mask  """
 
     # Create a np.ma mask 
     m=np.ma.array( np.zeros( get_dims4res(res) ), mask=False)
     m[...,0] = 1
     m = np.ma.masked_not_equal(m, 1)
+
+    if trop_limit:
+        m = m[...,:38]
     if debug:
         print mask, mask.shape
     return m.mask
