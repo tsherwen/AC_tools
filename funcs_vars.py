@@ -387,8 +387,9 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
             print [  i[:3] for i in nums, rxns, tags, Coe]
             print [ len(i) for i in nums, rxns, tags, Coe]
 
-        errs = ['LO3_36RD95' , 'ISOPNDPO3_50', 'ISOPNDLR40']
-        cerrs = [ ['LO3_36', 'RD95'], ['PO3_50'], ['LR40'] ]
+        # LO3_36RD95 is present twice as this reaction is present 2 times in the code
+        errs = ['LO3_36RD95', 'LO3_36RD95' , 'ISOPNDPO3_50', 'ISOPNDLR40']
+        cerrs = [ ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], ['PO3_50'], ['LR40'] ]
 #        errs = ['LO3_36RD95' , 'ISOPNDPO3_50', 'ISOPNDLR40']
 #        cerrs = [ ['RD95'], ['PO3_50'], ['LR40'] ]
         for n, e in enumerate( errs ):
