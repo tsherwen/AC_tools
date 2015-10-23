@@ -135,11 +135,13 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
     OH_rxns_17_EOH =  [ 'REA_{}'.format(i) for i in  OH_rxns_17_EOH ]
 
     # OH reaction species and tracers
-    OH_rxn_tras = ['HBr', 'HOI', 'I2', 'CH2O', 'NO2', 'HNO3', 'CH3IT', 'NO', 'HNO3', 'HNO2', 'PRPE', 'PMN', 'HNO4', 'GLYC', 'NO3', 'C3H8', 'DMS', 'ALK4', 'SO2', 'MVK', 'ISOP', 'CHBr3', 'BrO', 'ISOP', 'CH2Br2', 'CH3Br', 'ACET', 'MEK', 'H2O2', 'CO', 'PROPNN', 'MP', 'MACR', 'HAC', 'ALD2', 'MOBA', 'RIP', 'Br2', 'IEPOX', 'MAP', 'R4N2', 'RCHO']
-    OH_rxn_specs = ['GLYX', 'MGLY', 'HCOOH', 'MOH', 'O2', 'DHMOB', 'HO2', 'OH', 'H2', 'CH4', 'ETHLN', 'EOH', 'ATOOH', 'R4P', 'INPN', 'RA3P', 'RB3P', 'RP', 'PP', 'IAP', 'VRP', 'MRP', 'MAOP', 'ISN1', 'HC5', 'ACTA', 'ISOPNB', 'ROH', 'ISNP', 'MVKN', 'MACRN', 'ISOPND']
+    OH_rxn_tras = ['HBr', 'HOI', 'I2', 'CH2O', 'NO2', 'HNO3', 'CH3IT', 'NO', 'HNO3', 'HNO2', 'PRPE', 'PMN', 'HNO4', 'GLYC', 'NO3', 'C3H8', 'DMS', 'ALK4', 'SO2', 'MVK', 'ISOP', 'CHBr3', 'BrO', 'ISOP', 'CH2Br2', 'CH3Br', 'ACET', 'MEK', 'H2O2', 'CO', 'PROPNN', 'MP', 'MACR', 'HAC', 'ALD2', 'MOBA', 'RIP', 'Br2', 'IEPOX', 'MAP', 'R4N2', 'RCHO', 'HI']
+    OH_rxn_tras = [ num2spec( i, ver=ver, invert=True) for i in OH_rxn_tras ]
+    OH_rxn_tras = [ 'TRA_{:0>2}'.format( i)  for i in OH_rxn_tras ]
+    OH_rxn_specs = ['GLYX', 'MGLY', 'HCOOH', 'MOH', 'O2', 'DHMOB', 'HO2', 'OH', 'H2', 'CH4', 'ETHLN', 'EOH', 'ATOOH', 'R4P', 'INPN', 'RA3P', 'RB3P', 'RP', 'PP', 'IAP', 'VRP', 'MRP', 'MAOP', 'ISN1', 'HC5', 'ACTA', 'ISOPNB', 'ROH', 'ISNP', 'MVKN', 'MACRN', 'ISOPND', 'ETP', 'PRPN']
 
     # remove inactive species 
-    inactive_spec = ['ACTA', 'CH4', 'EOH', 'H2', 'HCOOH', 'MOH', 'O2']
+    inactive_spec = ['ACTA', 'CH4', 'H2', 'HCOOH', 'MOH', 'O2'] # 'EOH',
 
     # Setup list of tracers
     if ver == '1.7':
@@ -198,6 +200,16 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
         missing = [ num2spec( i, ver=ver, invert=True) for i in missing ]
         missing = [ 'TRA_{:0>2}'.format( i)  for i in missing ]
         species = species  + missing
+
+    # use TRA_?? instead of species if species is a tracer
+    species_=[]
+    for s in species:
+        try:
+            species_ += ['TRA_{}'.format(  num2spec(s, ver=ver,\
+                     invert=True) )]
+        except:
+            species_ = [ s ]
+    species = species_
 
     # Construct dictionary
     d= {    
@@ -330,7 +342,8 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
     ind =  [n for n, i  in enumerate( nums ) if i ==354 ]
     
     # Get Coes and overwrite where prog_mod_tms has values
-    Coes = [  get_rxn_Coe( wd, d[1], unpacked_tags[n], nums=nums, rxns=rxns, tags=tags, Coe=Coe, spec=spec, debug=debug ) 
+    Coes = [  get_rxn_Coe( wd, d[1], unpacked_tags[n], nums=nums, \
+                    rxns=rxns, tags=tags, Coe=Coe, spec=spec, debug=debug ) \
                     for  n, d in enumerate( details ) ]
 
     # Remove double ups, which are present due to Loss (LO3_??) and rate tagging (RD??) originally performed separately  
@@ -419,8 +432,8 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
                 print '>'*100, 'FAIL >{}< >{}<'.format( n, e )
 
     # KLUDGE! - rm empty list values of ones that contain errs
-    ind = [ n for n, i in enumerate(tags) if ( (len(i)==0) or (i[0] in errs) ) ] 
-    [ [ l.pop(i) for i in sorted(ind)[::-1] ] for  l in nums, rxns, tags, Coe ]
+#    ind = [ n for n,i in enumerate(tags) if ( (len(i)==0) or (i[0] in errs) ) ] 
+#    [ [ l.pop(i) for i in sorted(ind)[::-1] ] for  l in nums, rxns, tags, Coe ]
     print tags 
 
     return nums, rxns, tags, Coe
@@ -800,7 +813,9 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, \
     'CH3I':'pptv', 'Iy':'pptv', 'PSURF': 'hPa', 'OH':'pptv', 'HO2':'pptv',
     'MO2': 'pptv', 'NOy':'pptbv','EOH': 'ppbv' , 'CO':'ppbv', 'CH4':'ppbv', 
     'TSKIN':'K', 'GMAO_TEMP': 'K', 'GMAO_VWND' :'m/s','GMAO_UWND': 'm/s', 'RO2': 'pptv', 'U10M':'m/s','V10M': 'm/s' , 'PRESS': 'hPa', 'CH2OO':'pptv',
-    
+    # Extra ClearFlo compounds
+    u'acetylene': 'pptv', u'propene': 'pptv', u'Napthalene': 'pptv', u'Styrene': 'pptv', u'1,3-butadiene': 'pptv', u'1,2-butadiene': 'pptv', u'iso-butene': 'pptv', u'm+p-xylene': 'pptv', u'1-butene': 'pptv', u't-2 pentene': 'pptv', u'cis-2-butene': 'pptv', u'1  pentene': 'pptv', u'Trans-2-butene': 'pptv', u'o-xylene': 'pptv',
+    u'iso-pentane': 'pptv', u'n-hexane': 'pptv', u'iso-butane': 'pptv', u'Nonane, 2-methyl-': 'pptv', u'Butane, 2,2,3-trimethyl-': 'pptv', u'Dodecane': 'pptv', u'Pentane, 2,2,4-trimethyl-': 'pptv', u'2,3methylpentane': 'pptv', u'Nonane': 'pptv', u'cyclopentane': 'pptv', u'n- heptane': 'pptv', u'n-butane': 'pptv', u'n-pentane': 'pptv', u'Undecane': 'pptv', u'Decane': 'pptv', u'Octane': 'pptv', u'n-octane': 'pptv'
     } 
     units = tra_unit[x]
 
@@ -833,7 +848,7 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, \
     if ClearFlo_unit:
         if any( [ x == i for i in  [ 'NO', 'MACR', 'MVK' ] ] ):
             units = 'ppbv'
-        if any( [ x == i for i in  [ 'PAN' ] ] ):
+        if any( [ x == i for i in  [ 'PAN', 'PRPE','ALK4' ] ] ):
             units = 'pptv'
         if any( [ x == i for i in  [ 'ISOP' ] ] ):
             units = 'ppbC'
