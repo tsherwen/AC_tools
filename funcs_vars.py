@@ -281,7 +281,7 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, \
     d =  GC_var( var ) 
 
     if debug:
-        print d
+        print d, special_case
 
     if invert:
         d = {v: k for k, v in d.items()}
@@ -784,7 +784,7 @@ def latex_spec_name(input_x, debug=False):
             ,'iodine_all':'All Iodine', 'Iy': 'I$_{Y}$', 'IOy': 'IO$_{Y}$', 'IyOx': 'I$_{Y}$O$_{X}$', 'IOx': 'IO$_{X}$','iodine_all_A':'All Iodine (Inc. AERI)', 'I2Ox': 'I$_{2}$O$_{X}$' , 'AERI/SO4': 'AERI/SO4', 'EOH':'Ethanol','OH reactivity / s-1': 'OH reactivity / s$^{-1}$'
             , 'PSURF': 'Pressure at the bottom of level', 'GMAO_TEMP' : 'Temperature', 'TSKIN' : 'Temperature at 2m', 'GMAO_UWND':'Zonal Wind', 'GMAO_VWND':'Meridional Wind', 'U10M':'10m Meridional Wind', 'V10M': '10m Zonal Wind', 'CH2OO':'CH$_{2}$OO',
         # Family Names
-           'N_specs' : 'NOy', 'NOy' :  'NO$_Y$', 
+           'N_specs' : 'NOy', 'NOy' :  'NO$_Y$',  'Bry':  'Br$_Y$', 
            'N_specs_no_I' : 'NOy exc. iodine',
         # typos
             'CH2BR2':'CH$_{2}$Br$_{2}$',
@@ -811,8 +811,8 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, \
     'OCPI': 'ppbv', 'OCPO': 'ppbv', 'PPN': 'ppbv', 'HIO3': 'pptv', 'O3': 'ppbv', 'PAN': 'ppbv', 'ACET': 'ppbC', 'RIP': 'ppbv', 'BrNO3': 'pptv', 'Br': 'pptv', 'HBr': 'pptv', 'HAC': 'ppbv', 'ALD2': 'ppbC', 'HNO3': 'ppbv', 'HNO2': 'ppbv', 'C2H5I': 'pptv', 'HNO4': 'ppbv', 'OIO': 'pptv', 'MAP': 'ppbv', 'PRPE': 'ppbC', 'HI': 'pptv', 'CH2I2': 'pptv', 'IONO2': 'pptv', 'NIT': 'ppbv', 'CH3Br': 'pptv', 'C3H7I': 'pptv', 'C3H8': 'ppbC', 'DMS': 'ppbv', 'CH2O': 'ppbv', 'CH3IT': 'pptv', 'NO2': 'ppbv', 'NO3': 'ppbv', 'N2O5': 'ppbv', 'CHBr3': 'pptv', 'DST4': 'ppbv', 'DST3': 'ppbv', 'DST2': 'ppbv', 'DST1': 'ppbv', 'HOCl': 'ppbv', 'NITs': 'ppbv', 'RCHO': 'ppbv', 'C2H6': 'ppbC', 'MPN': 'ppbv', 'INO': 'pptv', 'MP': 'ppbv', 'CH2Br2': 'pptv', 'SALC': 'ppbv', 'NH3': 'ppbv', 'CH2ICl': 'pptv', 'IEPOX': 'ppbv', 'ClO': 'ppbv', 'NO': 'pptv', 'SALA': 'ppbv', 'MOBA': 'ppbv', 'R4N2': 'ppbv', 'BrCl': 'pptv', 'OClO': 'ppbv', 'PMN': 'ppbv', 'CO': 'ppbv', 'CH2IBr': 'pptv', 'ISOP': 'ppbC', 'BCPO': 'ppbv', 'MVK': 'ppbv', 'BrNO2': 'pptv', 'IONO': 'pptv', 'Cl2': 'ppbv', 'HOBr': 'pptv', 'PROPNN': 'ppbv', 'Cl': 'ppbv', 'I2O2': 'pptv', 'I2O3': 'pptv', 'I2O4': 'pptv', 'I2O5': 'pptv', 'MEK': 'ppbC', 'MMN': 'ppbv', 'ISOPN': 'ppbv', 'SO4s': 'ppbv', 'I2O': 'pptv', 'ALK4': 'ppbC', 'MSA': 'ppbv', 'I2': 'pptv', 'Br2': 'pptv', 'IBr': 'pptv', 'MACR': 'ppbv', 'I': 'pptv', 'AERI': 'pptv', 'HOI': 'pptv', 'BrO': 'pptv', 'NH4': 'ppbv', 'SO2': 'ppbv', 'SO4': 'ppbv', 'IO': 'pptv', 'H2O2': 'ppbv', 'BCPI': 'ppbv', 'ICl': 'pptv', 'GLYC': 'ppbv','ISALA': 'pptv', 'ISALC': 'pptv', 
     # Extra diagnostics to allow for simplified processing 
     'CH3I':'pptv', 'Iy':'pptv', 'PSURF': 'hPa', 'OH':'pptv', 'HO2':'pptv',
-    'MO2': 'pptv', 'NOy':'pptbv','EOH': 'ppbv' , 'CO':'ppbv', 'CH4':'ppbv', 
-    'TSKIN':'K', 'GMAO_TEMP': 'K', 'GMAO_VWND' :'m/s','GMAO_UWND': 'm/s', 'RO2': 'pptv', 'U10M':'m/s','V10M': 'm/s' , 'PRESS': 'hPa', 'CH2OO':'pptv',
+    'MO2': 'pptv', 'NOy':'ppbv','EOH': 'ppbv' , 'CO':'ppbv', 'CH4':'ppbv', 
+    'TSKIN':'K', 'GMAO_TEMP': 'K', 'GMAO_VWND' :'m/s','GMAO_UWND': 'm/s', 'RO2': 'pptv', 'U10M':'m/s','V10M': 'm/s' , 'PRESS': 'hPa', 'CH2OO':'pptv', 'Bry':'ppbv',
     # Extra ClearFlo compounds
     u'acetylene': 'pptv', u'propene': 'pptv', u'Napthalene': 'pptv', u'Styrene': 'pptv', u'1,3-butadiene': 'pptv', u'1,2-butadiene': 'pptv', u'iso-butene': 'pptv', u'm+p-xylene': 'pptv', u'1-butene': 'pptv', u't-2 pentene': 'pptv', u'cis-2-butene': 'pptv', u'1  pentene': 'pptv', u'Trans-2-butene': 'pptv', u'o-xylene': 'pptv',
     u'iso-pentane': 'pptv', u'n-hexane': 'pptv', u'iso-butane': 'pptv', u'Nonane, 2-methyl-': 'pptv', u'Butane, 2,2,3-trimethyl-': 'pptv', u'Dodecane': 'pptv', u'Pentane, 2,2,4-trimethyl-': 'pptv', u'2,3methylpentane': 'pptv', u'Nonane': 'pptv', u'cyclopentane': 'pptv', u'n- heptane': 'pptv', u'n-butane': 'pptv', u'n-pentane': 'pptv', u'Undecane': 'pptv', u'Decane': 'pptv', u'Octane': 'pptv', u'n-octane': 'pptv'
@@ -846,9 +846,9 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, \
             units = 'ppbC'
 
     if ClearFlo_unit:
-        if any( [ x == i for i in  [ 'NO', 'MACR', 'MVK' ] ] ):
+        if any( [ x == i for i in  [ 'NO', 'MACR', 'MVK', 'PRPE','ALK4' ] ] ):
             units = 'ppbv'
-        if any( [ x == i for i in  [ 'PAN', 'PRPE','ALK4' ] ] ):
+        if any( [ x == i for i in  [ 'PAN', ] ] ):
             units = 'pptv'
         if any( [ x == i for i in  [ 'ISOP' ] ] ):
             units = 'ppbC'
@@ -1046,7 +1046,8 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
 #                l = ['no_hal', 'run' ]
                 l = ['Just_Br', 'run' ]
             elif ver == '2.0':
-                l = ['no_hal', 'run.Cl.Br.I.aerosol' ]
+                l = ['no_hal', 'run.Cl.Br.I.aerosol.no.SSA.Br2' ]
+#                l = ['no_hal', 'run.Cl.Br.I.aerosol' ]
             else:
                 l = ['no_hal', 'Just_Br', 'just_I', 'run' ]
 #        if any( [ (ver ==i) for i in  '1.5', '1.6' ] ) :

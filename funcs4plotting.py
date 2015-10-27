@@ -2035,11 +2035,11 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
     
         # Loop species
         for n, spec in enumerate( specs ):
-            if debug:
-                print n, spec, Vars.shape
+#            if debug:
+            print n, spec, Vars.shape
 
             # Get units/scale for species + setup fig        
-            scale=1
+#            scale=1
             if isinstance( units, type(None) ):
                 units, scale = tra_unit( spec, scale=True, global_unit=True )
             if pcent:

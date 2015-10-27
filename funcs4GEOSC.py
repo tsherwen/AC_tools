@@ -1067,7 +1067,8 @@ def get_spec_pf_hdf_surface_procesor( run_name='run', spec='O3', \
 def process_data4specs( specs=None, just_bcase_std=True, \
             just_bcase_no_hal=False, res='4x5', ver='1.6', diff=True, \
             pcent=True, tight_constraints=True, trop_limit=True, \
-            NOy_family=False, Bry_family=False, Iy_family=False, debug=False ): 
+            NOy_family=False, Bry_family=False, Iy_family=False, \
+            rtn_specs=False, debug=False ): 
     """ Return species values in v/v and DU. Also return datetimes for CTM 
         output and time in troposphere diagnostics  """
 
@@ -1204,7 +1205,7 @@ def process_data4specs( specs=None, just_bcase_std=True, \
         # get species in family
         d = { 'NOy':'N_specs', 'Iy':'Iy',  'Bry':'Bry' }
         fam_specs = GC_var( d[fam] )
-        # Kludge
+        # Kludge - only consider the specs available in the NetCDF
         fam_specs = [i for i in fam_specs if (i in specs) ]
 
         print '!1.1'*200, [ i.shape for i in Vars, DUarrs], fam, d[fam], \
@@ -1213,6 +1214,9 @@ def process_data4specs( specs=None, just_bcase_std=True, \
         #  find indices and conctruct dictionary
         fam_specs = [(i,n) for n,i in enumerate( specs ) if ( i in fam_specs ) ]
         fam_specs = dict( fam_specs )
+
+        # Add family name to specs 
+        specs += [ fam ]
 
         # Extract values and adjust to stiochmetry  ( Vars )
         fam = [ Vars[fam_specs[i],...]*spec_stoich(i, I=I, N=N, Br=Br) \
@@ -1239,19 +1243,19 @@ def process_data4specs( specs=None, just_bcase_std=True, \
         print '!1.3'*200, [ i.shape for i in Vars, DUarrs]
         del fam
 
-        return Vars, DUarrs
+        return Vars, DUarrs, specs
 
     print '!0'*200, [ i.shape for i in Vars, DUarrs]    
 
     if NOy_family:
-        Vars, DUarrs = add_family2arrays(  fam='NOy', N=True, Vars=Vars, \
-                                        DUarrs=DUarrs, specs=specs )
+        Vars, DUarrs, specs = add_family2arrays(  fam='NOy', N=True,\
+                Vars=Vars, DUarrs=DUarrs, specs=specs )
     if Bry_family:
-        Vars, DUarrs = add_family2arrays(  fam='Bry', Br=True, Vars=Vars, \
-                                        DUarrs=DUarrs, specs=specs )
+        Vars, DUarrs, specs = add_family2arrays(  fam='Bry', Br=True, \
+                Vars=Vars, DUarrs=DUarrs, specs=specs )
     if Iy_family:
-        Vars, DUarrs = add_family2arrays(  fam='Iy', I=True, Vars=Vars, \
-                                        DUarrs=DUarrs, specs=specs )
+        Vars, DUarrs, specs = add_family2arrays(  fam='Iy', I=True, \
+                    Vars=Vars, DUarrs=DUarrs, specs=specs )
     print '!2'*200, [ i.shape for i in Vars, DUarrs]
 
     # consider difference in v/v and DU
@@ -1277,7 +1281,11 @@ def process_data4specs( specs=None, just_bcase_std=True, \
     # Close/remove memory finished with
     del molecs, tmp_s_area, wds, titles
 
-    return Vars, DUarrs, dlist, t_ps.mean(axis=0)
+    # retrun requested variables
+    rtn_vars =[  Vars, DUarrs, dlist, t_ps.mean(axis=0) ]
+    if rtn_specs:
+        rtn_vars += [specs ]
+    return rtn_vars
 
 # ----
 # 1.22 - Get var data for model run
