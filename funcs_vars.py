@@ -991,7 +991,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
         IO_obs=False,no_I2Ox=False, respun=True,            \
         preindustrial=False, skip3=False, v10v92comp=False,              \
         nested_EU=False, just_bcase_no_hal=False, just_std=False, \
-        just_bcase_std=False, ver='1.6', res='4x5',    \
+        just_bcase_std=False, ver='1.6', res='4x5', overide=True,    \
         debug=False): 
     """ Dictionary storage for iGEOSChem most up to date (MUTD)
             runs. 
@@ -1101,10 +1101,19 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
         [pwd + i for i in r ]
     if skip3:
         [ [ i.pop(0) for i in l, r ] for ii in range(3) ]
+    if overide:
+        r = [ 
+#        'iGEOSChem_1.6_G5/run', 'iGEOSChem_2.0_v10/run' 
+            
+            'iGEOSChem_1.7_v10/run' , 'johan/bpch_v10'
+        ]
+#        l = '1.6', '1.7'
+        l = '1.7', 'v10, johan'
+    # return list with inc. main dir
+    rtn_list = [pwd + i for i in r ] 
     if titles:
-        return [pwd + i for i in r ], l
-    else:
-        return [pwd + i for i in r ]   
+        rtn_list = [ rtn_list, l ]
+    return   rtn_list
 
 # --------------
 # 5.02 - Store of  constants for use by funcs/progs
