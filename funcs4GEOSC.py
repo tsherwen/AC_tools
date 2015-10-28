@@ -1157,6 +1157,7 @@ def process_data4specs( specs=None, just_bcase_std=True, \
         t_ps = np.ma.masked_where( t_ps != 1, t_ps )
 
 #    Vars, molecs = [ i*t_ps[None,...] for i in Vars, molecs ]
+    # remove stratospheric values
     Vars = Vars*t_ps[None,...] 
     molecs  =  (molecs*t_ps)[None,...]
 
@@ -1275,13 +1276,10 @@ def process_data4specs( specs=None, just_bcase_std=True, \
         DUarrs = DUarrs[:,1,...]
     print [i.shape for i in DUarrs, Vars ]
 
-    
-
-
     # Close/remove memory finished with
     del molecs, tmp_s_area, wds, titles
 
-    # retrun requested variables
+    # return requested variables
     rtn_vars =[  Vars, DUarrs, dlist, t_ps.mean(axis=0) ]
     if rtn_specs:
         rtn_vars += [specs ]
