@@ -42,6 +42,9 @@ from AC_tools.funcs4time import *
 from AC_tools.funcs4pf import *
 from AC_tools.funcs4GEOSC import * # wd2ctms
 
+# math
+from math import log10, floor
+
 # colormaps
 #from option_c import test_cm as cmc
 #from option_d import test_cm as cmd
@@ -117,7 +120,7 @@ from AC_tools.funcs4GEOSC import * # wd2ctms
 # -----
 def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
             cmap=None, no_cb=False, cb=None, rotatecbunits='horizontal',  \
-            fixcb=False, nbins=25, nticks=10, mask_invalids=False,  \
+            fixcb=None, nbins=25, nticks=10, mask_invalids=False,  \
             format='%.2f', adjust_window=0, f_size=20, alpha=1, \
             set_window=False, res='4x5', ax=None, case='default', units=None, \
             drawcountries=True, debug=False, set_cb_ticks=True, title=None,   \
@@ -214,13 +217,13 @@ def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
     
     # -------- colorbar variables...
     # set cb label sizes
-    if fixcb:
+    if not isinstance( fixcb, type(None) ):
         tickmin, tickmax = fixcb[0], fixcb[1]
     else:
         tickmin, tickmax  = arr.min(), arr.max()
     # --------------  Linear plots -------------------------------
     # standard plot 
-    if ( ( case == 3) or ( case== 9 ) ) and (not fixcb):
+    if ( ( case == 3) or ( case== 9 ) ) and ( isinstance( fixcb, type(None) ) ):
 #        try:
         poly = m.pcolor( lon, lat, arr, cmap=cmap, alpha=alpha )
 #        except ValueError:
@@ -229,12 +232,12 @@ def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
 #                arr.shape ) + ' ({},{})' .format( len(lon), len(lat) )
 #            sys.exit()
 
-    if ( ( case == 3) or ( case== 9 ) ) and fixcb:
+    if ( ( case == 3) or ( case== 9 ) ) and (not isinstance(fixcb,type(None) )):
         poly = m.pcolor( lon, lat, arr, cmap=cmap, vmin=fixcb[0], \
                         vmax=fixcb[1], alpha=alpha )
 
     # -----------------  Log plots ---------------------------------------------
-    if (case == 4 ) and (not fixcb):  # log and cmap
+    if (case == 4 ) and ( isinstance(fixcb,type(None) )):  # log and cmap
 
         poly = m.pcolor(lon, lat, arr, norm=LogNorm(vmin=arr.min(), \
             vmax=arr.max()), cmap=cmap)#'PuBu_r')
@@ -251,7 +254,7 @@ def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
         if debug:
             print np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), lvls
 
-    if (case == 4 ) and fixcb:  # log and set min
+    if (case == 4 ) and (not isinstance(fixcb,type(None) )):  # log and set min
         poly = m.pcolor(lon, lat, arr, norm=LogNorm(vmin=fixcb[0], \
             vmax=arr.max()), cmap=cmap)#'PuBu_r')
 
@@ -2558,7 +2561,7 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     orientation='vertical', f_size=20, rotatecbunits='vertical', nticks=10, \
     extend='neither', norm=None, log=False,  format=None, cmap=None,\
     vmin=0, vmax=10, cb_ax=None, ticklocation='auto', extendfrac=.075, \
-    debug=False):
+    sigfig_rounding_on_cb =2, debug=False):
     """ Create Colorbar. This allows for avoidance of basemap's issues with 
         spacing definitions when conbining with colorbar objects within a plot 
     """
@@ -2603,27 +2606,47 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
         else:
             norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
             lvls = np.linspace( vmin, vmax, nticks, endpoint=True )                         
+        
+        print lvls
+
+        # Use 2 significant figures for colourbar 
+        if ( ( abs( int( vmax)) == 0) and (abs( int( vmax)) == 0) ):
+            sigfig_rounding_on_cb += 1
+        round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
+        print abs(lvls[-2])-abs(lvls[-3])
+        lvls_diff = round_to_n( abs(lvls[-2])-abs(lvls[-3]), \
+                                sigfig_rounding_on_cb)
+        vmax_rounded = round_to_n( vmax, sigfig_rounding_on_cb)
+        print vmax_rounded,  lvls_diff, nticks
+#        lvls = np.array([ vmin_rounded + lvls_diff*i for i in range( nticks ) ])
+        lvls = np.array([ vmax_rounded - lvls_diff*i for i in range( nticks ) ])   
+        print lvls
+#        lvls = [ round_to_n( i, sigfig_rounding_on_cb) for i in lvls ]
+#        print lvls
+
 
     # add an extra decimal place for values under 50, 
     # and two for values under 1
     if isinstance( format, type(None) ):
         try:
-            if all([ i<=1 for i in [ len( str( abs( int(i) ) )  ) \
-                    for i in vmax, vmin ] ]):
-                format='%.2f'
-            elif all([ i<=2 for i in [ len( str( abs( int(i) ) )  ) \
-                    for i in vmax, vmin ] ]):
-                format='%.1f'
-            if any([ i>=3 for i in [ len( str( abs( int(i) ) )  ) \
-                    for i in vmax, vmin ] ]):
-                format='%.0f'
+#            if all([ i<=1 for i in [ len( str( abs( int(i) ) )  ) \
+#                    for i in vmax, vmin ] ]):
+#                format='%.2f'
+#            elif all([ i<=2 for i in [ len( str( abs( int(i) ) )  ) \
+#            if all([ i<=2 for i in [ len( str( abs( int(i) ) )  ) \
+#                    for i in vmax, vmin ] ]):
+#                format='%.1f'
+#            if any([ i>=3 for i in [ len( str( abs( int(i) ) )  ) \
+#                    for i in vmax, vmin ] ]):
+#                format='%.0f'
 
             # change to scientific notation max+min abs values less than 1
             if ( ( abs( int( vmax)) == 0) and (abs( int( vmax)) == 0) ):
-#                format='%.0E'
+                format='%.0E'  # hashed prior
                 format='%.1E'
                 f_size = f_size *.75
 
+        # warning this will need to be restored?! - plotting routines use this
         # This exception is for highly masked arrays 
         except:    
             format='%.0E'

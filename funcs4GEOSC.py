@@ -1845,8 +1845,8 @@ def get_pl_in_Gg(ctm_f, specs, years=None, months=None, monthly=False,\
 # 2.11 - Get Emission of species in Gg
 # -------------
 def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
-            molec_cm2_s=False, nmonl_m2_d=False, monthly=False, \
-            months=None, s_area=None, res='4x5', debug=False ):
+            molec_cm2_s=False, nmonl_m2_d=False, kg_m2_s=False, \
+            monthly=False, months=None, s_area=None, res='4x5', debug=False ):
     """ Extract given species emissions from BIOGSRCE category diagnostic
         Back compatibility maintained with PyGChem 0.2.0 """
             
@@ -1871,13 +1871,16 @@ def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
     if not isinstance(s_area, np.ndarray):        
         s_area = get_surface_area(res)  # m2 land map   
 
-    # Kg/m2/ s => Kg/ s
-    arr = arr*s_area
+    if kg_m2_s:
+        arr_ = arr
+    else:
+        # Kg/m2/ s => Kg/ s
+        arr = arr*s_area
 
-    # Kg/ s => "kg / monthly" 
-    arr = arr * m_adjust
-    # (Gg? - no ) I / month 
-    arr = arr*1E3/ species_mass(spec)* float(species_mass('I')) * \
+        # Kg/ s => "kg / monthly" 
+        arr = arr * m_adjust
+        # (Gg? - no ) I / month 
+        arr = arr*1E3/ species_mass(spec)* float(species_mass('I')) * \
                     float(spec_stoich(spec)) 
 
     if nmonl_m2_d:
@@ -1889,7 +1892,7 @@ def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
 
         # convert to nmol 
         arr  =  ( arr / float(species_mass('I') ) ) / float(spec_stoich(spec)) 
-        arr = arr*1E9
+        arr_ = arr*1E9
 
         if debug:
             print 'get_emiss - 2', arr.shape
@@ -1902,13 +1905,13 @@ def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
         arr  =  arr / (365./12.) / 24. / 60. / 60. 
 
         # convert to molecules 
-        arr  =  ( arr / float(species_mass('I') ) ) /float(spec_stoich(spec)) *\
+        arr_ = ( arr / float(species_mass('I') ) ) /float(spec_stoich(spec)) *\
                         constants('AVG')  
 
         if debug:
-            print 'get_emiss - 3', arr.shape
+            print 'get_emiss - 3', arr_.shape
 
-    return arr
+    return arr_
 
 # --------
 # 2.12 - Get CH4 Lifetime - 2.45E-12, -1775
@@ -2905,6 +2908,45 @@ def split_4D_array_into_seasons( arr, annual_plus_seasons=True, \
     # return list array averaged by season 
     return ars, seasons
 
+# --------------
+# 2.39 - Convert v/v to ng/m^3
+# -------------     
+def convert_v_v2ngm3(  arr, wd=None, spec='AERI', trop_limit=True,\
+            s_area=None, res='4x5', aerosol_mass=False, debug=False ):
+    """ """
+
+    # Get volume (m^3, adjusted (x1E6) from cm^3) 
+    vol = get_volume_np( wd=wd, trop_limit=trop_limit, s_area=s_area, \
+                    res=res ) /1E6  
+
+    # Get mass
+    a_m = get_GC_output( wd, vars=['BXHGHT_S__AD'], trop_limit=trop_limit, 
+                    dtype=np.float64)
+
+    # Get moles  ( converting airmass from kg 1st)
+    mols = a_m*1E3/constants( 'RMM_air')
+
+    # adjust to mols, then mass ( assume AERI = 
+#    species_mass = {'SO4':96.0, 'AERI': 338.0/2, 'O3':48 }
+    # Setup dictionary of species masses... 
+    # ( this is separate from species_mass dictionary as assumptions differ)(
+    if aerosol_mass:
+        I2Ox_mass = (286.0+302.0+318.0/3)/2
+        species_mass = {
+        'SO4':96.0, 'SO4s':96.0, 'AERI': I2Ox_mass,'ISALA':I2Ox_mass, 'ISALC' : I2Ox_mass,  'O3':48 
+        }
+    else:
+        species_mass = {'SO4':96.0, 'SO4s':96.0, 'AERI': 127.0, 'O3':48.0 }
+    arr = arr*mols*species_mass[ spec ]
+
+    print species_mass[ spec ], np.sum( arr )
+
+    # convert to molecules of spec  / m^3   ( then to ng )
+#    arr = arr/ vol #*1E9
+    # convert to (nano)g/m3
+    arr = arr*1E9/vol 
+    
+    return arr
 
 # ------------------ Section 6 -------------------------------------------
 # -------------- Time Processing
