@@ -2717,7 +2717,7 @@ def get_basemap( lat, lon, resolution, projection='cyl', res='4x5',\
 # --------
 def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
             npoints=100, cb='CMRmap_r', maintain_scaling=True, \
-            negative=False, positive=False, debug=False ):
+            negative=None, positive=None, debug=False ):
     """ Create correct color map for values given array.
         This function checks whether array contains just +ve or -ve or both 
         then prescribe color map  accordingly
@@ -2729,29 +2729,37 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         print '>'*5, ('ask' not in str( type( arr ) )), type( arr )
     if 'ask' not in str(type( arr ) ):
         arr = np.ma.array(arr) 
-    s_mask = arr.mask
+#        s_mask = arr.mask
     if debug:
         print '>'*5, ('ask' not in str( type( arr ) )), type( arr )
+    
+    # If postive/negative not given, check if +ve/-ve
+    if any( [ not isinstance( i, type(None) ) for i in positive, negative ] ):
 
-    # --- sequential
-    # negative?
-    arr.mask =False
-    arr.mask[arr<=0]=True
-    if arr.mask.all():
-        negative = True
+        # --- sequential
+        # negative?
+        arr.mask =False
+        arr.mask[arr<=0]=True
+        if arr.mask.all():
+            negative = True
+
+        # postive?
+        arr.mask =False
+        arr.mask[arr>=0]=True
+        if arr.mask.all():
+            positive = True
+
+    #  reverse colourbar if negative
+    if negative:
         if cb == 'CMRmap_r':
             cb = cb[:-2]
         else:
             cb = cb+'_r'
 
-    # postive?
-    arr.mask =False
-    arr.mask[arr>=0]=True
-    if arr.mask.all():
-        positive = True
-    print 'cmap is: >{}< & data is: < postive == {}, negative == {}, divergent == {} \
-        >'.format( cb, positive, negative, \
-        (( not positive) and (not negative))   )
+    print 'cmap is: >{}< & data is:'.format( cb ) , 
+    print '< postive == {}, negative == {}, divergent == {} >'.format(  \
+            positive, negative, (( not positive) and (not negative))   )
+
     # load color map
     cmap = plt.get_cmap(cb)
 
@@ -2784,7 +2792,7 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
 #    cmap  = cmc  # pink, orange, blue alterative... 
 #    cmap  = cmd  # green - blue alternative
 
-    arr.mask = s_mask
+#    arr.mask = s_mask
     if debug:
         print cb, center_zero                  
     return cmap

@@ -443,7 +443,7 @@ def get_OH_mean( wd, debug=False ):
 # --------------
 # 1.08 - Get CH4 mean value - v/v
 # -------------
-def get_CH4_mean( wd, debug=False ):
+def get_CH4_mean( wd, rtn_global_mean=True, debug=False ):
     """ Get mean CH4 concentrtaion from geos.log files in given directory """
 
     if debug:
@@ -463,7 +463,12 @@ def get_CH4_mean( wd, debug=False ):
                     z += [ float(line.split()[-2])/1E9 ]
     if debug:
         print z, np.mean(z)
-    return np.mean(z)
+    if rtn_global_mean:
+        rtn_value = np.mean(z)
+    # return value for UK latitude
+    else:
+        rtn_value = np.array( z )[::4].mean()
+    return rtn_value
 
 # --------------
 # 1.09 - Calculated X-section printer/
@@ -1156,6 +1161,8 @@ def process_data4specs( specs=None, just_bcase_std=True, \
     if tight_constraints:
         t_ps = np.ma.masked_where( t_ps != 1, t_ps )
 
+    if debug:
+        print [ ( i.shape, i.sum() ) for i in Vars, molecs, t_ps ]
 #    Vars, molecs = [ i*t_ps[None,...] for i in Vars, molecs ]
     # remove stratospheric values
     Vars = Vars*t_ps[None,...] 
@@ -1225,9 +1232,9 @@ def process_data4specs( specs=None, just_bcase_std=True, \
         
         # sum species in family and add to returned array ( Vars )
         print np.array( [np.array(i) for i in fam] ).shape
-        fam = np.array( fam ).sum(axis=0)[None,...]
+        fam = np.ma.array( fam ).sum(axis=0)[None,...]
         print [i.shape for i in fam, Vars ]
-        Vars = np.concatenate( (Vars, fam) , axis=0 )
+        Vars = np.ma.concatenate( (Vars, fam) , axis=0 )
 
         print '!1.2'*200, [ i.shape for i in Vars, DUarrs]
         del fam
@@ -1237,9 +1244,9 @@ def process_data4specs( specs=None, just_bcase_std=True, \
                 for i in fam_specs.keys() ]
 
         # sum species in family and add to returned array ( DUarrs )
-        fam = np.array( fam ).sum(axis=0)[None,...]
+        fam = np.ma.array( fam ).sum(axis=0)[None,...]
         print [i.shape for i in fam, DUarrs ]
-        DUarrs = np.concatenate( (DUarrs, fam) , axis=0 )
+        DUarrs = np.ma.concatenate( (DUarrs, fam) , axis=0 )
 
         print '!1.3'*200, [ i.shape for i in Vars, DUarrs]
         del fam
@@ -2102,8 +2109,9 @@ def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
 def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None, \
             Iodine=False, I=False, IO=False, months=None, years=None, wd=None, \
             year_eq=True, month_eq=False, spec=None, res='4x5',debug=False ):
-    """ Convert species/tag prod/loss from molec/cm3/s] to Gg Ox yr^-1.
-        This is to work with diagnostic outputs from PORL-L$  """ 
+    """ Convert species/tag prod/loss from molec/cm3/s] to Gg (Ox) yr^-1.
+        This function was originally used to process diagnostic outputs
+        from PORL-L$  """ 
 
     if debug:
         print ' molec_cm3_s_2_Gg_Ox_np  called'
