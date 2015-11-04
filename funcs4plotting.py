@@ -108,6 +108,9 @@ from math import log10, floor
 # 4.38 - Get colormap ( dif for if all postive , all negative, mix )
 # 4.39 - Retrieves color by grouping of sensitivity study
 # 4.40 - Make segments for variable line color plot
+# 4.41 - Make colored line for plot
+# 4.42 - Get human readable gradations for plot
+# 4.43 - mk colourmap discrete 
 # 4.99 - Get input variables for  plotting
 
 
@@ -123,10 +126,11 @@ def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
             fixcb=None, nbins=25, nticks=10, mask_invalids=False,  \
             format='%.2f', adjust_window=0, f_size=20, alpha=1, \
             set_window=False, res='4x5', ax=None, case='default', units=None, \
-            drawcountries=True, debug=False, set_cb_ticks=True, title=None,   \
+            drawcountries=True,  set_cb_ticks=True, title=None,   \
             interval=1, resolution='c', shrink=0.4, window=False, everyother=1,\
-            extend='neither', degrade_resolution=False, \
-            lon_0=None, lon_1=None, lat_0=None, lat_1=None, **Kwargs):
+            extend='neither', degrade_resolution=False, discrete_cmap=False, \
+            lon_0=None, lon_1=None, lat_0=None, lat_1=None, norm=None,\
+             debug=False, **Kwargs):
     """ Plots Global/regional 2D (lon, lat) slices. Takes a numpy array and the 
         resolution of the output. The plot extent is then set by this output.
 
@@ -183,6 +187,13 @@ def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
     # ---- Grid/Mesh values for Lat, lon, & alt + cb
     if isinstance( cmap, type(None) ):
         cmap = get_colormap( arr.copy() )
+#    if discrete_cmap:
+#        if isinstance( fixcb, type(None) ):
+#            cmap, norm = mk_discrete_cmap( vmin=arr.min(), vmax=arr.max(), \
+#                    nticks=nticks, cmap=cmap )
+#        else:
+#            cmap, norm = mk_discrete_cmap( vmin=fixcb[0], vmax=fixcb[1], \
+#                    nticks=nticks, cmap=cmap )
 
     # ----------------  Basemap setup  ----------------  
     x, y = np.meshgrid(lon,lat)
@@ -224,21 +235,20 @@ def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
     # --------------  Linear plots -------------------------------
     # standard plot 
     if ( ( case == 3) or ( case== 9 ) ) and ( isinstance( fixcb, type(None) ) ):
-#        try:
-        poly = m.pcolor( lon, lat, arr, cmap=cmap, alpha=alpha )
-#        except ValueError:
-        
-#            print 'Array is the wrong shape ({}), should be lon, lat'.format( \
-#                arr.shape ) + ' ({},{})' .format( len(lon), len(lat) )
-#            sys.exit()
+        poly = m.pcolor( lon, lat, arr, cmap=cmap, norm=norm, alpha=alpha )
 
     if ( ( case == 3) or ( case== 9 ) ) and (not isinstance(fixcb,type(None) )):
-        poly = m.pcolor( lon, lat, arr, cmap=cmap, vmin=fixcb[0], \
-                        vmax=fixcb[1], alpha=alpha )
+        poly = m.pcolor( lon, lat, arr, cmap=cmap, norm=norm, 
+                        vmin=fixcb[0], vmax=fixcb[1], alpha=alpha )
+#        poly = m.pcolormesh( lon, lat, arr, cmap=cmap, clevs=clevs,\
+#                        vmin=fixcb[0], vmax=fixcb[1], alpha=alpha )
+
+#    print norm
+#    sys.exit() 
 
     # -----------------  Log plots ---------------------------------------------
     if (case == 4 ) and ( isinstance(fixcb,type(None) )):  # log and cmap
-
+        # CAUTION - norm/discrete cmapvariables not passed <= update this
         poly = m.pcolor(lon, lat, arr, norm=LogNorm(vmin=arr.min(), \
             vmax=arr.max()), cmap=cmap)#'PuBu_r')
 
@@ -255,12 +265,14 @@ def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
             print np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), lvls
 
     if (case == 4 ) and (not isinstance(fixcb,type(None) )):  # log and set min
+        # CAUTION - clevs variables not passed <= update this
         poly = m.pcolor(lon, lat, arr, norm=LogNorm(vmin=fixcb[0], \
             vmax=arr.max()), cmap=cmap)#'PuBu_r')
 
         if no_cb:
             pass
         else:
+            # CAUTION - clevs variables not passed <= update this
             # create log with 1000 p
             lvls = np.logspace( np.ma.log(vmin), np.ma.log(vmax), 1E5, 
                 endpoint=True )
@@ -278,6 +290,7 @@ def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
 
     # ----------------  Colorbars  ----------------  
     if not no_cb:
+        # CAUTION - clevs variables not passed <= update this
         if isinstance( cb, type(None) ):
             cb = plt.colorbar( poly, ax = m.ax, shrink=shrink, alpha=alpha,  \
                         format=format, ticks= np.linspace(tickmin, tickmax, \
@@ -1235,7 +1248,8 @@ def plot_specs_surface_change_monthly2pdf( arr, res='4x5', dpi=160, \
                 map_plot( arr[n,:,:,0,m].T*scale, cmap=cmap, case=9, res=res,\
                     no_cb=True, f_size=f_size, fixcb=fixcb, window=True,\
                     set_window=set_window,lat_0=lat_0, lat_1=lat_1, \
-                    mask_invalids=mask_invalids, debug=debug)
+                    mask_invalids=mask_invalids, clevs=clevs,\
+                    debug=debug)
                 plt.title(month.strftime("%b"), fontsize=f_size*2)
 
             # Add single colorbar
@@ -2561,12 +2575,12 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     orientation='vertical', f_size=20, rotatecbunits='vertical', nticks=10, \
     extend='neither', norm=None, log=False,  format=None, cmap=None,\
     vmin=0, vmax=10, cb_ax=None, ticklocation='auto', extendfrac=.075, \
-    sigfig_rounding_on_cb =2, debug=False):
+    sigfig_rounding_on_cb=2, lvls=None, discrete_cmap=False, debug=False):
     """ Create Colorbar. This allows for avoidance of basemap's issues with 
         spacing definitions when conbining with colorbar objects within a plot 
     """
     # Get colormap (by feeding get_colormap array of min and max )
-    if isinstance(cmap, type(None)):
+    if isinstance( cmap, type(None) ):
         cmap = get_colormap( arr=np.array( [vmin,vmax]   ) )
 
     if debug:
@@ -2582,15 +2596,6 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     # Setup normalisation for colorbar
     if isinstance( norm, type(None) ):
         if log:
-#            if units=='%':
-        # Is this correct? - should dynamically calculate this... 
-    #     vmin, vmax = 1 , 100  
-#            nticks=nticks*2
-            # normalise the colors
-            norm = mpl.colors.LogNorm(vmin=vmin, vmax=vmax)
-            # old method
-#            lvls = np.logspace( np.ma.log(vmin), np.ma.log(vmax), nticks )  
-
             # create log with 1000 p
             lvls = np.logspace( np.ma.log(vmin), np.ma.log(vmax), 1E5, 
                 endpoint=True )
@@ -2605,25 +2610,13 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
 
         else:
             norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
-            lvls = np.linspace( vmin, vmax, nticks, endpoint=True )                         
-        
-        print lvls
 
-        # Use 2 significant figures for colourbar 
-        if ( ( abs( int( vmax)) == 0) and (abs( int( vmax)) == 0) ):
-            sigfig_rounding_on_cb += 1
-        round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
-        print abs(lvls[-2])-abs(lvls[-3])
-        lvls_diff = round_to_n( abs(lvls[-2])-abs(lvls[-3]), \
-                                sigfig_rounding_on_cb)
-        vmax_rounded = round_to_n( vmax, sigfig_rounding_on_cb)
-        print vmax_rounded,  lvls_diff, nticks
-#        lvls = np.array([ vmin_rounded + lvls_diff*i for i in range( nticks ) ])
-        lvls = np.array([ vmax_rounded - lvls_diff*i for i in range( nticks ) ])   
+    if isinstance( lvls, type(None) ):            
+        # make graduations in colourbar to be human readable
+        lvls = get_human_readable_gradations( vmax=vmax,  \
+            vmin=vmin, nticks=nticks, \
+            sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
         print lvls
-#        lvls = [ round_to_n( i, sigfig_rounding_on_cb) for i in lvls ]
-#        print lvls
-
 
     # add an extra decimal place for values under 50, 
     # and two for values under 1
@@ -2642,7 +2635,7 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
 
             # change to scientific notation max+min abs values less than 1
             if ( ( abs( int( vmax)) == 0) and (abs( int( vmax)) == 0) ):
-                format='%.0E'  # hashed prior
+#                format='%.0E'  # hashed prior
                 format='%.1E'
                 f_size = f_size *.75
 
@@ -2667,19 +2660,29 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
                 ' for log scales'
             sys.exit(0)
         else:
-            extend_points=(lvls.max()-lvls.min())*extendfrac
+            print lvls
+            if discrete_cmap:
+                boundaries = lvls
+            else:
+                extend_points=(lvls.max()-lvls.min())*extendfrac
+                boundaries = [lvls.min()-extend_points]+ list(lvls) + \
+                    [extend_points+lvls.max()]
 
+        # the following code isn't active, why is it here? <= update
         # increase the space allowed for the colorbar 
         # (the extension  is not summative )
-        if orientation=='horizontal':
-            width += width*extendfrac
-        if orientation=='vertical':
-            height += height*extendfrac
+#        if orientation=='horizontal':
+#            width += width*extendfrac
+#        if orientation=='vertical':
+#            height += height*extendfrac
+
+        print lvls, norm, boundaries
 
         cb = mpl.colorbar.ColorbarBase(cb_ax, cmap=cmap, format=format,\
                 norm=norm, ticks=lvls, extend=extend, extendfrac=extendfrac,\
-                boundaries=[lvls.min()-extend_points]+ list(lvls) + \
-                [extend_points+lvls.max()], \
+                boundaries=boundaries, \
+                spacing='proportional',
+#                spacing='uniform',
                 orientation=orientation, ticklocation=ticklocation)
     
     # set cb label sizes
@@ -2697,7 +2700,7 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
 # --------
 # 4.36 - Create base map for plotting
 # --------
-def get_basemap( lat, lon, resolution, projection='cyl', res='4x5',\
+def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
             everyother=1, f_size=10, interval=1, label_y=False, \
             show_grid=True, drawcountries=False ):
     """ Creates a basemap object. 
@@ -2890,7 +2893,7 @@ def make_segments(x, y):
 
 
 # --------
-# 4.40 - Make colored line for plot
+# 4.41 - Make colored line for plot
 # --------
 def colorline( x, y, z=None, cmap=plt.get_cmap('copper'),  \
         norm=None, linewidth=3, alpha=1.0, ax=None, fig=None, \
@@ -2950,6 +2953,74 @@ def colorline( x, y, z=None, cmap=plt.get_cmap('copper'),  \
         axcb.set_label( cb_title )
 
     return lc
+
+# --------
+# 4.42 - Get human readable gradations for plot
+# --------
+def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
+            nticks=10, sigfig_rounding_on_cb=2, debug=False ):
+
+    if isinstance( lvls, type(None) ):
+        lvls = np.linspace( vmin, vmax, nticks, endpoint=True )
+
+    # --- Adjust graduations in colourbar to be human readable
+    if ( ( abs( int( vmax)) == 0) and (abs( int( vmax)) == 0) ):
+        sigfig_rounding_on_cb += 1
+
+    # significant figure ( sig. fig. ) rounding func.
+    round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
+    
+    # get current gradations
+    if debug:
+        print abs(lvls[-2])-abs(lvls[-3])    
+    lvls_diff = round_to_n( abs(lvls[-2])-abs(lvls[-3]), \
+                                sigfig_rounding_on_cb)
+
+    # round top of colorbar lvls, then count down from this
+    vmax_rounded = round_to_n( vmax, sigfig_rounding_on_cb)
+    if debug:
+        print vmax_rounded,  lvls_diff, nticks
+    lvls = np.array([ vmax_rounded - lvls_diff*i \
+            for i in range( nticks ) ][::-1])   
+        
+    return lvls
+# --------
+# 4.43 - mk colourmap discrete 
+# --------
+def mk_discrete_cmap( lvls=None, cmap=None, arr=None,\
+            vmin=0, vmax=10, nticks=10, debug=False ):
+    """ Make a discrete colormap from an existing cmap
+    NOTE: the data will now need to normalised the range of lvls """
+
+    debug=True
+    
+    # define bins
+    if isinstance( lvls, type(None) ):
+        bounds = np.linspace( vmin, vmax, nticks, endpoint=True )
+    else:
+        bounds = lvls
+    
+    # get colormap if not provided
+    if isinstance( cmap, type(None) ):
+        cmap = get_colormap( np.array([vmin, vmax]) )
+
+    if debug:
+        print lvls, vmin, vmax, nticks
+    
+    # extract colors
+#    cmaplist = [ cmap(i) for i in range( len(lvls ) ) ]
+    cmaplist = [cmap(i) for i in range(cmap.N)]
+
+    # force the first color entry to be grey
+#    cmaplist[0] = (.5,.5,.5,1.0)
+
+    # create the new discrete cmap
+    cmap = cmap.from_list('Custom cmap', cmaplist, cmap.N )
+
+    # make norm... -  define the bins and normalize
+    norm = mpl.colors.BoundaryNorm( bounds,  cmap.N)
+
+    return cmap, norm
 
 # -------------
 # 4.99 - Input for plotting  
