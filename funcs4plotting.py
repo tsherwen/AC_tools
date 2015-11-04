@@ -125,7 +125,7 @@ def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
             set_window=False, res='4x5', ax=None, case='default', units=None, \
             drawcountries=True, debug=False, set_cb_ticks=True, title=None,   \
             interval=1, resolution='c', shrink=0.4, window=False, everyother=1,\
-            extend='neither', degrade_resolution=False, 
+            extend='neither', degrade_resolution=False, \
             lon_0=None, lon_1=None, lat_0=None, lat_1=None, **Kwargs):
     """ Plots Global/regional 2D (lon, lat) slices. Takes a numpy array and the 
         resolution of the output. The plot extent is then set by this output.
@@ -297,7 +297,7 @@ def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
 #            cb.locator = tick_locator
 #            cb.update_ticks()
 
-    plt.grid(grid)
+    plt.grid( grid )
 
     if not isinstance( title, type(None) ):
         plt.title(title, fontsize=f_size*1.5)
@@ -305,7 +305,7 @@ def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
     return_l = [ plt ] 
     if not no_cb:
         return_l += [ cb ]
-    if (return_m):
+    if return_m:
         return_l += [ m ]
     return return_l
 
@@ -2699,9 +2699,11 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
 # --------
 def get_basemap( lat, lon, resolution, projection='cyl', res='4x5',\
             everyother=1, f_size=10, interval=1, label_y=False, \
-            drawcountries=False ):
-    """ Create basemap. This should be used for first slide in python animated 
-            videos to save computation """
+            show_grid=True, drawcountries=False ):
+    """ Creates a basemap object. 
+
+        This should be used for first slide in python animated 
+        videos to save computation """
 
     m = Basemap(projection=projection,llcrnrlat=lat[0],urcrnrlat=lat[-1],\
                         llcrnrlon=lon[0],\
@@ -2731,7 +2733,7 @@ def get_basemap( lat, lon, resolution, projection='cyl', res='4x5',\
     # draw parrelel lines
     plt.yticks( parallels[::everyother], fontsize = f_size ) 
     m.drawcoastlines()
-    plt.grid(True)
+    plt.grid( show_grid )
 
     return m
  
@@ -2779,12 +2781,12 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         else:
             cb = cb+'_r'
 
-    print 'cmap is: >{}< & data is:'.format( cb ) , 
+    print 'cmap is: >{}< & data is:'.format( cb ), 
     print '< postive == {}, negative == {}, divergent == {} >'.format(  \
             positive, negative, (( not positive) and (not negative))   )
 
     # load color map
-    cmap = plt.get_cmap(cb)
+    cmap = plt.get_cmap( cb )
 
     # Chop off bottom for 'gnuplot2' 
     if (negative and ( 'gnuplot2' in cb)) or (positive and ( 'CMRmap' in cb)):
