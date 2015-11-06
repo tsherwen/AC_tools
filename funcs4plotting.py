@@ -121,7 +121,7 @@ from math import log10, floor
 # ----
 # 1.01 - Map plot for given array and resolution (lon, lat
 # -----
-def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
+def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             cmap=None, no_cb=False, cb=None, rotatecbunits='horizontal',  \
             fixcb=None, nbins=25, nticks=10, mask_invalids=False,  \
             format='%.2f', adjust_window=0, f_size=20, alpha=1, \
@@ -175,7 +175,7 @@ def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
     lon, lat, NIU = get_latlonalt4res( res, centre=centre )
 
     if set_window:
-        # convert lats and lons to GC lats and restrict lats, lons, and arr
+        # Convert lats and lons to GC lats and restrict lats, lons, and arr
         if not isinstance( lat_0, type(None) ):
             gclat_0, gclat_1 = [ get_gc_lat(i, res=res) for i in lat_0, lat_1 ]
             lat = lat[ gclat_0:gclat_1 ]
@@ -242,9 +242,6 @@ def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
                         vmin=fixcb[0], vmax=fixcb[1], alpha=alpha )
 #        poly = m.pcolormesh( lon, lat, arr, cmap=cmap, clevs=clevs,\
 #                        vmin=fixcb[0], vmax=fixcb[1], alpha=alpha )
-
-#    print norm
-#    sys.exit() 
 
     # -----------------  Log plots ---------------------------------------------
     if (case == 4 ) and ( isinstance(fixcb,type(None) )):  # log and cmap
@@ -322,11 +319,10 @@ def map_plot(arr, return_m=False, grid=False, gc_grid=False, centre=False,     \
         return_l += [ m ]
     return return_l
 
-
 # --------
 # 1.02 - Zonal plot - log or linear
 # --------
-def zonal_plot(arr, fig, ax=None, title=None, tropics=False, \
+def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
     f_size=10, c_off=37, format='%.2f', interval=None, nticks=7,no_cb=False, \
     units=None, shrink=0.4, alpha=1, res='4x5', window=False, cmap=None, \
     log=False, fixcb=None, lower_limited=False, nlvls=25, xlimit =None, \
@@ -375,7 +371,7 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, \
         print [ (i.mean(), i.min(), i.max()) for i in [ arr[: ,:c_off]  ] ]
     min, max  =  [ (i.min(), i.max()) for i in [ arr[: ,:c_off]  ] ][0] 
 
-    # limit cb to top of troposphere
+    # Limit cb to top of (GEOS-Chem chemical) troposphere
     alt = alt[:c_off+1]
 
     # Plot settings for window plots
@@ -435,7 +431,7 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, \
                             alpha=alpha, ticks= np.linspace(np.ma.min(arr), \
                             np.ma.max(arr), nticks ))
 
-    # setup Y axis    
+    # Setup Y axis    
     if (not isinstance( units, type( None) )) and (not no_cb):
         cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)                      
 
@@ -443,7 +439,7 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, \
     if ylabel:
         plt.ylabel('Altitude / km', fontsize=f_size*.75)
     
-    # setup X axis
+    # Setup X axis
     plt.xticks( parallels, fontsize=f_size*.75 ) # draw parrelel lines 
     if tropics:
         plt.xlim( -26, 26 )
@@ -457,7 +453,7 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, \
         plt.xlabel('Latitude', fontsize=f_size*.75)
     plt.yticks( fontsize=f_size*.75 )
 
-    # add title if provided    
+    # Add title if provided    
     if (title != None):
         plt.title(title, fontsize=f_size*1.5)
 
@@ -2490,7 +2486,7 @@ def annotate_gc_grid(ax, res='4x5', f_size=6.5, loc_list=[ [-9999,-9999] ],
                      fontsize=f_size, color=color )
 
 # --------
-# 4.31 - Func for centering colorbar
+# 4.31 - Function for centering colorbar
 # --------
 def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, \
             upper=1,start_center=0.5, stop=1.0, maintain_scaling=True,\
@@ -2500,7 +2496,7 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, \
     original: "http://stackoverflow.com/questions/7404116/defining-the-  \
     midpoint-of-a-colormap-in-matplotlib "
     
-    ORINGAL DESCRIPTION:
+    ORGINAL DESCRIPTION:
     Function to offset the "center" of a colormap. Useful for
     data with a negative min and positive max and you want the
     middle of the colormap's dynamic range to be at zero
@@ -2602,8 +2598,6 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
 
             # select relevant indices ( linearly spaced integers )
             print nticks
-#            lvls = lvls[ gen_log_space( 1000, 75) ]
-#            lvls =  lvls[ gen_log_space( 1E4, nticks*10) ]  #+ lvls[-1]
             lvls =  [ lvls[0] ] + list( lvls[ gen_log_space( 1E5,  \
                 nticks*15) ] ) + [ lvls[-1] ]
             lvls= np.array( lvls )

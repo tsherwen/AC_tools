@@ -1875,37 +1875,37 @@ def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
         arr_ = arr
     else:
         # Kg/m2/ s => Kg/ s
-        arr = arr*s_area
+        arr_ = arr*s_area
 
         # Kg/ s => "kg / monthly" 
-        arr = arr * m_adjust
+        arr_ = arr_ * m_adjust
         # (Gg? - no ) I / month 
-        arr = arr*1E3/ species_mass(spec)* float(species_mass('I')) * \
+        arr_ = arr_*1E3/ species_mass(spec)* float(species_mass('I')) * \
                     float(spec_stoich(spec)) 
 
     if nmonl_m2_d:
         # convert to / m2
-        arr  =  arr / s_area 
+        arr_  =  arr_ / s_area 
 
         # convert to / day
-        arr  =  arr / (365./12.) 
+        arr_  =  arr_ / (365./12.) 
 
         # convert to nmol 
-        arr  =  ( arr / float(species_mass('I') ) ) / float(spec_stoich(spec)) 
-        arr_ = arr*1E9
+        arr_  =  ( arr_ / float(species_mass('I') ) ) / float(spec_stoich(spec)) 
+        arr_ = arr_*1E9
 
         if debug:
-            print 'get_emiss - 2', arr.shape
+            print 'get_emiss - 2', arr_.shape
 
     if molec_cm2_s:
         # from  "I Gg/month" to "I Gg/month/cm/2" #convert to /m2 => cm/2
-        arr  =  arr / (s_area *10000.) 
+        arr_  =  arr_ / (s_area *10000.) 
 
         # convert to / day => hour => hour => minute => sec 
-        arr  =  arr / (365./12.) / 24. / 60. / 60. 
+        arr_  =  arr_ / (365./12.) / 24. / 60. / 60. 
 
         # convert to molecules 
-        arr_ = ( arr / float(species_mass('I') ) ) /float(spec_stoich(spec)) *\
+        arr_ = ( arr_ / float(species_mass('I') ) ) /float(spec_stoich(spec)) *\
                         constants('AVG')  
 
         if debug:
