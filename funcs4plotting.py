@@ -682,20 +682,27 @@ def obs_month_plot(data, color=None, title=None, rtn_data=False, \
     """ Plot up seaonal (monthly ) data. Requires data, and dates in numpy 
         array form. Dates must be as datetime.datetime objects. 
          - REDUNDENT? (see 1.13) """
+
+    # Setup decimal day list
     day_time= [i+float(1/23) for i in range(23) ]
     if debug:
         print data.shape
         print day_time
-	if (plt_day):
+
+    # Plot up all data <= this is inefficient. 
+	if plt_day:
 	    for i in range( len( data[0,:] ) ) :
 	    	day_d = data[:,i]  # select day's data and convert to -1
         	plt.plot(day_time , day_d , alpha=0.1, color=color)
-	if (rtn_data):
+
+    # Return data?
+	if rtn_data:
 		if debug:
 			print 'rtn_data'
 #		day_time, 
 		data_ = np.ma.mean(data[:,:],axis=1)
 		return day_time, data_
+    # Plot up daily decimal days
 	else :
 		if debug:
 			print ' not - rtn_data'
@@ -883,7 +890,8 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
             window=False, label=None, ylabel=None, loc='upper right',  \
             lw=1,ls='-', color=None, start_month=7, end_month=7, \
             boxplot=True, showmeans=False, alt_text=None, r_plt=False, \
-            unitrotation=45, color_by_z=False, fig=None,  debug=False ):
+            unitrotation=45, color_by_z=False, fig=None,  
+            positive=None, debug=False ):
     """ Plot up month timeseries of values. Requires data, and dates in numpy 
         array form. Dates must be as datetime.datetime objects. """
 
@@ -909,7 +917,7 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         print df.columns
         x = df.index
         y, z = [ df[ df.columns[i] ] for i in range(2) ]
-        cmap = get_colormap( z.copy() )
+        cmap = get_colormap( z.copy(), positive=positive )
         print [ ( i.min(), i.max() ) for i in x, y, z ]
         colorline(x, y, z, cmap=cmap, linewidth=lw, ax=ax, \
             norm=plt.Normalize( 0, 360 ), fig=fig ) #np.min(z), 1500))
