@@ -549,7 +549,7 @@ def unix_time(dt):
 # --------------
 # 1.30 - Process time/date to CV days equivilent - mje
 # -------------
-# translate year to "since2006" function
+""" translate year to "since2006" function """
 def year_to_since_2006(model):
     year=(model[:,0]//10000)
     month=((model[:,0]-year*10000)//100)

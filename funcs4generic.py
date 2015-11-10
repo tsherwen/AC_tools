@@ -469,13 +469,16 @@ def ice_mask(res='4x5', debug=False):
 # --------
 # 2.04 - Surface mask
 # --------
-def surface_mask(res='4x5', debug=False):
+def surface_mask( res='4x5', trop_limit=False, debug=False ):
     """ Get surface mask  """
 
     # Create a np.ma mask 
     m=np.ma.array( np.zeros( get_dims4res(res) ), mask=False)
     m[...,0] = 1
     m = np.ma.masked_not_equal(m, 1)
+
+    if trop_limit:
+        m = m[...,:38]
     if debug:
         print mask, mask.shape
     return m.mask
@@ -605,7 +608,7 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
 # --------
 # 2.11 - Custom 2D (Lat) Mask
 # --------
-def mask_2D_lat2lat( lowerlat, higher_lat, res='2x2.5', debug=False ):
+def mask_2D_lat2lat( lowerlat=None, higherlat=None, res='2x2.5', debug=False ):
     """
     Takes a lower and higher latitude value and then creates 
     mask to given given limits.
@@ -615,7 +618,7 @@ def mask_2D_lat2lat( lowerlat, higher_lat, res='2x2.5', debug=False ):
     lon_c, lat_c, NIC = get_latlonalt4res( res=res, centre=True )
 
     # mask between upper and lower values
-    lats =  [ i for i in lat_c if ( (i>=lowerlat) and (i<higher_lat) )]
+    lats =  [ i for i in lat_c if ( (i>=lowerlat) and (i<higherlat) )]
     lats = [ get_gc_lat(i, res=res) for i in  lats ]
 
     # fill all lat and lon True or False
