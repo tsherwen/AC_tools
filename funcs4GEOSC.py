@@ -384,8 +384,7 @@ def get_Gg_species(ctm_f,species,air_mass,v_box, diagnostics=None,debug=False):
 # ------------- 
 def get_air_mass_np( ctm_f=None, wd=None, times=None, trop_limit=True,\
             debug=False ):
-    """ Get array of air mass in kg
-        Note: not compatible with PyGChem 0.3.0  """
+    """ Get array of air mass in kg """
 
     if debug:
         print 'called get air mass'
@@ -1764,8 +1763,7 @@ def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
         REDUNDENT - use get_gc_burden instead """
 
     if not isinstance(a_m, np.ndarray):
-        a_m = get_air_mass_np( ctm_f=ctm, wd=wd, debug=debug, \
-            dtype=np.float64 )[...,:38,:]
+        a_m = get_air_mass_np( ctm_f=ctm, wd=wd, debug=debug )[...,:38,:]
     if not isinstance(t_p, np.ndarray):
         # retain PyGChem 0.2.0 approach for back compatibility
         if pygchem.__version__ == '0.2.0':
@@ -1916,14 +1914,16 @@ def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
 # --------
 # 2.12 - Get CH4 Lifetime - 2.45E-12, -1775
 # --------
-def get_CH4_lifetime( ctm_f, wd, years=None, months=None, K=None, \
-            vol=None, a_m=None, t_p=None, monthly=False, debug=False ):
+def get_CH4_lifetime( ctm_f=None, wd=None, years=None, months=None, \
+            vol=None, a_m=None, t_p=None, monthly=False, trop_limit=True, \
+            debug=False ):
     """ Get CH4 lifetime using reaction rate in globchem.dat and OH/CH4
          mean concentrations from geos.log """
+
     if not isinstance(vol, np.ndarray):
-        vol = get_volume_np( ctm_f ) # cm^3 
+        vol = get_volume_np( ctm_f =ctm_f, wd=wd, trop_limit=trop_limit ) # cm^3 
     if not isinstance(a_m, np.ndarray):
-        a_m = get_air_mass_np( ctm_f, dtype=np.float64 )  # Kg
+        a_m = get_air_mass_np( ctm_f=ctm_f, wd=wd, trop_limit=trop_limit )  # Kg
 
     #  number of moles in box
     moles     = ( a_m *1E3 ) / constants( 'RMM_air') * constants( 'AVG')  
@@ -1933,11 +1933,14 @@ def get_CH4_lifetime( ctm_f, wd, years=None, months=None, K=None, \
     #*  kg  per grid box
     arr = arr * moles *  constants( 'AVG') / vol 
 
-    # get loss rate - in kg/s
-#    LCH4 = get_gc_data_np(ctm_f, spec='CH4Loss', category='CH4-LOSS') # only works for CH4 sim.
+    # get loss rate - in kg/s - only works for CH4 sim.
+#    LCH4 = get_gc_data_np(ctm_f, spec='CH4Loss', \
+#            category='CH4-LOSS') 
 
     # calc from reaction loss rate with OH
-    K    = get_gc_data_np(ctm_f, spec='TMPU', category='DAO-3D-$')  # K
+#    K    = get_gc_data_np(ctm_f, spec='TMPU', category='DAO-3D-$')  # K
+    K = get_GC_output( wd=wd, vars=[u'DAO_3D_S__TMPU'] ) # K
+
     OH   = get_OH_mean( wd ) * 1E5   # [molec/cm3] 
     LCH4 = 2.45E-12 * np.exp( (-1775. / K)  )   # cm^3  molec.^-1  s^-1    # rate per grid box 
 
@@ -1971,7 +1974,7 @@ def species_v_v_to_Gg(arr, spec, a_m=None, Iodine=True, All =False, \
     """ Convert array of species in v/v to Gg """
 
     if not isinstance(a_m, np.ndarray):
-        a_m     =  get_air_mass_np( ctm_f, dtype=np.float64, debug=debug )  # kg
+        a_m     =  get_air_mass_np( ctm_f, debug=debug )  # kg
      #  number of moles in box ( g / g mol-1 (air) )
     moles     = ( a_m *1E3 ) / constants( 'RMM_air')   
     if debug:
@@ -2009,6 +2012,7 @@ def get_volume_np(ctm_f=None, box_height=None, s_area=None, res='4x5', \
                 debug=debug )
 
             # Gotcha for single (None) time dimension output:
+            # <= improve this - this only works for 4x5 resolution
             none_time_dim_shapes = (72, 46, 47), (72, 46, 38) 
             if any( [ box_height.shape == i for i in none_time_dim_shapes ]) :
                 box_height= box_height[...,None]
