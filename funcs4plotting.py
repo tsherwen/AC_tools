@@ -2583,6 +2583,9 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     """ Create Colorbar. This allows for avoidance of basemap's issues with 
         spacing definitions when conbining with colorbar objects within a plot 
     """
+    
+    debug=True
+
     # Get colormap (by feeding get_colormap array of min and max )
     if isinstance( cmap, type(None) ):
         cmap = get_colormap( arr=np.array( [vmin,vmax]   ) )
@@ -2649,6 +2652,9 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
             vmax, vmin = 500,-500
             extend = 'both'
 
+    if debug:
+        print lvls, norm, extend, format, ticklocation
+
     # Make cb with given details 
     if (extend == 'neither') or (log==True):
         cb = mpl.colorbar.ColorbarBase(cb_ax, cmap=cmap, format=format,\
@@ -2678,7 +2684,7 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
 #        if orientation=='vertical':
 #            height += height*extendfrac
 
-        print lvls, norm, boundaries
+        print lvls, norm, boundaries, extend
 
         cb = mpl.colorbar.ColorbarBase(cb_ax, cmap=cmap, format=format,\
                 norm=norm, ticks=lvls, extend=extend, extendfrac=extendfrac,\
@@ -2747,12 +2753,28 @@ def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
 # --------
 def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
             npoints=100, cb='CMRmap_r', maintain_scaling=True, \
-            negative=None, positive=None, debug=False ):
+            negative=None, positive=None, sigfig_rounding_on_cb=2, \
+            buffer_cmap_upper=False, fixcb=None, nticks=10,  \
+            debug=False ):
     """ Create correct color map for values given array.
         This function checks whether array contains just +ve or -ve or both 
         then prescribe color map  accordingly
-    """
     
+        this function also will can adjust colormaps to fit a given set of
+        ticks
+    """
+
+    # Make sure cmap includes range of all readable levels (lvls)
+    # i.e head of colormap often rounded for ascetic/readability reasons
+    if buffer_cmap_upper:
+        lvls, lvls_diff  = get_human_readable_gradations( vmax=fixcb[1],  \
+            vmin=fixcb[0], nticks=nticks,  rtn_lvls_diff=True, \
+            sigfig_rounding_on_cb=sigfig_rounding_on_cb   )
+
+        # increase maximum value in color by 5% to allow space for max lvl
+        fixcb_ = ( fixcb[0],  lvls[-1]+ ( lvls_diff*0.05 ))
+        arr = np.array( fixcb_ )
+        
     # make sure array has a mask
     if debug:
         print arr, [ ( i.min(), i.max() ) for i in [arr] ]
@@ -2823,9 +2845,13 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
 #    cmap  = cmd  # green - blue alternative
 
 #    arr.mask = s_mask
+
     if debug:
         print cb, center_zero                  
-    return cmap
+    if buffer_cmap_upper:
+        return cmap, fixcb_
+    else:
+        return cmap
  
 # --------
 # 4.38 - Retrieves color by grouping of sensitivity study
@@ -2960,7 +2986,10 @@ def colorline( x, y, z=None, cmap=plt.get_cmap('copper'),  \
 # 4.42 - Get human readable gradations for plot
 # --------
 def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
-            nticks=10, sigfig_rounding_on_cb=2, debug=False ):
+            nticks=10, sigfig_rounding_on_cb=2, \
+            sigfig_rounding_on_cb_ticks=2, \
+            sigfig_rounding_on_cb_lvls=2, rtn_lvls_diff=False, \
+            debug=False ):
 
     if isinstance( lvls, type(None) ):
         lvls = np.linspace( vmin, vmax, nticks, endpoint=True )
@@ -2972,20 +3001,40 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     # significant figure ( sig. fig. ) rounding func.
     round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
     
-    # get current gradations
+    # Get current gradations
     if debug:
-        print abs(lvls[-2])-abs(lvls[-3])    
-    lvls_diff = round_to_n( abs(lvls[-2])-abs(lvls[-3]), \
-                                sigfig_rounding_on_cb)
+        print abs(lvls[-2])-abs(lvls[-3]), abs(lvls[-3])-abs(lvls[-2]), lvls,\
+                     sigfig_rounding_on_cb
+    try:
+        lvls_diff = round_to_n( abs(lvls[-2])-abs(lvls[-3]), \
+                                sigfig_rounding_on_cb_ticks)
+    # handle if values (2,3) are both negative
+    except:
+        lvls_diff = round_to_n( abs(lvls[-3])-abs(lvls[-2]), \
+                                sigfig_rounding_on_cb_ticks)                                
 
-    # round top of colorbar lvls, then count down from this
-    vmax_rounded = round_to_n( vmax, sigfig_rounding_on_cb)
+    # ---  Round top of colorbar lvls, then count down from this
+    # first get top numer rounded up to nearest lvls diff 
+    # caution, this may result in a number outisde the cmap, 
+    # ( if this is the case then the the cmap needs to be created
+    # with a buffer, i.e. use lvl[-1] from add_cmap_upper_edge_buffer=True
+    vmax_rounded = myround( vmax, base=lvls_diff,  integer=False )
+    # then only take 2 sig fig
+    print vmax, vmax_rounded
+    vmax_rounded = round_to_n( vmax_rounded, sigfig_rounding_on_cb)
     if debug:
         print vmax_rounded,  lvls_diff, nticks
     lvls = np.array([ vmax_rounded - lvls_diff*i \
             for i in range( nticks ) ][::-1])   
-        
-    return lvls
+    if debug:
+        print lvls, len( lvls )
+
+#    # ensure returned ticks are to a maximum of 2 sig figs. 
+#    lvls = [ round_to_n( i, sigfig_rounding_on_cb_lvls) for i in lvls ]
+    if rtn_lvls_diff:
+        return lvls, lvls_diff
+    else:
+        return lvls
 # --------
 # 4.43 - mk colourmap discrete 
 # --------
