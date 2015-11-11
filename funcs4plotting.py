@@ -3014,14 +3014,19 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
                                 sigfig_rounding_on_cb_ticks)                                
 
     # ---  Round top of colorbar lvls, then count down from this
-    # first get top numer rounded up to nearest lvls diff 
-    # caution, this may result in a number outisde the cmap, 
-    # ( if this is the case then the the cmap needs to be created
-    # with a buffer, i.e. use lvl[-1] from add_cmap_upper_edge_buffer=True
-    vmax_rounded = myround( vmax, base=lvls_diff,  integer=False )
-    # then only take 2 sig fig
-    print vmax, vmax_rounded
-    vmax_rounded = round_to_n( vmax_rounded, sigfig_rounding_on_cb)
+    # first get top numer rounded up to nearest 'lvls_diff'
+    # caution, this may result in a number outside the cmap, 
+    # solution: use get_colormap, with buffer_cmap_upper=True
+    #  if values are >0, 
+    if vmax > lvls_diff:
+        print vmax, lvls_diff
+        vmax_rounded = myround( vmax, base=lvls_diff,  integer=False )
+        vmax_rounded = round_to_n( vmax_rounded, sigfig_rounding_on_cb)
+    else:
+        # <= update needed! - add function to round negative numbers
+        # ( this method also fails if vmax<lvls_diff )
+        vmax_rounded = vmax
+
     if debug:
         print vmax_rounded,  lvls_diff, nticks
     lvls = np.array([ vmax_rounded - lvls_diff*i \
