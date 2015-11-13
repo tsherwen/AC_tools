@@ -557,11 +557,16 @@ def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
         avgs = np.ma.array([np.ma.mean(i) for i in binned]  )
     else:
         avgs = np.ma.array([np.ma.median(i) for i in binned]  )
-    avg = np.mean(avgs)
+    avg = np.ma.mean( avgs )
+    max_ = np.ma.max( avgs )
 #    print avgs, avg, np.ma.max( avgs )
     
     if fractional:
-        y = ( avgs - np.ma.max( avgs )  )  / avgs *100
+#        y = ( avgs - np.ma.max( avgs )  )  / avgs *100
+#        y = ( avgs - np.ma.max( avgs )  )  / avg *100
+        y = ( avgs - np.ma.max( avgs )  )  / max_*100
+        print 'test'*100, avg, max_, avgs
+
         ymin, ymax =  -0.15, 0.025 
         ymin, ymax =  [i*100 for i in ymin, ymax ]
         units = '%'
