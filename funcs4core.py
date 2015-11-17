@@ -5,6 +5,7 @@
 # ---- Section 0 ----- Modules required
 
 import numpy as np
+from netCDF4 import Dataset
 import platform
 
 # --------------- ------------- ------------- ------------- ------------- 
@@ -108,6 +109,8 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
     dims = {
     '4x5' :  (72,46,47), 
     '2x2.5':(144,91,47) , 
+    '1x1' :  (360,181,47), 
+    '0.5x0,5' :  (720,361,47), 
     '0.5x0.666':(121,81,47) ,
     '0.25x0.3125':(177, 115, 47)
     }
@@ -143,52 +146,68 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
 # ----                                                                                                                                                        
 #  1.05 - Get grid values of lon, lat, and alt for a given resolution                                                                                                                         
 # ----                                                                                                                                                        
-def get_latlonalt4res(res='4x5', centre=True, hPa=False, nest=None, \
-            debug=False):
+def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
+            dtype=None, wd=None, \
+            lat_bounds=u'latitude_bnds', lon_bounds=u'longitude_bnds',\
+            lon_var=u'longitude', lat_var=u'latitude', debug=False ):
     """ Return lon, lat, and alt for a given resolution. 
         This function uses an updated version of gchem's variable 
         dictionaries """ 
     
+    # Kludge. Update function to pass "wd" 
+    # if model output directory ("wd") not provided use default directory
+    if isinstance( wd, type(None) ):
+        dwd = get_dir( 'dwd') + '/misc_ref/'
+        dir = {
+        '4x5':'/LANDMAP_LWI_ctm',  \
+        '2x2.5': '/LANDMAP_ctm_2x25',  \
+        '0.5x0.666' :'LANDMAP_LWI_ctm_05x0666',  \
+        '0.25x0.3125' :'LANDMAP_LWI_ctm_025x03125',  \
+        }[res]
+        wd = dwd +dir
+
     if debug:
-        print res, centre, hPa, nest
+        print res, centre, hPa, nest, type( res)
+
+    if centre:
+        # Extract lat and lon from model output data file
+        with Dataset( wd+'/ctm.nc', 'r' ) as d:
+            lat = np.array( d[lat_var] )    
+            lon = np.array( d[lon_var] )        
+
+    # Get edge values
+    else:
+        # Extract lat and lon from model output data file
+        with Dataset( wd+'/ctm.nc', 'r' ) as d:
+            lat = np.array( d[lat_bounds] )    
+            lon = np.array( d[lon_bounds] )  
+
+            # select lower edge of each bound, and final upper edge
+            lat = [i[0] for i in lat ]+[ lat[-1][1] ]
+            lon = [i[0] for i in lon ]+[ lon[-1][1] ]            
+            lat, lon = [np.array(i) for i in lat, lon ]
 
     # Get dictionary variable name in Gerrit's GEOS-Chem dimensions list
-    if centre:
-        lon, lat = { 
-        '4x5': ['c_lon_4x5' , 'c_lat_4x5'  ],
-        '2x2.5':  ['c_lon_2x25' , 'c_lat_2x25' ], 
-        '0.5x0.666' :[ 'c_lon_05x0667_EU', 'c_lat_05x0667_EU' ], 
-        '0.25x0.3125': ['c_lon_025x03125_EU', 'c_lat_025x03125_EU' ]
-        }[res]
-    else:
-        lon, lat = { 
-        '4x5': ['e_lon_4x5' , 'e_lat_4x5' ],
-        '2x2.5': ['e_lon_2x25' , 'e_lat_2x25' ], 
-        '0.5x0.666' : ['e_lon_05x0667_EU', 'e_lat_05x0667_EU'] , 
-        '0.25x0.3125': ['e_lon_025x03125_EU', 'e_lat_025x03125_EU' ]
-        }[res]
-              
-    # Override lat/lon variable name selection for nested grid (China)
-    if nest == 'CH':
-        if centre:
-            lon, lat = 'c_lon_05x0667_CH', 'c_lat_05x0667_CH'
-        else:
-            lon, lat = 'e_lon_05x0667_CH', 'c_lat_05x0667_CH'
+    # ( now only doing this for alt, as alt values not in model output? )
     if hPa:
         alt = 'c_hPa_geos5_r'
     else:
         alt='c_km_geos5_r'
+    d = gchemgrid(rtn_dict=True)
+    alt = d[alt]
 
     # Also provide high resolution grid if requested from this function all
     if nest =='high res global':
         lon, lat = np.arange(-180, 180, 0.25), np.arange(-90, 90, 0.25)
         return lon, lat, alt
 
-    # Return values from gchemgrid
-    d = gchemgrid(rtn_dict=True)
     if debug:
         print lon, lat, alt
-    return  [ d[i] for i in lon, lat, alt ]
+    rtn_list =  lon, lat, alt 
+    if not isinstance( dtype, type( None ) ):
+        return [ i.astype( dtype ) for i in rtn_list ]
+    else:
+        return  rtn_list
 
 # --------------
 # 1.06 - Convert from hPa to km or vice versa.
@@ -243,83 +262,6 @@ def find_nearest(array,value):
 
 def gchemgrid(input=None, rtn_dict=False, debug=False):
     d = {
-    # 4x5                                                                                        
-    'c_lon_4x5' : np.arange(-180, 175+5, 5) ,
-    'e_lon_4x5' : np.arange(-182.5, 177.5+5, 5) ,
-    'c_lat_4x5' : np.array( [-89]+ range(-86, 90, 4)+ [89] ),
-    'e_lat_4x5' : np.array( [-90]+ range(-88, 92, 4)+ [90] ),
-
-    # 2x2.5                                                                                      
-    'e_lon_2x25' : np.arange(-181.25, 178.75+.5,2.5),
-    'c_lon_2x25' : np.arange(-180, 177.5+2.5, 2.5),
-    'e_lat_2x25' :np.array( [-90]+range(-89, 91, 2)+[90] ) ,
-    'c_lat_2x25' : np.array( [-89.5]+range(-88, 90, 2)+[89.5] ),
-
-    # China nested grid                                                                          
-    'c_lon_05x0667_CH' : np.arange(70, 150+0.667, 0.667) ,
-    'c_lat_05x0667_CH' : np.arange(-11, 55+.5, 0.5) ,
-    'e_lon_05x0667_CH' : np.arange(70-(0.667/2), 150+0.667, 0.667) ,
-    'e_lat_05x0667_CH' : np.arange(-11-(.5/2), 55+.5, 0.5) ,
-
-    # Europe nested grid (0.5*0.5)                                                                    
-    'c_lon_05x0667_EU'  : np.array([
-    float(i) for i in np.arange(-30., 50+0.667, 0.667 ) 
-    ]) ,
-    'c_lat_05x0667_EU' : np.arange(30, 70+.5, 0.5),
-    'e_lon_05x0667_EU' : np.arange( -30.333, 50.333+0.666, 0.667),
-    'e_lat_05x0667_EU' : np.arange(29.75, 70.25+0.25, 0.5 ),
-
-    # Europe nested grid (0.25*0.3125)                                                                    
-    'c_lat_025x03125_EU' : np.arange(32.750, 61.25+.25, .25), 
-    'c_lon_025x03125_EU' : np.arange(-15, 40+.3125, .3125), 
-#    'e_lat_025x03125_EU' : np.arange(32.750-(.25/2), 61.25+(.25/2)+.25, .25), 
-#    'e_lon_025x03125_EU' : np.arange(-15-(.3125/2), 40+(.3125/2)+.3125, .3125), 
-
-    'e_lat_025x03125_EU': np.array([ 32.75,  33.  ,  33.25,  33.5 ,  33.75,  
-        34.,  34.25,  34.5 ,
-        34.75,  35.  ,  35.25,  35.5 ,  35.75,  36.  ,  36.25,  36.5 ,
-        36.75,  37.  ,  37.25,  37.5 ,  37.75,  38.  ,  38.25,  38.5 ,
-        38.75,  39.  ,  39.25,  39.5 ,  39.75,  40.  ,  40.25,  40.5 ,
-        40.75,  41.  ,  41.25,  41.5 ,  41.75,  42.  ,  42.25,  42.5 ,
-        42.75,  43.  ,  43.25,  43.5 ,  43.75,  44.  ,  44.25,  44.5 ,
-        44.75,  45.  ,  45.25,  45.5 ,  45.75,  46.  ,  46.25,  46.5 ,
-        46.75,  47.  ,  47.25,  47.5 ,  47.75,  48.  ,  48.25,  48.5 ,
-        48.75,  49.  ,  49.25,  49.5 ,  49.75,  50.  ,  50.25,  50.5 ,
-        50.75,  51.  ,  51.25,  51.5 ,  51.75,  52.  ,  52.25,  52.5 ,
-        52.75,  53.  ,  53.25,  53.5 ,  53.75,  54.  ,  54.25,  54.5 ,
-        54.75,  55.  ,  55.25,  55.5 ,  55.75,  56.  ,  56.25,  56.5 ,
-        56.75,  57.  ,  57.25,  57.5 ,  57.75,  58.  ,  58.25,  58.5 ,
-        58.75,  59.  ,  59.25,  59.5 ,  59.75,  60.  ,  60.25,  60.5 ,
-        60.75,  61.  ,  61.25]) , 
-    'e_lon_025x03125_EU' : np.array([-15.  , -14.69, -14.38, -14.06, -13.75, 
-        -13.44, -13.12, -12.81,
-       -12.5 , -12.19, -11.88, -11.56, -11.25, -10.94, -10.62, -10.31,
-       -10.  ,  -9.69,  -9.38,  -9.06,  -8.75,  -8.44,  -8.12,  -7.81,
-        -7.5 ,  -7.19,  -6.88,  -6.56,  -6.25,  -5.94,  -5.62,  -5.31,
-        -5.  ,  -4.69,  -4.38,  -4.06,  -3.75,  -3.44,  -3.12,  -2.81,
-        -2.5 ,  -2.19,  -1.88,  -1.56,  -1.25,  -0.94,  -0.62,  -0.31,
-         0.  ,   0.31,   0.62,   0.94,   1.25,   1.56,   1.88,   2.19,
-         2.5 ,   2.81,   3.12,   3.44,   3.75,   4.06,   4.38,   4.69,
-         5.  ,   5.31,   5.62,   5.94,   6.25,   6.56,   6.88,   7.19,
-         7.5 ,   7.81,   8.12,   8.44,   8.75,   9.06,   9.38,   9.69,
-        10.  ,  10.31,  10.62,  10.94,  11.25,  11.56,  11.88,  12.19,
-        12.5 ,  12.81,  13.12,  13.44,  13.75,  14.06,  14.38,  14.69,
-        15.  ,  15.31,  15.62,  15.94,  16.25,  16.56,  16.88,  17.19,
-        17.5 ,  17.81,  18.12,  18.44,  18.75,  19.06,  19.38,  19.69,
-        20.  ,  20.31,  20.62,  20.94,  21.25,  21.56,  21.88,  22.19,
-        22.5 ,  22.81,  23.12,  23.44,  23.75,  24.06,  24.38,  24.69,
-        25.  ,  25.31,  25.62,  25.94,  26.25,  26.56,  26.88,  27.19,
-        27.5 ,  27.81,  28.12,  28.44,  28.75,  29.06,  29.38,  29.69,
-        30.  ,  30.31,  30.62,  30.94,  31.25,  31.56,  31.88,  32.19,
-        32.5 ,  32.81,  33.12,  33.44,  33.75,  34.06,  34.38,  34.69,
-        35.  ,  35.31,  35.62,  35.94,  36.25,  36.56,  36.88,  37.19,
-        37.5 ,  37.81,  38.12,  38.44,  38.75,  39.06,  39.38,  39.69,  40.  ]), 
-
-    # generic arrays                                                                             
-    'e_lon_generic' : np.arange(-180.0,181.0),
-    'c_lon_generic' : np.arange(-179.5,180.0),
-    'e_lat_generic' : np.arange(-90.0,91.0),
-    'c_lat_generic' : np.arange(-89.5,90.0),
 
     # Altitude - Grid box level edges (eta coordinate):                                          
     'e_eta_geos5_r' : np.array([

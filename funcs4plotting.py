@@ -2758,7 +2758,7 @@ def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
 # --------
 def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
             npoints=100, cb='CMRmap_r', maintain_scaling=True, \
-            negative=None, positive=None, sigfig_rounding_on_cb=2, \
+            negative=False, positive=False, sigfig_rounding_on_cb=2, \
             buffer_cmap_upper=False, fixcb=None, nticks=10,  \
             debug=False ):
     """ Create correct color map for values given array.

@@ -40,7 +40,7 @@
 # 1.22 - Get var data for model run ( PyGChem >0.3.0 version combatible )
 # 1.23 - Get  surface data from HDF of surface plane flight data
 # 1.24 - Get gc resolution from ctm.nc
-
+# 1.25 - Get surface area ( m^2 ) for any global resolution
 
 # --------------- ------------- ------------- ------------- ------------- ------------- ------------- 
 # ---- Section 2 ----- Data Processing tools/Extractors - GC...
@@ -150,7 +150,21 @@ def open_ctm_bpch(wd, fn='ctm.bpch', debug=False):
         This is a vestigle programme, based on pychem version 0.2.0.
         Updates have made this incompatibile. 
         
-        Update functions to use iris class. 
+        Update functions to use iris class. e.g. 
+        
+        if :
+        wd = <run directory of containing ctm.bpch files/ctm.nc file to analyse>
+        then:
+        # setup variables 
+        list_of_species =  ['NO', 'O3', 'PAN', 'CO', 'ALK4']
+
+        # convert to Iris Cube/NetCDF naming form 
+        list_of_species = ['IJ_AVG_S__'+i for i in list_of_species ]
+
+        # this will return data as a 5D array ( species, lon, lat, alt, time)
+        data = get_GC_output( wd, vars=list_of_species )
+        
+
     """
     
     if ( debug ) :
@@ -1615,7 +1629,128 @@ def get_gc_res( wd ) :
 
     return res 
 
-# ------------------------------------------- Section 3 -------------------------------------------
+# ----
+# 1.25 - Get surface area ( m^2 ) for any global resolution
+# ----
+def calc_surface_area_in_grid( res='1x1', debug=False ):
+    """
+        Use GEOS-Chem appraoch for GEOS-Chem grid surface areas.
+
+        <= update this to take any values for res... 
+
+        Credit: Bob Yantosca
+        Original docs from ( grid_mod ):
+            !======================================================================
+    ! Compute grid box surface areas (algorithm from old "input.f")
+    !
+    ! The surface area of a grid box is derived as follows:
+    ! 
+    !    Area = dx * dy
+    !
+    ! Where:
+    !
+    !    dx is the arc length of the box in longitude
+    !    dy is the arc length of the box in latitude
+    !  
+    ! Which are computed as:
+    !  
+    !    dx = r * delta-longitude
+    !       = ( Re * cos[ YMID[J] ] ) * ( 2 * PI / IIIPAR )
+    !
+    !    dy = r * delta-latitude
+    !       = Re * ( YEDGE[J+1] - YEDGE[J] )
+    !  
+    ! Where:
+    !    
+    !    Re         is the radius of the earth
+    !    YMID[J]    is the latitude at the center of box J
+    !    YEDGE[J+1] is the latitude at the N. Edge of box J
+    !    YEDGE[J]   is the latitude at the S. Edge of box J
+    !
+    ! So, the surface area is thus:
+    ! 
+    !    Area = ( Re * cos( YMID[J] ) * ( 2 * PI / IIIPAR ) *
+    !             Re * ( YEDGE[J+1] - YEDGE[J] )
+    !
+    !    2*PI*Re^2    {                                            }      
+    ! = ----------- * { cos( YMID[J] ) * ( YEDGE[J+1] - YEDGE[J] ) }
+    !     IIIPAR      {                                            }
+    !
+    ! And, by using the trigonometric identity:
+    !
+    !    d sin(x) = cos x * dx
+    !
+    ! The following term:
+    !
+    !    cos( YMID[J] ) * ( YEDGE[J+1] - YEDGE[J] ) 
+    !
+    ! May also be written as a difference of sines:
+    !
+    !    sin( YEDGE[J+1] ) - sin( YEDGE[J] ) 
+    ! 
+    ! So the final formula for surface area of a grid box is:
+    ! 
+    !            2*PI*Re^2    {                                     }
+    !    Area = ----------- * { sin( YEDGE[J+1] ) - sin( YEDGE[J] ) }
+    !              IIIPAR     {                                     }
+    !
+    !
+    ! NOTES:
+    ! (1) The formula with sines is more numerically stable, and will 
+    !      yield identical global total surface areas for all grids.
+    ! (2) The units are determined by the radius of the earth Re.
+    !      if you use Re [m], then surface area will be in [m2], or
+    !      if you use Re [cm], then surface area will be in [cm2], etc.
+    ! (3) The grid box surface areas only depend on latitude, as they
+    !      are symmetric in longitude.  To compute the global surface
+    !      area, multiply the surface area arrays below by the number
+    !      of longitudes (e.g. IIIPAR).
+    ! (4) At present, assumes that GEOS-Chem will work on a
+    !      Cartesian grid.
+    !
+    ! (bmy, 4/20/06, 2/24/12)
+    !======================================================================
+        
+
+    """
+
+    if debug:
+        print 'called calc surface area in grid'
+
+    # Get latitudes and longitudes in grid    
+    lon_e, lat_e, NIU = get_latlonalt4res( res=res, centre=False, debug=debug )    
+    lon_c, lat_c, NIU = get_latlonalt4res( res=res, centre=False, debug=debug )    
+
+    # Set variables values
+    PI_180 = pi/ 180.0
+    Re = 6.375E6  # Radius of Earth [m] 
+    lon_c = len( lon_c )
+    
+    # Loop lats and calculate area    
+    A1x1 = []
+    for n, lat_ in enumerate( lat_e[:-1] ):
+
+        # Lat at S and N edges of 1x1 box [radians]
+        S = PI_180 * lat_e[n]
+        N = PI_180 * lat_e[n+1]        
+
+        # S to N extent of grid box [unitless]
+        RLAT    = np.sin( N ) - np.sin( S )
+
+        # 1x1 surface area [m2] (see [GEOS-Chem] "grid_mod.f" for algorithm)
+        A1x1 += [ 2.0 * pi * Re * Re / lon_c  * RLAT ]
+
+    A1x1 = np.array( A1x1 )
+    if debug:
+        print A1x1
+        print [ (i.shape, i.min(),i.max() ) for i in [ A1x1 ] ]
+
+    # convert to 2D array / apply to all longitudes 
+    A1x1 = np.array( [ list( A1x1 ) ] * lon_c )
+
+    return A1x1
+
+# ----------------------- Section 3 -------------------------------------------
 # -------------- Data Processing tools/drivers
 #
 
