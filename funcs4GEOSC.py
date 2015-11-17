@@ -1724,8 +1724,9 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
     # Set variables values
     PI_180 = pi/ 180.0
     Re = np.float64( 6.375E6 ) # Radius of Earth [m] 
-    lon_degrees = float( 360 )
-    
+    lon_dim = get_dims4res(res=res)[0]
+    lon_degrees = float( lon_dim )
+
     # Loop lats and calculate area    
     A1x1 = []
     for n, lat_ in enumerate( lat_e[:-1] ):
@@ -1746,7 +1747,7 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
         print [ (i.shape, i.min(),i.max() ) for i in [ A1x1 ] ]
 
     # convert to 2D array / apply to all longitudes 
-    A1x1 = np.array( [ list( A1x1 ) ] * int(lon_degrees) )
+    A1x1 = np.array( [ list( A1x1 ) ] * int(lon_dim) )
 
     return A1x1
 

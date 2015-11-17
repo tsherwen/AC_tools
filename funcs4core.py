@@ -178,8 +178,7 @@ def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
 
     if debug:
         print res, centre, hPa, nest, type( res)
-
-    print wd+'/'+filename, res
+        print wd+'/'+filename, res
 
     if centre:
         # Extract lat and lon from model output data file
@@ -199,18 +198,22 @@ def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
             lon = [i[0] for i in lon ]+[ lon[-1][1] ]            
             lat, lon = [np.array(i) for i in lat, lon ]
 
-    # Kludge - mannually give edge values for 1x1
-    if (not centre) and ( res=='1x1'):
-        lat = np.array( [-90]+list(np.arange(-89-0.5, 90+.5, 1))+[90] )
-        lon = np.arange(-180-0.5, 180+.5, 1)
+    # Kludge - mannually give values for 1.0x1.0
+    if res=='1x1':
+        if centre:
+            lat = np.arange(-90, 90+1, 1)
+            lon = np.arange(-180, 180, 1)     
+        else:
+            lat = np.array( [-90]+list(np.arange(-89-0.5, 90+.5, 1))+[90] )
+            lon = np.arange(-180-0.5, 180+.5, 1)
 
-    # Kludge - mannually give edge values for 0.5x0.5
+    # Kludge - mannually give values for 0.5x0.5
     if res=='0.5x0.5':
         if centre:
             lat = np.array( [-90]+list(np.arange(-89, 90, .5))+[90] )
             lon = np.arange(-180, 180, .5)             
         else:
-            lat = np.array( [-90]+list(np.arange(-89-0.25, 90+.25, .5))+[90] )
+            lat = np.array( [-90]+list(np.arange(-89.75, 90+.25, .5))+[90] )
             lon = np.arange(-180-0.25, 180+.25, .5)        
 
 

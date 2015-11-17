@@ -64,7 +64,8 @@ from AC_tools.funcs_vars import *
 # 2.15 - South Hemisphere mask
 # 2.16 - Get Analysis maskes (list of masks and titles)
 # 2.17 - Get single mask ( single maks: e.g. tropical ) 
-
+# 2.18 - Custom 2D mask by Lat (just give Lats) 
+# 2.19 - EU mask
     
 # -------------------------- Section 7 -------------------------------
 # -------------- Generic Processing
@@ -874,7 +875,7 @@ def mask_all_but( region=None, M_all=False, saizlopez=False, \
     return mask
     
 # --------
-# 2.11 - Custom 2D (Lon) Mask
+# 2.18 - Custom 2D (Lon) Mask
 # --------
 def mask_2D_lon2lon( lowerlon, higherlon, res='2x2.5', debug=False ):
     """
@@ -883,16 +884,38 @@ def mask_2D_lon2lon( lowerlon, higherlon, res='2x2.5', debug=False ):
     """
 
     # Get vars
-    lon_c, lat_c, NIC = get_latlonalt4res( res=res, centre=True )
+    lon_c, lat_c, NIU = get_latlonalt4res( res=res, centre=True )
+    if debug:
+        print lon_c, lowerlon, higherlon
 
-    # mask between upper and lower values
-    lats =  [ i for i in lon_c if ( (i>=lowerlon) and (i<higherlon) )]
-    lats = [ get_gc_lon(i, res=res) for i in  lats ]
+    # Mask between upper and lower values
+    lons =  [ i for i in lon_c if ( (i>=lowerlon) and (i<higherlon) )]
+    lons = [ get_gc_lon(i, res=res) for i in  lons ]
 
-    # fill all lat and lon True or False
+    # Fill all lat and lon True or False
     m=np.zeros(get_dims4res(res))[:,:,0]
     print m.shape, np.sum(m)
-    for i in lats:
+    for i in lons:
         m[i,:] = 1
     m = np.ma.masked_not_equal(m, 1)
     return m.mask
+    
+# --------
+# 2.19 - EU mask
+# --------
+def get_EU_mask( res='1x1',  ):
+    """ Mask 'EU' as defined by EU grid """
+
+    # Get GEOS-Chem EU lat and lons
+    lon, lat, NIU = get_latlonalt4res( res='0.5x0.666' )
+
+    # mask lats
+    m1 = mask_2D_lat2lat( lowerlat=lat.min(), higherlat=lat.max(), res=res )
+    
+    # mask lons
+    m2 = mask_2D_lon2lon( lowerlon=lon.min(), higherlon=lon.max(), res=res )
+
+    #  conbine maskes 
+    m = m1 + m2 
+    
+    return m
