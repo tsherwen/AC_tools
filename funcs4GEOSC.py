@@ -1719,12 +1719,12 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
 
     # Get latitudes and longitudes in grid    
     lon_e, lat_e, NIU = get_latlonalt4res( res=res, centre=False, debug=debug )    
-    lon_c, lat_c, NIU = get_latlonalt4res( res=res, centre=False, debug=debug )    
+    lon_c, lat_c, NIU = get_latlonalt4res( res=res, centre=True, debug=debug )    
 
     # Set variables values
     PI_180 = pi/ 180.0
-    Re = 6.375E6  # Radius of Earth [m] 
-    lon_c = len( lon_c )
+    Re = np.float64( 6.375E6 ) # Radius of Earth [m] 
+    lon_degrees = float( 360 )
     
     # Loop lats and calculate area    
     A1x1 = []
@@ -1738,7 +1738,7 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
         RLAT    = np.sin( N ) - np.sin( S )
 
         # 1x1 surface area [m2] (see [GEOS-Chem] "grid_mod.f" for algorithm)
-        A1x1 += [ 2.0 * pi * Re * Re / lon_c  * RLAT ]
+        A1x1 += [ 2.0 * pi * Re * Re / lon_degrees  * RLAT ]
 
     A1x1 = np.array( A1x1 )
     if debug:
@@ -1746,7 +1746,7 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
         print [ (i.shape, i.min(),i.max() ) for i in [ A1x1 ] ]
 
     # convert to 2D array / apply to all longitudes 
-    A1x1 = np.array( [ list( A1x1 ) ] * lon_c )
+    A1x1 = np.array( [ list( A1x1 ) ] * int(lon_degrees) )
 
     return A1x1
 

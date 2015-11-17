@@ -106,11 +106,12 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
         just2D=False, debug=False):
     """ Get dimension of GEOS-Chem output for given resolution """
 
+    # Dictionary of max dimensions of standard GEOS-Chem output
     dims = {
     '4x5' :  (72,46,47), 
     '2x2.5':(144,91,47) , 
     '1x1' :  (360,181,47), 
-    '0.5x0,5' :  (720,361,47), 
+    '0.5x0.5' :  (720,361,47), 
     '0.5x0.666':(121,81,47) ,
     '0.25x0.3125':(177, 115, 47)
     }
@@ -147,7 +148,7 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
 #  1.05 - Get grid values of lon, lat, and alt for a given resolution                                                                                                                         
 # ----                                                                                                                                                        
 def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
-            dtype=None, wd=None, \
+            dtype=None, wd=None, filename='ctm.nc',\
             lat_bounds=u'latitude_bnds', lon_bounds=u'longitude_bnds',\
             lon_var=u'longitude', lat_var=u'latitude', debug=False ):
     """ Return lon, lat, and alt for a given resolution. 
@@ -161,24 +162,35 @@ def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
         dir = {
         '4x5':'/LANDMAP_LWI_ctm',  \
         '2x2.5': '/LANDMAP_ctm_2x25',  \
+        '1x1' : '/work/data/GEOS/HEMCO/EMEP/v2015-03/',\
+        # Kludge, use 1x1 for 0.5x0.5 <= remove this
+        '0.5x0.5' :'/work/data/GEOS/HEMCO/EMEP/v2015-03/',\
         '0.5x0.666' :'LANDMAP_LWI_ctm_05x0666',  \
         '0.25x0.3125' :'LANDMAP_LWI_ctm_025x03125',  \
         }[res]
         wd = dwd +dir
+    
+        if (res=='1x1') or (res=='0.5x0.5'):
+            filename='EMEP.geos.1x1.nc'
+            lat_var = 'lat'
+            lon_var = 'lon'
+            wd = '/work/data/GEOS/HEMCO/EMEP/v2015-03/'
 
     if debug:
         print res, centre, hPa, nest, type( res)
 
+    print wd+'/'+filename, res
+
     if centre:
         # Extract lat and lon from model output data file
-        with Dataset( wd+'/ctm.nc', 'r' ) as d:
+        with Dataset( wd+'/'+filename, 'r' ) as d:
             lat = np.array( d[lat_var] )    
             lon = np.array( d[lon_var] )        
 
     # Get edge values
-    else:
+    if (not centre) and ( not any([(res==i) for i in '1x1', '0.5x0.5' ]) ):
         # Extract lat and lon from model output data file
-        with Dataset( wd+'/ctm.nc', 'r' ) as d:
+        with Dataset( wd+'/'+filename, 'r' ) as d:
             lat = np.array( d[lat_bounds] )    
             lon = np.array( d[lon_bounds] )  
 
@@ -186,6 +198,21 @@ def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
             lat = [i[0] for i in lat ]+[ lat[-1][1] ]
             lon = [i[0] for i in lon ]+[ lon[-1][1] ]            
             lat, lon = [np.array(i) for i in lat, lon ]
+
+    # Kludge - mannually give edge values for 1x1
+    if (not centre) and ( res=='1x1'):
+        lat = np.array( [-90]+list(np.arange(-89-0.5, 90+.5, 1))+[90] )
+        lon = np.arange(-180-0.5, 180+.5, 1)
+
+    # Kludge - mannually give edge values for 0.5x0.5
+    if res=='0.5x0.5':
+        if centre:
+            lat = np.array( [-90]+list(np.arange(-89, 90, .5))+[90] )
+            lon = np.arange(-180, 180, .5)             
+        else:
+            lat = np.array( [-90]+list(np.arange(-89-0.25, 90+.25, .5))+[90] )
+            lon = np.arange(-180-0.25, 180+.25, .5)        
+
 
     # Get dictionary variable name in Gerrit's GEOS-Chem dimensions list
     # ( now only doing this for alt, as alt values not in model output? )
