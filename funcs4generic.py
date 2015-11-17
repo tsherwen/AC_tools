@@ -904,7 +904,10 @@ def mask_2D_lon2lon( lowerlon, higherlon, res='2x2.5', debug=False ):
 # 2.19 - EU mask
 # --------
 def get_EU_mask( res='1x1',  ):
-    """ Mask 'EU' as defined by EU grid """
+    """ Mask 'EU' as defined by GEOS-Chem EU grid
+        the grid of "'0.5x0.666" resolution is used by default, but
+        any list of lat and lons could be provided and the extremities 
+        would be used as the mask edges  """
 
     # Get GEOS-Chem EU lat and lons
     lon, lat, NIU = get_latlonalt4res( res='0.5x0.666' )

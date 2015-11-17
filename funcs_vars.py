@@ -585,7 +585,7 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         }
     if C:
         d = {
-    'ACET': 3.0, 'ALD2': 2.0, 'C2H6': 2.0, 'C3H8': 3.0, 'ISOP': 5.0
+    'ACET': 3.0, 'ALD2': 2.0, 'C2H6': 2.0, 'C3H8': 3.0, 'ISOP': 5.0, 'PRPE': 3, 
         }
     if Br:
          d= {
