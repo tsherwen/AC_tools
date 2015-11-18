@@ -568,7 +568,7 @@ def mask_extratropics( res='4x5'):
 def unmask_all(res='4x5', ones=True):
     """ Get un-masked mask of size GEOS-Chem dimensions  """
 
-    return np.ma.array(np.ones(get_dims4res(res)), mask=False).mask
+    return np.ma.array( np.ones(get_dims4res(res) ), mask=False).mask
 
 # --------
 # 2.10 - Maskes Regions by Pressure
@@ -844,22 +844,33 @@ def mask_all_but( region=None, M_all=False, saizlopez=False, \
 #      'North >60': 3
     }[region]
     
-    # for case pull mask from dictionary....
-    mask = {
-    0 : mask_tropics( res=res, saizlopez=saizlopez ), 
-    1: mask_mid_lats( res=res ),
-    4: unmask_all( res=res ), 
-    5: mask_extratropics(res=res), 
-    6: ocean_mask( res=res ), 
-    7: mask_NH( res=res ), 
-    8: mask_SH( res=res  ),
-    9: ocean_mask( res=res ), 
-    10: ice_mask( res=res ), 
-    11: land_mask( res=res ), 
-    12: mask_lat40_2_40( res=res ), 
-    13: ocean_mask( res=res ) * mask_tropics( res=res, saizlopez=saizlopez ), 
-    14: land_mask( res=res ) * mask_tropics( res=res, saizlopez=saizlopez )
-    }[case]
+    # For case, pull mask from case list 
+    if case == 0:
+        mask = mask_tropics( res=res, saizlopez=saizlopez )
+    if case == 1:
+        mask = mask_mid_lats( res=res )
+    if case == 4:
+        mask = unmask_all( res=res )
+    if case == 5:
+        mask = mask_extratropics(res=res)
+    if case == 6:
+        mask = ocean_mask( res=res )
+    if case == 7:
+        mask = mask_NH( res=res )
+    if case == 8:
+        mask = mask_SH( res=res  )
+    if case == 9:
+         ocean_mask( res=res )
+    if case == 10:
+        mask =ice_mask( res=res )
+    if case == 11:
+        mask =  land_mask( res=res )
+    if case == 12:
+        mask = mask_lat40_2_40( res=res )
+    if case == 13:
+         mask = ocean_mask(res=res)*mask_tropics(res=res, saizlopez=saizlopez)
+    if case == 14:
+        mask = land_mask( res=res )*mask_tropics( res=res, saizlopez=saizlopez )
 
     # invert mask to leave exception unmasked...
     mask = np.logical_not(mask)

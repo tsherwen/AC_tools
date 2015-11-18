@@ -2252,9 +2252,17 @@ def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
 def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None, \
             Iodine=False, I=False, IO=False, months=None, years=None, wd=None, \
             year_eq=True, month_eq=False, spec=None, res='4x5',debug=False ):
-    """ Convert species/tag prod/loss from molec/cm3/s] to Gg (Ox) yr^-1.
+    """ Convert species/tag prod/loss from "molec/cm3/s" to "Gg (Ox) yr^-1".
+
         This function was originally used to process diagnostic outputs
-        from PORL-L$  """ 
+        from PORL-L$  
+        
+        Alterate Output term apart from Ox are possible ( e.g. I, mass ... )
+        Just stipulate input species  
+        
+        Output can also be requested on a monthly basis 
+        ( set  month_eq=True,  and year_eq=False )
+        """ 
 
     if debug:
         print ' molec_cm3_s_2_Gg_Ox_np  called'
@@ -2276,6 +2284,7 @@ def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None, \
             RMM =  species_mass(rxn) 
         else:
             RMM =  species_mass('O3')             
+        # Return mass in terms of species provide ( if given )
         if not isinstance( spec, type(None) ):
             RMM = species_mass( spec  )
         arr = ( arr * vol[:,:,:38,:] ) / constants( 'AVG') * RMM /1E9
@@ -2712,7 +2721,7 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
      # [kg/s] => g / s    of I equiv.
     if Iodine:
 
-        # retain back compatibility
+        # Retain back compatibility
         if pygchem.__version__ == '0.2.0':
             dep_w  = [ [ get_gc_data_np(ctm_f, spec ,category=var, \
                 debug=debug )*1E3 /species_mass(spec)*  \
@@ -2725,18 +2734,22 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
             WETDLS_S__ = get_GC_output( wd=wd, vars=['WETDLS_S__'+i \
                 for i in specs ] )
 
-            # get convective scavegning 
+            # Get convective scavegning 
             WETDCV_S__ = get_GC_output( wd=wd, vars=['WETDCV_S__'+i \
                 for i in specs ] )
 #            if debug:
             print [ i.shape for i in WETDLS_S__, WETDCV_S__  ]
 
+            # Convert to g/ s I equiv.  + conbine two lists
+            WETDLS_S__ = [ i*1E3/species_mass( specs[n] )* \
+                    species_mass('I')*spec_stoich( specs[n] )   \
+                    for n, i in enumerate( [WETDLS_S__[ii,...]  \
+                    for ii in range(len(specs)) ]  ) ]
 
-            # convert to g/ s I equiv.  + conbine two lists
-            WETDLS_S__ = [ i*1E3/species_mass( specs[n] )* species_mass('I')*spec_stoich( specs[n] )  
-                    for n, i in enumerate( [WETDLS_S__[ii,...] for ii in range(len(specs)) ]  ) ]
-            WETDCV_S__  = [ i*1E3/species_mass( specs[n] )* species_mass('I')*spec_stoich( specs[n] )  
-                    for n, i in enumerate( [WETDCV_S__ [ii,...] for ii in range(len(specs)) ]  ) ]
+            WETDCV_S__  = [ i*1E3/species_mass( specs[n] )* \
+                    species_mass('I')*spec_stoich( specs[n] )  \
+                    for n, i in enumerate( [WETDCV_S__ [ii,...] \
+                    for ii in range(len(specs)) ]  ) ]
 
             dep_w =  WETDLS_S__+ WETDCV_S__ 
             print [ i.shape for i in dep_w  ]
@@ -2744,26 +2757,27 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
                             
     # [kg/s] => g / s    # 
     else: 
-        # retain back compatibility
+        # Retain back compatibility
         if pygchem.__version__ == '0.2.0':
-            dep_w  = [ [ get_gc_data_np(ctm_f, spec ,category=var, debug=debug )*1E3  
-                for spec in specs[ii] ]  for ii,var in enumerate(w_dep)]  
+            dep_w  = [ [ get_gc_data_np(ctm_f, spec ,category=var,  \
+                    debug=debug )*1E3   \
+                    for spec in specs[ii] ]  for ii,var in enumerate(w_dep)]  
 
         else:
             # Frontal rain?
             WETDLS_S__ = get_GC_output( wd=wd, vars=['WETDLS_S__'+i \
                 for i in specs ] )*1E3
 
-            # get convective scavegning 
+            # Get convective scavegning 
             WETDCV_S__ = get_GC_output( wd=wd, vars=['WETDCV_S__'+i \
                 for i in specs ] )*1E3
 
             dep_w = [ WETDLS_S__, WETDCV_S__ ]
 
-        # concatenate list of lists
+        # Concatenate list of lists
         dep_w = [j for i in dep_w for j in i]  
 
-    # adjust to monthly values...
+    # Adjust to monthly values...
     m_adjust = d_adjust( months, years) # => Gg / month 
     dep_w = [m_adjust * arr for arr in dep_w ]
 
@@ -3016,7 +3030,9 @@ def var_in_dep(ctm_f, specs, d_=False, w_=False, d_dep=False, \
 # -------------       
 def split_4D_array_into_seasons( arr, annual_plus_seasons=True, \
             debug=False ):
-    """ split 4D ( lon, lat, alt, time) output by season"""
+    """ split 4D ( lon, lat, alt, time) output by season, then take 
+        average of the seasons 
+        NOTE: currently seasons index is mannual set assuming Jan-Dec """
     
     if debug:
         print arr.shape 
@@ -3024,7 +3040,7 @@ def split_4D_array_into_seasons( arr, annual_plus_seasons=True, \
     if annual_plus_seasons:
         seasons  = ['Annual', 'DJF', 'MAM', 'JJA', 'SON']
         # assume calender month order 
-        # ( this can be automated using get GC datetime )
+        # ( this can be automated using get_GC_datetime )
         indices = [range(0,12), [11, 0, 1], [2, 3, 4], [5, 6, 7], [8, 9, 10] ]
              
     else:
@@ -3036,14 +3052,17 @@ def split_4D_array_into_seasons( arr, annual_plus_seasons=True, \
     ars = []
     # extract data by month
     for n, s in enumerate( seasons ):
-        print s, n , indices[n] 
+        if debug:
+            print s, n , indices[n] 
         ars += [ [ arr[...,i] for i in indices[n] ] ]
     
     # average by season
-#    print [ np.array(i).shape for i in ars ], np.array(ars).mean(), seasons
-    print [ np.array(i).shape for i in ars ],  seasons
-    ars =  [ np.array(i).mean(axis=0) for i in ars]
-    print [ i.shape for i in ars ], np.array(ars).mean(), seasons
+    if debug:
+    #    print [ np.array(i).shape for i in ars ], np.array(ars).mean(), seasons
+        print [ np.ma.array(i).shape for i in ars ], seasons
+    ars =  [ np.ma.array(i).mean(axis=0) for i in ars]
+    if debug:
+        print [ i.shape for i in ars ], np.ma.array(ars).mean(), seasons
 
     # return list array averaged by season 
     return ars, seasons
@@ -3053,7 +3072,8 @@ def split_4D_array_into_seasons( arr, annual_plus_seasons=True, \
 # -------------     
 def convert_v_v2ngm3(  arr, wd=None, spec='AERI', trop_limit=True,\
             s_area=None, res='4x5', aerosol_mass=False, debug=False ):
-    """ """
+    """ Take v/v array for a species, and conver this to mass loading
+        units used as standard are ng/m3"""
 
     # Get volume (m^3, adjusted (x1E6) from cm^3) 
     vol = get_volume_np( wd=wd, trop_limit=trop_limit, s_area=s_area, \
@@ -3066,27 +3086,69 @@ def convert_v_v2ngm3(  arr, wd=None, spec='AERI', trop_limit=True,\
     # Get moles  ( converting airmass from kg 1st)
     mols = a_m*1E3/constants( 'RMM_air')
 
-    # adjust to mols, then mass ( assume AERI = 
-#    species_mass = {'SO4':96.0, 'AERI': 338.0/2, 'O3':48 }
-    # Setup dictionary of species masses... 
-    # ( this is separate from species_mass dictionary as assumptions differ)(
-    if aerosol_mass:
-        I2Ox_mass = (286.0+302.0+318.0/3)/2
-        species_mass = {
-        'SO4':96.0, 'SO4s':96.0, 'AERI': I2Ox_mass,'ISALA':I2Ox_mass, 'ISALC' : I2Ox_mass,  'O3':48 
-        }
-    else:
-        species_mass = {'SO4':96.0, 'SO4s':96.0, 'AERI': 127.0, 'O3':48.0 }
-    arr = arr*mols*species_mass[ spec ]
+    # Adjust to mols, then mass 
+    arr = arr*mols*species_mass( spec )
+    if debug:
+        print species_mass( spec ), np.sum( arr )
 
-    print species_mass[ spec ], np.sum( arr )
-
-    # convert to molecules of spec  / m^3   ( then to ng )
-#    arr = arr/ vol #*1E9
-    # convert to (nano)g/m3
+    # Convert to (nano, x1E9)g/m3
     arr = arr*1E9/vol 
     
     return arr
+    
+# --------------
+# 2.38 - Print array weighed 
+# -------------   
+def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
+            region=None, debug=False ):
+    """ Provide zonal/surface area wieghed values  """
+
+    if debug:   
+        print 'function prt_seaonal_values called '
+
+    # Get surface area
+    s_area =  get_surface_area( res=res ) # m2 land map
+    s_area = s_area[...,0]
+
+    # --- If region provided, mask elsewhere - else
+#    if not isinstance( region, type(None) ):
+    print 'debug 1', arr.shape, \
+            [ (i.min(), i.max(), i.mean()) for i in [arr] ]
+    m = mask_all_but( region )[...,None]
+    # make sure array has a mask ( even if all False )
+#    if 'ask' not in str(type( arr ) ):
+#        arr = np.ma.array(arr) 
+#    arr = np.ma.array( arr, mask=np.ma.mask_or(m, arr.mask)  )
+    arr = arr*m 
+    s_area = s_area*m[:,:,0,0]
+    print 'debug 2', arr.shape, m.shape
+
+    # Split array by seasons
+    print 'debug 3.1', arr.shape, \
+                [ (i.min(), i.max(), i.mean()) for i in [arr] ]
+    ars, seasons = split_4D_array_into_seasons( arr ) 
+    print 'debug 3.0', [ i.shape for i in ars ],   \
+            [ (i.min(), i.max(), i.mean()) for i in ars ]
+
+    # If "zonal"
+    if zonal:
+        ars = [i.mean(axis=0) for i in ars ]
+    # If not zonal return surface values
+    else:    
+        ars = [ i[...,0] for i in ars ]
+    
+    print [i.shape for i in ars ], s_area.shape, \
+            [type(i) for i in ars, ars[0], m, s_area ]
+    
+    # Print out 
+    pstr =  '{:<15}'*5
+    npstr =  '{:<15}'+'{:<15,.4f}'*4
+    print pstr.format( 'Season.', 'Min', 'Max', 'Mean' ,"wtg'd Mean" )
+    for n, s in enumerate( seasons ):
+        print npstr.format( s, 
+                    *[ (i.min(), i.max(), i.mean(),  \
+                        (i*s_area).sum()/s_area.sum()  )  \
+                            for i in [ ars[n] ] ][0] )
 
 # ------------------ Section 6 -------------------------------------------
 # -------------- Time Processing
