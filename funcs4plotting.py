@@ -76,9 +76,10 @@ from math import log10, floor
 # 1.28 - Plot up seasonal output from 4D arr (lon, lat, alt, time)
 # 1.29 - Hist X vs. Y.
 # 1.30 - PDF of annual surface change plots for given species
-
 # 1.31 - PDF of annual zonal change plots for given species
-# 1.32 - PDF of annual column change plots for given species
+# 1.32 - Figure generation ( just provide lon, lat np array )
+# 1.33 - Zonal Figure maker ( just provide lon, lat np array )
+
 
 # --------------- ------------- ------------- ------------- ------------- 
 # ---- Section 4 ----- Plotting Ancillaries 
@@ -2176,6 +2177,124 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
         plot2pdfmulti( pdff, savetitle, close=True, dpi=dpi,\
                        no_dstr=no_dstr )
 
+# --------
+# 1.32 - Spatial Figure maker ( just provide lon, lat np array )
+# --------
+def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
+    norm=None, nticks=10, format=None, units=None, extend='neither',\
+    discrete_cmap=False, f_size=15, fig=None, left_cb_pos=0.86,\
+    bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
+    dpi=160, debug=False ):
+
+    # import modules
+#    import matplotlib.pyplot as plt
+
+    # setup fig if not provided
+    if isinstance( fig, type(None) ):
+        fig = plt.figure(figsize=(15, 10), dpi=dpi, facecolor='w', \
+                                        edgecolor='k') 
+
+    print fixcb 
+
+    
+    # Set colourbar limits        
+    if isinstance( fixcb, type(None) ):
+        fixcb = np.array( [ (i.min(), i.max()) for i in [arr[...,0] ] ][0] )
+
+    print fixcb 
+
+
+    # Set readable levels for cb, then use these to dictate cmap
+    lvls = get_human_readable_gradations( vmax=fixcb[1],  \
+                    vmin=fixcb[0], nticks=nticks, \
+                    sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
+
+    # Setup Colormap
+    cmap, fixcb_buffered = get_colormap( np.array( fixcb ), \
+        nticks=nticks, fixcb=fixcb, buffer_cmap_upper=True )
+
+    if discrete_cmap:
+        cmap, norm = mk_discrete_cmap( nticks=nticks,\
+                vmin=fixcb[0], vmax=fixcb[1], cmap=cmap )
+
+    if debug:
+        print  [ (i.min(), i.max(), i.mean()) for i in [ arr[...,0] ] ]
+
+    # Plot up
+    map_plot( arr[...,0].T, format=format, cmap=cmap, fixcb=fixcb,\
+                    no_cb=True, norm=norm, f_size=f_size*.75, debug=debug )
+
+    # Manually Add colorbar
+    mk_cb(fig, units=units, left=left_cb_pos,  cmap=cmap, \
+                vmin=fixcb_buffered[0],\
+                vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
+                extend=extend, lvls=lvls, \
+                sigfig_rounding_on_cb=sigfig_rounding_on_cb, nticks=nticks, \
+                norm=norm, discrete_cmap=discrete_cmap, debug=debug )    
+
+    # Adjust plot ascetics
+    fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right,     
+                                        hspace=hspace, wspace=wspace)
+    # Show
+    plt.show()
+
+
+# --------
+# 1.33 - Zonal Figure maker ( just provide lon, lat np array )
+# --------
+def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
+    norm=None, nticks=10, format=None, units=None, extend='neither',\
+    discrete_cmap=False, f_size=15, fig=None,  res='4x5', wd=None, \
+    bottom=0.1, top=0.975, hspace=0.4, wspace=0.5, left=0.075, right=0.875, \
+    dpi=160, debug=False ):
+
+    # Create figure if not provided
+    if isinstance( fig, type(None) ):
+        fig = plt.figure(figsize=(15, 10), dpi=dpi, 
+                    facecolor='w', edgecolor='k') 
+                
+    # Set colourbar limits
+    if isinstance( fixcb, type(None) ):
+        fixcb = np.array([(i.min(), i.max()) for i in [arr.mean(axis=0)] ][0])
+
+    # Set readable levels for cb, then use these to dictate cmap
+    lvls = get_human_readable_gradations( vmax=fixcb[1],  \
+                vmin=fixcb[0], nticks=nticks, \
+                sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
+
+    # Setup Colormap
+    cmap, fixcb_buffered = get_colormap( np.array( fixcb ), \
+            nticks=nticks, fixcb=fixcb, buffer_cmap_upper=True )
+
+    #  Plot 
+    axn =[ 111 ]
+    ax = fig.add_subplot( *axn )  
+    zonal_plot( arr.mean(axis=0), fig,  ax=ax,\
+                        format=format, cmap=cmap, \
+                        fixcb=fixcb, f_size=f_size, res=res, \
+                        no_cb=True, debug=debug )
+
+    # Only show troposphere
+    t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], trop_limit=True )
+    greyoutstrat( fig, t_ps.mean(axis=0).mean(axis=-1), axn=axn, res=res )
+
+    # Manually Add colorbar
+    mk_cb(fig, units=units, left=0.885,  cmap=cmap, \
+                vmin=fixcb_buffered[0],\
+                vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
+                extend=extend, lvls=lvls, \
+                sigfig_rounding_on_cb=sigfig_rounding_on_cb, nticks=nticks, \
+                norm=norm, discrete_cmap=discrete_cmap, debug=debug )    
+
+
+    # Adjust plot ascetics
+    fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right,     
+                                        hspace=hspace, wspace=wspace)
+    # Show
+    plt.show()
+
+
+
 # --------------------------- Section 4 ------------------------------------
 # -------------- Plotting Ancillaries 
 #
@@ -2589,8 +2708,6 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
         spacing definitions when conbining with colorbar objects within a plot 
     """
     
-    debug=True
-
     # Get colormap (by feeding get_colormap array of min and max )
     if isinstance( cmap, type(None) ):
         cmap = get_colormap( arr=np.array( [vmin,vmax]   ) )
@@ -2768,6 +2885,7 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         this function also will can adjust colormaps to fit a given set of
         ticks
     """
+    positive=True
 
     # Make sure cmap includes range of all readable levels (lvls)
     # i.e head of colormap often rounded for ascetic/readability reasons
@@ -3015,6 +3133,7 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
                                 sigfig_rounding_on_cb_ticks)
     # handle if values (2,3) are both negative
     except:
+        print abs(lvls[-3])-abs(lvls[-2]), sigfig_rounding_on_cb_ticks
         lvls_diff = round_to_n( abs(lvls[-3])-abs(lvls[-2]), \
                                 sigfig_rounding_on_cb_ticks)                                
 

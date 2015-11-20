@@ -1458,7 +1458,7 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
                 print 'prior to roll axis: ', [i.shape for i in arr]
             arr = [np.rollaxis(i,0, 4) for i in arr]
             if debug:
-                print 'post to roll axis: ', [i.shape for i in arr]
+                print 'post roll axis: ', [i.shape for i in arr]
 
         # convert to GC standard 3D fmt. - lon, lat, time   
         # two reasons why 3D (  missing time dim  or  missing alt dim ) 
@@ -3100,7 +3100,7 @@ def convert_v_v2ngm3(  arr, wd=None, spec='AERI', trop_limit=True,\
 # 2.38 - Print array weighed 
 # -------------   
 def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
-            region=None, debug=False ):
+            region=None, monthly=False, debug=False ):
     """ Provide zonal/surface area wieghed values  """
 
     if debug:   
@@ -3111,24 +3111,20 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
     s_area = s_area[...,0]
 
     # --- If region provided, mask elsewhere - else
-#    if not isinstance( region, type(None) ):
-    print 'debug 1', arr.shape, \
-            [ (i.min(), i.max(), i.mean()) for i in [arr] ]
+    if debug:
+        print arr.shape, [ (i.min(), i.max(), i.mean()) for i in [arr] ]
     m = mask_all_but( region )[...,None]
-    # make sure array has a mask ( even if all False )
-#    if 'ask' not in str(type( arr ) ):
-#        arr = np.ma.array(arr) 
 #    arr = np.ma.array( arr, mask=np.ma.mask_or(m, arr.mask)  )
     arr = arr*m 
     s_area = s_area*m[:,:,0,0]
-    print 'debug 2', arr.shape, m.shape
 
-    # Split array by seasons
-    print 'debug 3.1', arr.shape, \
-                [ (i.min(), i.max(), i.mean()) for i in [arr] ]
-    ars, seasons = split_4D_array_into_seasons( arr ) 
-    print 'debug 3.0', [ i.shape for i in ars ],   \
-            [ (i.min(), i.max(), i.mean()) for i in ars ]
+    # Split array by seasons ( on months if monthly==True)
+    if monthly:
+        # this is assuming monthly output 
+        ars = [ arr[...,i] for i in range( 12 ) ]
+        seasons = num2month( rtn_dict=True).values()
+    else:
+        ars, seasons = split_4D_array_into_seasons( arr ) 
 
     # If "zonal"
     if zonal:
@@ -3143,12 +3139,16 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
     # Print out 
     pstr =  '{:<15}'*5
     npstr =  '{:<15}'+'{:<15,.4f}'*4
-    print pstr.format( 'Season.', 'Min', 'Max', 'Mean' ,"wtg'd Mean" )
+    print pstr.format( 'Season./Month', 'Min', 'Max', 'Mean' ,"wtg'd Mean" )
     for n, s in enumerate( seasons ):
         print npstr.format( s, 
-                    *[ (i.min(), i.max(), i.mean(),  \
-                        (i*s_area).sum()/s_area.sum()  )  \
+#                    *[ (i.min(), i.max(), i.mean(),  \
+#                        (i*s_area).sum()/s_area.sum()  )  \
+#                            for i in [ ars[n] ] ][0] )
+                    *[ (float( i.min() ), float( i.max() ), float( i.mean() ),\
+                        float( (i*s_area).sum()/s_area.sum() )       ) \
                             for i in [ ars[n] ] ][0] )
+
 
 # ------------------ Section 6 -------------------------------------------
 # -------------- Time Processing
