@@ -327,6 +327,8 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',debug=False):
 def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
     """ Get reaction IDs for each rxn. in spec (p/l, e.g. LOX) 
         This is the driver for the prod/loss programmes """
+
+    # Extract details on reactio in p/l family
     nums, rxns, tags, Coe = prod_loss_4_spec( wd,  spec, all_clean=True, \
         ver=ver, debug=debug )
 
@@ -365,7 +367,8 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
             
     # return a dictionary indexed by p/l tracer, with rxn #, 
     # reaction str and Coe of rxn.
-    return dict( zip( [i[0] for i in details], [ i[1:] + [ Coes[n] ]  for n, i in enumerate( details) ] ) )
+    return dict( zip( [i[0] for i in details], [ i[1:] + [ Coes[n] ]  \
+            for n, i in enumerate( details) ] ) )
 
 # -------------
 # 2.03 - Get prod loss reactions for a given family.
@@ -385,8 +388,6 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
 
     # --- get tags for tracked reactions, state where reactions are un tracked
     tags = get_p_l_tags( rxns )
-
-    debug=True
 
     # --- cleaned tags
     if all_clean:
@@ -434,7 +435,8 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
     # KLUDGE! - rm empty list values of ones that contain errs
 #    ind = [ n for n,i in enumerate(tags) if ( (len(i)==0) or (i[0] in errs) ) ] 
 #    [ [ l.pop(i) for i in sorted(ind)[::-1] ] for  l in nums, rxns, tags, Coe ]
-    print tags 
+    if debug:
+        print tags 
 
     return nums, rxns, tags, Coe
 
@@ -1238,7 +1240,8 @@ def rxns_in_pl( wd, spec='LOX', debug=False ):
         
     # -- remove 'Family' 
     rxns = [ i for i in rxns if (  'Family' not in i ) ]
-    print '!'*20, len( rxns )
+    if debug:
+        print 'number (len of list) of reacitons: ', len( rxns )
     n = [int(rxn[1]) for rxn in rxns ]
     rxns = [rxn[2:] for rxn in rxns ]
 
@@ -1479,8 +1482,6 @@ def get_tag_details( wd, tag=None, PDs=None,  rdict=None, \
             debug=False ):
     """ Retriveve prod/loss tag details from smv.log
         ( rxn number + reaction description)"""
-
-    debug=True
 
     # what is the number of the first photolysis reaction?
     if isinstance( PHOTOPROCESS, type(None) ):

@@ -800,8 +800,6 @@ def hdf2panel( spec='O3', run_name='run',  region='EU',\
             ver='1.7', debug=False ):
     """ stack tabulated planeflight output in HDF to pandas 3D panel """
 
-#    debug=True
-
     # --- Vars
     # deal with run name issues... 
     # ACTION REQUIRED! - srename file to use EU instead of NP
@@ -856,7 +854,6 @@ def read_HDF4spec( hdf_filename, dates, spec='O3', \
         notes:
             - spec is required in pf format ( e.g. TRA_?? )
     """
-    debug=True
 
     if debug:
         print hdf_filename , dates[0], dates[-1], spec
@@ -1542,9 +1539,7 @@ def get_surface_data_HDF( spec='O3', res='2x2.5', region='ROW', \
     
 #    if debug:
 #        print starttime, endtime
-    
-#    debug=True
-    
+        
     # Get data from iodine containing run. 
     if (actual_values or change) and (not just_no_hal):
         arr1, units = get_spec_pf_hdf_surface_procesor(spec=spec, \
@@ -2145,7 +2140,6 @@ def get_volume_np(ctm_f=None, box_height=None, s_area=None, res='4x5', \
             box_height =  get_gc_data_np(ctm_f, 'BXHEIGHT',\
                 category="BXHGHT-$", debug=debug)  # ( m )
         else:
-            print '!'*100
             box_height = get_GC_output( wd, ['BXHGHT_S__BXHEIGHT'], \
                 debug=debug )
 
@@ -2937,7 +2931,7 @@ def get_trop_Ox_loss( wd, pl_dict=None,  spec_l=None, ver='1.6' ,   \
         # Get time in troposphere and volume
         t_p, res = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], \
             trop_limit=trop_limit, r_res=True ) 
-        vol = get_volume_np( wd=wd, trop_limit=trop_limit )
+        vol = get_volume_np( wd=wd, res=res, trop_limit=trop_limit )
 
         # Get prod loss in  [molec/cm3/s]
         ars = get_GC_output( wd, vars=[ 'PORL_L_S__'+ \
@@ -2945,8 +2939,8 @@ def get_trop_Ox_loss( wd, pl_dict=None,  spec_l=None, ver='1.6' ,   \
 
     # convert species arrays [molec/cm3/s] into Gg Ox / yr
     if units == 'Gg Ox/yr':
-        ars = [ molec_cm3_s_2_Gg_Ox_np(ar, spec_l[i], vol=vol, debug=debug) \
-                        for  i, ar in enumerate(ars) ]
+        ars = [ molec_cm3_s_2_Gg_Ox_np(ar, spec_l[i], vol=vol, \
+                        res=res, debug=debug) for  i, ar in enumerate(ars) ]
     else:
         print 'units = {}'.format(units)
                                         

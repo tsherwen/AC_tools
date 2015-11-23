@@ -195,7 +195,7 @@ def bin_w_range(min, max, bin_size, data, press):
 # ----
 # 1.09 - Rename vars/strs in files
 # ----
-def replace_strs_in_files( wd, input_str, output_str, debug=True ):
+def replace_strs_in_files( wd, input_str, output_str, debug=False ):
     """ replace text in files """
     print wd, input_str, output_str
     for f in os.listdir(wd) :

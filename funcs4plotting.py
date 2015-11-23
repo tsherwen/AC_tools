@@ -360,7 +360,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
 #    print '!'*200, lat, [ np.array(i).shape for i in lat, alt, arr, arr.T ]
 
     if set_window:
-#        arr = arr[ get_gc_lat(lat_0, res=res):get_gc_lat(lat_1, res=res), :]
+        arr = arr[ get_gc_lat(lat_0, res=res):get_gc_lat(lat_1, res=res), :]
         lat = lat[ get_gc_lat(lat_0, res=res):get_gc_lat(lat_1, res=res) ]
 
 #    print '!'*200, lat, [ np.array(i).shape for i in lat, alt, arr, arr.T ]
@@ -999,9 +999,6 @@ def north_pole_surface_plot( arr, return_m=False, grid=True, centre=False, \
     if debug:
         print 1, len(x), len(y)
 
-
-#    debug=True
-                    
     if debug:
         print 2, 'len:',  [ len(i) for i in x,y,lat,lon ]
         print '>'*5, [ [ i.min(), i.mean(), i.max(), i.shape ] for i in arr, 
@@ -2246,13 +2243,22 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     norm=None, nticks=10, format=None, units=None, extend='neither',\
     discrete_cmap=False, f_size=15, fig=None,  res='4x5', wd=None, \
     bottom=0.1, top=0.975, hspace=0.4, wspace=0.5, left=0.075, right=0.875, \
-    cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160, debug=False ):
+    cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160, \
+    region=None, lat_0=None, lat_1=None, debug=False ):
+
+    if debug:
+        print 'plot_zonal_figure called ', region
 
     # Create figure if not provided
     if isinstance( fig, type(None) ):
         fig = plt.figure(figsize=(15, 10), dpi=dpi, 
                     facecolor='w', edgecolor='k') 
-                
+
+    # if OC
+    if region == 'Oceanic':
+        set_window=True
+        lat_0, lat_1 = -65, 80
+
     # Set colourbar limits
     if isinstance( fixcb, type(None) ):
         fixcb = np.array([(i.min(), i.max()) for i in [arr.mean(axis=0)] ][0])
@@ -2269,8 +2275,8 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     #  Plot 
     axn =[ 111 ]
     ax = fig.add_subplot( *axn )  
-    zonal_plot( arr.mean(axis=0), fig,  ax=ax,\
-                        format=format, cmap=cmap, \
+    zonal_plot( arr.mean(axis=0), fig,  ax=ax, set_window=set_window, \
+                        format=format, cmap=cmap, lat_0=lat_0, lat_1=lat_1, \
                         fixcb=fixcb, f_size=f_size*.75, res=res, \
                         no_cb=True, debug=debug )
 
@@ -2285,7 +2291,6 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
                 extend=extend, lvls=lvls, \
                 sigfig_rounding_on_cb=sigfig_rounding_on_cb, nticks=nticks, \
                 norm=norm, discrete_cmap=discrete_cmap, debug=debug )    
-
 
     # Adjust plot ascetics
     fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right,     
@@ -3171,8 +3176,6 @@ def mk_discrete_cmap( lvls=None, cmap=None, arr=None,\
             vmin=0, vmax=10, nticks=10, debug=False ):
     """ Make a discrete colormap from an existing cmap
     NOTE: the data will now need to normalised the range of lvls """
-
-    debug=True
     
     # define bins
     if isinstance( lvls, type(None) ):
