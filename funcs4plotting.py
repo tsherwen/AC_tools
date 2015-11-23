@@ -2246,7 +2246,7 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     norm=None, nticks=10, format=None, units=None, extend='neither',\
     discrete_cmap=False, f_size=15, fig=None,  res='4x5', wd=None, \
     bottom=0.1, top=0.975, hspace=0.4, wspace=0.5, left=0.075, right=0.875, \
-    dpi=160, debug=False ):
+    cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160, debug=False ):
 
     # Create figure if not provided
     if isinstance( fig, type(None) ):
@@ -2271,7 +2271,7 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     ax = fig.add_subplot( *axn )  
     zonal_plot( arr.mean(axis=0), fig,  ax=ax,\
                         format=format, cmap=cmap, \
-                        fixcb=fixcb, f_size=f_size, res=res, \
+                        fixcb=fixcb, f_size=f_size*.75, res=res, \
                         no_cb=True, debug=debug )
 
     # Only show troposphere
@@ -2279,8 +2279,8 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     greyoutstrat( fig, t_ps.mean(axis=0).mean(axis=-1), axn=axn, res=res )
 
     # Manually Add colorbar
-    mk_cb(fig, units=units, left=0.885,  cmap=cmap, \
-                vmin=fixcb_buffered[0],\
+    mk_cb(fig, units=units, left=cb_left,  height=cb_height, bottom=cb_bottom, \
+                cmap=cmap, vmin=fixcb_buffered[0],\
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
                 extend=extend, lvls=lvls, \
                 sigfig_rounding_on_cb=sigfig_rounding_on_cb, nticks=nticks, \

@@ -1021,7 +1021,8 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
     '1.6.1':'iGEOSChem_1.6.1_G5/',  
     '1.5': 'iGEOSChem_1.5_G5/' ,
     '1.7': 'iGEOSChem_1.7_v10/', 
-    '2.0' : 'iGEOSChem_2.0_v10/'}, 
+    '2.0' : 'iGEOSChem_2.0_v10/', 
+    '3.0' : 'iGEOSChem_3.0_v10/'}, 
     '2x2.5': {
     '1.6':'iGEOSChem_1.6_G5_2x2.5/' ,
     } }[res]

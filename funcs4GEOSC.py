@@ -1494,6 +1494,8 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
         if len((arr.shape)) == 2:
             arr =arr[...,None]
 
+        # convert type if dtype not float32 
+        # ( needed for some arrays e.g. air mass )
         if dtype != np.float32:
             arr = arr.astype( dtype )
 
