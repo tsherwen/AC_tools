@@ -1940,37 +1940,40 @@ def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
 # --------------
 # 2.10 - Get prod/Loss (change) ( [molec/cm3/s] =>  Gg I /s => Gg/  per month )
 # -------------
-def get_pl_in_Gg(ctm_f, specs, years=None, months=None, monthly=False,\
-            Iodine=True, IO=False, I=False, res='4x5', vol=None, spec='O3', \
+def get_pl_in_Gg( specs=None, ctm_f=None, wd=None , years=None, months=None,
+             monthly=False,\
+            Iodine=True, IO=False, I=False, res='4x5', vol=None, spec=None, \
             ver='1.6', debug=False  ):
     """ Return prod/loss diagnostic for griven p/l species/tags
         Note: this approach is not comparible with PyGChem >0.3.0"""
 
     if debug:
-        print specs
+        print 'Specs',  specs
+
     # -- Get Vars
     if not isinstance(vol, np.ndarray):
-        vol = get_volume_np( ctm_f, res=res, debug=debug)
-    if (  not isinstance(years, list) or  not isinstance(months, list)):
-        years, months  = get_gc_years( ctm_f, set_=False ), get_gc_months(ctm_f)
+        vol = get_volume_np( ctm_f=ctm_f, wd=wd, res=res, debug=debug)
+    if (  not isinstance(years, list) or not isinstance(months, list)):
+        years  = get_gc_years( ctm_f=ctm_f, set_=False, wd=wd ) 
+        months = get_gc_months( ctm_f=ctm_f, wd=wd)
 
     # --- Process data  # [molec/cm3/s] =>  Gg I /s 
-    ars = [ molec_cm3_s_2_Gg_Ox_np( arr, specs[i], vol, ctm_f, Iodine=Iodine,\
-             IO=IO, I=I, spec=spec, year_eq=False, debug=debug)    \
-            for i, arr in enumerate( [ get_gc_data_np(ctm_f, PLO3_to_PD( rxn,  \
-            ver=ver, fp=True ), category=GC_var('p_l')[0], debug=debug ) \
-            for rxn  in specs ])  ]
+    # Extract as [molec/cm3/s] for specs 
+    specs_ = [ PLO3_to_PD( i, ver=ver, fp=True ) for i in specs ]
+    ars = get_GC_output( wd, vars=['PORL_L_S__'+i for i in specs_], r_list=True)
+    # convert to Gg [I/Ox... ] /s 
+    ars = [ molec_cm3_s_2_Gg_Ox_np( arr, specs[n], vol, ctm_f=ctm_f, \
+            spec=spec, Iodine=Iodine, IO=IO, I=I, year_eq=False,debug=debug)   \
+            for n, arr in enumerate( ars ) ]
 
     # adjust to per month.
     day_adjust = d_adjust( months, years)
-    ars = [  ar_* day_adjust  for ar_ in [ i for i in ars ] ]  
+    ars = [  i*day_adjust  for i in ars ]  
 
-    if (monthly):
-        return np.concatenate(   [ i[...,None] 
-                                  for ii ,i in enumerate(ars) ], axis=4 ) # concat. specs
-    else:
-        return np.concatenate(   [ i.sum(axis=3)[...,None] 
-                                  for ii ,i in enumerate(ars) ], axis=3 ) # yearly sum. dep*, concat. 
+    if monthly: # concat. specs 
+        return np.concatenate( [ i[...,None] for i in ars ], axis=4 ) 
+    else: # yearly sum. dep*, concat. 
+        return np.concatenate([ i.sum(axis=3)[...,None] for i in ars ], axis=3)
 
 # --------------
 # 2.11 - Get Emission of species in Gg
@@ -2939,8 +2942,8 @@ def get_trop_Ox_loss( wd, pl_dict=None,  spec_l=None, ver='1.6' ,   \
 
     # convert species arrays [molec/cm3/s] into Gg Ox / yr
     if units == 'Gg Ox/yr':
-        ars = [ molec_cm3_s_2_Gg_Ox_np(ar, spec_l[i], vol=vol, \
-                        res=res, debug=debug) for  i, ar in enumerate(ars) ]
+        ars = [ molec_cm3_s_2_Gg_Ox_np(i, spec_l[n], vol=vol, \
+                res=res, spec='O3', debug=debug) for n, i in enumerate(ars) ]
     else:
         print 'units = {}'.format(units)
                                         
