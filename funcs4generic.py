@@ -64,7 +64,8 @@ from AC_tools.funcs_vars import *
 # 2.15 - South Hemisphere mask
 # 2.16 - Get Analysis maskes (list of masks and titles)
 # 2.17 - Get single mask ( single maks: e.g. tropical ) 
-
+# 2.18 - Custom 2D mask by Lat (just give Lats) 
+# 2.19 - EU mask
     
 # -------------------------- Section 7 -------------------------------
 # -------------- Generic Processing
@@ -567,7 +568,7 @@ def mask_extratropics( res='4x5'):
 def unmask_all(res='4x5', ones=True):
     """ Get un-masked mask of size GEOS-Chem dimensions  """
 
-    return np.ma.array(np.ones(get_dims4res(res)), mask=False).mask
+    return np.ma.array( np.ones(get_dims4res(res) ), mask=False).mask
 
 # --------
 # 2.10 - Maskes Regions by Pressure
@@ -843,22 +844,33 @@ def mask_all_but( region=None, M_all=False, saizlopez=False, \
 #      'North >60': 3
     }[region]
     
-    # for case pull mask from dictionary....
-    mask = {
-    0 : mask_tropics( res=res, saizlopez=saizlopez ), 
-    1: mask_mid_lats( res=res ),
-    4: unmask_all( res=res ), 
-    5: mask_extratropics(res=res), 
-    6: ocean_mask( res=res ), 
-    7: mask_NH( res=res ), 
-    8: mask_SH( res=res  ),
-    9: ocean_mask( res=res ), 
-    10: ice_mask( res=res ), 
-    11: land_mask( res=res ), 
-    12: mask_lat40_2_40( res=res ), 
-    13: ocean_mask( res=res ) * mask_tropics( res=res, saizlopez=saizlopez ), 
-    14: land_mask( res=res ) * mask_tropics( res=res, saizlopez=saizlopez )
-    }[case]
+    # For case, pull mask from case list 
+    if case == 0:
+        mask = mask_tropics( res=res, saizlopez=saizlopez )
+    if case == 1:
+        mask = mask_mid_lats( res=res )
+    if case == 4:
+        mask = unmask_all( res=res )
+    if case == 5:
+        mask = mask_extratropics(res=res)
+    if case == 6:
+        mask = ocean_mask( res=res )
+    if case == 7:
+        mask = mask_NH( res=res )
+    if case == 8:
+        mask = mask_SH( res=res  )
+    if case == 9:
+         ocean_mask( res=res )
+    if case == 10:
+        mask =ice_mask( res=res )
+    if case == 11:
+        mask =  land_mask( res=res )
+    if case == 12:
+        mask = mask_lat40_2_40( res=res )
+    if case == 13:
+         mask = ocean_mask(res=res)*mask_tropics(res=res, saizlopez=saizlopez)
+    if case == 14:
+        mask = land_mask( res=res )*mask_tropics( res=res, saizlopez=saizlopez )
 
     # invert mask to leave exception unmasked...
     mask = np.logical_not(mask)
@@ -874,7 +886,7 @@ def mask_all_but( region=None, M_all=False, saizlopez=False, \
     return mask
     
 # --------
-# 2.11 - Custom 2D (Lon) Mask
+# 2.18 - Custom 2D (Lon) Mask
 # --------
 def mask_2D_lon2lon( lowerlon, higherlon, res='2x2.5', debug=False ):
     """
@@ -883,16 +895,41 @@ def mask_2D_lon2lon( lowerlon, higherlon, res='2x2.5', debug=False ):
     """
 
     # Get vars
-    lon_c, lat_c, NIC = get_latlonalt4res( res=res, centre=True )
+    lon_c, lat_c, NIU = get_latlonalt4res( res=res, centre=True )
+    if debug:
+        print lon_c, lowerlon, higherlon
 
-    # mask between upper and lower values
-    lats =  [ i for i in lon_c if ( (i>=lowerlon) and (i<higherlon) )]
-    lats = [ get_gc_lon(i, res=res) for i in  lats ]
+    # Mask between upper and lower values
+    lons =  [ i for i in lon_c if ( (i>=lowerlon) and (i<higherlon) )]
+    lons = [ get_gc_lon(i, res=res) for i in  lons ]
 
-    # fill all lat and lon True or False
+    # Fill all lat and lon True or False
     m=np.zeros(get_dims4res(res))[:,:,0]
     print m.shape, np.sum(m)
-    for i in lats:
+    for i in lons:
         m[i,:] = 1
     m = np.ma.masked_not_equal(m, 1)
     return m.mask
+    
+# --------
+# 2.19 - EU mask
+# --------
+def get_EU_mask( res='1x1',  ):
+    """ Mask 'EU' as defined by GEOS-Chem EU grid
+        the grid of "'0.5x0.666" resolution is used by default, but
+        any list of lat and lons could be provided and the extremities 
+        would be used as the mask edges  """
+
+    # Get GEOS-Chem EU lat and lons
+    lon, lat, NIU = get_latlonalt4res( res='0.5x0.666' )
+
+    # mask lats
+    m1 = mask_2D_lat2lat( lowerlat=lat.min(), higherlat=lat.max(), res=res )
+    
+    # mask lons
+    m2 = mask_2D_lon2lon( lowerlon=lon.min(), higherlon=lon.max(), res=res )
+
+    #  conbine maskes 
+    m = m1 + m2 
+    
+    return m

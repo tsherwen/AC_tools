@@ -76,9 +76,10 @@ from math import log10, floor
 # 1.28 - Plot up seasonal output from 4D arr (lon, lat, alt, time)
 # 1.29 - Hist X vs. Y.
 # 1.30 - PDF of annual surface change plots for given species
-
 # 1.31 - PDF of annual zonal change plots for given species
-# 1.32 - PDF of annual column change plots for given species
+# 1.32 - Figure generation ( just provide lon, lat np array )
+# 1.33 - Zonal Figure maker ( just provide lon, lat np array )
+
 
 # --------------- ------------- ------------- ------------- ------------- 
 # ---- Section 4 ----- Plotting Ancillaries 
@@ -557,11 +558,16 @@ def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
         avgs = np.ma.array([np.ma.mean(i) for i in binned]  )
     else:
         avgs = np.ma.array([np.ma.median(i) for i in binned]  )
-    avg = np.mean(avgs)
+    avg = np.ma.mean( avgs )
+    max_ = np.ma.max( avgs )
 #    print avgs, avg, np.ma.max( avgs )
     
     if fractional:
-        y = ( avgs - np.ma.max( avgs )  )  / avgs *100
+#        y = ( avgs - np.ma.max( avgs )  )  / avgs *100
+#        y = ( avgs - np.ma.max( avgs )  )  / avg *100
+        y = ( avgs - np.ma.max( avgs )  )  / max_*100
+        print 'test'*100, avg, max_, avgs
+
         ymin, ymax =  -0.15, 0.025 
         ymin, ymax =  [i*100 for i in ymin, ymax ]
         units = '%'
@@ -2171,6 +2177,124 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
         plot2pdfmulti( pdff, savetitle, close=True, dpi=dpi,\
                        no_dstr=no_dstr )
 
+# --------
+# 1.32 - Spatial Figure maker ( just provide lon, lat np array )
+# --------
+def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
+    norm=None, nticks=10, format=None, units=None, extend='neither',\
+    discrete_cmap=False, f_size=15, fig=None, left_cb_pos=0.86,\
+    bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
+    dpi=160, debug=False ):
+
+    # import modules
+#    import matplotlib.pyplot as plt
+
+    # setup fig if not provided
+    if isinstance( fig, type(None) ):
+        fig = plt.figure(figsize=(15, 10), dpi=dpi, facecolor='w', \
+                                        edgecolor='k') 
+
+    print fixcb 
+
+    
+    # Set colourbar limits        
+    if isinstance( fixcb, type(None) ):
+        fixcb = np.array( [ (i.min(), i.max()) for i in [arr[...,0] ] ][0] )
+
+    print fixcb 
+
+
+    # Set readable levels for cb, then use these to dictate cmap
+    lvls = get_human_readable_gradations( vmax=fixcb[1],  \
+                    vmin=fixcb[0], nticks=nticks, \
+                    sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
+
+    # Setup Colormap
+    cmap, fixcb_buffered = get_colormap( np.array( fixcb ), \
+        nticks=nticks, fixcb=fixcb, buffer_cmap_upper=True )
+
+    if discrete_cmap:
+        cmap, norm = mk_discrete_cmap( nticks=nticks,\
+                vmin=fixcb[0], vmax=fixcb[1], cmap=cmap )
+
+    if debug:
+        print  [ (i.min(), i.max(), i.mean()) for i in [ arr[...,0] ] ]
+
+    # Plot up
+    map_plot( arr[...,0].T, format=format, cmap=cmap, fixcb=fixcb,\
+                    no_cb=True, norm=norm, f_size=f_size*.75, debug=debug )
+
+    # Manually Add colorbar
+    mk_cb(fig, units=units, left=left_cb_pos,  cmap=cmap, \
+                vmin=fixcb_buffered[0],\
+                vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
+                extend=extend, lvls=lvls, \
+                sigfig_rounding_on_cb=sigfig_rounding_on_cb, nticks=nticks, \
+                norm=norm, discrete_cmap=discrete_cmap, debug=debug )    
+
+    # Adjust plot ascetics
+    fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right,     
+                                        hspace=hspace, wspace=wspace)
+    # Show
+    plt.show()
+
+
+# --------
+# 1.33 - Zonal Figure maker ( just provide lon, lat np array )
+# --------
+def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
+    norm=None, nticks=10, format=None, units=None, extend='neither',\
+    discrete_cmap=False, f_size=15, fig=None,  res='4x5', wd=None, \
+    bottom=0.1, top=0.975, hspace=0.4, wspace=0.5, left=0.075, right=0.875, \
+    cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160, debug=False ):
+
+    # Create figure if not provided
+    if isinstance( fig, type(None) ):
+        fig = plt.figure(figsize=(15, 10), dpi=dpi, 
+                    facecolor='w', edgecolor='k') 
+                
+    # Set colourbar limits
+    if isinstance( fixcb, type(None) ):
+        fixcb = np.array([(i.min(), i.max()) for i in [arr.mean(axis=0)] ][0])
+
+    # Set readable levels for cb, then use these to dictate cmap
+    lvls = get_human_readable_gradations( vmax=fixcb[1],  \
+                vmin=fixcb[0], nticks=nticks, \
+                sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
+
+    # Setup Colormap
+    cmap, fixcb_buffered = get_colormap( np.array( fixcb ), \
+            nticks=nticks, fixcb=fixcb, buffer_cmap_upper=True )
+
+    #  Plot 
+    axn =[ 111 ]
+    ax = fig.add_subplot( *axn )  
+    zonal_plot( arr.mean(axis=0), fig,  ax=ax,\
+                        format=format, cmap=cmap, \
+                        fixcb=fixcb, f_size=f_size*.75, res=res, \
+                        no_cb=True, debug=debug )
+
+    # Only show troposphere
+    t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], trop_limit=True )
+    greyoutstrat( fig, t_ps.mean(axis=0).mean(axis=-1), axn=axn, res=res )
+
+    # Manually Add colorbar
+    mk_cb(fig, units=units, left=cb_left,  height=cb_height, bottom=cb_bottom, \
+                cmap=cmap, vmin=fixcb_buffered[0],\
+                vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
+                extend=extend, lvls=lvls, \
+                sigfig_rounding_on_cb=sigfig_rounding_on_cb, nticks=nticks, \
+                norm=norm, discrete_cmap=discrete_cmap, debug=debug )    
+
+
+    # Adjust plot ascetics
+    fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right,     
+                                        hspace=hspace, wspace=wspace)
+    # Show
+    plt.show()
+
+
+
 # --------------------------- Section 4 ------------------------------------
 # -------------- Plotting Ancillaries 
 #
@@ -2583,6 +2707,7 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     """ Create Colorbar. This allows for avoidance of basemap's issues with 
         spacing definitions when conbining with colorbar objects within a plot 
     """
+    
     # Get colormap (by feeding get_colormap array of min and max )
     if isinstance( cmap, type(None) ):
         cmap = get_colormap( arr=np.array( [vmin,vmax]   ) )
@@ -2649,6 +2774,9 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
             vmax, vmin = 500,-500
             extend = 'both'
 
+    if debug:
+        print lvls, norm, extend, format, ticklocation
+
     # Make cb with given details 
     if (extend == 'neither') or (log==True):
         cb = mpl.colorbar.ColorbarBase(cb_ax, cmap=cmap, format=format,\
@@ -2678,7 +2806,7 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
 #        if orientation=='vertical':
 #            height += height*extendfrac
 
-        print lvls, norm, boundaries
+        print lvls, norm, boundaries, extend
 
         cb = mpl.colorbar.ColorbarBase(cb_ax, cmap=cmap, format=format,\
                 norm=norm, ticks=lvls, extend=extend, extendfrac=extendfrac,\
@@ -2747,12 +2875,29 @@ def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
 # --------
 def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
             npoints=100, cb='CMRmap_r', maintain_scaling=True, \
-            negative=None, positive=None, debug=False ):
+            negative=False, positive=False, sigfig_rounding_on_cb=2, \
+            buffer_cmap_upper=False, fixcb=None, nticks=10,  \
+            debug=False ):
     """ Create correct color map for values given array.
         This function checks whether array contains just +ve or -ve or both 
         then prescribe color map  accordingly
-    """
     
+        this function also will can adjust colormaps to fit a given set of
+        ticks
+    """
+    positive=True
+
+    # Make sure cmap includes range of all readable levels (lvls)
+    # i.e head of colormap often rounded for ascetic/readability reasons
+    if buffer_cmap_upper:
+        lvls, lvls_diff  = get_human_readable_gradations( vmax=fixcb[1],  \
+            vmin=fixcb[0], nticks=nticks,  rtn_lvls_diff=True, \
+            sigfig_rounding_on_cb=sigfig_rounding_on_cb   )
+
+        # increase maximum value in color by 5% to allow space for max lvl
+        fixcb_ = ( fixcb[0],  lvls[-1]+ ( lvls_diff*0.05 ))
+        arr = np.array( fixcb_ )
+        
     # make sure array has a mask
     if debug:
         print arr, [ ( i.min(), i.max() ) for i in [arr] ]
@@ -2823,9 +2968,13 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
 #    cmap  = cmd  # green - blue alternative
 
 #    arr.mask = s_mask
+
     if debug:
         print cb, center_zero                  
-    return cmap
+    if buffer_cmap_upper:
+        return cmap, fixcb_
+    else:
+        return cmap
  
 # --------
 # 4.38 - Retrieves color by grouping of sensitivity study
@@ -2960,7 +3109,10 @@ def colorline( x, y, z=None, cmap=plt.get_cmap('copper'),  \
 # 4.42 - Get human readable gradations for plot
 # --------
 def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
-            nticks=10, sigfig_rounding_on_cb=2, debug=False ):
+            nticks=10, sigfig_rounding_on_cb=2, \
+            sigfig_rounding_on_cb_ticks=2, \
+            sigfig_rounding_on_cb_lvls=2, rtn_lvls_diff=False, \
+            debug=False ):
 
     if isinstance( lvls, type(None) ):
         lvls = np.linspace( vmin, vmax, nticks, endpoint=True )
@@ -2972,20 +3124,46 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     # significant figure ( sig. fig. ) rounding func.
     round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
     
-    # get current gradations
+    # Get current gradations
     if debug:
-        print abs(lvls[-2])-abs(lvls[-3])    
-    lvls_diff = round_to_n( abs(lvls[-2])-abs(lvls[-3]), \
-                                sigfig_rounding_on_cb)
+        print abs(lvls[-2])-abs(lvls[-3]), abs(lvls[-3])-abs(lvls[-2]), lvls,\
+                     sigfig_rounding_on_cb
+    try:
+        lvls_diff = round_to_n( abs(lvls[-2])-abs(lvls[-3]), \
+                                sigfig_rounding_on_cb_ticks)
+    # handle if values (2,3) are both negative
+    except:
+        print abs(lvls[-3])-abs(lvls[-2]), sigfig_rounding_on_cb_ticks
+        lvls_diff = round_to_n( abs(lvls[-3])-abs(lvls[-2]), \
+                                sigfig_rounding_on_cb_ticks)                                
 
-    # round top of colorbar lvls, then count down from this
-    vmax_rounded = round_to_n( vmax, sigfig_rounding_on_cb)
+    # ---  Round top of colorbar lvls, then count down from this
+    # first get top numer rounded up to nearest 'lvls_diff'
+    # caution, this may result in a number outside the cmap, 
+    # solution: use get_colormap, with buffer_cmap_upper=True
+    #  if values are >0, 
+    if vmax > lvls_diff:
+        print vmax, lvls_diff
+        vmax_rounded = myround( vmax, base=lvls_diff,  integer=False )
+        vmax_rounded = round_to_n( vmax_rounded, sigfig_rounding_on_cb)
+    else:
+        # <= update needed! - add function to round negative numbers
+        # ( this method also fails if vmax<lvls_diff )
+        vmax_rounded = vmax
+
     if debug:
         print vmax_rounded,  lvls_diff, nticks
     lvls = np.array([ vmax_rounded - lvls_diff*i \
             for i in range( nticks ) ][::-1])   
-        
-    return lvls
+    if debug:
+        print lvls, len( lvls )
+
+#    # ensure returned ticks are to a maximum of 2 sig figs. 
+#    lvls = [ round_to_n( i, sigfig_rounding_on_cb_lvls) for i in lvls ]
+    if rtn_lvls_diff:
+        return lvls, lvls_diff
+    else:
+        return lvls
 # --------
 # 4.43 - mk colourmap discrete 
 # --------

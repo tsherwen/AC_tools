@@ -40,7 +40,7 @@
 # 1.22 - Get var data for model run ( PyGChem >0.3.0 version combatible )
 # 1.23 - Get  surface data from HDF of surface plane flight data
 # 1.24 - Get gc resolution from ctm.nc
-
+# 1.25 - Get surface area ( m^2 ) for any global resolution
 
 # --------------- ------------- ------------- ------------- ------------- ------------- ------------- 
 # ---- Section 2 ----- Data Processing tools/Extractors - GC...
@@ -150,7 +150,21 @@ def open_ctm_bpch(wd, fn='ctm.bpch', debug=False):
         This is a vestigle programme, based on pychem version 0.2.0.
         Updates have made this incompatibile. 
         
-        Update functions to use iris class. 
+        Update functions to use iris class. e.g. 
+        
+        if :
+        wd = <run directory of containing ctm.bpch files/ctm.nc file to analyse>
+        then:
+        # setup variables 
+        list_of_species =  ['NO', 'O3', 'PAN', 'CO', 'ALK4']
+
+        # convert to Iris Cube/NetCDF naming form 
+        list_of_species = ['IJ_AVG_S__'+i for i in list_of_species ]
+
+        # this will return data as a 5D array ( species, lon, lat, alt, time)
+        data = get_GC_output( wd, vars=list_of_species )
+        
+
     """
     
     if ( debug ) :
@@ -1444,7 +1458,7 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
                 print 'prior to roll axis: ', [i.shape for i in arr]
             arr = [np.rollaxis(i,0, 4) for i in arr]
             if debug:
-                print 'post to roll axis: ', [i.shape for i in arr]
+                print 'post roll axis: ', [i.shape for i in arr]
 
         # convert to GC standard 3D fmt. - lon, lat, time   
         # two reasons why 3D (  missing time dim  or  missing alt dim ) 
@@ -1480,6 +1494,8 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
         if len((arr.shape)) == 2:
             arr =arr[...,None]
 
+        # convert type if dtype not float32 
+        # ( needed for some arrays e.g. air mass )
         if dtype != np.float32:
             arr = arr.astype( dtype )
 
@@ -1615,7 +1631,129 @@ def get_gc_res( wd ) :
 
     return res 
 
-# ------------------------------------------- Section 3 -------------------------------------------
+# ----
+# 1.25 - Get surface area ( m^2 ) for any global resolution
+# ----
+def calc_surface_area_in_grid( res='1x1', debug=False ):
+    """
+        Use GEOS-Chem appraoch for GEOS-Chem grid surface areas.
+
+        <= update this to take any values for res... 
+
+        Credit: Bob Yantosca
+        Original docs from ( grid_mod ):
+            !======================================================================
+    ! Compute grid box surface areas (algorithm from old "input.f")
+    !
+    ! The surface area of a grid box is derived as follows:
+    ! 
+    !    Area = dx * dy
+    !
+    ! Where:
+    !
+    !    dx is the arc length of the box in longitude
+    !    dy is the arc length of the box in latitude
+    !  
+    ! Which are computed as:
+    !  
+    !    dx = r * delta-longitude
+    !       = ( Re * cos[ YMID[J] ] ) * ( 2 * PI / IIIPAR )
+    !
+    !    dy = r * delta-latitude
+    !       = Re * ( YEDGE[J+1] - YEDGE[J] )
+    !  
+    ! Where:
+    !    
+    !    Re         is the radius of the earth
+    !    YMID[J]    is the latitude at the center of box J
+    !    YEDGE[J+1] is the latitude at the N. Edge of box J
+    !    YEDGE[J]   is the latitude at the S. Edge of box J
+    !
+    ! So, the surface area is thus:
+    ! 
+    !    Area = ( Re * cos( YMID[J] ) * ( 2 * PI / IIIPAR ) *
+    !             Re * ( YEDGE[J+1] - YEDGE[J] )
+    !
+    !    2*PI*Re^2    {                                            }      
+    ! = ----------- * { cos( YMID[J] ) * ( YEDGE[J+1] - YEDGE[J] ) }
+    !     IIIPAR      {                                            }
+    !
+    ! And, by using the trigonometric identity:
+    !
+    !    d sin(x) = cos x * dx
+    !
+    ! The following term:
+    !
+    !    cos( YMID[J] ) * ( YEDGE[J+1] - YEDGE[J] ) 
+    !
+    ! May also be written as a difference of sines:
+    !
+    !    sin( YEDGE[J+1] ) - sin( YEDGE[J] ) 
+    ! 
+    ! So the final formula for surface area of a grid box is:
+    ! 
+    !            2*PI*Re^2    {                                     }
+    !    Area = ----------- * { sin( YEDGE[J+1] ) - sin( YEDGE[J] ) }
+    !              IIIPAR     {                                     }
+    !
+    !
+    ! NOTES:
+    ! (1) The formula with sines is more numerically stable, and will 
+    !      yield identical global total surface areas for all grids.
+    ! (2) The units are determined by the radius of the earth Re.
+    !      if you use Re [m], then surface area will be in [m2], or
+    !      if you use Re [cm], then surface area will be in [cm2], etc.
+    ! (3) The grid box surface areas only depend on latitude, as they
+    !      are symmetric in longitude.  To compute the global surface
+    !      area, multiply the surface area arrays below by the number
+    !      of longitudes (e.g. IIIPAR).
+    ! (4) At present, assumes that GEOS-Chem will work on a
+    !      Cartesian grid.
+    !
+    ! (bmy, 4/20/06, 2/24/12)
+    !======================================================================
+        
+
+    """
+
+    if debug:
+        print 'called calc surface area in grid'
+
+    # Get latitudes and longitudes in grid    
+    lon_e, lat_e, NIU = get_latlonalt4res( res=res, centre=False, debug=debug )    
+    lon_c, lat_c, NIU = get_latlonalt4res( res=res, centre=True, debug=debug )    
+
+    # Set variables values
+    PI_180 = pi/ 180.0
+    Re = np.float64( 6.375E6 ) # Radius of Earth [m] 
+    lon_dim = get_dims4res(res=res)[0]
+    lon_degrees = float( lon_dim )
+
+    # Loop lats and calculate area    
+    A1x1 = []
+    for n, lat_ in enumerate( lat_e[:-1] ):
+
+        # Lat at S and N edges of 1x1 box [radians]
+        S = PI_180 * lat_e[n]
+        N = PI_180 * lat_e[n+1]        
+
+        # S to N extent of grid box [unitless]
+        RLAT    = np.sin( N ) - np.sin( S )
+
+        # 1x1 surface area [m2] (see [GEOS-Chem] "grid_mod.f" for algorithm)
+        A1x1 += [ 2.0 * pi * Re * Re / lon_degrees  * RLAT ]
+
+    A1x1 = np.array( A1x1 )
+    if debug:
+        print A1x1
+        print [ (i.shape, i.min(),i.max() ) for i in [ A1x1 ] ]
+
+    # convert to 2D array / apply to all longitudes 
+    A1x1 = np.array( [ list( A1x1 ) ] * int(lon_dim) )
+
+    return A1x1
+
+# ----------------------- Section 3 -------------------------------------------
 # -------------- Data Processing tools/drivers
 #
 
@@ -2116,9 +2254,17 @@ def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
 def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None, \
             Iodine=False, I=False, IO=False, months=None, years=None, wd=None, \
             year_eq=True, month_eq=False, spec=None, res='4x5',debug=False ):
-    """ Convert species/tag prod/loss from molec/cm3/s] to Gg (Ox) yr^-1.
+    """ Convert species/tag prod/loss from "molec/cm3/s" to "Gg (Ox) yr^-1".
+
         This function was originally used to process diagnostic outputs
-        from PORL-L$  """ 
+        from PORL-L$  
+        
+        Alterate Output term apart from Ox are possible ( e.g. I, mass ... )
+        Just stipulate input species  
+        
+        Output can also be requested on a monthly basis 
+        ( set  month_eq=True,  and year_eq=False )
+        """ 
 
     if debug:
         print ' molec_cm3_s_2_Gg_Ox_np  called'
@@ -2140,6 +2286,7 @@ def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None, \
             RMM =  species_mass(rxn) 
         else:
             RMM =  species_mass('O3')             
+        # Return mass in terms of species provide ( if given )
         if not isinstance( spec, type(None) ):
             RMM = species_mass( spec  )
         arr = ( arr * vol[:,:,:38,:] ) / constants( 'AVG') * RMM /1E9
@@ -2576,7 +2723,7 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
      # [kg/s] => g / s    of I equiv.
     if Iodine:
 
-        # retain back compatibility
+        # Retain back compatibility
         if pygchem.__version__ == '0.2.0':
             dep_w  = [ [ get_gc_data_np(ctm_f, spec ,category=var, \
                 debug=debug )*1E3 /species_mass(spec)*  \
@@ -2589,18 +2736,22 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
             WETDLS_S__ = get_GC_output( wd=wd, vars=['WETDLS_S__'+i \
                 for i in specs ] )
 
-            # get convective scavegning 
+            # Get convective scavegning 
             WETDCV_S__ = get_GC_output( wd=wd, vars=['WETDCV_S__'+i \
                 for i in specs ] )
 #            if debug:
             print [ i.shape for i in WETDLS_S__, WETDCV_S__  ]
 
+            # Convert to g/ s I equiv.  + conbine two lists
+            WETDLS_S__ = [ i*1E3/species_mass( specs[n] )* \
+                    species_mass('I')*spec_stoich( specs[n] )   \
+                    for n, i in enumerate( [WETDLS_S__[ii,...]  \
+                    for ii in range(len(specs)) ]  ) ]
 
-            # convert to g/ s I equiv.  + conbine two lists
-            WETDLS_S__ = [ i*1E3/species_mass( specs[n] )* species_mass('I')*spec_stoich( specs[n] )  
-                    for n, i in enumerate( [WETDLS_S__[ii,...] for ii in range(len(specs)) ]  ) ]
-            WETDCV_S__  = [ i*1E3/species_mass( specs[n] )* species_mass('I')*spec_stoich( specs[n] )  
-                    for n, i in enumerate( [WETDCV_S__ [ii,...] for ii in range(len(specs)) ]  ) ]
+            WETDCV_S__  = [ i*1E3/species_mass( specs[n] )* \
+                    species_mass('I')*spec_stoich( specs[n] )  \
+                    for n, i in enumerate( [WETDCV_S__ [ii,...] \
+                    for ii in range(len(specs)) ]  ) ]
 
             dep_w =  WETDLS_S__+ WETDCV_S__ 
             print [ i.shape for i in dep_w  ]
@@ -2608,26 +2759,27 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
                             
     # [kg/s] => g / s    # 
     else: 
-        # retain back compatibility
+        # Retain back compatibility
         if pygchem.__version__ == '0.2.0':
-            dep_w  = [ [ get_gc_data_np(ctm_f, spec ,category=var, debug=debug )*1E3  
-                for spec in specs[ii] ]  for ii,var in enumerate(w_dep)]  
+            dep_w  = [ [ get_gc_data_np(ctm_f, spec ,category=var,  \
+                    debug=debug )*1E3   \
+                    for spec in specs[ii] ]  for ii,var in enumerate(w_dep)]  
 
         else:
             # Frontal rain?
             WETDLS_S__ = get_GC_output( wd=wd, vars=['WETDLS_S__'+i \
                 for i in specs ] )*1E3
 
-            # get convective scavegning 
+            # Get convective scavegning 
             WETDCV_S__ = get_GC_output( wd=wd, vars=['WETDCV_S__'+i \
                 for i in specs ] )*1E3
 
             dep_w = [ WETDLS_S__, WETDCV_S__ ]
 
-        # concatenate list of lists
+        # Concatenate list of lists
         dep_w = [j for i in dep_w for j in i]  
 
-    # adjust to monthly values...
+    # Adjust to monthly values...
     m_adjust = d_adjust( months, years) # => Gg / month 
     dep_w = [m_adjust * arr for arr in dep_w ]
 
@@ -2880,7 +3032,9 @@ def var_in_dep(ctm_f, specs, d_=False, w_=False, d_dep=False, \
 # -------------       
 def split_4D_array_into_seasons( arr, annual_plus_seasons=True, \
             debug=False ):
-    """ split 4D ( lon, lat, alt, time) output by season"""
+    """ split 4D ( lon, lat, alt, time) output by season, then take 
+        average of the seasons 
+        NOTE: currently seasons index is mannual set assuming Jan-Dec """
     
     if debug:
         print arr.shape 
@@ -2888,7 +3042,7 @@ def split_4D_array_into_seasons( arr, annual_plus_seasons=True, \
     if annual_plus_seasons:
         seasons  = ['Annual', 'DJF', 'MAM', 'JJA', 'SON']
         # assume calender month order 
-        # ( this can be automated using get GC datetime )
+        # ( this can be automated using get_GC_datetime )
         indices = [range(0,12), [11, 0, 1], [2, 3, 4], [5, 6, 7], [8, 9, 10] ]
              
     else:
@@ -2900,14 +3054,17 @@ def split_4D_array_into_seasons( arr, annual_plus_seasons=True, \
     ars = []
     # extract data by month
     for n, s in enumerate( seasons ):
-        print s, n , indices[n] 
+        if debug:
+            print s, n , indices[n] 
         ars += [ [ arr[...,i] for i in indices[n] ] ]
     
     # average by season
-#    print [ np.array(i).shape for i in ars ], np.array(ars).mean(), seasons
-    print [ np.array(i).shape for i in ars ],  seasons
-    ars =  [ np.array(i).mean(axis=0) for i in ars]
-    print [ i.shape for i in ars ], np.array(ars).mean(), seasons
+    if debug:
+    #    print [ np.array(i).shape for i in ars ], np.array(ars).mean(), seasons
+        print [ np.ma.array(i).shape for i in ars ], seasons
+    ars =  [ np.ma.array(i).mean(axis=0) for i in ars]
+    if debug:
+        print [ i.shape for i in ars ], np.ma.array(ars).mean(), seasons
 
     # return list array averaged by season 
     return ars, seasons
@@ -2917,7 +3074,8 @@ def split_4D_array_into_seasons( arr, annual_plus_seasons=True, \
 # -------------     
 def convert_v_v2ngm3(  arr, wd=None, spec='AERI', trop_limit=True,\
             s_area=None, res='4x5', aerosol_mass=False, debug=False ):
-    """ """
+    """ Take v/v array for a species, and conver this to mass loading
+        units used as standard are ng/m3"""
 
     # Get volume (m^3, adjusted (x1E6) from cm^3) 
     vol = get_volume_np( wd=wd, trop_limit=trop_limit, s_area=s_area, \
@@ -2930,27 +3088,69 @@ def convert_v_v2ngm3(  arr, wd=None, spec='AERI', trop_limit=True,\
     # Get moles  ( converting airmass from kg 1st)
     mols = a_m*1E3/constants( 'RMM_air')
 
-    # adjust to mols, then mass ( assume AERI = 
-#    species_mass = {'SO4':96.0, 'AERI': 338.0/2, 'O3':48 }
-    # Setup dictionary of species masses... 
-    # ( this is separate from species_mass dictionary as assumptions differ)(
-    if aerosol_mass:
-        I2Ox_mass = (286.0+302.0+318.0/3)/2
-        species_mass = {
-        'SO4':96.0, 'SO4s':96.0, 'AERI': I2Ox_mass,'ISALA':I2Ox_mass, 'ISALC' : I2Ox_mass,  'O3':48 
-        }
-    else:
-        species_mass = {'SO4':96.0, 'SO4s':96.0, 'AERI': 127.0, 'O3':48.0 }
-    arr = arr*mols*species_mass[ spec ]
+    # Adjust to mols, then mass 
+    arr = arr*mols*species_mass( spec )
+    if debug:
+        print species_mass( spec ), np.sum( arr )
 
-    print species_mass[ spec ], np.sum( arr )
-
-    # convert to molecules of spec  / m^3   ( then to ng )
-#    arr = arr/ vol #*1E9
-    # convert to (nano)g/m3
+    # Convert to (nano, x1E9)g/m3
     arr = arr*1E9/vol 
     
     return arr
+    
+# --------------
+# 2.38 - Print array weighed 
+# -------------   
+def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
+            region=None, monthly=False, debug=False ):
+    """ Provide zonal/surface area wieghed values  """
+
+    if debug:   
+        print 'function prt_seaonal_values called '
+
+    # Get surface area
+    s_area =  get_surface_area( res=res ) # m2 land map
+    s_area = s_area[...,0]
+
+    # --- If region provided, mask elsewhere - else
+    if debug:
+        print arr.shape, [ (i.min(), i.max(), i.mean()) for i in [arr] ]
+    m = mask_all_but( region )[...,None]
+#    arr = np.ma.array( arr, mask=np.ma.mask_or(m, arr.mask)  )
+    arr = arr*m 
+    s_area = s_area*m[:,:,0,0]
+
+    # Split array by seasons ( on months if monthly==True)
+    if monthly:
+        # this is assuming monthly output 
+        ars = [ arr[...,i] for i in range( 12 ) ]
+        seasons = num2month( rtn_dict=True).values()
+    else:
+        ars, seasons = split_4D_array_into_seasons( arr ) 
+
+    # If "zonal"
+    if zonal:
+        ars = [i.mean(axis=0) for i in ars ]
+    # If not zonal return surface values
+    else:    
+        ars = [ i[...,0] for i in ars ]
+    
+    print [i.shape for i in ars ], s_area.shape, \
+            [type(i) for i in ars, ars[0], m, s_area ]
+    
+    # Print out 
+    pstr =  '{:<15}'*5
+    npstr =  '{:<15}'+'{:<15,.4f}'*4
+    print pstr.format( 'Season./Month', 'Min', 'Max', 'Mean' ,"wtg'd Mean" )
+    for n, s in enumerate( seasons ):
+        print npstr.format( s, 
+#                    *[ (i.min(), i.max(), i.mean(),  \
+#                        (i*s_area).sum()/s_area.sum()  )  \
+#                            for i in [ ars[n] ] ][0] )
+                    *[ (float( i.min() ), float( i.max() ), float( i.mean() ),\
+                        float( (i*s_area).sum()/s_area.sum() )       ) \
+                            for i in [ ars[n] ] ][0] )
+
 
 # ------------------ Section 6 -------------------------------------------
 # -------------- Time Processing

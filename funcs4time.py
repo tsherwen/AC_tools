@@ -462,7 +462,7 @@ def time2datetime( dates ):
 # ----  
 #  1.27 - return abbreviated month for a given month number or vice versa
 # ----  
-def num2month(input, reverse=False):
+def num2month(input=None, reverse=False, rtn_dict=False):
 
     d={
         1: 'Jan',
@@ -495,7 +495,10 @@ def num2month(input, reverse=False):
         'Dec' : 12 
         }
 
-    return d[input]
+    if rtn_dict:
+        return d 
+    else:
+        return d[input]
     
 # -------------- 
 #  1.28 - convert times to datetime from HHMM and YYYYMMDD
