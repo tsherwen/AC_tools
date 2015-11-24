@@ -589,14 +589,15 @@ def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
 
     if ymin != None:    
         plt.ylim( ymin, ymax )
-    plt.ylabel(units, fontsize=f_size*.75)
     plt.yticks( fontsize=f_size*.75)
+    plt.xticks( fontsize=f_size*.75)
     if (title != None):
-        plt.title(title)
+        plt.title( title )
     if xlabel:
         plt.xlabel('Hour of day', fontsize=f_size*.75)
     plt.ylabel('{}'.format(units), fontsize=f_size*.75)
-    
+
+
     # Apply legend to last plot
     if pos == posn:
         plt.legend( fontsize=lgnd_f_size )
@@ -2183,23 +2184,13 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
     dpi=160, debug=False ):
 
-    # import modules
-#    import matplotlib.pyplot as plt
-
     # setup fig if not provided
     if isinstance( fig, type(None) ):
         fig = plt.figure(figsize=(15, 10), dpi=dpi, facecolor='w', \
                                         edgecolor='k') 
-
-    print fixcb 
-
-    
     # Set colourbar limits        
     if isinstance( fixcb, type(None) ):
         fixcb = np.array( [ (i.min(), i.max()) for i in [arr[...,0] ] ][0] )
-
-    print fixcb 
-
 
     # Set readable levels for cb, then use these to dictate cmap
     lvls = get_human_readable_gradations( vmax=fixcb[1],  \
@@ -2707,8 +2698,9 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, \
 def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     orientation='vertical', f_size=20, rotatecbunits='vertical', nticks=10, \
     extend='neither', norm=None, log=False,  format=None, cmap=None,\
-    vmin=0, vmax=10, cb_ax=None, ticklocation='auto', extendfrac=.075, \
-    sigfig_rounding_on_cb=2, lvls=None, discrete_cmap=False, debug=False):
+    vmin=0, vmax=10, cb_ax=None, ticklocation='auto', extendfrac=None, \
+    sigfig_rounding_on_cb=2, lvls=None, discrete_cmap=False, boundaries=None, \
+    debug=False):
     """ Create Colorbar. This allows for avoidance of basemap's issues with 
         spacing definitions when conbining with colorbar objects within a plot 
     """
@@ -2775,7 +2767,7 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
         # This exception is for highly masked arrays 
         except:    
             format='%.0E'
-            # Kludge, set to if overly masked. 
+            # Kludge, set to limits of -500-500 (%) if overly masked. 
             vmax, vmin = 500,-500
             extend = 'both'
 
@@ -2783,13 +2775,10 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
         print lvls, norm, extend, format, ticklocation
 
     # Make cb with given details 
-    if (extend == 'neither') or (log==True):
-        cb = mpl.colorbar.ColorbarBase(cb_ax, cmap=cmap, format=format,\
-                norm=norm, ticks=lvls, extend=extend, \
-                orientation=orientation, ticklocation=ticklocation)
-    else:
-        if debug:
-            print 'WARNING: adding extensions to colorbar'
+    if discrete_cmap:
+        extendfrac=.075  # This was the previous default, still valid? <= update
+#        if debug:
+#            print 'WARNING: adding extensions to colorbar'
         if log==True:
             print 'Will not work as colrbar adjustment not configured'+\
                 ' for log scales'
@@ -2811,14 +2800,21 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
 #        if orientation=='vertical':
 #            height += height*extendfrac
 
-        print lvls, norm, boundaries, extend
-
         cb = mpl.colorbar.ColorbarBase(cb_ax, cmap=cmap, format=format,\
                 norm=norm, ticks=lvls, extend=extend, extendfrac=extendfrac,\
                 boundaries=boundaries, \
                 spacing='proportional',
 #                spacing='uniform',
                 orientation=orientation, ticklocation=ticklocation)
+
+    # Standard approach below
+#        if (extend == 'neither') or (log==True):
+    else:
+        cb = mpl.colorbar.ColorbarBase(cb_ax, cmap=cmap, format=format,\
+                norm=norm, ticks=lvls, extend=extend, \
+                orientation=orientation, ticklocation=ticklocation)
+
+        print lvls, norm, boundaries, extend
     
     # set cb label sizes
     if units != None:

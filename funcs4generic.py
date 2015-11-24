@@ -232,7 +232,8 @@ def get_xy(Lon,Lat, lon_edges, lat_edges, debug=False):
 # 1.12 - Save as pdf.
 # --------
 def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,
-                         justHH=False, no_dstr=False, save2eps_png=True ):
+                         justHH=False, no_dstr=True, save2png=True, 
+                         save2eps=False, debug=False ):
     """ Save figures (matplotlib) to pdf file """
 
     # set save directory ( using default directory dictionary )
@@ -261,9 +262,10 @@ def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,
     pdf.close()
 
     # Also export to png and eps?
-    if save2eps_png:
-        plt.savefig(npdf+'.eps', format='eps', dpi=dpi)
+    if save2png:
         plt.savefig(npdf+'.png', format='png', dpi=dpi)
+    if save2eps:
+        plt.savefig(npdf+'.eps', format='eps', dpi=dpi)
     print 'PDF/EPS/PNG saved & Closed as/at: ', npdf
 
 # --------   
@@ -834,7 +836,7 @@ def mask_all_but( region=None, M_all=False, saizlopez=False, \
     'Oceanic':6, 
     'NH': 7, 
     'SH':8,
-    'Ocean':9,
+    'Ocean':6,
     'Ice': 10,
     'Land' : 11, 
     'lat40_2_40':12, 
@@ -859,8 +861,6 @@ def mask_all_but( region=None, M_all=False, saizlopez=False, \
         mask = mask_NH( res=res )
     if case == 8:
         mask = mask_SH( res=res  )
-    if case == 9:
-         ocean_mask( res=res )
     if case == 10:
         mask =ice_mask( res=res )
     if case == 11:

@@ -733,15 +733,15 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
                     'surface_specs' : ['O3', 'NO', 'NO2', 'NO3' ,'N2O5', 'IO', 'IONO2' ],
                 
                     # Model run title dictionaries
-                    'run_name_dict': {'run': 'Halogens (I+,Br+)', 'Br_2ppt': 'Halogens (I+,Br+) + fixed 2 pptv BrO', 'just_I': 'Just Iodine (I+,Br-)', 'no_hal': 'No Halogens', 'just_Br': 'Just Bromine (I-,Br+)', 'Br_1ppt': 'Halogens (I+,Br+) + fixed 1 pptv BrO', 'obs': 'Observations'}   ,
-                    'latex_run_names': {'I2Ox_half': 'I$_{2}$Ox loss ($\\gamma$) /2', 'run': 'Iodine simulation.', 'MacDonald_iodide': 'Ocean iodide', 'Sulfate_up': 'Sulfate Uptake', 'I2Ox_phot_exp': 'I$_{2}$Ox exp. X-sections',  'het_double': 'het. cycle ($\\gamma$) x2', 'I2Ox_phot_x2': 'I$_{2}$Ox X-sections x2', 'no_het': 'no het. cycle ', 'I2Ox_double': 'I$_{2}$Ox loss ($\\gamma$) x2', 'just_I': '(I+,Br-)', 'BrO1pptv': 'MBL BrO 1 pptv', 'het_half': 'het. cycle ($\\gamma$) /2', 'Just_I_org': 'Just org. I', 'no_I2Ox': 'No I$_{2}$Ox Photolysis', 'BrO1pptv_ALL' : 'BrO 1 pptv in Trop.', 'BrO2pptv' : 'MBL BrO 2 pptv',
+                    'run_name_dict': {'run': 'Br-I', 'Br_2ppt': 'Halogens (I+,Br+) + fixed 2 pptv BrO', 'just_I': 'IODINE', 'no_hal': 'NOHAL', 'just_Br': 'BROMINE', 'Br_1ppt': 'Halogens (I+,Br+) + fixed 1 pptv BrO', 'obs': 'Observations'}   ,
+                    'latex_run_names': {'I2Ox_half': 'I$_{2}$Ox loss ($\\gamma$) /2', 'run': 'Br-I', 'MacDonald_iodide': 'Ocean iodide', 'Sulfate_up': 'Sulfate Uptake', 'I2Ox_phot_exp': 'I$_{2}$Ox exp. X-sections',  'het_double': 'het. cycle ($\\gamma$) x2', 'I2Ox_phot_x2': 'I$_{2}$Ox X-sections x2', 'no_het': 'no het. cycle ', 'I2Ox_double': 'I$_{2}$Ox loss ($\\gamma$) x2', 'just_I': 'IODINE', 'BrO1pptv': 'MBL BrO 1 pptv', 'het_half': 'het. cycle ($\\gamma$) /2', 'Just_I_org': 'Just org. I', 'no_I2Ox': 'No I$_{2}$Ox Photolysis', 'BrO1pptv_ALL' : 'BrO 1 pptv in Trop.', 'BrO2pptv' : 'MBL BrO 2 pptv',
                     # adjust from GBC to ACP names
 #                    'no_hal': '(I-,Br-)', 'Just_Br': '(I-,Br+)', 
-                    'no_hal': 'No Halogens', 'Just_Br': 'GEOS-Chem (v9-2)', 
+                    'no_hal': 'NOHAL', 'Just_Br': 'BROMINE', 
                     # Add for v10 ( 2.0 Cl/Br/I code )
                     'run.Cl.Br.I.aerosol':  'GEOS-Chem (v10 Cl.Br.I)', 
                    # kludge for diurnal plot
-                   'Iodine simulation.':'Iodine simulation.', '(I+,Br+)': 'Iodine simulation.','(I+,Br-)': 'Just Iodine', '(I-,Br+)': 'GEOS-Chem (v9-2)', '(I-,Br-)': 'No Halogens'},
+                   'Iodine simulation.':'Br-I.', '(I+,Br+)': 'Br-I.','(I+,Br-)': 'IODINE', '(I-,Br+)': 'BROMINE', '(I-,Br-)': 'NOHAL'},
                     # tracer unit handling
                     'spec_2_pptv' : ['I2', 'HOI', 'IO', 'OIO', 'HI', 'IONO', 'IONO2', 'I2O2', 'CH3IT', 'CH2I2', 'IBr', 'ICl', 'I', 'HIO3', 'I2O', 'INO', 'I2O3', 'I2O4', 'I2O5', 'AERI', 'Cl2', 'Cl', 'HOCl', 'ClO', 'OClO', 'BrCl', 'CH2ICl', 'CH2IBr', 'C3H7I', 'C2H5I', 'Br2', 'Br', 'BrO', 'HOBr', 'HBr', 'BrNO2', 'BrNO3', 'CHBr3', 'CH2Br2', 'CH3Br','RCHO', 'MVK', 'MACR', 'PMN', 'PPN', 'R4N2', 'DMS', 'SO4s', 'MSA', 'NITs', 'BCPO', 'DST4', 'ISOPN', 'MOBA', 'PROPNN', 'HAC', 'GLYC', 'MMN', 'RIP', 'IEPOX', 'MAP' ,'N2O5','NO3'], # 'HNO4',  'HNO2'],
                     'spec_2_pptC' : ['PRPE', 'ISOP'],
@@ -976,7 +976,7 @@ def get_unit_scaling( units, scaleby=1 ):
 
         misc = 'K', 'm/s', 'unitless', 'kg' ,'m', 'm2','kg/m2/s', \
             'molec/cm2/s', 'mol/cm3/s',  'kg/s', 'hPa', 'atoms C/cm2/s' \
-            'kg S', 'mb', 'atoms C/cm2/s'
+            'kg S', 'mb', 'atoms C/cm2/s', 'molec/cm3', 'v/v'
 
         if any( [ (units ==  i) for i in 'pptv', 'pptC' ]):
             scaleby = 1E12
@@ -1084,8 +1084,8 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
 
         r= [ 'iGEOSChem_1.7_v10/'+ i for i in l ]+ \
              [ 'iGEOS_Chem_1.6_G5/'+ i for i in l ]
-        l= [ 'GEOS-Chem v10 (no hal)', 'Iodine Sim. (v10)']  + \
-            [ 'GEOS-Chem v9-2 (no hal)', 'Iodine Sim.'] 
+        l= [ 'NOHAL (v10)', 'Br-I (v10)']  + \
+            [ 'NOHAL (v9-2)', 'Br-I (v9-2)'] 
 
     if IO_obs:
         l = 'run_CVO', 'run_GRO', 'run_MAL', 'run_HAL', 'run_TOR_updated.respun' 
