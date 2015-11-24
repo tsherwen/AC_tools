@@ -228,70 +228,46 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         print 3, case, [ np.array(i).shape for i in lon, lat, arr ], cmap, alpha
     
     # -------- colorbar variables...
-    # set cb label sizes
-    if not isinstance( fixcb, type(None) ):
-        tickmin, tickmax = fixcb[0], fixcb[1]
-    else:
-        tickmin, tickmax  = arr.min(), arr.max()
+    # Set cb label sizes
+    if isinstance( fixcb, type(None) ):
+        fixcb = np.array( [ (i.min(), i.max()) for i in [arr ] ][0] )
+
     # --------------  Linear plots -------------------------------
     # standard plot 
-    if ( ( case == 3) or ( case== 9 ) ) and ( isinstance( fixcb, type(None) ) ):
-        poly = m.pcolor( lon, lat, arr, cmap=cmap, norm=norm, alpha=alpha )
-
-    if ( ( case == 3) or ( case== 9 ) ) and (not isinstance(fixcb,type(None) )):
+    if ( ( case == 3) or ( case== 9 ) ):
         poly = m.pcolor( lon, lat, arr, cmap=cmap, norm=norm, 
                         vmin=fixcb[0], vmax=fixcb[1], alpha=alpha )
 #        poly = m.pcolormesh( lon, lat, arr, cmap=cmap, clevs=clevs,\
 #                        vmin=fixcb[0], vmax=fixcb[1], alpha=alpha )
 
     # -----------------  Log plots ---------------------------------------------
-    if (case == 4 ) and ( isinstance(fixcb,type(None) )):  # log and cmap
-        # CAUTION - norm/discrete cmapvariables not passed <= update this
-        poly = m.pcolor(lon, lat, arr, norm=LogNorm(vmin=arr.min(), \
-            vmax=arr.max()), cmap=cmap)#'PuBu_r')
-
-        if no_cb:
-            pass
-        else:
-            lvls = np.logspace( np.ma.min(np.ma.log(arr)), \
-                np.ma.max(np.ma.log(arr)), nbins )
-
-            cb = plt.colorbar(poly, ax = m.ax, ticks=lvls, format=format,\
-                shrink=shrink,alpha=alpha, extend=extend)
-
-        if debug:
-            print np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), lvls
-
-    if (case == 4 ) and (not isinstance(fixcb,type(None) )):  # log and set min
-        # CAUTION - clevs variables not passed <= update this
+    if (case == 4 ) : # l
         poly = m.pcolor(lon, lat, arr, norm=LogNorm(vmin=fixcb[0], \
-            vmax=arr.max()), cmap=cmap)#'PuBu_r')
+            vmax=fixcb[1]), cmap=cmap)#'PuBu_r')
 
         if no_cb:
             pass
         else:
-            # CAUTION - clevs variables not passed <= update this
-            # create log with 1000 p
-            lvls = np.logspace( np.ma.log(vmin), np.ma.log(vmax), 1E5, 
-                endpoint=True )
+            # Get logarithmically spaced integers
+            lvls = np.logspace( np.log10(fixcb[0]), np.log10(fixcb[1]), \
+                                                num=nticks)
+            # Normalise to Log space
+            norm=mpl.colors.LogNorm(vmin=fixcb[0], vmax=fixcb[1])
 
-            # select relevant indices ( linearly spaced integers )
-            lvls =  [ lvls[0] ] + list( lvls[ gen_log_space( 1E5,  \
-                nticks*15) ] ) + [ lvls[-1] ]
-            lvls= np.array( lvls )
-
-            cb = plt.colorbar(poly, ax = m.ax, ticks=lvls, format=format, \
-                 shrink=shrink, alpha=alpha, extend='min')
+            cb = plt.colorbar(poly, ax=m.ax, ticks=lvls, format=format, \
+                 shrink=shrink, alpha=alpha, norm=norm, extend='min')
 
         if debug:
             print np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), lvls
 
     # ----------------  Colorbars  ----------------  
-    if not no_cb:
-        # CAUTION - clevs variables not passed <= update this
+    if no_cb:
+        pass
+    else:
         if isinstance( cb, type(None) ):
+            # if linear plot without fixcb set, then define here
             cb = plt.colorbar( poly, ax = m.ax, shrink=shrink, alpha=alpha,  \
-                        format=format, ticks= np.linspace(tickmin, tickmax, \
+                        format=format, ticks= np.linspace(fixcb[0], fixcb[1], \
                         nticks ), extend=extend )        
 
         for t in cb.ax.get_yticklabels():
@@ -299,6 +275,13 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
 
         if units != None:
             cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)  
+
+        if (case == 4 ):    
+            round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
+        
+            cb.set_ticks( [ float('{:.2g}'.format( t )) for t in lvls ] )
+            cb.set_ticklabels( [ round_to_n( i, sigfig_rounding_on_cb) \
+                                            for i in lvls ] )
 
     # Set number of ticks
     # FIX NEEDED - this currently doesn't doesn't work for log plots
@@ -392,8 +375,8 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
         arr =arr[:,:38]
 
     # Create a Log Zonal plot of the given data, where fixcb is the min and max of a given array (aka not log )
-    if (log):
-        if (fixcb != None):
+    if log:
+        if fixcb != None:
 
             p = ax.pcolor( lat, alt, arr.T, norm=LogNorm(vmin=fixcb[0], 
                         vmax=fixcb[1]), cmap=cmap)        
@@ -2722,25 +2705,22 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     # Setup normalisation for colorbar
     if isinstance( norm, type(None) ):
         if log:
-            # create log with 1000 p
-            lvls = np.logspace( np.ma.log(vmin), np.ma.log(vmax), 1E5, 
-                endpoint=True )
-
-            # select relevant indices ( linearly spaced integers )
-            print nticks
-            lvls =  [ lvls[0] ] + list( lvls[ gen_log_space( 1E5,  \
-                nticks*15) ] ) + [ lvls[-1] ]
-            lvls= np.array( lvls )
+            # Get logarithmically spaced integers
+            lvls = np.logspace( np.log10(vmin), np.log10(vmax) , num=nticks)
+            # Normalise to Log space
+            norm=mpl.colors.LogNorm(vmin=vmin, vmax=vmax)
 
         else:
+            # Normalise to linear space
             norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+
+    print lvls, vmin, vmax, norm
 
     if isinstance( lvls, type(None) ):            
         # make graduations in colourbar to be human readable
         lvls = get_human_readable_gradations( vmax=vmax,  \
             vmin=vmin, nticks=nticks, \
             sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
-        print lvls
 
     # add an extra decimal place for values under 50, 
     # and two for values under 1
@@ -2815,8 +2795,15 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
                 orientation=orientation, ticklocation=ticklocation)
 
         print lvls, norm, boundaries, extend
+
+    if log:    
+        round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
+
+        cb.set_ticks( [ float('{:.2g}'.format( t )) for t in lvls ] )
+        cb.set_ticklabels( [ round_to_n( i, sigfig_rounding_on_cb) \
+                for i in lvls ] )
     
-    # set cb label sizes
+    # Set cb label sizes
     if units != None:
         for t in cb.ax.get_yticklabels():
             t.set_fontsize(f_size)

@@ -258,15 +258,18 @@ def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,
         plt.gcf().set_rasterized(True)    
 
     # save and close
+    type = 'PDF' 
     pdf.savefig( dpi=dpi )
     pdf.close()
 
     # Also export to png and eps?
     if save2png:
+        type += '/PDF' 
         plt.savefig(npdf+'.png', format='png', dpi=dpi)
     if save2eps:
+        type += '/EPS' 
         plt.savefig(npdf+'.eps', format='eps', dpi=dpi)
-    print 'PDF/EPS/PNG saved & Closed as/at: ', npdf
+    print type+' saved & Closed as/at: ', npdf
 
 # --------   
 # 1.13- Save as mulitple page pdf.
