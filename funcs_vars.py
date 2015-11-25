@@ -814,7 +814,8 @@ def p_l_unity(rxn, debug=False):
 #  4.07 - Returns tracers unit and scale (if requested)
 # --------------
 def tra_unit(x, scale=False, adjustment=False, adjust=True, \
-            global_unit=False, ClearFlo_unit=False, debug=False ):
+            global_unit=False, ClearFlo_unit=False, IUPAC_unit=False, \
+            debug=False ):
     tra_unit = {
     'OCPI': 'ppbv', 'OCPO': 'ppbv', 'PPN': 'ppbv', 'HIO3': 'pptv', 'O3': 'ppbv', 'PAN': 'ppbv', 'ACET': 'ppbC', 'RIP': 'ppbv', 'BrNO3': 'pptv', 'Br': 'pptv', 'HBr': 'pptv', 'HAC': 'ppbv', 'ALD2': 'ppbC', 'HNO3': 'ppbv', 'HNO2': 'ppbv', 'C2H5I': 'pptv', 'HNO4': 'ppbv', 'OIO': 'pptv', 'MAP': 'ppbv', 'PRPE': 'ppbC', 'HI': 'pptv', 'CH2I2': 'pptv', 'IONO2': 'pptv', 'NIT': 'ppbv', 'CH3Br': 'pptv', 'C3H7I': 'pptv', 'C3H8': 'ppbC', 'DMS': 'ppbv', 'CH2O': 'ppbv', 'CH3IT': 'pptv', 'NO2': 'ppbv', 'NO3': 'ppbv', 'N2O5': 'ppbv', 'CHBr3': 'pptv', 'DST4': 'ppbv', 'DST3': 'ppbv', 'DST2': 'ppbv', 'DST1': 'ppbv', 'HOCl': 'ppbv', 'NITs': 'ppbv', 'RCHO': 'ppbv', 'C2H6': 'ppbC', 'MPN': 'ppbv', 'INO': 'pptv', 'MP': 'ppbv', 'CH2Br2': 'pptv', 'SALC': 'ppbv', 'NH3': 'ppbv', 'CH2ICl': 'pptv', 'IEPOX': 'ppbv', 'ClO': 'ppbv', 'NO': 'pptv', 'SALA': 'ppbv', 'MOBA': 'ppbv', 'R4N2': 'ppbv', 'BrCl': 'pptv', 'OClO': 'ppbv', 'PMN': 'ppbv', 'CO': 'ppbv', 'CH2IBr': 'pptv', 'ISOP': 'ppbC', 'BCPO': 'ppbv', 'MVK': 'ppbv', 'BrNO2': 'pptv', 'IONO': 'pptv', 'Cl2': 'ppbv', 'HOBr': 'pptv', 'PROPNN': 'ppbv', 'Cl': 'ppbv', 'I2O2': 'pptv', 'I2O3': 'pptv', 'I2O4': 'pptv', 'I2O5': 'pptv', 'MEK': 'ppbC', 'MMN': 'ppbv', 'ISOPN': 'ppbv', 'SO4s': 'ppbv', 'I2O': 'pptv', 'ALK4': 'ppbC', 'MSA': 'ppbv', 'I2': 'pptv', 'Br2': 'pptv', 'IBr': 'pptv', 'MACR': 'ppbv', 'I': 'pptv', 'AERI': 'pptv', 'HOI': 'pptv', 'BrO': 'pptv', 'NH4': 'ppbv', 'SO2': 'ppbv', 'SO4': 'ppbv', 'IO': 'pptv', 'H2O2': 'ppbv', 'BCPI': 'ppbv', 'ICl': 'pptv', 'GLYC': 'ppbv','ISALA': 'pptv', 'ISALC': 'pptv', 
     # Extra diagnostics to allow for simplified processing 
@@ -870,6 +871,16 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, \
             adjustby = -273.15 
         else:
             adjustby = 0
+
+    if IUPAC_unit:
+        if units == 'ppbv':
+            units = 'nmol / mol'
+        if units == 'ppbC':
+            units = 'nmol (C) / mol'
+        if units == 'pptv':
+            units = 'pmol / mol'
+        if units == 'pptC':
+            units = 'pmol (C)/ mol'
 
     if scale and (not adjustment):
         return units, scaleby           

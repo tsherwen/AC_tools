@@ -2316,16 +2316,17 @@ def molec_cm2_s_2_Gg_Ox_np( arr, spec='O3', s_area=None, ctm_f=None, \
     if debug:
         print ' molec_cm2_s_2_Gg_Ox_np  called'
 
-    # Kludge 
-    s_area = s_area[...,None]  # tmp bug fix (loads all output surface areas, only requires a single time dimensions as does not chnage... )
+    # Kludge (loads all output surface areas, 
+    # only requires a single time dimensions as does not chnage... )
+#    s_area = s_area[...,None]  # tmp bug fix 
     #  anti-kludge 
 #    if fix_Kludge:
-#        s_area = s_area[...,0]
+#    s_area = s_area[...,0]
         
     if debug:
         print '_'*10, arr.shape, s_area.shape
     if ( Iodine ):
-        # [molec/cm2/s] * cm2 (m*1E4) /  moles * RMM I /1E9   ( convert Gg I /s )
+        # [molec/cm2/s] * cm2 (m*1E4) /  moles * RMM I /1E9 ( convert Gg I /s )
         arr  = ( arr * (s_area*1E4) ) / constants( 'AVG') * (127.) * \
             spec_stoich(spec) /1E9   
     elif spec == 'O3':

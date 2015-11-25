@@ -90,12 +90,24 @@ def file_len(fname):
 # -------------
 # 1.03 - My round - credit: Alok Singhal
 # -------------
-def myround(x, base=5, integer=True):
+def myround(x, base=5, integer=True, round_up=False):
     """ Round up values - mappable function for pandas processing """
+
+    round_up=True # Kludge - always set this to True
+
+    # round to nearest base number
+    rounded = base * round(float(x)/base) 
+        
+    if round_up:
+        # ensure rounded number is to nearest next base
+        if rounded < x:
+            rounded += base
+
     if integer:
-        return int(base * round(float(x)/base))
-    else:
-        return base * round(float(x)/base)
+        return int( rounded )
+    else:        
+        return rounded
+        
 
 # -------------- 
 # 1.04 - csv, opener - upgrade to pandas makes this redundent
