@@ -216,11 +216,11 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         }[case]
     if debug:
         print 3, case, [ np.array(i).shape for i in lon, lat, arr ], alpha
-    
+
     # -------- colorbar variables...
     # Set cmap range I to limit poly, if not given cmap )
     fixcb_ = fixcb
-    if isinstance( fixcb_, type(None) ):# and isinstance( cmap, type(None) ):
+    if isinstance( fixcb_, type(None) ) or isinstance( cmap, type(None) ):
         fixcb_ = np.array( [ (i.min(), i.max()) for i in [arr ] ][0] )
 
     if isinstance( cmap, type(None) ):
@@ -237,8 +237,9 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         cmap = get_colormap( arr=np.array( [fixcb_buffered[0],  \
                                                     fixcb_buffered[1]] ) )
     fixcb_ = fixcb_buffered
-    if debug:
-        print 'colorbar variables: ', fixcb_buffered, fixcb, fixcb_, lvls
+    if verbose:
+        print 'colorbar variables: ', fixcb_buffered, fixcb, fixcb_, lvls, \
+                cmap, lvls
 
 #    if discrete_cmap:
 #        if isinstance( fixcb, type(None) ):
@@ -280,12 +281,20 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     if no_cb:
         pass
     else:
+#    do_cb = False
+#    if do_cb:
+#        pass
         if isinstance( cb, type(None) ):
             # if linear plot without fixcb set, then define here
+            ax = plt.gca()
 
-            cb = plt.colorbar( poly, ax=m.ax, shrink=shrink, alpha=alpha,  \
-                        format=format, ticks=lvls, norm=norm, \
-                        extend=extend )
+        if verbose:
+            print shrink, m, m.ax, poly, alpha, format, lvls, norm,  \
+                    extend, ax
+        cb = plt.colorbar( poly, ax=ax, shrink=shrink, alpha=alpha,  \
+#            cb = plt.colorbar( poly, ax=m.ax, shrink=shrink, alpha=alpha,  \
+#                        format=format, ticks=lvls, norm=norm, \
+                    extend=extend )
 
         for t in cb.ax.get_yticklabels():
             t.set_fontsize(f_size)
@@ -304,7 +313,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
                 except:
                     lvls[n] = lvl
         else:
-            tick_locs = np.array( lvls ).copy()
+            tick_locs = np.array( lvls ).copy()  
 
         # fix colorbar levels, then provide labels
         cb.set_ticks( tick_locs )
@@ -411,7 +420,9 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
 
     # -------- Colorbar/colomap variables...
     # Set cmap range I to limit poly, if not given cmap )
+    print fixcb
     fixcb_ = fixcb
+    print fixcb, fixcb_,  [ (i.min(), i.max()) for i in [arr ] ]
     if isinstance( fixcb_, type(None) ) :#and isinstance( cmap, type(None) ):
         fixcb_ = np.array( [ (i.min(), i.max()) for i in [arr ] ][0] )
 
@@ -429,6 +440,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
         # Setup Colormap
         cmap, fixcb_buffered = get_colormap( np.array( fixcb_ ), \
                 nticks=nticks, fixcb=fixcb_, buffer_cmap_upper=True )
+
         # Update colormap with buffer
         cmap = get_colormap( arr=np.array( [fixcb_buffered[0],  \
                                                     fixcb_buffered[1]] ) )
@@ -714,10 +726,10 @@ def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
 # --------
 def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
             f_size=10, color=None, rasterized=True, err_bar=False, obs=True, \
-            legend=False, units='ppbv', hPa_labels=True, stddev=True, \
+            legend=False, units='nmol / mol', stddev=True, \
             c_l=[ 'k', 'red','green', 'blue' , 'purple'], xlimit=None, \
             loc='upper left', c_off = 37, label=None, ancillary=True, \
-            debug=False ):
+            ylabel=True, xlabel=True, hPa_labels=True, debug=False ):
     """ Create plot of vertical data for sonde observations/model """
 
     # Get overall vars
@@ -736,7 +748,7 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
         
     if obs:
 #        print [len(i) for i in arr[:,0], alt ]
-        ax.plot( arr[:,0] , alt , color=color, label=label)
+        ax.plot( arr[:,0] , alt , color=color, label=label )
         # limit cb to top of troposphere
         min, max  =  [ (np.ma.min(i), np.ma.max(i)) for i in [ arr[:,0] ] ][0] 
     else:
@@ -746,15 +758,16 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
 
     # Add legend
     if legend:
-        plt.legend(loc=loc)#, fontsize=f_size*.5)
+        plt.legend( loc=loc )#, fontsize=f_size*.5)
 
-    # sonde data  = mean, 1st and 3rd Q
+    # Sonde data  = mean, 1st and 3rd Q
     if err_bar:     
         if stddev:
-            ax.errorbar(arr[:,0] , alt, xerr=arr[:,3], fmt='o', color=color )
+            ax.errorbar(arr[:,0] , alt, xerr=arr[:,3], fmt='o', color=color, 
+                    elinewidth=0.75, markersize=2, alpha=0.75 )
         else:
             ax.errorbar(arr[:,0] , alt, xerr=[arr[:,1], arr[:,2]], fmt='o', \
-                color=color )
+                color=color, elinewidth=.75, markersize=5, alpha=0.75 )
 
     # Beautify plot ( e.g. add hPa, units,  etc... )
     if ancillary:
@@ -765,9 +778,16 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
                 plt.text(0.5, 1.05, subtitle, ha='center', va='center', \
                           transform=ax.transAxes, fontsize=f_size*.65)
             plt.subplots_adjust(top=0.86) 
-                
-        plt.ylabel('Altitude / km', fontsize=f_size*.75)
-        plt.xlabel( units, fontsize=f_size*.75)
+        
+        if ylabel:
+            plt.ylabel('Altitude (km)', fontsize=f_size*.75)
+        else:
+            plt.tick_params( axis='y', which='both', labelleft='off')
+        if xlabel:
+            plt.xlabel( units, fontsize=f_size*.75)
+        else:
+            plt.tick_params( axis='x', which='both', labelbottom='off')
+
         if xlimit == None:
     #        plt.xlim( min-(min*0.02), max+(max*0.02) )
             plt.xlim( 0.1,  max+(max*0.50) )
@@ -775,11 +795,19 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
             plt.xlim(0.1, xlimit)
         if hPa_labels:
             ax2 = ax.twinx()
-            press =[ myround(i,100) for i in press ]
-            ax2.set_yticks( press[::10])
+            press = [ myround(i,100) for i in press ][::-1]
+            ax2.set_yticks( press[::10] )
+            ax2.set_yticklabels( press[::10] )
             majorFormatter = FormatStrFormatter('%d')
-            ax2.yaxis.set_minor_formatter(majorFormatter)                        
-            ax2.set_ylabel( 'Press. / hPa', fontsize = f_size*.75)
+            ax2.yaxis.set_minor_formatter( majorFormatter )                        
+            ax2.set_ylabel( 'Press. (hPa)', fontsize = f_size*.75)
+            ax2.invert_yaxis()
+            if ylabel:
+                pass
+            else:
+                ax.tick_params( axis='y', which='both', labelleft='off')
+                ax2.tick_params( axis='y', which='both', labelleft='off')
+
 
 # --------------
 # 1.12 - plot up monthly from data provided from DB netCDF
@@ -822,7 +850,8 @@ def obs_month_plot(data, color=None, title=None, rtn_data=False, \
 # -------------
 def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
                   title=None, subtitle=None, legend=False, xrotation=90, \
-                  window=False, label=None, ylabel=None, loc='upper right' ):
+                  window=False, label=None, ylabel=None, xlabel=True, 
+                  loc='upper right' ):
     """ Plot up seaonal (monthly ) data. Requires data, and dates in numpy 
         array form. Dates must be as datetime.datetime objects. """
             
@@ -836,11 +865,15 @@ def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
         label=label )
 
     # Beautify
-    ax.set_xticklabels( [i.strftime("%b") for i in [datetime.datetime(2009, \
-        int(i), 01) for i in np.arange(1,13 ) ] ] )
+    ax.set_xticklabels( [i.strftime("%b") \
+            for i in [datetime.datetime(2009, int(i), 01)  \
+            for i in np.arange(1,13 ) ] ] )
     plt.xticks(range(1,13),  fontsize=f_size )
-    plt.xlim(0.5,12.5)
     plt.xticks(rotation=xrotation)
+    if not xlabel:
+        plt.tick_params( axis='x', which='both', bottom='on', top='off',        
+                                    labelbottom='off')
+    plt.xlim(0.5,12.5)
     if ylabel != None:
         plt.ylabel(  ylabel, fontsize=f_size  )
     plt.yticks( fontsize=f_size )        
@@ -2282,7 +2315,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     norm=None, nticks=10, format=None, units=None, extend='neither',\
     discrete_cmap=False, f_size=15, fig=None, left_cb_pos=0.86,\
     bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
-    dpi=160, debug=False ):
+    dpi=160, res='4x5', show=True, no_cb=True, debug=False ):
 
     # setup fig if not provided
     if isinstance( fig, type(None) ):
@@ -2310,10 +2343,12 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 
     # Plot up
     map_plot( arr[...,0].T, format=format, cmap=cmap, fixcb=fixcb,\
-                    no_cb=True, norm=norm, f_size=f_size*.75, debug=debug )
+                    no_cb=no_cb, norm=norm, f_size=f_size*.75,  res=res, \
+                    fixcb_buffered=fixcb_buffered, debug=debug )
 
     # Manually Add colorbar
-    mk_cb(fig, units=units, left=left_cb_pos,  cmap=cmap, \
+    if no_cb:
+        mk_cb(fig, units=units, left=left_cb_pos,  cmap=cmap, \
                 vmin=fixcb_buffered[0],\
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
                 extend=extend, lvls=lvls, \
@@ -2324,7 +2359,8 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right,     
                                         hspace=hspace, wspace=wspace)
     # Show
-    plt.show()
+    if show:
+        plt.show()
 
 
 # --------
@@ -2500,7 +2536,7 @@ def r_squared(x, y):
 # -------------
 def set_bp( bp, num, c_list=['k', 'red'], white_fill=True, set_all=True,
                     median_color='white', linewidth=2, debug=False ):
-    """ Manual set properties of boxplot ("bp") """
+    """ Manually set properties of boxplot ("bp") """
     if debug:
         print num, c_list
     if set_all:
@@ -2509,11 +2545,11 @@ def set_bp( bp, num, c_list=['k', 'red'], white_fill=True, set_all=True,
         setp(bp['whiskers'][:], color=c_list[num], linewidth=linewidth*.5)
         setp(bp['fliers'][:], color=c_list[num], linewidth=linewidth*.5)
         setp(bp['medians'][:], color=c_list[num], linewidth=linewidth*.5)
-        if white_fill:
-            [ box.set( facecolor = 'white') for box in bp['boxes'] ]
-        else:
-            [ box.set( facecolor = c_list[num] ) for box in bp['boxes'] ]
-            setp(bp['medians'][:], color=median_color, linewidth=linewidth)                        
+    if white_fill:
+        [ box.set( facecolor = 'white') for box in bp['boxes'] ]
+    else:
+        [ box.set( facecolor = c_list[num] ) for box in bp['boxes'] ]
+        setp(bp['medians'][:], color=median_color, linewidth=linewidth)                        
 
 # -------------
 # 4.07 - Get all marker types
@@ -2917,8 +2953,8 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
         round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
 
         cb.set_ticks( [ float('{:.2g}'.format( t )) for t in lvls ] )
-        cb.set_ticklabels( [ round_to_n( i, sigfig_rounding_on_cb) \
-                for i in lvls ] )
+        labels = [ round_to_n( i, sigfig_rounding_on_cb) for i in lvls ]
+        cb.set_ticklabels( [ format % i for i in labels] )
     
     # Set cb label sizes
     if units != None:
@@ -3098,7 +3134,7 @@ def color4sensitstudy( title=None, rtn_dict=False):
      'I$_{2}$Ox exp. X-sections': 'red',
      'I$_{2}$Ox loss ($\\gamma$) /2': 'deepskyblue',
      'I$_{2}$Ox loss ($\\gamma$) x2': 'deepskyblue',
-     'Iodine simulation.': 'purple',
+     'Br-I': 'purple',
      'Just org. I': 'blue',
      'MBL BrO 2 pptv': 'saddlebrown',
      'Ocean iodide': 'magenta',
@@ -3125,7 +3161,7 @@ def markers4sensitstudy( title=None, rtn_dict=False):
      'I$_{2}$Ox exp. X-sections': 'h',
      'I$_{2}$Ox loss ($\\gamma$) /2': '^',
      'I$_{2}$Ox loss ($\\gamma$) x2': 'h',
-     'Iodine simulation.': '^',
+     'Br-I': '^',
      'Just org. I': '^',
      'MBL BrO 2 pptv': '^',
      'Ocean iodide': '^',
