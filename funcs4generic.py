@@ -445,14 +445,16 @@ http://stackoverflow.com/questions/12418234/logarithmically-spaced-integers
 # --------
 # 2.01 - Ocean mask
 # --------
-def ocean_mask(res='4x5', debug=False):
-    """ Get ocean mask from GEOS-Chem LWI ( at given resolution) """
+def ocean_unmasked(res='4x5', debug=False):
+    """ Get ocean mask from GEOS-Chem LWI ( at given resolution) 
+        <= update 
+        NOTE: this currently returns mask with all except ocean masked """
 
     from funcs4GEOSC import get_land_map 
     if debug:
         print 'ocean_mask called for: ', res
 
-    # Create a np.ma mask 
+    # Create a mask from land/water/ice indices
     m = np.ma.masked_not_equal( get_land_map(res=res),0 )
     if debug:
         print mask, mask.shape, 
@@ -479,7 +481,7 @@ def land_mask(res='4x5', debug=False):
 def ice_mask(res='4x5', debug=False):
     """ Get ice mask from GEOS-Chem LWI ( at given resolution) """
     # Create a np.ma mask 
-    m= np.logical_not( (land_mask(res)*ocean_mask(res)) )
+    m= np.logical_not( (land_mask(res)*ocean_unmasked(res)) )
     if debug:
         print mask, mask.shape, 
     return m
@@ -582,9 +584,8 @@ def mask_extratropics( res='4x5'):
 # --------
 # 2.09 - Create unmask array ( for ease of dataprocessing )
 # --------
-def unmask_all(res='4x5', ones=True):
+def unmask_all( res='4x5' ):
     """ Get un-masked mask of size GEOS-Chem dimensions  """
-
     return np.ma.array( np.ones(get_dims4res(res) ), mask=False).mask
 
 # --------
@@ -749,10 +750,10 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
         ]
         tsects3D= [  'MBL', 'BL','FT',  'UT']
         maskes = [ 
-        np.logical_not( i) for i in  unmask_all(res=res), ocean_mask(res=res) \
+        np.logical_not( i) for i in  unmask_all(res=res), ocean_unmasked(res=res) \
         , land_mask(res=res), ice_mask(res=res), surface_mask(res=res)] +  [                        
         np.logical_not( i)*np.logical_not( surface_mask(res=res) ) 
-        for i in ocean_mask(res=res), land_mask(res=res)
+        for i in ocean_unmasked(res=res), land_mask(res=res)
         , ice_mask(res=res) ] + [  
         np.logical_not( i) for i in 
         mask_NH(res=res), mask_SH(res=res) ]    + [   
@@ -829,10 +830,14 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
 # 2.17 -  Retrieve individual 4D mask of locations except region given
 # --------
 def mask_all_but( region='All', M_all=False, saizlopez=False, \
-            res='4x5', mask3D=False, trop_limit=True ):
+            res='4x5', mask3D=False, trop_limit=True, \
+            use_multiply_method=True, debug=True ):
     """ Mask selector for analysis. global mask provided for with given region 
         unmasked 
-        NOTE: "None"/"unmask_all" yeilds completely unmasked array """
+        NOTE: 
+            (1) "unmask_all" yeilds completely unmasked array
+            (2) fucntion was oringialyl used to mulitple masks, however, 
+                this approch is   """
 
     # --- Setup cases...   
     # ( except None, unmask_all and global to retrive no mask )
@@ -843,16 +848,18 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     'Mid Lats': 1, 
     'Mid lats':1, 
     'south_pole' : 2, 
+    'south pole' : 2, 
     'north_pole' : 3,     
+    'north pole' : 3,     
     'unmask_all': 4, 
     'All' : 4,
     'global': 4,
     # NEED TESTING ...
     'Extratropics':5, 
     'Oceanic':6, 
+    'Ocean':6,
     'NH': 7, 
     'SH':8,
-    'Ocean':6,
     'Ice': 10,
     'Land' : 11, 
     'lat40_2_40':12, 
@@ -867,12 +874,17 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
         mask = mask_tropics( res=res, saizlopez=saizlopez )
     if case == 1:
         mask = mask_mid_lats( res=res )
+    if case == 2:
+        mask = mask_southpole( res=res )
+    if case == 3:
+        mask = mask_northpole( res=res )
     if case == 4:
-        mask = np.logical_not( unmask_all( res=res ) )
+#        mask = np.logical_not( unmask_all( res=res ) )
+        mask = unmask_all( res=res ) 
     if case == 5:
         mask = mask_extratropics(res=res)
     if case == 6:
-        mask = ocean_mask( res=res )
+        mask = ocean_unmasked( res=res )
     if case == 7:
         mask = mask_NH( res=res )
     if case == 8:
@@ -884,14 +896,19 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     if case == 12:
         mask = mask_lat40_2_40( res=res )
     if case == 13:
-         mask = ocean_mask(res=res)*mask_tropics(res=res, saizlopez=saizlopez)
+         mask = ocean_unmasked( res=res)*mask_tropics(res=res, 
+                                                            saizlopez=saizlopez)
     if case == 14:
         mask = land_mask( res=res )*mask_tropics( res=res, saizlopez=saizlopez )
 
-    # invert mask to leave exception unmasked...
-    mask = np.logical_not(mask)
-
-    # Apply Saiz-Lopez Marine MFT/MUT?
+    # Invert mask to leave exception unmasked if used to multiply
+    # i.e. all (future) functions should have use_multiply_method=True 
+    if use_multiply_method:  # Kludge
+        mask = np.logical_not(mask)
+    else:
+        pass
+    
+    # Apply Saiz-Lopez Marine MFT/MUT? <= should this be before multiply op.?
     if M_all:
         mask = mask*land_mask(res=res)
 
@@ -899,7 +916,6 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
         if any( [ (mask.shape[-1] == i) for i in 38, 47 ] ):
             pass
         else: # concatenate dimensions
-            mask*47
             mask = np.concatenate( [mask]*47, axis=2 )
 
     # Remove above the "chemical tropopause" from GEOS-Chem (v9-2)

@@ -3095,7 +3095,8 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
     ars = [ np.ma.array( i ) for  i in ars ]
     if debug:
         print [ (i.shape, i.min(), i.max(), i.mean()) for i in ars ]
-    m = mask_all_but( region, mask3D=mask3D, trop_limit=trop_limit )
+    m = mask_all_but( region, mask3D=mask3D, \
+                use_multiply_method=False, trop_limit=trop_limit )
     if debug:
         print m, region, [ (type(i), i.shape) for i in [ m ] +ars ], ars[0].mask
     if debug:
