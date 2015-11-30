@@ -236,7 +236,12 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         # Update colormap with buffer
         cmap = get_colormap( arr=np.array( [fixcb_buffered[0],  \
                                                     fixcb_buffered[1]] ) )
+
+    # Allow function to operate without fixcb_buffered provided
+    if isinstance( fixcb_buffered, type(None) ):
+        fixcb_buffered = fixcb_
     fixcb_ = fixcb_buffered
+
     if verbose:
         print 'colorbar variables: ', fixcb_buffered, fixcb, fixcb_, lvls, \
                 cmap, lvls
@@ -252,6 +257,8 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     # --------------  Linear plots -------------------------------
     # standard plot 
     if any( [ (case==i) for i in 3, 9 ] ):
+        if debug:
+            print fixcb_, arr.shape, [ len(i) for i in lon, lat ]
         poly = m.pcolor( lon, lat, arr, cmap=cmap, norm=norm, 
                         vmin=fixcb_[0], vmax=fixcb_[1], alpha=alpha )
 #        poly = m.pcolormesh( lon, lat, arr, cmap=cmap, clevs=clevs,\
@@ -2371,7 +2378,7 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     discrete_cmap=False, f_size=15, fig=None,  res='4x5', wd=None, \
     bottom=0.1, top=0.975, hspace=0.4, wspace=0.5, left=0.075, right=0.875, \
     cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160, \
-    region=None, lat_0=None, lat_1=None, debug=False ):
+    region='All', lat_0=None, lat_1=None, debug=False ):
 
     if debug:
         print 'plot_zonal_figure called ', region

@@ -597,43 +597,47 @@ def get_SSA_I2( wd, s_total=0, debug=False ):
 def wds2np( wds, spec='O3', res='4x5', category="IJ-AVG-$", trop_limit=False, 
                         months=12, dtype='float32', debug=False ):
     """ Read CTM output saved in Binary form
+
         REDUNDENT - now use automated NetCDF 2D/3D writer 
         https://github.com/tsherwen/MChem_tools/blob/master/bpch2netCDF.py
+
         """
 
-    mod = []
-    for wd in wds:        
-        fstr = get_dir('npwd') +'GC_arr_store_{}_{}_{}_{}.npy'.format(spec, \
-            wd.split('/')[-2], wd.split('/')[-1], res)
-        if debug:
-            print fstr, wd, res, category, trop_limit, months
-        try:
-            fp = np.memmap( fstr,  dtype=dtype, mode='r',\
-                        shape=tuple(list(get_dims4res(res, \
-                        trop_limit=trop_limit))+ [months] )  ) 
-            print 'Read memory mapped np array', fp.shape,   \
-                list(get_dims4res(res, trop_limit=trop_limit))+[months]
-            mod += [  np.array( fp ) ]
-            del fp
-        except:
-            print 'Writing memory mapped np array', fstr
+    print ' This function is no longe in use. Please update to use get_GC_ouput'
+    sys.exit()
+#    mod = []
+#    for wd in wds:        
+#        fstr = get_dir('npwd') +'GC_arr_store_{}_{}_{}_{}.npy'.format(spec, \
+#            wd.split('/')[-2], wd.split('/')[-1], res)
+#        if debug:
+#            print fstr, wd, res, category, trop_limit, months
+#        try:
+#            fp = np.memmap( fstr,  dtype=dtype, mode='r',\
+#                        shape=tuple(list(get_dims4res(res, \
+#                        trop_limit=trop_limit))+ [months] )  ) 
+#            print 'Read memory mapped np array', fp.shape,   \
+#                list(get_dims4res(res, trop_limit=trop_limit))+[months]
+#            mod += [  np.array( fp ) ]
+#            del fp
+#        except:
+#            print 'Writing memory mapped np array', fstr
 #            ctms, res = wd2ctms( wd )#, cat_, spec, start, end )
 #            arr = np.concatenate([get_gc_data_np( ctm, spec=spec, \
 #                category=category, debug=debug) for ctm in ctms ], axis =3)
 #            arr = np2chronological_fromctm(ctms, arr)
             # Use pygchem 0.3.0 to extract
-            get_GC_output( wd,  species=spec, category=category )
+#            get_GC_output( wd,  species=spec, category=category )
 
-            if trop_limit:
-                arr=arr[:,:,:38,:]
-            fp = np.memmap( fstr,  dtype=dtype, mode='w+', shape=arr.shape )
-            fp[:] = arr[:]
-            np.memmap.flush(fp)        
-            mod += [ fp ] 
-            del fp
-    if debug:
-        print np.ma.array(mod).shape, [np.ma.array(i).shape for i in mod]
-    return mod, res
+#            if trop_limit:
+#                arr=arr[:,:,:38,:]
+#            fp = np.memmap( fstr,  dtype=dtype, mode='w+', shape=arr.shape )
+#            fp[:] = arr[:]
+#            np.memmap.flush(fp)        
+#            mod += [ fp ] 
+#            del fp
+#    if debug:
+#        print np.ma.array(mod).shape, [np.ma.array(i).shape for i in mod]
+#    return mod, res
 
 # ----
 # 1.14 - Extract OH and HO2 for a given ctm.bpch file
@@ -729,10 +733,12 @@ def mk_HDF_2D_from_table( spec='O3', nchunks=12, \
             res='0.5x0.666', region='EU', run_code='',  \
             run_names=[  'run' ], ver='1.7', \
             debug=False ):
-    """ Make HDF file (table form ) to hold GEOS-Chem planeflight csv output 
+    """
+     Make HDF file (table form ) to hold GEOS-Chem planeflight csv output 
         in binary form  
         REDUNDENT - Now use automated NetCDF writer
-        https://github.com/tsherwen/MChem_tools/blob/master/bpch2netCDF.py""" 
+        https://github.com/tsherwen/MChem_tools/blob/master/bpch2netCDF.py
+    """ 
 
     if debug:
         print 'mk_HDF_2D_from_table called'
@@ -798,7 +804,11 @@ def hdf2panel( spec='O3', run_name='run',  region='EU',\
             starttime=datetime.datetime(2005,1,1, 0, 0),   \
             endtime=datetime.datetime(2006,2,1, 0, 0),  \
             ver='1.7', debug=False ):
-    """ stack tabulated planeflight output in HDF to pandas 3D panel """
+    """ stack tabulated planeflight output in HDF to pandas 3D panel 
+    
+        This is redundent as now automated NetCDF approch in use.
+    ( https://github.com/tsherwen/MChem_tools/blob/master/pf2NetCDF.py )
+    """
 
     # --- Vars
     # deal with run name issues... 
@@ -853,6 +863,10 @@ def read_HDF4spec( hdf_filename, dates, spec='O3', \
 
         notes:
             - spec is required in pf format ( e.g. TRA_?? )
+
+    This is redundent as now automated NetCDF approch in use.
+    ( https://github.com/tsherwen/MChem_tools/blob/master/pf2NetCDF.py )
+
     """
 
     if debug:
@@ -943,7 +957,11 @@ def get_spec_pf_hdf_surface( run_name='run', spec='O3', region='ROW',
             ver='1.7', res='2x2.5', just_return_values=True, debug=False ):
 
     """ Extracts species surface data from HDF store for a given date range in a 
-    given region ( e.g. ROW or EU... ) """
+    given region ( e.g. ROW or EU... ) 
+    
+    This is redundent as now automated NetCDF approch in use.
+    ( https://github.com/tsherwen/MChem_tools/blob/master/pf2NetCDF.py )
+    """
 
     print 'get_spec_pf_hdf_surface called, for ', run_name
     npwd=get_dir('npwd')
@@ -1534,7 +1552,7 @@ def get_surface_data_HDF( spec='O3', res='2x2.5', region='ROW', \
         
         This is a linker to allow for selection of data based on run name.
         
-        Defunct. Now use 3D NetCDF made by:
+        Now redundent . Now use 3D NetCDF made by:
         https://github.com/tsherwen/MChem_tools/blob/master/pf2NetCDF.py
     """
     
@@ -1877,7 +1895,7 @@ def iGEOSChem_ver(wd, verbose=True, debug=False):
     """ get GEOS-Chem verson - iGEOS-Chem """
 
     vers = [
-    '1.1','1.2', '1.3', '1.4', '1.5', '1.6', '1.7', '2.0'
+    '1.1','1.2', '1.3', '1.4', '1.5', '1.6', '1.7', '2.0', '3.0'
     ]
     if verbose:
         print wd
@@ -2115,8 +2133,7 @@ def species_v_v_to_Gg(arr, spec, a_m=None, Iodine=True, All =False, \
         Ox=False, ctm_f=None, debug=False):
     """ Convert array of species in v/v to Gg 
         NOTE:
-        <= update
-        the processing is not clear in this function, """
+        the processing is not clear in this function, <= update """
 
     if not isinstance(a_m, np.ndarray):
         a_m = get_air_mass_np( ctm_f, debug=debug )  # kg
@@ -2189,7 +2206,8 @@ def loc_is_water_grid_box( lat, lon, res='4x5' ):
     """ Return Boolean for if grid box is water or not """
 
     # Load masked array, where all ocean is non-masked
-    o_mask = np.ma.equal( get_land_map(res=res)[...,0], 0) # Just look over oceans (use masked array)
+    # ( Just look over oceans (use masked array) )
+    o_mask = np.ma.equal( get_land_map(res=res)[...,0], 0) 
 
     # Loop Lat and Lon
     for n, l in enumerate( lat ):
@@ -2207,7 +2225,7 @@ def loc_is_water_grid_box( lat, lon, res='4x5' ):
     return booll
 
 # --------------  
-# 2.18 - dry dep for given spec
+# 2.18 - Get dry dep for given spec
 # -------------   
 def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
                 years=None, res='4x5', vol=None, year_eq=True, debug=False, \
@@ -2347,54 +2365,21 @@ def molec_cm2_s_2_Gg_Ox_np( arr, spec='O3', s_area=None, ctm_f=None, \
     return arr
 
 # --------------
-# 2.22 - Get Dry dep
+# 2.22 - Get Dry dep - rm's as redundent.
 # -------------
-def get_dry_dep( ctm_f, months=None, years=None, s_area=None, \
-        res='4x5', debug=False):
-    """ Get dry deposition from a given ctm.bpch file
-        REDUNDENT - not compatible with PyGChem >0.3.0 """
-    if not isinstance(months, list):
-        months = get_gc_months( ctm_f )
-    if not isinstance(years, list):
-        years  = get_gc_years( ctm_f, set_=False )
-    if not isinstance(s_area, np.ndarray):
-        s_area      =  get_surface_area(res)  # m2 land map                                                
-    d_dep = GC_var('d_dep')
-#    Ox    = GC_var('Ox')
-    Ox = GC_var('Ox_spec')
-    Oxdf    = [i +'df' for i in Ox ]
-    ind =[ n for n,i in enumerate ( Oxdf  )if any([(i==ii) for ii  in ['NO3df', 'HNO4df', 'BrOdf', 'BrNO2df', 'MPNdf', 'IOdf', 'OIOdf'] ] ) ]
-    if debug:
-        print ind, Ox, Oxdf
-    [ l.pop(i) for i in ind[::-1]  for l in Ox, Oxdf ]
-
-    print [ (len(i) , i) for i in [Oxdf ]]
-    
-    # Ox wet dep - get specs for wet dep within category, then load their data and conatenate    
-    Oxdf = Ox_vars_in_cat_4_run(ctm_f, Oxdf, d_dep)[0]
-    print [ (len(i) , i) for i in [Oxdf ]]
-
-    
-    ars_Ox_dep =  [ molec_cm2_s_2_Gg_Ox_np(array, Ox[i], s_area, ctm_f)                        # Ox dry dep  [molec/cm2/s]  => Gg Ox
-                    for i, array in enumerate([ get_gc_data_np(ctm_f, rxn, \
-                        category=d_dep[0] ) for rxn in Oxdf ]) ]
-
-    day_adjust = d_adjust( months, years)
-    ars_Ox_dep = [day_adjust * arr for arr in ars_Ox_dep ]
-
-    return  np.sum( np.concatenate( [ (i[:,:,:,:]* \
-            Ox_in_species(Ox[ii]))[:,:,:,:,np.newaxis] \
-            for ii ,i in enumerate(ars_Ox_dep) ], axis=4 ), axis=4 )   
-
+ 
 # --------------  
-# 2.23 - Get run data for a given GC run - 'Mean surface (Oceanic) IO', 'Chem Ox loss', 'Chem Ox prod', 'O$_{3}$ Burden','DU Column', 'OH Mean Conc'
+# 2.23 - Get run data for a given GC run - 
 # -------------   
 def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
             trop_limit=True, ver=None, res=None, \
             t_ps=None, s_area=None, vol=None,  \
             verbose=False, debug=False ):
     """ This is version of get_GC_run_stats is setup to work with monthly 
-        outputted data """
+        outputted data 
+        
+        variables: 'Mean surface (Oceanic) IO', 'Chem Ox loss', 'Chem Ox prod', 'O$_{3}$ Burden','DU Column', 'OH Mean Conc'
+        """
 
     # --- Get vars need for calcs
     # get general variables 
@@ -3087,54 +3072,67 @@ def convert_v_v2ngm3(  arr, wd=None, spec='AERI', trop_limit=True,\
 # 2.38 - Print array weighed 
 # -------------   
 def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
-            region=None, monthly=False, debug=False ):
+            region='All', monthly=False, mask3D=True, trop_limit=True, \
+            verbose=True, debug=False ):
     """ Provide zonal/surface area wieghed values  """
 
-    if debug:   
-        print 'function prt_seaonal_values called '
+    if verbose:   
+        print 'function prt_seaonal_values called for region: ', region
 
     # Get surface area
     s_area =  get_surface_area( res=res ) # m2 land map
     s_area = s_area[...,0]
 
-    # --- If region provided, mask elsewhere - else
-    if debug:
-        print arr.shape, [ (i.min(), i.max(), i.mean()) for i in [arr] ]
-    m = mask_all_but( region )[...,None]
-#    arr = np.ma.array( arr, mask=np.ma.mask_or(m, arr.mask)  )
-    arr = arr*m 
-    s_area = s_area*m[:,:,0,0]
-
-    # Split array by seasons ( on months if monthly==True)
+    # --- Split array by seasons ( on months if monthly==True)
     if monthly:
         # this is assuming monthly output 
         ars = [ arr[...,i] for i in range( 12 ) ]
-        seasons = num2month( rtn_dict=True).values()
+        seasons = num2month( rtn_dict=True).values() 
     else:
         ars, seasons = split_4D_array_into_seasons( arr ) 
 
-    # If "zonal"
+    # --- If region provided, mask elsewhere - else
+    ars = [ np.ma.array( i ) for  i in ars ]
+    if debug:
+        print [ (i.shape, i.min(), i.max(), i.mean()) for i in ars ]
+    m = mask_all_but( region, mask3D=mask3D, trop_limit=trop_limit )
+    if debug:
+        print m, region, [ (type(i), i.shape) for i in [ m ] +ars ], ars[0].mask
+    if debug:
+        print [ ( i.min(), i.max(),i.mean() ) for i in ars ]
+    # Mask array individually 
+    ars = [ np.ma.array( i, mask=np.ma.mask_or(m, i.mask) ) for i in ars ]
+    if debug:
+        print [ ( i.min(), i.max(),i.mean() ) for i in ars ]
+    s_area = np.ma.array( s_area, mask=m[...,0] )
+
+    # ---- Get surface or Zonal array
     if zonal:
         ars = [i.mean(axis=0) for i in ars ]
     # If not zonal return surface values
     else:    
         ars = [ i[...,0] for i in ars ]
-    
-    print [i.shape for i in ars ], s_area.shape, \
-            [type(i) for i in ars, ars[0], m, s_area ]
-    
-    # Print out 
-    pstr =  '{:<15}'*5
-    npstr =  '{:<15}'+'{:<15,.4f}'*4
-    print pstr.format( 'Season./Month', 'Min', 'Max', 'Mean' ,"wtg'd Mean" )
+    if debug:
+        print [i.shape for i in ars ], s_area.shape, \
+                [type(i) for i in ars, ars[0], m, s_area ]
+
+    # --- Print out 
+    pstr =  '{:<15}'*7
+    npstr =  '{:<15}'+'{:<15,.4f}'*6
+    header =  'Season./Month', 'Min', 'Max','5th','95th', 'Mean' ,"wtg'd Mean"
+    print pstr.format( *header )
     for n, s in enumerate( seasons ):
-        print npstr.format( s, 
-#                    *[ (i.min(), i.max(), i.mean(),  \
-#                        (i*s_area).sum()/s_area.sum()  )  \
-#                            for i in [ ars[n] ] ][0] )
-                    *[ (float( i.min() ), float( i.max() ), float( i.mean() ),\
-                        float( (i*s_area).sum()/s_area.sum() )       ) \
-                            for i in [ ars[n] ] ][0] )
+
+        # Get vars for printing 
+        vars = [ 
+        ( float( i.min() ), float( i.max() ),  \
+        float( np.percentile( i.compressed(), 5)),  \
+        float( np.percentile( i.compressed(), 95) ), \
+        float( i.mean() ), float( (i*s_area).sum()/s_area.sum() )   ) \
+        for i in [ ars[n] ] 
+        ][0]
+        # Print vars
+        print npstr.format( s,  *vars )
 
 
 # ------------------ Section 6 -------------------------------------------

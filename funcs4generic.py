@@ -828,10 +828,11 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
 # --------
 # 2.17 -  Retrieve individual 4D mask of locations except region given
 # --------
-def mask_all_but( region=None, M_all=False, saizlopez=False, \
-            res='4x5', trop_limit=True ):
+def mask_all_but( region='All', M_all=False, saizlopez=False, \
+            res='4x5', mask3D=False, trop_limit=True ):
     """ Mask selector for analysis. global mask provided for with given region 
-        unmasked """
+        unmasked 
+        NOTE: "None"/"unmask_all" yeilds completely unmasked array """
 
     # --- Setup cases...   
     # ( except None, unmask_all and global to retrive no mask )
@@ -843,8 +844,8 @@ def mask_all_but( region=None, M_all=False, saizlopez=False, \
     'Mid lats':1, 
     'south_pole' : 2, 
     'north_pole' : 3,     
-    None: 4, 
     'unmask_all': 4, 
+    'All' : 4,
     'global': 4,
     # NEED TESTING ...
     'Extratropics':5, 
@@ -856,7 +857,7 @@ def mask_all_but( region=None, M_all=False, saizlopez=False, \
     'Land' : 11, 
     'lat40_2_40':12, 
     'Oceanic Tropics': 13, 
-    'Land Tropics': 14 
+    'Land Tropics': 14,
 #     'South >60': 2,
 #      'North >60': 3
     }[region]
@@ -867,7 +868,7 @@ def mask_all_but( region=None, M_all=False, saizlopez=False, \
     if case == 1:
         mask = mask_mid_lats( res=res )
     if case == 4:
-        mask = unmask_all( res=res )
+        mask = np.logical_not( unmask_all( res=res ) )
     if case == 5:
         mask = mask_extratropics(res=res)
     if case == 6:
@@ -893,6 +894,13 @@ def mask_all_but( region=None, M_all=False, saizlopez=False, \
     # Apply Saiz-Lopez Marine MFT/MUT?
     if M_all:
         mask = mask*land_mask(res=res)
+
+    if mask3D:
+        if any( [ (mask.shape[-1] == i) for i in 38, 47 ] ):
+            pass
+        else: # concatenate dimensions
+            mask*47
+            mask = np.concatenate( [mask]*47, axis=2 )
 
     # Remove above the "chemical tropopause" from GEOS-Chem (v9-2)
     if trop_limit:
