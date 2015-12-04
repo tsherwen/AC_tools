@@ -389,10 +389,10 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
 
     # === -  limit ars to a given mask, if stipulated
     if tropics:
-        mask =  mask_tropics(res=res)
+        mask =  tropics_unmasked(res=res)
         arr = arr * mask[0,:,:c_off+1] 
     if lat40_2_40  :
-        mask =  mask_tropics(res=res)
+        mask =  tropics_unmasked(res=res)
         arr = arr * mask[0,:,:c_off+1]         
 
     if debug:
