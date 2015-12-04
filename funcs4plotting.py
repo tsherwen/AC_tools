@@ -131,8 +131,8 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             interval=1, resolution='c', shrink=0.4, window=False, everyother=1,\
             extend='neither', degrade_resolution=False, discrete_cmap=False, \
             lon_0=None, lon_1=None, lat_0=None, lat_1=None, norm=None,\
-            sigfig_rounding_on_cb=2, verbose=True, debug=False, 
-            fixcb_buffered=None, **Kwargs):
+            sigfig_rounding_on_cb=2, fixcb_buffered=None, \
+            verbose=True, debug=False, **Kwargs):
     """ Plots Global/regional 2D (lon, lat) slices. Takes a numpy array and the 
         resolution of the output. The plot extent is then set by this output.
 
@@ -257,8 +257,10 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     # --------------  Linear plots -------------------------------
     # standard plot 
     if any( [ (case==i) for i in 3, 9 ] ):
+
+        print fixcb_[0], fixcb_[1]
         if debug:
-            print fixcb_, arr.shape, [ len(i) for i in lon, lat ]
+            print fixcb_, arr.shape, [ len(i) for i in lon, lat ], norm, cmap
         poly = m.pcolor( lon, lat, arr, cmap=cmap, norm=norm, 
                         vmin=fixcb_[0], vmax=fixcb_[1], alpha=alpha )
 #        poly = m.pcolormesh( lon, lat, arr, cmap=cmap, clevs=clevs,\
@@ -2316,13 +2318,21 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
                        no_dstr=no_dstr )
 
 # --------
-# 1.32 - Spatial Figure maker ( just provide lon, lat np array )
+# 1.32 - Spatial Figure maker ( just provide lon, lat, time,  np array )
 # --------
 def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     norm=None, nticks=10, format=None, units=None, extend='neither',\
     discrete_cmap=False, f_size=15, fig=None, left_cb_pos=0.86,\
     bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
-    dpi=160, res='4x5', show=True, no_cb=True, debug=False ):
+    dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, \
+    no_cb=True, verbose=False, debug=False ):
+    """
+        Provide an array of lon, lat, time
+    """
+    if verbose:
+        print 'plot_spatial_figure called, with shape {}, fixcb: {}'.format(\
+                arr.shape,  fixcb)+', min: {}, max:{}'.format( arr.min(), \
+                arr.max()  )
 
     # setup fig if not provided
     if isinstance( fig, type(None) ):
@@ -2365,7 +2375,10 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     # Adjust plot ascetics
     fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right,     
                                         hspace=hspace, wspace=wspace)
-    # Show
+
+    # Show/Save as PDF?
+    if pdf:
+        plot2pdf( title=pdftitle )    
     if show:
         plt.show()
 

@@ -592,11 +592,15 @@ def unmask_all( res='4x5' ):
 # 2.10 - Maskes Regions by Pressure
 # --------
 def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
-    M_all=False, debug=False ):
+    M_all=False, verbose=True, debug=False ):
     """
     Maskes by pressure array  (required shape: 72,46,47), with conditions,
     set by given cases for MBL, UT, FT 
     """
+    if verbose:
+        print 'mask_3D called for sect {}, with debug: {}, verbose:{}'.format(\
+                    sect, debug, verbose )
+
     # Get case
     cases = { 
       'BL': [1200., 900.], 'MBL': [1200., 900.], 'FT': [ 900., 350. ]         \
@@ -605,7 +609,7 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
     l, h = cases[ sect ] 
 
     # mask between upper and lower values
-    m=np.ones(get_dims4res(res))
+    m=np.ones( get_dims4res(res) )
     m[ (hPa >=l) ] = 0
     m[ (hPa <h) ] = 0
     if debug:
@@ -615,13 +619,13 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
     if not isinstance(extra_mask, type(None) ):
         # only consider MBL
         if ( MBL and sect == 'BL' ) or (sect == 'MBL') or M_all : 
-            return m.mask * extra_mask  * land_mask(res)    
+            return m.mask * extra_mask  * land_mask( res )    
         else:    
             return m.mask * extra_mask
 
     # only consider MBL (or MFT/MFT for Saiz-Lopez 2014 comparison)
     if ( MBL and sect == 'BL' ) or (sect == 'MBL') or M_all: 
-        return m.mask * land_mask(res)
+        return m.mask * land_mask( res )
     return m.mask
 
 # --------
@@ -831,7 +835,7 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
 # --------
 def mask_all_but( region='All', M_all=False, saizlopez=False, \
             res='4x5', mask3D=False, trop_limit=True, \
-            use_multiply_method=True, debug=True ):
+            use_multiply_method=True, verbose=False, debug=False ):
     """ Mask selector for analysis. global mask provided for with given region 
         unmasked 
         NOTE: 
@@ -896,8 +900,8 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     if case == 12:
         mask = mask_lat40_2_40( res=res )
     if case == 13:
-         mask = ocean_unmasked( res=res)*mask_tropics(res=res, 
-                                                            saizlopez=saizlopez)
+         mask = ocean_unmasked( res=res)*mask_tropics(res=res, \
+                            saizlopez=saizlopez )
     if case == 14:
         mask = land_mask( res=res )*mask_tropics( res=res, saizlopez=saizlopez )
 

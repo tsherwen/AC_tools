@@ -2228,7 +2228,7 @@ def loc_is_water_grid_box( lat, lon, res='4x5' ):
 # 2.18 - Get dry dep for given spec
 # -------------   
 def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
-                years=None, res='4x5', vol=None, year_eq=True, debug=False, \
+                years=None, res='4x5', vol=None, debug=False, \
                 trop_limit=True, Iodine=False):
     """ Get array of dry deposition values for a given species """
 
@@ -2251,8 +2251,8 @@ def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
             len(df)
 
     # Convert to Gg "Ox" (Gg I /s)
-    df = molec_cm2_s_2_Gg_Ox_np( df, spec, s_area=s_area, Iodine=Iodine, \
-                res=res, debug=debug ) 
+    df = molec_cm2_s_2_Gg_Ox_np( df, spec, s_area=s_area, \
+                Iodine=Iodine, res=res, debug=debug ) 
 
     if debug:
         print '0'*20, [ ( i.shape, np.sum(i), np.mean(i)) for i in [df] ]
@@ -2352,11 +2352,11 @@ def molec_cm2_s_2_Gg_Ox_np( arr, spec='O3', s_area=None, ctm_f=None, \
             spec_stoich(spec) /1E9   
     elif spec == 'O3':
         arr  = ( arr * (s_area*1E4) )  / constants( 'AVG')* \
-            (species_mass(spec)) /1E9  * Ox_in_species( spec)
+            species_mass(spec) /1E9  * Ox_in_species( spec)
     else:
         arr  = ( arr * (s_area*1E4) )  / constants( 'AVG') * \
-            (species_mass(spec)) /1E9  
-    if (year_eq):
+            species_mass(spec) /1E9  
+    if year_eq:
         print "giving 'year_eq' "
         arr = arr* 60*60*24*365  
 
@@ -2665,7 +2665,8 @@ def get_tran_flux( ctm_f, spec='O3', years=None, months=None, \
 # -------------
 def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
             scale=1E9, s_area=None, res='4x5', wd=None, specs=None, \
-            Iodine=False, all_wdep=False, sep_rxn=False, debug=False):
+            Iodine=False, all_wdep=False, sep_rxn=False, 
+            debug=False):
     """ Extract wet deposition for given species
 
         NOTE: this fucntion expects list of species
@@ -2677,7 +2678,7 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
     if not isinstance(years, list):
         years  = get_gc_years( ctm_f=ctm_f, wd=wd, set_=False )
     if not isinstance(vol, np.ndarray):
-        vol = get_volume_np( ctm_f, s_area=s_area, wd=wd, res=res,\
+        vol = get_volume_np( ctm_f=ctm_f, s_area=s_area, wd=wd, res=res,\
              debug=debug )
     w_dep = GC_var('w_dep')
     
@@ -2697,7 +2698,7 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
         if pygchem.__version__ == '0.2.0':
             dep_w  = [ [ get_gc_data_np(ctm_f, spec ,category=var, \
                 debug=debug )*1E3 /species_mass(spec)*  \
-                species_mass('I')*spec_stoich(spec)    \
+                species_mass(species_unit_terms)*spec_stoich(spec) \
                 for spec in specs[ii] ]  \
                 for ii,var in enumerate(w_dep)]  
 
@@ -2755,7 +2756,7 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
 
     # List wet dep rxns, concat. and sum of rxns
     if sep_rxn: 
-        return np.concatenate( [ i[np.newaxis,:,:,:38,:] /scale \
+        return np.concatenate( [ i[None,:,:,:38,:] /scale \
                             for i in dep_w ], axis=0 )
 
     # List wet dep rxns and concat. 
@@ -3073,67 +3074,141 @@ def convert_v_v2ngm3(  arr, wd=None, spec='AERI', trop_limit=True,\
 # -------------   
 def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
             region='All', monthly=False, mask3D=True, trop_limit=True, \
+            prt_by_3D_region=False, hPa=None, wd=None, \
             verbose=True, debug=False ):
     """ Provide zonal/surface area wieghed values  """
 
     if verbose:   
-        print 'function prt_seaonal_values called for region: ', region
+        print 'function prt_seaonal_values called for region: ', region, \
+            'debug: {},verbose: {}'.format( debug, verbose )
+
+    print [ (i.min(), i.max(), i.mean() ) for i in  [arr] ]
+    print [ (i.min(), i.max(), i.mean() ) for i in [ arr.mean(axis=-1)[...,0] ]]
 
     # Get surface area
     s_area =  get_surface_area( res=res ) # m2 land map
     s_area = s_area[...,0]
+
+    months = range(12)
+
+    # --- If region provided, mask elsewhere - else
+    if ( 'asked' not in str( type( arr ) ) ):
+        print 'WARNING: converting array to masked array'
+        arr = np.ma.array( arr ) 
+    if debug:
+        print [ ( i.min(), i.max(),i.mean(), len(i.mask[i.mask==True].ravel()) ) 
+                        for i in [arr] ]
+    m = mask_all_but( region=region, mask3D=True, debug=debug,\
+                use_multiply_method=False, \
+                trop_limit=trop_limit )[...,:38]
+    print [i.shape for i in m, arr.mask ]
+    m = np.ma.concatenate( [m[...,None]] *len( months), axis=-1 )
+    # Mask array individually 
+    print [i.shape for i in m, arr.mask, arr ]
+    arr = np.ma.array( arr, mask=np.ma.mask_or(m, arr.mask) ) 
+    #    ars = [ np.ma.array( i, mask=m ) for i in ars ]
+    if debug:
+        print m, region, [ (type(i), i.shape) for i in [ m ] +[arr] ], \
+                    arr.mask, [ ( i.min(), i.max(),i.mean() ) for i in [arr] ]
+
+    if debug:
+        print [ ( i.min(), i.max(),i.mean(), len(i.mask[i.mask==True].ravel()) ) 
+                        for i in [arr] ]
+
+    # Also mask surface to also for area weighting of data
+    s_area = np.ma.array( s_area, mask=m[...,0,0] )
 
     # --- Split array by seasons ( on months if monthly==True)
     if monthly:
         # this is assuming monthly output 
         ars = [ arr[...,i] for i in range( 12 ) ]
         seasons = num2month( rtn_dict=True).values() 
+        # Also plot annual value
+        ars += [ arr.mean( axis=-1 ) ]
+        seasons += ['Annual']
     else:
-        ars, seasons = split_4D_array_into_seasons( arr ) 
+        ars, seasons = split_4D_array_into_seasons( arr, \
+                                        annual_plus_seasons=True ) 
 
-    # --- If region provided, mask elsewhere - else
-    ars = [ np.ma.array( i ) for  i in ars ]
-    if debug:
-        print [ (i.shape, i.min(), i.max(), i.mean()) for i in ars ]
-    m = mask_all_but( region, mask3D=mask3D, \
-                use_multiply_method=False, trop_limit=trop_limit )
-    if debug:
-        print m, region, [ (type(i), i.shape) for i in [ m ] +ars ], ars[0].mask
-    if debug:
-        print [ ( i.min(), i.max(),i.mean() ) for i in ars ]
-    # Mask array individually 
-    ars = [ np.ma.array( i, mask=np.ma.mask_or(m, i.mask) ) for i in ars ]
-    if debug:
-        print [ ( i.min(), i.max(),i.mean() ) for i in ars ]
-    s_area = np.ma.array( s_area, mask=m[...,0] )
+    # --- Print values by 3D region
+    if prt_by_3D_region:
 
-    # ---- Get surface or Zonal array
-    if zonal:
-        ars = [i.mean(axis=0) for i in ars ]
-    # If not zonal return surface values
-    else:    
-        ars = [ i[...,0] for i in ars ]
-    if debug:
-        print [i.shape for i in ars ], s_area.shape, \
-                [type(i) for i in ars, ars[0], m, s_area ]
+        # Get pressure levels
+        if isinstance( hPa, type(None) ):
+            hPa = get_GC_output( wd=wd, vars=[u'PEDGE_S__PSURF'] )
+            hPa = hPa.mean(axis=-1)[...,:38]
 
-    # --- Print out 
-    pstr =  '{:<15}'*7
-    npstr =  '{:<15}'+'{:<15,.4f}'*6
-    header =  'Season./Month', 'Min', 'Max','5th','95th', 'Mean' ,"wtg'd Mean"
-    print pstr.format( *header )
-    for n, s in enumerate( seasons ):
+        # Setup makes for BL, FT, UT
+        regions = [ 'MBL','BL','FT',  'UT']
+        sects3D = [ mask_3D( hPa, i, res=res )[:,:,:38] for i in regions]
+        print [i.shape for i in sects3D ]
+    
+        # --- Print values by 3D region 
+        pstr  = '{:<20}'*( len(regions) +1 )
+        npstr  = '{:<20}'+ '{:<20,.3f}'*len(regions)
+        print pstr.format( 'spec' , *regions )
+        
+        print seasons, ars[0].mean() 
+        # Mean of 3D region
+        for n, s in enumerate( seasons ):
+            vars = [ float( (i*ars[n]).mean() ) for i in sects3D] 
+            print npstr.format( s, *vars )
 
-        # Get vars for printing 
-        vars = [ 
-        ( float( i.min() ), float( i.max() ),  \
-        float( np.percentile( i.compressed(), 5)),  \
-        float( np.percentile( i.compressed(), 95) ), \
-        float( i.mean() ), float( (i*s_area).sum()/s_area.sum() )   ) \
-        for i in [ ars[n] ] 
-        ][0]
-        # Print vars
-        print npstr.format( s,  *vars )
+        # Min of 3D region
+        for n, s in enumerate( seasons ):
+            vars = [float( (i*ars[n]).min() ) for i in sects3D] 
+            print npstr.format( s, *vars )
+
+        # Max of 3D region
+        for n, s in enumerate( seasons ):
+            vars = [ float( (i*ars[n]).max() ) for i in sects3D] 
+            print npstr.format( s, *vars )
+        
+    # ---- Get surface or Zonal array ( prt by 2D region )
+    else:
+        if zonal:
+            ars = [i.mean(axis=0) for i in ars ]
+        # If not zonal return surface values
+        else:    
+#            ars = [ i[...,0] for i in ars ]
+            ars = [ np.ma.array( i[...,0], mask=m[...,0,0] ) for i in ars ]
+        if debug:
+            print [i.shape for i in ars ], s_area.shape, \
+                    [type(i) for i in ars, ars[0],  s_area ]
+
+
+        # --- Print out 
+        pstr =  '{:<15}'*7
+        npstr =  '{:<15}'+'{:<15,.4f}'*6
+        header = [
+         'Season./Month', 'Min', 'Max','5th','95th', 'Mean' ,"wtg'd Mean"
+        ]
+        print pstr.format( *header )
+        for n, s in enumerate( seasons ):
+
+            # Get vars for printing 
+            vars = [ 
+            ( float( i.min() ), float( i.max() ),  \
+            float( np.percentile( i.compressed(), 5)),  \
+            float( np.percentile( i.compressed(), 95) ), \
+            float( i.mean() ), float( (i*s_area).sum()/s_area.sum() )   ) \
+            for i in [ ars[n] ] 
+            ][0]
+            # Print vars
+            print npstr.format( s,  *vars )
+
+
+# --------------
+# 2.39 - Print amount of 4D (e.g. lon, lat) array above a value
+# -------------   
+def prt_area_above_value( arr=None, res='4x5', area_weight=True, zonal=False, \
+            region='All', monthly=False, mask3D=True, trop_limit=True, \
+            prt_by_3D_region=False, hPa=None, wd=None, \
+            verbose=True, debug=False ):
+    """ Provide amount of surface area wieghed values above a given value
+    """
+
+    #
 
 
 # ------------------ Section 6 -------------------------------------------
