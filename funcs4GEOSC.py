@@ -3178,11 +3178,12 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
 
 
         # --- Print out 
-        pstr =  '{:<15}'*7
-        npstr =  '{:<15}'+'{:<15,.4f}'*6
         header = [
-         'Season./Month', 'Min', 'Max','5th','95th', 'Mean' ,"wtg'd Mean"
+         'Season./Month', 'Min', 'Max','5th','95th', 'Mean' , 'Median', \
+         "wtg'd Mean"
         ]
+        pstr =  '{:<15}'*(len( header))
+        npstr =  '{:<15}'+'{:<15,.4f}'*(len( header)-1)
         print pstr.format( *header )
         for n, s in enumerate( seasons ):
 
@@ -3191,7 +3192,9 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
             ( float( i.min() ), float( i.max() ),  \
             float( np.percentile( i.compressed(), 5)),  \
             float( np.percentile( i.compressed(), 95) ), \
-            float( i.mean() ), float( (i*s_area).sum()/s_area.sum() )   ) \
+            float( i.mean() ), \
+            float( np.median( i.compressed() ) ),   \
+            float( (i*s_area).sum()/s_area.sum() )   ) \
             for i in [ ars[n] ] 
             ][0]
             # Print vars

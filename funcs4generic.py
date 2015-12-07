@@ -438,6 +438,105 @@ http://stackoverflow.com/questions/12418234/logarithmically-spaced-integers
     # round, re-adjust to 0 indexing (i.e. minus 1) and return np.uint64 array
     return np.array(map(lambda x: round(x)-1, result), dtype=np.uint64)
 
+# --------   
+# 1.20 - Get indices in array where change in value of x occurs
+# --------
+def get_arr_edge_indices( arr, res='4x5', verbose=True, debug=False):
+    """ Find indices in a lon, lat (2D) grid, where value does not equal a given 
+            value ( e.g.g the edge )
+            
+    """
+    
+    if verbose:
+        print 'get_arr_edge_indices for arr of shape: ', arr.shape
+
+    # initialise variables
+    lon_c, lat_c, NIU = get_latlonalt4res( res=res, centre=True )
+    lon_e, lat_e, NIU = get_latlonalt4res( res=res, centre=False )
+    lon_diff = lon_e[-5]-lon_e[-6]
+    lat_diff = lat_e[-5]-lat_e[-6]
+    nn, n, = 0,0
+    last_lat_box = arr[nn, n]
+    coords = []
+    last_lon_box = arr[nn, n]
+    need_lon_outer_edge, need_lat_outer_edge =  False, False
+    if debug:
+        print lon_e, lat_e
+
+    # ---- Loop X dimension ( lon )
+    for nn, lon_ in enumerate( lon_c ):
+    
+        # If change in value at to list
+#        if arr[nn, n] != last_lon_box:
+#            if need_lon_outer_edge:
+#                coords += [  [ lon_e[nn+1]+lon_diff/2, lat_e[n] ] ]
+#            else:
+#                coords += [  [lon_e[nn]+lon_diff/2, lat_e[n] ]  ]
+#                need_lon_outer_edge = True
+#            need_lon_outer_edge=False
+
+
+        # temporally save the previous box's value
+#        last_lon_box = arr[nn, n]
+
+        # Loop Y dimension ( lat )
+        for n, lat_ in enumerate( lat_c ):
+
+            if debug:
+                print arr[nn, n], last_lat_box, last_lon_box,  \
+                    arr[nn, n]==last_lat_box, arr[nn, n]==last_lon_box
+
+            if arr[nn, n] != last_lat_box:
+
+                # if 1st lat, selct bottom of box        
+                if need_lat_outer_edge:
+                    coords += [  [lon_e[nn]+lon_diff/2, lat_e[n+1] ] ]    
+                else:
+                    coords += [  [lon_e[nn]+lon_diff/2, lat_e[n] ] ]    
+                    need_lat_outer_edge = True
+                need_lat_outer_edge=False
+
+            # temporally save the previous box's value
+            last_lat_box = arr[nn, n]
+
+
+    # ---- Loop Y dimension ( lat )
+    for n, lat_ in enumerate( lat_c ):
+
+        if debug:
+            print arr[nn, n], last_lat_box, last_lon_box,  \
+                arr[nn, n]==last_lat_box, arr[nn, n]==last_lon_box
+
+#        if arr[nn, n] != last_lat_box:
+
+            # if 1st lat, selct bottom of box        
+#            if need_lat_outer_edge:
+#                coords += [  [lon_e[nn]+lon_diff/2, lat_e[n+1] ] ]    
+#            else:
+#                coords += [  [lon_e[nn]+lon_diff/2, lat_e[n] ] ]    
+#                need_lat_outer_edge = True
+#            need_lat_outer_edge=False
+
+        # temporally save the previous box's value
+#        last_lat_box = arr[nn, n]
+
+        for nn, lon_ in enumerate( lon_c ):
+        
+            # If change in value at to list
+            if arr[nn, n] != last_lon_box:
+                if need_lon_outer_edge:
+                    coords += [  [ lon_e[nn+1], lat_e[n]+lat_diff/2 ] ]
+                else:
+                    coords += [  [lon_e[nn], lat_e[n]+lat_diff/2 ]  ]
+                    need_lon_outer_edge = True
+                need_lon_outer_edge=False
+
+            # temporally save the previous box's value
+            last_lon_box = arr[nn, n]
+
+    return coords
+
+
 # -------------------------- Section 2 -------------------------------
 # -------------- Maskes for data analysis
 #
@@ -631,7 +730,8 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
 # --------
 # 2.11 - Custom 2D (Lat) Mask
 # --------
-def lat2lat_2D_unmasked( lowerlat=None, higherlat=None, res='2x2.5', debug=False ):
+def lat2lat_2D_unmasked( lowerlat=None, higherlat=None, res='2x2.5', \
+                                                debug=False ):
     """
     Takes a lower and higher latitude value and then creates 
     mask to given given limits.
@@ -872,49 +972,90 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
 #     'South >60': 2,
 #      'North >60': 3
     }[region]
-    
-    # For case, pull mask from case list 
-    if case == 0:
-        mask = tropics_unmasked( res=res, saizlopez=saizlopez )
-    if case == 1:
-        mask = mid_lats_unmasked( res=res )
-    if case == 2:
-        mask = southpole_unmasked(  res=res )
-    if case == 3:
-        mask = northpole_unmasked(  res=res )
-    if case == 4:
-#        mask = np.logical_not( all_unmasked( res=res ) )
-        mask = all_unmasked( res=res ) 
-    if case == 5:
-        mask = extratropics_unmasked(res=res)
-    if case == 6:
-        mask = ocean_unmasked( res=res )
-    if case == 7:
-        mask = NH_unmasked(  res=res )
-    if case == 8:
-        mask = SH_unmasked(  res=res  )
-    if case == 10:
-        mask =ice_unmasked( res=res )
-    if case == 11:
-        mask =  land_unmasked( res=res )
-    if case == 12:
-        mask = mask_lat40_2_40( res=res )
-    if case == 13:
-         mask = ocean_unmasked( res=res)*tropics_unmasked(res=res, \
-                            saizlopez=saizlopez )
-    if case == 14:
-        mask = land_unmasked( res=res )*tropics_unmasked( res=res, saizlopez=saizlopez )
 
-    # Invert mask to leave exception unmasked if used to multiply
+
+    # --- This is a simple way of using masks ( as multiplers )
     # i.e. all (future) functions should have use_multiply_method=True 
     if use_multiply_method:  # Kludge
+    
+        # For case, pull mask from case list 
+        if case == 0:
+            mask = tropics_unmasked( res=res, saizlopez=saizlopez )
+        if case == 1:
+            mask = mid_lats_unmasked( res=res )
+        if case == 2:
+            mask = southpole_unmasked(  res=res )
+        if case == 3:
+            mask = northpole_unmasked(  res=res )
+        if case == 4:
+#        mask = np.logical_not( all_unmasked( res=res ) )
+            mask = all_unmasked( res=res ) 
+        if case == 5:
+            mask = extratropics_unmasked(res=res)
+        if case == 6:
+            mask = ocean_unmasked( res=res )
+        if case == 7:
+            mask = NH_unmasked(  res=res )
+        if case == 8:
+            mask = SH_unmasked(  res=res  )
+        if case == 10:
+            mask =ice_unmasked( res=res )
+        if case == 11:
+            mask =  land_unmasked( res=res )
+        if case == 12:
+            mask = mask_lat40_2_40( res=res )
+        if case == 13:
+             mask = ocean_unmasked( res=res)*tropics_unmasked(res=res, \
+                            saizlopez=saizlopez )
+        if case == 14:
+            mask = land_unmasked( res=res )*tropics_unmasked( res=res, \
+                                        saizlopez=saizlopez )
+
+        # Invert mask to leave exception unmasked if used to multiply
         mask = np.logical_not(mask)
+
+    # --- This is a more pythonic way of using masks
     else:
-        pass
+        # For case, pull mask from case list 
+        if case == 0:
+            mask = tropics_unmasked( res=res, saizlopez=saizlopez )
+        if case == 1:
+            mask = mid_lats_unmasked( res=res )
+        if case == 2:
+            mask = southpole_unmasked(  res=res )
+        if case == 3:
+            mask = northpole_unmasked(  res=res )
+        if case == 4:
+#        mask = np.logical_not( all_unmasked( res=res ) )
+            mask = all_unmasked( res=res ) 
+        if case == 5:
+            mask = extratropics_unmasked(res=res)
+        if case == 6:
+            mask = ocean_unmasked( res=res )
+        if case == 7:
+            mask = NH_unmasked(  res=res )
+        if case == 8:
+            mask = SH_unmasked(  res=res  )
+        if case == 10:
+            mask =ice_unmasked( res=res )
+        if case == 11:
+            mask =  land_unmasked( res=res )
+        if case == 12:
+            mask = mask_lat40_2_40( res=res )
+        if case == 13:
+             mask = np.ma.mask_or( ocean_unmasked( res=res),  \
+                    tropics_unmasked(res=res, saizlopez=saizlopez ) )
+        if case == 14:
+            mask = np.ma.mask_or( land_unmasked( res=res ),  \
+                    tropics_unmasked( res=res, saizlopez=saizlopez ) )
     
     # Apply Saiz-Lopez Marine MFT/MUT? <= should this be before multiply op.?
     if M_all:
-        mask = mask*land_unmasked(res=res)
+        if use_multiply_method:  # Kludge
+            mask = mask*land_unmasked(res=res)
+        else:
+            # check this!!!
+            mask = np.ma.mask_or( mask, land_unmasked(res=res) )
 
     if mask3D:
         if any( [ (mask.shape[-1] == i) for i in 38, 47 ] ):
