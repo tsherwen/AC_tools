@@ -132,7 +132,7 @@ def nearest(ts, s):
 # 1.05 -  convert two lists/numpy arrays for date andtime to a datetime numpy 
 # -------------
 def YYYYMMDD_HHMM_2_datetime( str1=None, str2=None,  conbined=False,  \
-            debug=False ):    
+            verbose=True, debug=False ):    
 
     # combined as one string
     if conbined : 
@@ -147,8 +147,8 @@ def YYYYMMDD_HHMM_2_datetime( str1=None, str2=None,  conbined=False,  \
 
         # make pandas dataframe 
         data = np.array( [str1,str2] )
-        if debug:
-            print data.shape
+        if verbose:
+            print data.shape, data[:5,:], [ type(i) for i in str1,str2 ]
         df = DataFrame( data=data.T, columns=['YYYYMMDD', 'HHMM'] )
 
         # convert to datetime 
@@ -505,20 +505,21 @@ def num2month(input=None, reverse=False, rtn_dict=False):
 # ----------
 def DF_YYYYMMDD_HHMM_2_dt(df, date_header='YYYYMMDD', 
         time_header='HHMM', rmvars=None, epoch=False,  debug=False):
-    """
-        Use pandas DataFrame to allow for converting date and time strings
-        by mapped functions for speed.
-    """
+    """ Use pandas DataFrame to allow for converting date and time strings
+        by mapped functions for speed. """
 
     # --- Process time and dates
-    # map integer to 4 char str
+    # Map integer to 4 char str
     format = lambda x: '{:0>4}'.format( int( x ) )
 
-    # use mapped function for speed. 
+    # Use mapped function for speed. 
     df[time_header] = df[time_header].map( format )
 
-     # combine to make datetime. 
-    df['Datetime'] = df[date_header].astype(str) + df[time_header]
+     # Combine to make datetime.
+     # ( go via integer for dates, to ensure no floating zeros appear )
+    df['Datetime'] = df[date_header].astype(int).astype(str) + \
+                                    df[time_header].astype(str) 
+    print df['Datetime'][:10]
     df['Datetime']  = pd.to_datetime( df['Datetime'] , format='%Y%m%d%H%M' )
             
     # remove stated variables.

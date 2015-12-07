@@ -195,19 +195,21 @@ def read_TOR_IO_files(filename, debug = False):
 #  3.01 - Get plane flight data for a given location and species
 # ----
 def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
-            Kludge_fortan_output=False, debug=False):
+            Kludge_fortan_output=False, verbose=True, debug=False):
     """ Read in sites from files in a given working directory """
+    if verbose:
+        print wd, spec, location, scale
 
-    print wd, spec, location, scale
-
-    # extract from planeflight.dat files 
+    # Extract from planeflight.dat files 
     model, names = readfile_basic( sorted(glob.glob(wd + \
         '/plane_flight_logs/plane.log.2*')), location, \
         Kludge_fortan_output=Kludge_fortan_output,  \
                                                             debug=debug )
-
+    # Set list of surface datasets
     surface_data =[ 'MAL', 'HAL','GRO', 'CVO', 'ANT', 'M91', 'KEN', 'BTT']
-    # Pull values for var from data arrays and scale
+    plane_data = ['TOR', 'BAE', 'GCV', 'CGV' ]
+
+    # Pull values for a variable from data arrays and scale
     try:
         k=names.index( spec )
     except:
@@ -215,6 +217,7 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
             '< in names list, trying planeflight equivilent', '<'*30
         print spec, GC_var('GCFP_d2TRA')[spec]
 
+        # Get index in list
         k=names.index( GC_var('GCFP_d2TRA')[spec] )
         if debug:
             print k, len(model[:,0] ) , scale
@@ -226,7 +229,7 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
 
     # Provide data and Altitude for vertical measurements 
     # (and ancillaries for if r_datetime == True )
-    if  any( [(location == i)  for i in 'TOR', 'BAE', 'GCV', 'CGV' ] ):
+    if  any( [(location == i)  for i in plane_data ]):
         j =names.index( 'PRESS' )
         press = model[:,j]
         print [ ( len(i) , min(i), max(i) )  for i in [data, press]]
@@ -249,7 +252,6 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
 # -------------- 
 # 2.02 - Basic planeflight Output reader - mje
 # -------------- 
-# readfile function
 def readfile_basic(files, location, debug=False, \
             Kludge_fortan_output=False, rm_empty=False):
     """ basic readfile function for planeflight output in csv"""
@@ -263,12 +265,15 @@ def readfile_basic(files, location, debug=False, \
             for row in reader:
                 if row[1] == location: 
                     new=row[2:]
+                    if debug:
+                        print new
                     try:    
                         big.append(new)
                     except:
                         big=[new]
                 if row[0] == 'POINT':
                     names = row[2:]
+
     if Kludge_fortan_output:
 #        print [ row for row in big if (row[4] == '*******' )]
         big  = [ row for row in big if (row[4] != '*******' )]

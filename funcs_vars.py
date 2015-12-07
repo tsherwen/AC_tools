@@ -327,6 +327,8 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',debug=False):
 def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
     """ Get reaction IDs for each rxn. in spec (p/l, e.g. LOX) 
         This is the driver for the prod/loss programmes """
+
+    # Extract details on reactio in p/l family
     nums, rxns, tags, Coe = prod_loss_4_spec( wd,  spec, all_clean=True, \
         ver=ver, debug=debug )
 
@@ -365,7 +367,8 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
             
     # return a dictionary indexed by p/l tracer, with rxn #, 
     # reaction str and Coe of rxn.
-    return dict( zip( [i[0] for i in details], [ i[1:] + [ Coes[n] ]  for n, i in enumerate( details) ] ) )
+    return dict( zip( [i[0] for i in details], [ i[1:] + [ Coes[n] ]  \
+            for n, i in enumerate( details) ] ) )
 
 # -------------
 # 2.03 - Get prod loss reactions for a given family.
@@ -385,8 +388,6 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
 
     # --- get tags for tracked reactions, state where reactions are un tracked
     tags = get_p_l_tags( rxns )
-
-    debug=True
 
     # --- cleaned tags
     if all_clean:
@@ -434,7 +435,8 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
     # KLUDGE! - rm empty list values of ones that contain errs
 #    ind = [ n for n,i in enumerate(tags) if ( (len(i)==0) or (i[0] in errs) ) ] 
 #    [ [ l.pop(i) for i in sorted(ind)[::-1] ] for  l in nums, rxns, tags, Coe ]
-    print tags 
+    if debug:
+        print tags 
 
     return nums, rxns, tags, Coe
 
@@ -542,7 +544,7 @@ def species_mass( spec ):
     # Additional 2.0 species 
     'HCl': 36.5, 'HOCl': 52.5, 'ClNO2': 81.5, 'ClNO3': 97.5 , 'ClOO': 67.5, 'Cl2O2': 103.0,  'CH3Cl':  50.5, 'CH2Cl2': 85.0, 'CHCl3': 119.5, 'BrSALA': 80, 'BrSALC': 80, 'ISALA': 127. ,  'ISALC': 127. , 
     # Additional "species" to allow for ease of  processing
-    'AERI_AVG': ( (286.0+302.0+318.0)/3 )/2
+    'AERI_AVG': ( (286.0+302.0+318.0)/3 )/2, 'SO4S': 96, 
     }
     
     return d[spec]
@@ -558,7 +560,7 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
     # 'LO3_36' : (2.0/3.0) , 'LO3_37' : (2.0/4.0),           # aersol loss rxns... 'LO3_37' isn't true loss, as I2O4 is regen. temp
     # aerosol loss rxns - corrected stochio for Ox, adjsutment need for I
     d = {
-    'RD11': 1.0, 'RD10': 1.0, 'HIO3': 1.0, 'RD15': 1.0, 'RD62': 2.0, 'RD17': 1.0, 'RD16': 1.0, 'RD19': 1.0, 'LO3_37': 0.5, 'CH2I2': 2.0, 'AERII': 1.0, 'CH2ICl': 1.0, 'PIOx': 1.0, 'C3H7I': 1.0, 'RD73': 1.0, 'RD72': 2.0, 'RD71': 1.0, 'RD70': 1.0, 'C3H5I': 1.0, 'RD57': 1.0, 'CH3IT': 1.0, 'IO': 1.0, 'LO3_38': 1.0, 'RD61': 1.0, 'RD68': 1.0, 'I2': 2.0, 'IONO': 1.0, 'LO3_36': 0.6666666666666666, 'INO': 1.0, 'RD88': 1.0, 'RD89': 1.0, 'LOx': 1.0, 'RD06': 1.0, 'RD07': 1.0, 'RD02': 1.0, 'RD01': 1.0, 'I': 1.0, 'LO3_24': 0.5, 'AERI': 1.0, 'HOI': 1.0, 'RD64': 2.0, 'RD65': 1.0, 'RD66': 1.0, 'RD67': 1.0, 'RD60': 1.0, 'RD47': 1.0, 'C2H5I': 1.0, 'RD63': 1.0, 'RD20': 1.0, 'RD22': 1.0, 'RD24': 1.0, 'RD69': 1.0, 'RD27': 1.0, 'OIO': 1.0, 'CH2IBr': 1.0, 'LIOx': 1.0, 'L_Iy': 1.0, 'ICl': 1.0, 'IBr': 1.0, 'RD95': 2.0, 'I2O2': 2.0, 'I2O3': 2.0, 'I2O4': 2.0, 'I2O5': 2.0, 'HI': 1.0, 'I2O': 2.0, 'RD59': 1.0, 'RD93': 2.0, 'RD92': 1.0, 'IONO2': 1.0, 'RD58': 1.0,
+    'RD11': 1.0, 'RD10': 1.0, 'HIO3': 1.0, 'RD15': 1.0, 'RD62': 2.0, 'RD17': 1.0, 'RD16': 1.0, 'RD19': 1.0, 'LO3_37': 0.5, 'CH2I2': 2.0, 'AERII': 1.0, 'CH2ICl': 1.0, 'PIOx': 1.0, 'C3H7I': 1.0, 'RD73': 1.0, 'RD72': 2.0, 'RD71': 1.0, 'RD70': 1.0, 'C3H5I': 1.0, 'RD57': 1.0, 'CH3IT': 1.0, 'IO': 1.0, 'LO3_38': 1.0, 'RD61': 1.0, 'RD68': 1.0, 'I2': 2.0, 'IONO': 1.0, 'LO3_36': 0.6666666666666666, 'INO': 1.0, 'RD88': 1.0, 'RD89': 1.0, 'LOx': 1.0, 'RD06': 1.0, 'RD07': 1.0, 'RD02': 1.0, 'RD01': 1.0, 'I': 1.0, 'LO3_24': 0.5, 'AERI': 1.0, 'HOI': 1.0, 'RD64': 2.0, 'RD65': 1.0, 'RD66': 1.0, 'RD67': 1.0, 'RD60': 1.0, 'RD47': 1.0, 'C2H5I': 1.0, 'RD63': 1.0, 'RD20': 1.0, 'RD22': 1.0, 'RD24': 1.0, 'RD69': 1.0, 'RD27': 1.0, 'OIO': 1.0, 'CH2IBr': 1.0, 'LIOx': 1.0, 'L_Iy': 1.0, 'ICl': 1.0, 'IBr': 1.0, 'RD95': 2.0, 'I2O2': 2.0, 'I2O3': 2.0, 'I2O4': 2.0, 'I2O5': 2.0, 'HI': 1.0, 'I2O': 2.0, 'RD59': 1.0, 'RD93': 2.0, 'RD92': 1.0, 'IONO2': 1.0, 'RD58': 1.0, 'ISALA':1.0, 'ISALC':1.0, 
     # p/l for: IO, I
     'RD15': 1.0, 'RD17': 1.0, 'RD75': 1.0, 'RD72': 2.0, 'RD71': 1.0, 'RD70': 1.0, 'RD56': 1.0, 'RD69': 1.0, 'RD88': 1.0, 'RD89': 1.0, 'RD06': 1.0, 'RD07': 1.0, 'RD08': 1.0, 'RD64': 2.0, 'RD65': 1.0, 'RD67': 1.0, 'RD46': 2.0, 'RD47': 1.0, 'RD20': 1.0, 'RD22': 1.0, 'RD68': 1.0, 'RD25': 1.0, 'RD96': 1.0 ,
     'RD11': 1.0, 'RD12': 2.0, 'RD02': 1.0, 'RD16': 1.0, 'RD19': 1.0, 'RD24': 1.0, 'RD09': 1.0, 'RD23': 1.0, 'RD37': 1.0, 'RD97': 1.0, 
@@ -731,15 +733,15 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
                     'surface_specs' : ['O3', 'NO', 'NO2', 'NO3' ,'N2O5', 'IO', 'IONO2' ],
                 
                     # Model run title dictionaries
-                    'run_name_dict': {'run': 'Halogens (I+,Br+)', 'Br_2ppt': 'Halogens (I+,Br+) + fixed 2 pptv BrO', 'just_I': 'Just Iodine (I+,Br-)', 'no_hal': 'No Halogens', 'just_Br': 'Just Bromine (I-,Br+)', 'Br_1ppt': 'Halogens (I+,Br+) + fixed 1 pptv BrO', 'obs': 'Observations'}   ,
-                    'latex_run_names': {'I2Ox_half': 'I$_{2}$Ox loss ($\\gamma$) /2', 'run': 'Iodine simulation.', 'MacDonald_iodide': 'Ocean iodide', 'Sulfate_up': 'Sulfate Uptake', 'I2Ox_phot_exp': 'I$_{2}$Ox exp. X-sections',  'het_double': 'het. cycle ($\\gamma$) x2', 'I2Ox_phot_x2': 'I$_{2}$Ox X-sections x2', 'no_het': 'no het. cycle ', 'I2Ox_double': 'I$_{2}$Ox loss ($\\gamma$) x2', 'just_I': '(I+,Br-)', 'BrO1pptv': 'MBL BrO 1 pptv', 'het_half': 'het. cycle ($\\gamma$) /2', 'Just_I_org': 'Just org. I', 'no_I2Ox': 'No I$_{2}$Ox Photolysis', 'BrO1pptv_ALL' : 'BrO 1 pptv in Trop.', 'BrO2pptv' : 'MBL BrO 2 pptv',
+                    'run_name_dict': {'run': 'Br-I', 'Br_2ppt': 'Halogens (I+,Br+) + fixed 2 pptv BrO', 'just_I': 'IODINE', 'no_hal': 'NOHAL', 'just_Br': 'BROMINE', 'Br_1ppt': 'Halogens (I+,Br+) + fixed 1 pptv BrO', 'obs': 'Observations'}   ,
+                    'latex_run_names': {'I2Ox_half': 'I$_{2}$Ox loss ($\\gamma$) /2', 'run': 'Br-I', 'MacDonald_iodide': 'Ocean iodide', 'Sulfate_up': 'Sulfate Uptake', 'I2Ox_phot_exp': 'I$_{2}$Ox exp. X-sections',  'het_double': 'het. cycle ($\\gamma$) x2', 'I2Ox_phot_x2': 'I$_{2}$Ox X-sections x2', 'no_het': 'no het. cycle ', 'I2Ox_double': 'I$_{2}$Ox loss ($\\gamma$) x2', 'just_I': 'IODINE', 'BrO1pptv': 'MBL BrO 1 pptv', 'het_half': 'het. cycle ($\\gamma$) /2', 'Just_I_org': 'Just org. I', 'no_I2Ox': 'No I$_{2}$Ox Photolysis', 'BrO1pptv_ALL' : 'BrO 1 pptv in Trop.', 'BrO2pptv' : 'MBL BrO 2 pptv',
                     # adjust from GBC to ACP names
 #                    'no_hal': '(I-,Br-)', 'Just_Br': '(I-,Br+)', 
-                    'no_hal': 'No Halogens', 'Just_Br': 'GEOS-Chem (v9-2)', 
+                    'no_hal': 'NOHAL', 'Just_Br': 'BROMINE', 
                     # Add for v10 ( 2.0 Cl/Br/I code )
                     'run.Cl.Br.I.aerosol':  'GEOS-Chem (v10 Cl.Br.I)', 
                    # kludge for diurnal plot
-                   'Iodine simulation.':'Iodine simulation.', '(I+,Br+)': 'Iodine simulation.','(I+,Br-)': 'Just Iodine', '(I-,Br+)': 'GEOS-Chem (v9-2)', '(I-,Br-)': 'No Halogens'},
+                   'Iodine simulation.':'Br-I.', '(I+,Br+)': 'Br-I.','(I+,Br-)': 'IODINE', '(I-,Br+)': 'BROMINE', '(I-,Br-)': 'NOHAL'},
                     # tracer unit handling
                     'spec_2_pptv' : ['I2', 'HOI', 'IO', 'OIO', 'HI', 'IONO', 'IONO2', 'I2O2', 'CH3IT', 'CH2I2', 'IBr', 'ICl', 'I', 'HIO3', 'I2O', 'INO', 'I2O3', 'I2O4', 'I2O5', 'AERI', 'Cl2', 'Cl', 'HOCl', 'ClO', 'OClO', 'BrCl', 'CH2ICl', 'CH2IBr', 'C3H7I', 'C2H5I', 'Br2', 'Br', 'BrO', 'HOBr', 'HBr', 'BrNO2', 'BrNO3', 'CHBr3', 'CH2Br2', 'CH3Br','RCHO', 'MVK', 'MACR', 'PMN', 'PPN', 'R4N2', 'DMS', 'SO4s', 'MSA', 'NITs', 'BCPO', 'DST4', 'ISOPN', 'MOBA', 'PROPNN', 'HAC', 'GLYC', 'MMN', 'RIP', 'IEPOX', 'MAP' ,'N2O5','NO3'], # 'HNO4',  'HNO2'],
                     'spec_2_pptC' : ['PRPE', 'ISOP'],
@@ -781,14 +783,14 @@ def latex_spec_name(input_x, debug=False):
     """ Formatted ( Latex ) strings for species and analysis  
         REDUNDENT: now using class structure ( see MChem_tools ) """
     spec_dict = {
-            'OIO': 'OIO', 'C3H7I': 'C$_{3}$H$_{7}$I', 'IO': 'IO', 'I': 'I', 'I2': 'I$_{2}$', 'CH2ICl': 'CH$_{2}$ICl', 'HOI': 'HOI', 'CH2IBr': 'CH$_{2}$IBr', 'C2H5I': 'C$_{2}$H$_{5}$I', 'CH2I2': 'CH$_{2}$I$_{2}$', 'CH3IT': 'CH$_{3}$I', 'IONO': 'INO$_{2}$','HIO3': 'HIO$_{3}$', 'ICl': 'ICl', 'I2O3': 'I$_{2}$O$_{3}$', 'I2O4': 'I$_{2}$O$_{4}$', 'I2O5': 'I$_{2}$O$_{5}$', 'INO': 'INO', 'I2O': 'I$_{2}$O', 'IBr': 'IBr','I2O2': 'I$_{2}$O$_{2}$', 'IONO2': 'INO$_{3}$', 'HI':'HI', 'BrO':'BrO','Br':'Br','HOBr':'HOBr','Br2':'Br$_{2}$','CH3Br':'CH$_{3}$Br','CH2Br2':'CH$_{2}$Br$_{2}$', 'CHBr3':'CHBr$_{3}$','O3':'O$_{3}$', 'CO':'CO' , 'DMS':'DMS', 'NOx':'NOx', 'NO':'NO', 'NO2':'NO$_{2}$', 'NO3':'NO$_{3}$','HNO3':'HNO$_{3}$', 'HNO4':'HNO$_{4}$','PAN':'PAN', 'HNO2':'HNO$_{2}$', 'N2O5':'N$_{2}$O$_{5}$','ALK4':'>= C4 alkanes','ISOP':'Isoprene' ,'H2O2':'H$_{2}$O$_{2}$','ACET':'CH$_{3}$C(O)CH$_{3}$', 'MEK':'>C3 ketones',  'RCHO': 'CH$_{3}$CH$_{2}$CHO', 'MVK':'CH$_{2}$=CHC(O)CH$_{3}$', 'MACR':'Methacrolein', 'PMN':'CH$_{2}$=C(CH$_{3}$)C(O)OONO$_{2}$', 'PPN':'CH$_{3}$CH$_{2}$C(O)OONO$_{2}$', 'R4N2':'>= C4 alkylnitrates','PRPE':'>= C3 alkenes', 'C3H8':'C$_{3}$H$_{8}$','CH2O':'CH$_{2}$O', 'C2H6':'C$_{2}$H$_{6}$', 'MP':'CH$_{3}$OOH', 'SO2':'SO$_{2}$', 'SO4':'SO$_{4}$','SO4s':'SO$_{4}$ on SSA', 'MSA':'CH$_{4}$SO$_{3}$','NH3':'NH$_{3}$', 'NH4': 'NH$_{4}$', 'NIT': 'InOrg N', 'NITs': 'InOrg N on SSA', 'BCPI':'BCPI', 'OCPI':'OCPI', 'BCPO':'BCPO','OCPO':'OCPO', 'DST1':'DST1', 'DST2':'DST2','DST3':'DST3','DST4':'DST4','SALA':'SALA', 'SALC':'SALC',  'HBr':'HBr', 'BrNO2': 'BrNO$_{2}$', 'BrNO3': 'BrNO$_{3}$', 'MPN':'CH$_{3}$ON$_{2}$', 'ISOPN':'ISOPN', 'MOBA':'MOBA', 'PROPNN':'PROPNN', 'HAC':'HAC', 'GLYC':'GLYC', 'MMN':'MMN', 'RIP':'RIP', 'IEPOX':'IEPOX','MAP':'MAP', 'AERI':'Aerosol Iodine' , 'Cl2':'Cl$_{2}$', 'Cl':'Cl','HOCl':'HOCl','ClO':'ClO','OClO':'OClO','BrCl':'BrCl', 'HI+OIO+IONO+INO':'HI+OIO+INO$_{2}$+INO','CH2IX':'CH$_{2}$IX', 'IxOy':'I$_{2}$O$_{X}$ ($_{X}$=2,3,4)', 'CH3I':'CH$_{3}$I', 'OH':'OH', 'HO2':'HO$_{2}$', 'MO2':'MO$_{2}$', 'RO2':'RO$_{2}$' , 'ISALA': 'Iodine on SALA',  'ISALC': 'Iodine on SALC'
+            'OIO': 'OIO', 'C3H7I': 'C$_{3}$H$_{7}$I', 'IO': 'IO', 'I': 'I', 'I2': 'I$_{2}$', 'CH2ICl': 'CH$_{2}$ICl', 'HOI': 'HOI', 'CH2IBr': 'CH$_{2}$IBr', 'C2H5I': 'C$_{2}$H$_{5}$I', 'CH2I2': 'CH$_{2}$I$_{2}$', 'CH3IT': 'CH$_{3}$I', 'IONO': 'INO$_{2}$','HIO3': 'HIO$_{3}$', 'ICl': 'ICl', 'I2O3': 'I$_{2}$O$_{3}$', 'I2O4': 'I$_{2}$O$_{4}$', 'I2O5': 'I$_{2}$O$_{5}$', 'INO': 'INO', 'I2O': 'I$_{2}$O', 'IBr': 'IBr','I2O2': 'I$_{2}$O$_{2}$', 'IONO2': 'INO$_{3}$', 'HI':'HI', 'BrO':'BrO','Br':'Br','HOBr':'HOBr','Br2':'Br$_{2}$','CH3Br':'CH$_{3}$Br','CH2Br2':'CH$_{2}$Br$_{2}$', 'CHBr3':'CHBr$_{3}$','O3':'O$_{3}$', 'CO':'CO' , 'DMS':'DMS', 'NOx':'NOx', 'NO':'NO', 'NO2':'NO$_{2}$', 'NO3':'NO$_{3}$','HNO3':'HNO$_{3}$', 'HNO4':'HNO$_{4}$','PAN':'PAN', 'HNO2':'HNO$_{2}$', 'N2O5':'N$_{2}$O$_{5}$','ALK4':'>= C4 alkanes','ISOP':'Isoprene' ,'H2O2':'H$_{2}$O$_{2}$','ACET':'CH$_{3}$C(O)CH$_{3}$', 'MEK':'>C3 ketones',  'RCHO': 'CH$_{3}$CH$_{2}$CHO', 'MVK':'CH$_{2}$=CHC(O)CH$_{3}$', 'MACR':'Methacrolein', 'PMN':'CH$_{2}$=C(CH$_{3}$)C(O)OONO$_{2}$', 'PPN':'CH$_{3}$CH$_{2}$C(O)OONO$_{2}$', 'R4N2':'>= C4 alkylnitrates','PRPE':'>= C3 alkenes', 'C3H8':'C$_{3}$H$_{8}$','CH2O':'CH$_{2}$O', 'C2H6':'C$_{2}$H$_{6}$', 'MP':'CH$_{3}$OOH', 'SO2':'SO$_{2}$', 'SO4':'SO$_{4}$','SO4s':'SO$_{4}$ on SSA', 'MSA':'CH$_{4}$SO$_{3}$','NH3':'NH$_{3}$', 'NH4': 'NH$_{4}$', 'NIT': 'InOrg N', 'NITs': 'InOrg N on SSA', 'BCPI':'BCPI', 'OCPI':'OCPI', 'BCPO':'BCPO','OCPO':'OCPO', 'DST1':'DST1', 'DST2':'DST2','DST3':'DST3','DST4':'DST4','SALA':'SALA', 'SALC':'SALC',  'HBr':'HBr', 'BrNO2': 'BrNO$_{2}$', 'BrNO3': 'BrNO$_{3}$', 'MPN':'CH$_{3}$ON$_{2}$', 'ISOPN':'ISOPN', 'MOBA':'MOBA', 'PROPNN':'PROPNN', 'HAC':'HAC', 'GLYC':'GLYC', 'MMN':'MMN', 'RIP':'RIP', 'IEPOX':'IEPOX','MAP':'MAP', 'AERI':'Aerosol Iodine' , 'Cl2':'Cl$_{2}$', 'Cl':'Cl','HOCl':'HOCl','ClO':'ClO','OClO':'OClO','BrCl':'BrCl', 'HI+OIO+IONO+INO':'HI+OIO+INO$_{2}$+INO','CH2IX':'CH$_{2}$IX (X=Cl, Br, I)', 'IxOy':'I$_{2}$O$_{X}$ ($_{X}$=2,3,4)', 'CH3I':'CH$_{3}$I', 'OH':'OH', 'HO2':'HO$_{2}$', 'MO2':'MO$_{2}$', 'RO2':'RO$_{2}$' , 'ISALA': 'Iodine on SALA',  'ISALC': 'Iodine on SALC'
 
             ,'RD01':r'I + O$_{3}$ $\rightarrow$ IO + O$_{2}$'
             # Adjusted names
             ,'ALD2':'Acetaldehyde'
             # Analysis names 
             ,'iodine_all':'All Iodine', 'Iy': 'I$_{Y}$', 'IOy': 'IO$_{Y}$', 'IyOx': 'I$_{Y}$O$_{X}$', 'IOx': 'IO$_{X}$','iodine_all_A':'All Iodine (Inc. AERI)', 'I2Ox': 'I$_{2}$O$_{X}$' , 'AERI/SO4': 'AERI/SO4', 'EOH':'Ethanol','OH reactivity / s-1': 'OH reactivity / s$^{-1}$'
-            , 'PSURF': 'Pressure at the bottom of level', 'GMAO_TEMP' : 'Temperature', 'TSKIN' : 'Temperature at 2m', 'GMAO_UWND':'Zonal Wind', 'GMAO_VWND':'Meridional Wind', 'U10M':'10m Meridional Wind', 'V10M': '10m Zonal Wind', 'CH2OO':'CH$_{2}$OO',
+            , 'PSURF': 'Pressure at the bottom of level', 'GMAO_TEMP' : 'Temperature', 'TSKIN' : 'Temperature at 2m', 'GMAO_UWND':'Zonal Wind', 'GMAO_VWND':'Meridional Wind', 'U10M':'10m Meridional Wind', 'V10M': '10m Zonal Wind', 'CH2OO':'CH$_{2}$OO', 
         # Family Names
            'N_specs' : 'NOy', 'NOy' :  'NO$_Y$',  'Bry':  'Br$_Y$', 
            'N_specs_no_I' : 'NOy exc. iodine',
@@ -812,7 +814,8 @@ def p_l_unity(rxn, debug=False):
 #  4.07 - Returns tracers unit and scale (if requested)
 # --------------
 def tra_unit(x, scale=False, adjustment=False, adjust=True, \
-            global_unit=False, ClearFlo_unit=False, debug=False ):
+            global_unit=False, ClearFlo_unit=False, IUPAC_unit=False, \
+            debug=False ):
     tra_unit = {
     'OCPI': 'ppbv', 'OCPO': 'ppbv', 'PPN': 'ppbv', 'HIO3': 'pptv', 'O3': 'ppbv', 'PAN': 'ppbv', 'ACET': 'ppbC', 'RIP': 'ppbv', 'BrNO3': 'pptv', 'Br': 'pptv', 'HBr': 'pptv', 'HAC': 'ppbv', 'ALD2': 'ppbC', 'HNO3': 'ppbv', 'HNO2': 'ppbv', 'C2H5I': 'pptv', 'HNO4': 'ppbv', 'OIO': 'pptv', 'MAP': 'ppbv', 'PRPE': 'ppbC', 'HI': 'pptv', 'CH2I2': 'pptv', 'IONO2': 'pptv', 'NIT': 'ppbv', 'CH3Br': 'pptv', 'C3H7I': 'pptv', 'C3H8': 'ppbC', 'DMS': 'ppbv', 'CH2O': 'ppbv', 'CH3IT': 'pptv', 'NO2': 'ppbv', 'NO3': 'ppbv', 'N2O5': 'ppbv', 'CHBr3': 'pptv', 'DST4': 'ppbv', 'DST3': 'ppbv', 'DST2': 'ppbv', 'DST1': 'ppbv', 'HOCl': 'ppbv', 'NITs': 'ppbv', 'RCHO': 'ppbv', 'C2H6': 'ppbC', 'MPN': 'ppbv', 'INO': 'pptv', 'MP': 'ppbv', 'CH2Br2': 'pptv', 'SALC': 'ppbv', 'NH3': 'ppbv', 'CH2ICl': 'pptv', 'IEPOX': 'ppbv', 'ClO': 'ppbv', 'NO': 'pptv', 'SALA': 'ppbv', 'MOBA': 'ppbv', 'R4N2': 'ppbv', 'BrCl': 'pptv', 'OClO': 'ppbv', 'PMN': 'ppbv', 'CO': 'ppbv', 'CH2IBr': 'pptv', 'ISOP': 'ppbC', 'BCPO': 'ppbv', 'MVK': 'ppbv', 'BrNO2': 'pptv', 'IONO': 'pptv', 'Cl2': 'ppbv', 'HOBr': 'pptv', 'PROPNN': 'ppbv', 'Cl': 'ppbv', 'I2O2': 'pptv', 'I2O3': 'pptv', 'I2O4': 'pptv', 'I2O5': 'pptv', 'MEK': 'ppbC', 'MMN': 'ppbv', 'ISOPN': 'ppbv', 'SO4s': 'ppbv', 'I2O': 'pptv', 'ALK4': 'ppbC', 'MSA': 'ppbv', 'I2': 'pptv', 'Br2': 'pptv', 'IBr': 'pptv', 'MACR': 'ppbv', 'I': 'pptv', 'AERI': 'pptv', 'HOI': 'pptv', 'BrO': 'pptv', 'NH4': 'ppbv', 'SO2': 'ppbv', 'SO4': 'ppbv', 'IO': 'pptv', 'H2O2': 'ppbv', 'BCPI': 'ppbv', 'ICl': 'pptv', 'GLYC': 'ppbv','ISALA': 'pptv', 'ISALC': 'pptv', 
     # Extra diagnostics to allow for simplified processing 
@@ -868,6 +871,16 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, \
             adjustby = -273.15 
         else:
             adjustby = 0
+
+    if IUPAC_unit:
+        if units == 'ppbv':
+            units = 'nmol / mol'
+        if units == 'ppbC':
+            units = 'nmol (C) / mol'
+        if units == 'pptv':
+            units = 'pmol / mol'
+        if units == 'pptC':
+            units = 'pmol (C)/ mol'
 
     if scale and (not adjustment):
         return units, scaleby           
@@ -974,7 +987,7 @@ def get_unit_scaling( units, scaleby=1 ):
 
         misc = 'K', 'm/s', 'unitless', 'kg' ,'m', 'm2','kg/m2/s', \
             'molec/cm2/s', 'mol/cm3/s',  'kg/s', 'hPa', 'atoms C/cm2/s' \
-            'kg S', 'mb', 'atoms C/cm2/s'
+            'kg S', 'mb', 'atoms C/cm2/s', 'molec/cm3', 'v/v'
 
         if any( [ (units ==  i) for i in 'pptv', 'pptC' ]):
             scaleby = 1E12
@@ -1082,8 +1095,8 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
 
         r= [ 'iGEOSChem_1.7_v10/'+ i for i in l ]+ \
              [ 'iGEOS_Chem_1.6_G5/'+ i for i in l ]
-        l= [ 'GEOS-Chem v10 (no hal)', 'Iodine Sim. (v10)']  + \
-            [ 'GEOS-Chem v9-2 (no hal)', 'Iodine Sim.'] 
+        l= [ 'NOHAL (v10)', 'Br-I (v10)']  + \
+            [ 'NOHAL (v9-2)', 'Br-I (v9-2)'] 
 
     if IO_obs:
         l = 'run_CVO', 'run_GRO', 'run_MAL', 'run_HAL', 'run_TOR_updated.respun' 
@@ -1238,7 +1251,8 @@ def rxns_in_pl( wd, spec='LOX', debug=False ):
         
     # -- remove 'Family' 
     rxns = [ i for i in rxns if (  'Family' not in i ) ]
-    print '!'*20, len( rxns )
+    if debug:
+        print 'number (len of list) of reacitons: ', len( rxns )
     n = [int(rxn[1]) for rxn in rxns ]
     rxns = [rxn[2:] for rxn in rxns ]
 
@@ -1479,8 +1493,6 @@ def get_tag_details( wd, tag=None, PDs=None,  rdict=None, \
             debug=False ):
     """ Retriveve prod/loss tag details from smv.log
         ( rxn number + reaction description)"""
-
-    debug=True
 
     # what is the number of the first photolysis reaction?
     if isinstance( PHOTOPROCESS, type(None) ):

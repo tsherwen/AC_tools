@@ -127,11 +127,12 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             fixcb=None, nbins=25, nticks=10, mask_invalids=False,  \
             format='%.2f', adjust_window=0, f_size=20, alpha=1, \
             set_window=False, res='4x5', ax=None, case='default', units=None, \
-            drawcountries=True,  set_cb_ticks=True, title=None,   \
+            drawcountries=True,  set_cb_ticks=True, title=None, lvls=None,  \
             interval=1, resolution='c', shrink=0.4, window=False, everyother=1,\
             extend='neither', degrade_resolution=False, discrete_cmap=False, \
             lon_0=None, lon_1=None, lat_0=None, lat_1=None, norm=None,\
-             debug=False, **Kwargs):
+            sigfig_rounding_on_cb=2, fixcb_buffered=None, \
+            verbose=True, debug=False, **Kwargs):
     """ Plots Global/regional 2D (lon, lat) slices. Takes a numpy array and the 
         resolution of the output. The plot extent is then set by this output.
 
@@ -148,11 +149,10 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         - colorbar settings
             extend ( 'both', 'min', 'both' ... )
             shrink ( size of colorbar )    """
-
     if debug:
         print [ [ i.min(), i.max(), i.mean(), type(i) ] for i in [arr] ]
 
-    # Kludge, for pcent arrays with invalid within them, mask for these. 
+    # Kludge, mask for pcent arrays containing invalids ( to allow PDF save)
     if mask_invalids:
         arr = np.ma.masked_invalid( arr )
 
@@ -160,7 +160,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     if window:
         interval = 2   # double interval size 
         degrade_resolution=True
-#        nticks, nbins, resolution, shrink  =int(nticks/3), int(nbins/2), 'l', 0.2
+#      nticks, nbins, resolution, shrink  =int(nticks/3), int(nbins/2), 'l', 0.2
     if  res == '0.5x0.666':
         interval,  adjust_window, resolution,shrink  =0.5, 3, 'f', 0.6
     if degrade_resolution:
@@ -185,18 +185,8 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             gclon_0, gclon_1 = [ get_gc_lon(i, res=res) for i in lon_0, lon_1 ]
             lon = lon[ gclon_0:gclon_1]
 
-    # ---- Grid/Mesh values for Lat, lon, & alt + cb
-    if isinstance( cmap, type(None) ):
-        cmap = get_colormap( arr.copy() )
-#    if discrete_cmap:
-#        if isinstance( fixcb, type(None) ):
-#            cmap, norm = mk_discrete_cmap( vmin=arr.min(), vmax=arr.max(), \
-#                    nticks=nticks, cmap=cmap )
-#        else:
-#            cmap, norm = mk_discrete_cmap( vmin=fixcb[0], vmax=fixcb[1], \
-#                    nticks=nticks, cmap=cmap )
-
     # ----------------  Basemap setup  ----------------  
+    # Grid/Mesh values
     x, y = np.meshgrid(lon,lat)
     if debug:
         print 1, len(x), len(y)
@@ -207,7 +197,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
                 drawcountries=drawcountries )
 
     # Process data to grid
-    x, y = np.meshgrid(*m(lon, lat))
+    x, y = np.meshgrid( *m(lon, lat) )
     if debug:
         print 2, 'len:',  [ len(i) for i in x,y,lat,lon ]
         print '>'*5, [ [ i.min(), i.mean(), i.max() ] for i in [arr ] ]
@@ -225,81 +215,127 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         'linear':3, 'default':3, 'IO': 1,'limit_to_1_2': 2, 'log': 4,  
         }[case]
     if debug:
-        print 3, case, [ np.array(i).shape for i in lon, lat, arr ], cmap, alpha
-    
+        print 3, case, [ np.array(i).shape for i in lon, lat, arr ], alpha
+
     # -------- colorbar variables...
-    # set cb label sizes
-    if not isinstance( fixcb, type(None) ):
-        tickmin, tickmax = fixcb[0], fixcb[1]
-    else:
-        tickmin, tickmax  = arr.min(), arr.max()
+    # Set cmap range I to limit poly, if not given cmap )
+    fixcb_ = fixcb
+    if isinstance( fixcb_, type(None) ) or isinstance( cmap, type(None) ):
+        fixcb_ = np.array( [ (i.min(), i.max()) for i in [arr ] ][0] )
+
+    if isinstance( cmap, type(None) ):
+        # Set readable levels for cb, then use these to dictate cmap
+        if isinstance( lvls, type(None) ):
+            lvls = get_human_readable_gradations( vmax=fixcb_[1],  \
+                    vmin=fixcb_[0], nticks=nticks, \
+                    sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
+
+        # Setup Colormap
+        cmap, fixcb_buffered = get_colormap( np.array( fixcb_ ), \
+                nticks=nticks, fixcb=fixcb_, buffer_cmap_upper=True )
+        # Update colormap with buffer
+        cmap = get_colormap( arr=np.array( [fixcb_buffered[0],  \
+                                                    fixcb_buffered[1]] ) )
+
+    # Allow function to operate without fixcb_buffered provided
+    if isinstance( fixcb_buffered, type(None) ):
+        fixcb_buffered = fixcb_
+    fixcb_ = fixcb_buffered
+
+    if verbose:
+        print 'colorbar variables: ', fixcb_buffered, fixcb, fixcb_, lvls, \
+                cmap, lvls
+
+#    if discrete_cmap:
+#        if isinstance( fixcb, type(None) ):
+#            cmap, norm = mk_discrete_cmap( vmin=arr.min(), vmax=arr.max(), \
+#                    nticks=nticks, cmap=cmap )
+#        else:
+#            cmap, norm = mk_discrete_cmap( vmin=fixcb[0], vmax=fixcb[1], \
+#                    nticks=nticks, cmap=cmap 
+
     # --------------  Linear plots -------------------------------
     # standard plot 
-    if ( ( case == 3) or ( case== 9 ) ) and ( isinstance( fixcb, type(None) ) ):
-        poly = m.pcolor( lon, lat, arr, cmap=cmap, norm=norm, alpha=alpha )
+    if any( [ (case==i) for i in 3, 9 ] ):
 
-    if ( ( case == 3) or ( case== 9 ) ) and (not isinstance(fixcb,type(None) )):
+        print fixcb_[0], fixcb_[1]
+        if debug:
+            print fixcb_, arr.shape, [ len(i) for i in lon, lat ], norm, cmap
         poly = m.pcolor( lon, lat, arr, cmap=cmap, norm=norm, 
-                        vmin=fixcb[0], vmax=fixcb[1], alpha=alpha )
+                        vmin=fixcb_[0], vmax=fixcb_[1], alpha=alpha )
 #        poly = m.pcolormesh( lon, lat, arr, cmap=cmap, clevs=clevs,\
 #                        vmin=fixcb[0], vmax=fixcb[1], alpha=alpha )
 
     # -----------------  Log plots ---------------------------------------------
-    if (case == 4 ) and ( isinstance(fixcb,type(None) )):  # log and cmap
-        # CAUTION - norm/discrete cmapvariables not passed <= update this
-        poly = m.pcolor(lon, lat, arr, norm=LogNorm(vmin=arr.min(), \
-            vmax=arr.max()), cmap=cmap)#'PuBu_r')
+    if (case == 4 ) : # l
+        poly = m.pcolor(lon, lat, arr, norm=LogNorm(vmin=fixcb_[0], \
+            vmax=fixcb_[1]), cmap=cmap)#'PuBu_r')
 
         if no_cb:
             pass
         else:
-            lvls = np.logspace( np.ma.min(np.ma.log(arr)), \
-                np.ma.max(np.ma.log(arr)), nbins )
+            # Get logarithmically spaced integers
+            lvls = np.logspace( np.log10(fixcb[0]), np.log10(fixcb[1]), \
+                                                num=nticks)
+            # Normalise to Log space
+            norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
 
-            cb = plt.colorbar(poly, ax = m.ax, ticks=lvls, format=format,\
-                shrink=shrink,alpha=alpha, extend=extend)
-
-        if debug:
-            print np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), lvls
-
-    if (case == 4 ) and (not isinstance(fixcb,type(None) )):  # log and set min
-        # CAUTION - clevs variables not passed <= update this
-        poly = m.pcolor(lon, lat, arr, norm=LogNorm(vmin=fixcb[0], \
-            vmax=arr.max()), cmap=cmap)#'PuBu_r')
-
-        if no_cb:
-            pass
-        else:
-            # CAUTION - clevs variables not passed <= update this
-            # create log with 1000 p
-            lvls = np.logspace( np.ma.log(vmin), np.ma.log(vmax), 1E5, 
-                endpoint=True )
-
-            # select relevant indices ( linearly spaced integers )
-            lvls =  [ lvls[0] ] + list( lvls[ gen_log_space( 1E5,  \
-                nticks*15) ] ) + [ lvls[-1] ]
-            lvls= np.array( lvls )
-
-            cb = plt.colorbar(poly, ax = m.ax, ticks=lvls, format=format, \
-                 shrink=shrink, alpha=alpha, extend='min')
+            cb = plt.colorbar(poly, ax=m.ax, ticks=lvls, format=format, \
+                 shrink=shrink, alpha=alpha, norm=norm, extend='min')
 
         if debug:
             print np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), lvls
 
     # ----------------  Colorbars  ----------------  
-    if not no_cb:
-        # CAUTION - clevs variables not passed <= update this
+    if no_cb:
+        pass
+    else:
+#    do_cb = False
+#    if do_cb:
+#        pass
         if isinstance( cb, type(None) ):
-            cb = plt.colorbar( poly, ax = m.ax, shrink=shrink, alpha=alpha,  \
-                        format=format, ticks= np.linspace(tickmin, tickmax, \
-                        nticks ), extend=extend )        
+            # if linear plot without fixcb set, then define here
+            ax = plt.gca()
+
+        if verbose:
+            print shrink, m, m.ax, poly, alpha, format, lvls, norm,  \
+                    extend, ax
+        cb = plt.colorbar( poly, ax=ax, shrink=shrink, alpha=alpha,  \
+#            cb = plt.colorbar( poly, ax=m.ax, shrink=shrink, alpha=alpha,  \
+#                        format=format, ticks=lvls, norm=norm, \
+                    extend=extend )
 
         for t in cb.ax.get_yticklabels():
             t.set_fontsize(f_size)
 
-        if units != None:
+        if not isinstance( units, type(None) ):
             cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)  
 
+        # Special treatment for log colorbars
+        if (case == 4 ):    
+            round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
+            tick_locs = [ float('{:.2g}'.format( t )) for t in lvls ]
+            # for asectics, round colorbar labels to sig figs given
+            for n, lvl in enumerate( lvls ):
+                try:
+                    lvls[n] = round_to_n( lvl, sigfig_rounding_on_cb)
+                except:
+                    lvls[n] = lvl
+        else:
+            tick_locs = np.array( lvls ).copy()  
+
+        # fix colorbar levels, then provide labels
+        cb.set_ticks( tick_locs )
+        # the format is not correctly being set... - do this manually instead
+        if not isinstance( format, type(None) ):
+            lvls = [ format % (i) for i in lvls ]
+        cb.set_ticklabels( lvls )#, format=format )
+
+
+        if verbose:
+            print tick_locs, lvls, [ type(i) for i in tick_locs, lvls ]
+            print cb.get_clim(), title, format
+    
     # Set number of ticks
     # FIX NEEDED - this currently doesn't doesn't work for log plots
 #    if (case != 3) and (not no_cb) and ( case != 4):
@@ -324,13 +360,17 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
 # 1.02 - Zonal plot - log or linear
 # --------
 def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
-    f_size=10, c_off=37, format='%.2f', interval=None, nticks=7,no_cb=False, \
+    f_size=10, c_off=37, format='%.2f', interval=None, no_cb=False, \
     units=None, shrink=0.4, alpha=1, res='4x5', window=False, cmap=None, \
-    log=False, fixcb=None, lower_limited=False, nlvls=25, xlimit =None, \
+    log=False, fixcb=None, fixcb_buffered=None, xlimit =None, \
     rotatecbunits='horizontal', extend='neither', ylabel=True, \
+    cb=None, lvls=None, sigfig_rounding_on_cb=2, nticks=10, norm=None, \
     set_window=False, lat_0=None, lat_1=None, lat40_2_40=False, \
-    xlabel=True, mask_invalids=False, debug=False ):
-    """ Creates a zonal plot from provide array of CTM output (lon, lat)
+    xlabel=True, mask_invalids=False, verbose=True, debug=False, \
+    # redundent?
+    lower_limited=False, nlvls=25,  ):
+    """ Creates a zonal plot from provide 2D array of longditude and latitude
+
         Input resolution must be provide for non-default (4x5) output 
         
         This function will also apply maskes if set in arguments """
@@ -345,27 +385,23 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
 
     # Get overall vars
     lon, lat, alt = get_latlonalt4res( res=res )
-    if isinstance( cmap, type(None) ):
-        cmap=get_colormap( arr.copy() )
     alt  = [ i[:len(arr[0,:])] for i in [ alt ]  ][0]
 
     # === -  limit ars to a given mask, if stipulated
     if tropics:
-        mask =  mask_tropics(res=res)
+        mask =  tropics_unmasked(res=res)
         arr = arr * mask[0,:,:c_off+1] 
     if lat40_2_40  :
-        mask =  mask_tropics(res=res)
+        mask =  tropics_unmasked(res=res)
         arr = arr * mask[0,:,:c_off+1]         
 
-#    print '!'*200, lat, [ np.array(i).shape for i in lat, alt, arr, arr.T ]
+    if debug:
+        print '!'*200, lat, [ np.array(i).shape for i in lat, alt, arr, arr.T ]
 
     if set_window:
-#        arr = arr[ get_gc_lat(lat_0, res=res):get_gc_lat(lat_1, res=res), :]
+        arr = arr[ get_gc_lat(lat_0, res=res):get_gc_lat(lat_1, res=res), :]
         lat = lat[ get_gc_lat(lat_0, res=res):get_gc_lat(lat_1, res=res) ]
 
-#    print '!'*200, lat, [ np.array(i).shape for i in lat, alt, arr, arr.T ]
-#    sys.exit( 0 )
-    
     if debug:
         print arr.shape
         print [ len(i) for i in lon, lat, alt ], res
@@ -382,8 +418,8 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
     else:
         interval = 1
     parallels = np.arange(-90,91,15*interval)
-#    parallels = np.arange(-90,91,5*interval)
 
+    # <= remove this, default of 'neither should just be passed. (update needed)
     if (lower_limited):
         extend='min'
 
@@ -391,54 +427,139 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
     if len(arr[0,:] ) != 38:
         arr =arr[:,:38]
 
-    # Create a Log Zonal plot of the given data, where fixcb is the min and max of a given array (aka not log )
-    if (log):
-        if (fixcb != None):
+    # -------- Colorbar/colomap variables...
+    # Set cmap range I to limit poly, if not given cmap )
+    print fixcb
+    fixcb_ = fixcb
+    print fixcb, fixcb_,  [ (i.min(), i.max()) for i in [arr ] ]
+    if isinstance( fixcb_, type(None) ) :#and isinstance( cmap, type(None) ):
+        fixcb_ = np.array( [ (i.min(), i.max()) for i in [arr ] ][0] )
 
-            p = ax.pcolor( lat, alt, arr.T, norm=LogNorm(vmin=fixcb[0], 
-                        vmax=fixcb[1]), cmap=cmap)        
+    if isinstance( cmap, type(None) ):
+        # Set readable levels for cb, then use these to dictate cmap
+#    if isinstance( cmap, type(None) ):
+#        cmap=get_colormap( arr.copy() )    
+#        print 'Hello'
+        
+        if isinstance( lvls, type(None) ):
+            lvls = get_human_readable_gradations( vmax=fixcb_[1],  \
+                    vmin=fixcb_[0], nticks=nticks, \
+                    sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
 
-            l_f = LogFormatter(10, labelOnlyBase=False)
-            if fixcb[0] == 0:
-                print 'fixcb inputed as: ', fixcb
-                print '>'*5, 'USING VALUE OF 0.01 INSTEAD OF 0 FOR LOG', '<'*30
-                lvls = np.logspace( 0.01, np.ma.max(np.log(fixcb[1])), nlvls )
-                lower_limited= True
-#            lvls = np.logspace( np.log(fixcb[0]), np.max(np.log(fixcb[1])), nlvls )
-            else:
-                lvls = np.logspace( np.ma.log(fixcb[0]), \
-                    np.ma.max(np.ma.log(fixcb[1])), nlvls )                        
+        # Setup Colormap
+        cmap, fixcb_buffered = get_colormap( np.array( fixcb_ ), \
+                nticks=nticks, fixcb=fixcb_, buffer_cmap_upper=True )
 
-            if not no_cb:
-                cb = plt.colorbar(p, ax=ax, ticks=lvls, extend=extend, \
-                    format=format, shrink=shrink , alpha=alpha)                
+        # Update colormap with buffer
+        cmap = get_colormap( arr=np.array( [fixcb_buffered[0],  \
+                                                    fixcb_buffered[1]] ) )
+    fixcb_ = fixcb_buffered
+    if verbose:
+        print 'colorbar variables: ', fixcb_buffered, fixcb, fixcb_, lvls, cmap
+    # -----------------  Log plots ---------------------------------------------
+    # Create a Log Zonal plot of the given data,  ??? ( updated needed )
+    # where fixcb is the min and max of a given array (aka not log )
+    # TESTING NEEDED HERE !!! ( Update )
+    if log:    
+        # Normalise to Log space
+        norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
+        # Create poly collection
+        poly = ax.pcolor( lat, alt, arr.T, norm=norm, cmap=cmap)        
+
+        if no_cb:
+            pass
         else:
-            p = ax.pcolor( lat, alt, arr.T, norm=LogNorm(vmin=min, vmax=max), \
-                cmap=cmap)
-            if not no_cb:
-                cb = plt.colorbar(p, ax =ax, extend=extend, format=format, \
-                            shrink=shrink, alpha=alpha)
+            # Get logarithmically spaced integers
+            lvls = np.logspace( np.log10(fixcb[0]), np.log10(fixcb[1]), \
+                                                num=nticks)
+            # Make colorbar
+            cb = plt.colorbar(poly, ax=ax, ticks=lvls, format=format, \
+                 shrink=shrink, alpha=alpha, norm=norm, extend='min')
+
+        if debug:
+            print np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), lvls
+
+#            l_f = LogFormatter(10, labelOnlyBase=False)
+#            if fixcb[0] == 0:
+#                print 'fixcb inputed as: ', fixcb
+#                print '>'*5, 'USING VALUE OF 0.01 INSTEAD OF 0 FOR LOG', '<'*30
+#                lvls = np.logspace( 0.01, np.ma.max(np.log(fixcb_[1])), nlvls )
+#                lower_limited= True
+#            lvls = np.logspace( np.log(fixcb_[0]), np.max(np.log(fixcb_[1])), nlvls )
+#            else:
+#                lvls = np.logspace( np.ma.log(fixcb_[0]), \
+#                    np.ma.max(np.ma.log(fixcb_[1])), nlvls )                        
+
+#            if not no_cb:
+#                cb = plt.colorbar(p, ax=ax, ticks=lvls, extend=extend, \
+#                    format=format, shrink=shrink , alpha=alpha)                
+#        else:
+#            p = ax.pcolor( lat, alt, arr.T, norm=LogNorm(vmin=min, vmax=max), \
+#                cmap=cmap)
+#            if not no_cb:
+#                cb = plt.colorbar(p, ax =ax, extend=extend, format=format, \
+#                            shrink=shrink, alpha=alpha)
+
+    # --------------  Linear plots -------------------------------
+    # standard plot 
     else:
-        if isinstance( fixcb, type( None) ):
-            p = ax.pcolor( lat, alt, arr.T, cmap=cmap, vmin=min, vmax=max)
-        else:
-            print list(lat)
-            print fixcb, [ np.array(i).shape for i in lat, alt, arr, arr.T ]
-            p = ax.pcolor( lat, alt, arr.T, cmap=cmap, vmin=fixcb[0],  \
-                                    vmax=fixcb[1] )
+        if verbose:
+            print fixcb, fixcb_,  \
+                    [ np.array(i).shape for i in lat, alt, arr, arr.T ]
+        # Create poly collection
+        poly = ax.pcolor( lat, alt, arr.T, cmap=cmap, vmin=fixcb_[0],  \
+                                vmax=fixcb_[1], norm=norm )
 
-        if not no_cb:
-            cb  = fig.colorbar(p, ax=ax, extend=extend, format=format, \
-                            alpha=alpha, ticks= np.linspace(np.ma.min(arr), \
-                            np.ma.max(arr), nticks ))
+    # ----------------  Colorbars  ----------------  
+    if no_cb:
+        pass
+    else:
+        if isinstance( cb, type(None) ):
+            # if linear plot without fixcb set, then define here
+
+            cb = plt.colorbar( poly, ax=ax, shrink=shrink, alpha=alpha,  \
+                        format=format, ticks=lvls, norm=norm, \
+                        extend=extend )
+#        if not no_cb:
+#            cb  = fig.colorbar(p, ax=ax, extend=extend, format=format, \
+#                            alpha=alpha, ticks=lvls )
+
+        for t in cb.ax.get_yticklabels():
+            t.set_fontsize(f_size)
+
+        if not isinstance( units, type(None) ):
+            cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)  
+
+        if log:
+            round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
+            tick_locs = [ float('{:.2g}'.format( t )) for t in lvls ]
+            # for asectics, round colorbar labels to sig figs given
+            for n, lvl in enumerate( lvls ):
+                try:
+                    lvls[n] = round_to_n( lvl, sigfig_rounding_on_cb)
+                except:
+                    lvls[n] = lvl
+        else:
+            tick_locs = np.array( lvls ).copy()
+
+        # fix colorbar levels, then provide labels
+        cb.set_ticks( tick_locs )
+        # the format is not correctly being set... - do this manually instead
+        if not isinstance( format, type(None) ):
+            lvls = [ format % (i) for i in lvls ]
+        cb.set_ticklabels( lvls )#, format=format )
+
+        if verbose:
+            print tick_locs, lvls, [ type(i) for i in tick_locs, lvls ]
+            print cb.get_clim(), title, format
+
 
     # Setup Y axis    
     if (not isinstance( units, type( None) )) and (not no_cb):
-        cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)                      
-
+        cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)
     plt.ylim(alt[0], alt[-1])
     if ylabel:
-        plt.ylabel('Altitude / km', fontsize=f_size*.75)
+        plt.ylabel('Altitude (km)', fontsize=f_size*.75)
     
     # Setup X axis
     plt.xticks( parallels, fontsize=f_size*.75 ) # draw parrelel lines 
@@ -589,14 +710,15 @@ def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
 
     if ymin != None:    
         plt.ylim( ymin, ymax )
-    plt.ylabel(units, fontsize=f_size*.75)
     plt.yticks( fontsize=f_size*.75)
+    plt.xticks( fontsize=f_size*.75)
     if (title != None):
-        plt.title(title)
+        plt.title( title )
     if xlabel:
         plt.xlabel('Hour of day', fontsize=f_size*.75)
     plt.ylabel('{}'.format(units), fontsize=f_size*.75)
-    
+
+
     # Apply legend to last plot
     if pos == posn:
         plt.legend( fontsize=lgnd_f_size )
@@ -613,10 +735,10 @@ def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
 # --------
 def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
             f_size=10, color=None, rasterized=True, err_bar=False, obs=True, \
-            legend=False, units='ppbv', hPa_labels=True, stddev=True, \
+            legend=False, units='nmol / mol', stddev=True, \
             c_l=[ 'k', 'red','green', 'blue' , 'purple'], xlimit=None, \
             loc='upper left', c_off = 37, label=None, ancillary=True, \
-            debug=False ):
+            ylabel=True, xlabel=True, hPa_labels=True, debug=False ):
     """ Create plot of vertical data for sonde observations/model """
 
     # Get overall vars
@@ -635,7 +757,7 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
         
     if obs:
 #        print [len(i) for i in arr[:,0], alt ]
-        ax.plot( arr[:,0] , alt , color=color, label=label)
+        ax.plot( arr[:,0] , alt , color=color, label=label )
         # limit cb to top of troposphere
         min, max  =  [ (np.ma.min(i), np.ma.max(i)) for i in [ arr[:,0] ] ][0] 
     else:
@@ -645,15 +767,16 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
 
     # Add legend
     if legend:
-        plt.legend(loc=loc)#, fontsize=f_size*.5)
+        plt.legend( loc=loc )#, fontsize=f_size*.5)
 
-    # sonde data  = mean, 1st and 3rd Q
+    # Sonde data  = mean, 1st and 3rd Q
     if err_bar:     
         if stddev:
-            ax.errorbar(arr[:,0] , alt, xerr=arr[:,3], fmt='o', color=color )
+            ax.errorbar(arr[:,0] , alt, xerr=arr[:,3], fmt='o', color=color, 
+                    elinewidth=0.75, markersize=2, alpha=0.75 )
         else:
             ax.errorbar(arr[:,0] , alt, xerr=[arr[:,1], arr[:,2]], fmt='o', \
-                color=color )
+                color=color, elinewidth=.75, markersize=5, alpha=0.75 )
 
     # Beautify plot ( e.g. add hPa, units,  etc... )
     if ancillary:
@@ -664,9 +787,16 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
                 plt.text(0.5, 1.05, subtitle, ha='center', va='center', \
                           transform=ax.transAxes, fontsize=f_size*.65)
             plt.subplots_adjust(top=0.86) 
-                
-        plt.ylabel('Altitude / km', fontsize=f_size*.75)
-        plt.xlabel( units, fontsize=f_size*.75)
+        
+        if ylabel:
+            plt.ylabel('Altitude (km)', fontsize=f_size*.75)
+        else:
+            plt.tick_params( axis='y', which='both', labelleft='off')
+        if xlabel:
+            plt.xlabel( units, fontsize=f_size*.75)
+        else:
+            plt.tick_params( axis='x', which='both', labelbottom='off')
+
         if xlimit == None:
     #        plt.xlim( min-(min*0.02), max+(max*0.02) )
             plt.xlim( 0.1,  max+(max*0.50) )
@@ -674,11 +804,19 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
             plt.xlim(0.1, xlimit)
         if hPa_labels:
             ax2 = ax.twinx()
-            press =[ myround(i,100) for i in press ]
-            ax2.set_yticks( press[::10])
+            press = [ myround(i,100) for i in press ][::-1]
+            ax2.set_yticks( press[::10] )
+            ax2.set_yticklabels( press[::10] )
             majorFormatter = FormatStrFormatter('%d')
-            ax2.yaxis.set_minor_formatter(majorFormatter)                        
-            ax2.set_ylabel( 'Press. / hPa', fontsize = f_size*.75)
+            ax2.yaxis.set_minor_formatter( majorFormatter )                        
+            ax2.set_ylabel( 'Press. (hPa)', fontsize = f_size*.75)
+            ax2.invert_yaxis()
+            if ylabel:
+                pass
+            else:
+                ax.tick_params( axis='y', which='both', labelleft='off')
+                ax2.tick_params( axis='y', which='both', labelleft='off')
+
 
 # --------------
 # 1.12 - plot up monthly from data provided from DB netCDF
@@ -721,7 +859,8 @@ def obs_month_plot(data, color=None, title=None, rtn_data=False, \
 # -------------
 def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
                   title=None, subtitle=None, legend=False, xrotation=90, \
-                  window=False, label=None, ylabel=None, loc='upper right' ):
+                  window=False, label=None, ylabel=None, xlabel=True, 
+                  loc='upper right' ):
     """ Plot up seaonal (monthly ) data. Requires data, and dates in numpy 
         array form. Dates must be as datetime.datetime objects. """
             
@@ -735,11 +874,15 @@ def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
         label=label )
 
     # Beautify
-    ax.set_xticklabels( [i.strftime("%b") for i in [datetime.datetime(2009, \
-        int(i), 01) for i in np.arange(1,13 ) ] ] )
+    ax.set_xticklabels( [i.strftime("%b") \
+            for i in [datetime.datetime(2009, int(i), 01)  \
+            for i in np.arange(1,13 ) ] ] )
     plt.xticks(range(1,13),  fontsize=f_size )
-    plt.xlim(0.5,12.5)
     plt.xticks(rotation=xrotation)
+    if not xlabel:
+        plt.tick_params( axis='x', which='both', bottom='on', top='off',        
+                                    labelbottom='off')
+    plt.xlim(0.5,12.5)
     if ylabel != None:
         plt.ylabel(  ylabel, fontsize=f_size  )
     plt.yticks( fontsize=f_size )        
@@ -999,9 +1142,6 @@ def north_pole_surface_plot( arr, return_m=False, grid=True, centre=False, \
     if debug:
         print 1, len(x), len(y)
 
-
-#    debug=True
-                    
     if debug:
         print 2, 'len:',  [ len(i) for i in x,y,lat,lon ]
         print '>'*5, [ [ i.min(), i.mean(), i.max(), i.shape ] for i in arr, 
@@ -2178,31 +2318,29 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
                        no_dstr=no_dstr )
 
 # --------
-# 1.32 - Spatial Figure maker ( just provide lon, lat np array )
+# 1.32 - Spatial Figure maker ( just provide lon, lat, time,  np array )
 # --------
 def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     norm=None, nticks=10, format=None, units=None, extend='neither',\
     discrete_cmap=False, f_size=15, fig=None, left_cb_pos=0.86,\
     bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
-    dpi=160, debug=False ):
-
-    # import modules
-#    import matplotlib.pyplot as plt
+    dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, \
+    no_cb=True, verbose=False, debug=False ):
+    """
+        Provide an array of lon, lat, time
+    """
+    if verbose:
+        print 'plot_spatial_figure called, with shape {}, fixcb: {}'.format(\
+                arr.shape,  fixcb)+', min: {}, max:{}'.format( arr.min(), \
+                arr.max()  )
 
     # setup fig if not provided
     if isinstance( fig, type(None) ):
         fig = plt.figure(figsize=(15, 10), dpi=dpi, facecolor='w', \
                                         edgecolor='k') 
-
-    print fixcb 
-
-    
     # Set colourbar limits        
     if isinstance( fixcb, type(None) ):
         fixcb = np.array( [ (i.min(), i.max()) for i in [arr[...,0] ] ][0] )
-
-    print fixcb 
-
 
     # Set readable levels for cb, then use these to dictate cmap
     lvls = get_human_readable_gradations( vmax=fixcb[1],  \
@@ -2222,10 +2360,12 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 
     # Plot up
     map_plot( arr[...,0].T, format=format, cmap=cmap, fixcb=fixcb,\
-                    no_cb=True, norm=norm, f_size=f_size*.75, debug=debug )
+                    no_cb=no_cb, norm=norm, f_size=f_size*.75,  res=res, \
+                    fixcb_buffered=fixcb_buffered, debug=debug )
 
     # Manually Add colorbar
-    mk_cb(fig, units=units, left=left_cb_pos,  cmap=cmap, \
+    if no_cb:
+        mk_cb(fig, units=units, left=left_cb_pos,  cmap=cmap, \
                 vmin=fixcb_buffered[0],\
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
                 extend=extend, lvls=lvls, \
@@ -2235,8 +2375,12 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     # Adjust plot ascetics
     fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right,     
                                         hspace=hspace, wspace=wspace)
-    # Show
-    plt.show()
+
+    # Show/Save as PDF?
+    if pdf:
+        plot2pdf( title=pdftitle )    
+    if show:
+        plt.show()
 
 
 # --------
@@ -2246,13 +2390,22 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     norm=None, nticks=10, format=None, units=None, extend='neither',\
     discrete_cmap=False, f_size=15, fig=None,  res='4x5', wd=None, \
     bottom=0.1, top=0.975, hspace=0.4, wspace=0.5, left=0.075, right=0.875, \
-    cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160, debug=False ):
+    cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160, \
+    region='All', lat_0=None, lat_1=None, debug=False ):
+
+    if debug:
+        print 'plot_zonal_figure called ', region
 
     # Create figure if not provided
     if isinstance( fig, type(None) ):
         fig = plt.figure(figsize=(15, 10), dpi=dpi, 
                     facecolor='w', edgecolor='k') 
-                
+
+    # if OC
+    if region == 'Oceanic':
+        set_window=True
+        lat_0, lat_1 = -65, 80
+
     # Set colourbar limits
     if isinstance( fixcb, type(None) ):
         fixcb = np.array([(i.min(), i.max()) for i in [arr.mean(axis=0)] ][0])
@@ -2269,8 +2422,8 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     #  Plot 
     axn =[ 111 ]
     ax = fig.add_subplot( *axn )  
-    zonal_plot( arr.mean(axis=0), fig,  ax=ax,\
-                        format=format, cmap=cmap, \
+    zonal_plot( arr.mean(axis=0), fig,  ax=ax, set_window=set_window, \
+                        format=format, cmap=cmap, lat_0=lat_0, lat_1=lat_1, \
                         fixcb=fixcb, f_size=f_size*.75, res=res, \
                         no_cb=True, debug=debug )
 
@@ -2285,7 +2438,6 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
                 extend=extend, lvls=lvls, \
                 sigfig_rounding_on_cb=sigfig_rounding_on_cb, nticks=nticks, \
                 norm=norm, discrete_cmap=discrete_cmap, debug=debug )    
-
 
     # Adjust plot ascetics
     fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right,     
@@ -2403,21 +2555,21 @@ def r_squared(x, y):
 # 4.06 - setup box plots
 # -------------
 def set_bp( bp, num, c_list=['k', 'red'], white_fill=True, set_all=True,
-                    median_color='white', linewidth=5, debug=False ):
-    """ Manual set properties of boxplot ("bp") """
+                    median_color='white', linewidth=2, debug=False ):
+    """ Manually set properties of boxplot ("bp") """
     if debug:
         print num, c_list
     if set_all:
-        setp(bp['boxes'][:], color=c_list[num])
-        setp(bp['caps'][:], color=c_list[num])
-        setp(bp['whiskers'][:], color=c_list[num])
-        setp(bp['fliers'][:], color=c_list[num])
-        setp(bp['medians'][:], color=c_list[num])
-        if white_fill:
-            [ box.set( facecolor = 'white') for box in bp['boxes'] ]
-        else:
-            [ box.set( facecolor = c_list[num] ) for box in bp['boxes'] ]
-            setp(bp['medians'][:], color=median_color, linewidth=linewidth)                        
+        setp(bp['boxes'][:], color=c_list[num], linewidth=linewidth*.5)
+        setp(bp['caps'][:], color=c_list[num], linewidth=linewidth*.5)
+        setp(bp['whiskers'][:], color=c_list[num], linewidth=linewidth*.5)
+        setp(bp['fliers'][:], color=c_list[num], linewidth=linewidth*.5)
+        setp(bp['medians'][:], color=c_list[num], linewidth=linewidth*.5)
+    if white_fill:
+        [ box.set( facecolor = 'white') for box in bp['boxes'] ]
+    else:
+        [ box.set( facecolor = c_list[num] ) for box in bp['boxes'] ]
+        setp(bp['medians'][:], color=median_color, linewidth=linewidth)                        
 
 # -------------
 # 4.07 - Get all marker types
@@ -2702,8 +2854,9 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, \
 def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     orientation='vertical', f_size=20, rotatecbunits='vertical', nticks=10, \
     extend='neither', norm=None, log=False,  format=None, cmap=None,\
-    vmin=0, vmax=10, cb_ax=None, ticklocation='auto', extendfrac=.075, \
-    sigfig_rounding_on_cb=2, lvls=None, discrete_cmap=False, debug=False):
+    vmin=0, vmax=10, cb_ax=None, ticklocation='auto', extendfrac=None, \
+    sigfig_rounding_on_cb=2, lvls=None, discrete_cmap=False, boundaries=None, \
+    debug=False):
     """ Create Colorbar. This allows for avoidance of basemap's issues with 
         spacing definitions when conbining with colorbar objects within a plot 
     """
@@ -2725,25 +2878,22 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     # Setup normalisation for colorbar
     if isinstance( norm, type(None) ):
         if log:
-            # create log with 1000 p
-            lvls = np.logspace( np.ma.log(vmin), np.ma.log(vmax), 1E5, 
-                endpoint=True )
-
-            # select relevant indices ( linearly spaced integers )
-            print nticks
-            lvls =  [ lvls[0] ] + list( lvls[ gen_log_space( 1E5,  \
-                nticks*15) ] ) + [ lvls[-1] ]
-            lvls= np.array( lvls )
+            # Get logarithmically spaced integers
+            lvls = np.logspace( np.log10(vmin), np.log10(vmax) , num=nticks)
+            # Normalise to Log space
+            norm=mpl.colors.LogNorm(vmin=vmin, vmax=vmax)
 
         else:
+            # Normalise to linear space
             norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+
+    print lvls, vmin, vmax, norm
 
     if isinstance( lvls, type(None) ):            
         # make graduations in colourbar to be human readable
         lvls = get_human_readable_gradations( vmax=vmax,  \
             vmin=vmin, nticks=nticks, \
             sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
-        print lvls
 
     # add an extra decimal place for values under 50, 
     # and two for values under 1
@@ -2770,7 +2920,7 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
         # This exception is for highly masked arrays 
         except:    
             format='%.0E'
-            # Kludge, set to if overly masked. 
+            # Kludge, set to limits of -500-500 (%) if overly masked. 
             vmax, vmin = 500,-500
             extend = 'both'
 
@@ -2778,13 +2928,10 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
         print lvls, norm, extend, format, ticklocation
 
     # Make cb with given details 
-    if (extend == 'neither') or (log==True):
-        cb = mpl.colorbar.ColorbarBase(cb_ax, cmap=cmap, format=format,\
-                norm=norm, ticks=lvls, extend=extend, \
-                orientation=orientation, ticklocation=ticklocation)
-    else:
-        if debug:
-            print 'WARNING: adding extensions to colorbar'
+    if discrete_cmap:
+        extendfrac=.075  # This was the previous default, still valid? <= update
+#        if debug:
+#            print 'WARNING: adding extensions to colorbar'
         if log==True:
             print 'Will not work as colrbar adjustment not configured'+\
                 ' for log scales'
@@ -2806,16 +2953,30 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
 #        if orientation=='vertical':
 #            height += height*extendfrac
 
-        print lvls, norm, boundaries, extend
-
         cb = mpl.colorbar.ColorbarBase(cb_ax, cmap=cmap, format=format,\
                 norm=norm, ticks=lvls, extend=extend, extendfrac=extendfrac,\
                 boundaries=boundaries, \
                 spacing='proportional',
 #                spacing='uniform',
                 orientation=orientation, ticklocation=ticklocation)
+
+    # Standard approach below
+#        if (extend == 'neither') or (log==True):
+    else:
+        cb = mpl.colorbar.ColorbarBase(cb_ax, cmap=cmap, format=format,\
+                norm=norm, ticks=lvls, extend=extend, \
+                orientation=orientation, ticklocation=ticklocation)
+
+        print lvls, norm, boundaries, extend
+
+    if log:    
+        round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
+
+        cb.set_ticks( [ float('{:.2g}'.format( t )) for t in lvls ] )
+        labels = [ round_to_n( i, sigfig_rounding_on_cb) for i in lvls ]
+        cb.set_ticklabels( [ format % i for i in labels] )
     
-    # set cb label sizes
+    # Set cb label sizes
     if units != None:
         for t in cb.ax.get_yticklabels():
             t.set_fontsize(f_size)
@@ -2877,7 +3038,7 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
             npoints=100, cb='CMRmap_r', maintain_scaling=True, \
             negative=False, positive=False, sigfig_rounding_on_cb=2, \
             buffer_cmap_upper=False, fixcb=None, nticks=10,  \
-            debug=False ):
+            verbose=True, debug=False ):
     """ Create correct color map for values given array.
         This function checks whether array contains just +ve or -ve or both 
         then prescribe color map  accordingly
@@ -2894,9 +3055,14 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
             vmin=fixcb[0], nticks=nticks,  rtn_lvls_diff=True, \
             sigfig_rounding_on_cb=sigfig_rounding_on_cb   )
 
-        # increase maximum value in color by 5% to allow space for max lvl
+        # increase maximum value in color by 5% of level diff 
+        # to allow space for max lvl 
+#        fixcb_ = ( fixcb[0],  lvls[-1]+ ( lvls_diff*0.20 )) # Kludge test. 
         fixcb_ = ( fixcb[0],  lvls[-1]+ ( lvls_diff*0.05 ))
         arr = np.array( fixcb_ )
+        
+#        print arr, fixcb, fixcb_, lvls
+#        sys.exit()
         
     # make sure array has a mask
     if debug:
@@ -2931,8 +3097,9 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         else:
             cb = cb+'_r'
 
-    print 'cmap is: >{}< & data is:'.format( cb ), 
-    print '< postive == {}, negative == {}, divergent == {} >'.format(  \
+    if verbose:
+        print 'cmap is: >{}< & data is:'.format( cb ), 
+        print '< postive == {}, negative == {}, divergent == {} >'.format(  \
             positive, negative, (( not positive) and (not negative))   )
 
     # load color map
@@ -2987,7 +3154,7 @@ def color4sensitstudy( title=None, rtn_dict=False):
      'I$_{2}$Ox exp. X-sections': 'red',
      'I$_{2}$Ox loss ($\\gamma$) /2': 'deepskyblue',
      'I$_{2}$Ox loss ($\\gamma$) x2': 'deepskyblue',
-     'Iodine simulation.': 'purple',
+     'Br-I': 'purple',
      'Just org. I': 'blue',
      'MBL BrO 2 pptv': 'saddlebrown',
      'Ocean iodide': 'magenta',
@@ -3014,7 +3181,7 @@ def markers4sensitstudy( title=None, rtn_dict=False):
      'I$_{2}$Ox exp. X-sections': 'h',
      'I$_{2}$Ox loss ($\\gamma$) /2': '^',
      'I$_{2}$Ox loss ($\\gamma$) x2': 'h',
-     'Iodine simulation.': '^',
+     'Br-I': '^',
      'Just org. I': '^',
      'MBL BrO 2 pptv': '^',
      'Ocean iodide': '^',
@@ -3112,12 +3279,13 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
             nticks=10, sigfig_rounding_on_cb=2, \
             sigfig_rounding_on_cb_ticks=2, \
             sigfig_rounding_on_cb_lvls=2, rtn_lvls_diff=False, \
-            debug=False ):
+            verbose=True, debug=False ):
 
     if isinstance( lvls, type(None) ):
         lvls = np.linspace( vmin, vmax, nticks, endpoint=True )
 
     # --- Adjust graduations in colourbar to be human readable
+    # in both min and max have absolute values less than 0, then sig figs +1
     if ( ( abs( int( vmax)) == 0) and (abs( int( vmax)) == 0) ):
         sigfig_rounding_on_cb += 1
 
@@ -3125,7 +3293,7 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
     
     # Get current gradations
-    if debug:
+    if verbose:
         print abs(lvls[-2])-abs(lvls[-3]), abs(lvls[-3])-abs(lvls[-2]), lvls,\
                      sigfig_rounding_on_cb
     try:
@@ -3133,7 +3301,8 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
                                 sigfig_rounding_on_cb_ticks)
     # handle if values (2,3) are both negative
     except:
-        print abs(lvls[-3])-abs(lvls[-2]), sigfig_rounding_on_cb_ticks
+        if verbose:
+            print abs(lvls[-3])-abs(lvls[-2]), sigfig_rounding_on_cb_ticks
         lvls_diff = round_to_n( abs(lvls[-3])-abs(lvls[-2]), \
                                 sigfig_rounding_on_cb_ticks)                                
 
@@ -3143,7 +3312,8 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     # solution: use get_colormap, with buffer_cmap_upper=True
     #  if values are >0, 
     if vmax > lvls_diff:
-        print vmax, lvls_diff
+        if verbose:
+            print vmax, lvls_diff
         vmax_rounded = myround( vmax, base=lvls_diff,  integer=False )
         vmax_rounded = round_to_n( vmax_rounded, sigfig_rounding_on_cb)
     else:
@@ -3151,15 +3321,20 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
         # ( this method also fails if vmax<lvls_diff )
         vmax_rounded = vmax
 
-    if debug:
+    if verbose:
         print vmax_rounded,  lvls_diff, nticks
     lvls = np.array([ vmax_rounded - lvls_diff*i \
             for i in range( nticks ) ][::-1])   
     if debug:
         print lvls, len( lvls )
 
-#    # ensure returned ticks are to a maximum of 2 sig figs. 
-#    lvls = [ round_to_n( i, sigfig_rounding_on_cb_lvls) for i in lvls ]
+    # ensure returned ticks are to a maximum of 2 sig figs. 
+    # ( this only works if all positive )
+    try:
+        lvls = [ round_to_n( i, sigfig_rounding_on_cb_lvls) for i in lvls ]
+    except:
+        print 'WARNING: unable to round level values to {} sig figs'.format(\
+                   sigfig_rounding_on_cb_lvls  )
     if rtn_lvls_diff:
         return lvls, lvls_diff
     else:
@@ -3171,8 +3346,6 @@ def mk_discrete_cmap( lvls=None, cmap=None, arr=None,\
             vmin=0, vmax=10, nticks=10, debug=False ):
     """ Make a discrete colormap from an existing cmap
     NOTE: the data will now need to normalised the range of lvls """
-
-    debug=True
     
     # define bins
     if isinstance( lvls, type(None) ):
