@@ -2325,7 +2325,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     discrete_cmap=False, f_size=15, fig=None, left_cb_pos=0.86,\
     bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
     dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, \
-    no_cb=True, verbose=False, debug=False ):
+    no_cb=True, return_m=False, verbose=False, debug=False ):
     """
         Provide an array of lon, lat, time
     """
@@ -2359,13 +2359,14 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         print  [ (i.min(), i.max(), i.mean()) for i in [ arr[...,0] ] ]
 
     # Plot up
-    map_plot( arr[...,0].T, format=format, cmap=cmap, fixcb=fixcb,\
+    plt_vars = map_plot( arr[...,0].T, format=format, cmap=cmap, 
+                    fixcb=fixcb, return_m=return_m, \
                     no_cb=no_cb, norm=norm, f_size=f_size*.75,  res=res, \
                     fixcb_buffered=fixcb_buffered, debug=debug )
 
     # Manually Add colorbar
     if no_cb:
-        mk_cb(fig, units=units, left=left_cb_pos,  cmap=cmap, \
+        cb_ax = mk_cb(fig, units=units, left=left_cb_pos,  cmap=cmap, \
                 vmin=fixcb_buffered[0],\
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
                 extend=extend, lvls=lvls, \
@@ -2377,11 +2378,13 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
                                         hspace=hspace, wspace=wspace)
 
     # Show/Save as PDF?
+    print '1'*100, pdf, show, return_m
     if pdf:
         plot2pdf( title=pdftitle )    
     if show:
         plt.show()
-
+    if return_m:
+        return [ fig, cmap ] + plt_vars #+= [ cb_ax ]
 
 # --------
 # 1.33 - Zonal Figure maker ( just provide lon, lat np array )
@@ -2987,6 +2990,7 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
             cb.set_label( units, fontsize=f_size )
         cb.ax.tick_params(labelsize=f_size) 
 
+    return cb_ax
 
 # --------
 # 4.36 - Create base map for plotting
