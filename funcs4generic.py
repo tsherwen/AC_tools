@@ -934,7 +934,7 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
 # 2.17 -  Retrieve individual 4D mask of locations except region given
 # --------
 def mask_all_but( region='All', M_all=False, saizlopez=False, \
-            res='4x5', mask3D=False, trop_limit=True, \
+            res='4x5', mask3D=False, mask4D=False, trop_limit=True, \
             use_multiply_method=True, verbose=False, debug=False ):
     """ Mask selector for analysis. global mask provided for with given region 
         unmasked 
@@ -1057,6 +1057,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
             # check this!!!
             mask = np.ma.mask_or( mask, land_unmasked(res=res) )
 
+    # Create 3D array by concatenating through altitude dimension
     if mask3D:
         if any( [ (mask.shape[-1] == i) for i in 38, 47 ] ):
             pass
@@ -1066,6 +1067,14 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     # Remove above the "chemical tropopause" from GEOS-Chem (v9-2)
     if trop_limit:
         mask = mask[...,:38] 
+
+    # Create 4D array by concatenating through time dimension
+    # ( assuming year long array of 1 months )
+    if mask4D:
+        if any( [ (mask.shape[-1] == i) for i in [12] ] ):
+            pass
+        else: # concatenate dimensions
+            mask = np.concatenate( [ mask[...,None] ]*12, axis=3 )
 
     return mask
     

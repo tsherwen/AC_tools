@@ -374,6 +374,8 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
         Input resolution must be provide for non-default (4x5) output 
         
         This function will also apply maskes if set in arguments """
+    if verbose:
+        print 'zonal plot called for arr of shape: ', arr.shape
     
     # Kludge, for pcent arrays with invalid within them, mask for these. 
     if mask_invalids:
@@ -453,7 +455,11 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
         # Update colormap with buffer
         cmap = get_colormap( arr=np.array( [fixcb_buffered[0],  \
                                                     fixcb_buffered[1]] ) )
+    # Allow function to operate without fixcb_buffered provided
+    if isinstance( fixcb_buffered, type(None) ):
+        fixcb_buffered = fixcb_
     fixcb_ = fixcb_buffered
+
     if verbose:
         print 'colorbar variables: ', fixcb_buffered, fixcb, fixcb_, lvls, cmap
     # -----------------  Log plots ---------------------------------------------
@@ -2378,13 +2384,12 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
                                         hspace=hspace, wspace=wspace)
 
     # Show/Save as PDF?
-    print '1'*100, pdf, show, return_m
     if pdf:
         plot2pdf( title=pdftitle )    
     if show:
         plt.show()
     if return_m:
-        return [ fig, cmap ] + plt_vars #+= [ cb_ax ]
+        return [ fig, cmap ] + plt_vars + [ fixcb ] #+= [ cb_ax ]
 
 # --------
 # 1.33 - Zonal Figure maker ( just provide lon, lat np array )
@@ -2393,11 +2398,17 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     norm=None, nticks=10, format=None, units=None, extend='neither',\
     discrete_cmap=False, f_size=15, fig=None,  res='4x5', wd=None, \
     bottom=0.1, top=0.975, hspace=0.4, wspace=0.5, left=0.075, right=0.875, \
-    cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160, \
-    region='All', lat_0=None, lat_1=None, debug=False ):
+    cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160, no_cb=True, \
+    region='All', lat_0=None, lat_1=None, pdftitle=None, return_m=False, 
+    set_window=False, pdf=False, show=True, verbose=False, debug=False ):
 
-    if debug:
-        print 'plot_zonal_figure called ', region
+    if verbose:
+        print 'plot_zonal_figure called ', region, arr.shape
+
+    # If lon, lat, alt array provided then take mean of lon
+#    print any( [arr.shape[0] ==i for i in 72, 144, 121, 177 ] ), arr.shape[-1]
+    if any( [arr.shape[0] ==i for i in 72, 144, 121, 177] ):
+        arr = arr.mean(axis=0)
 
     # Create figure if not provided
     if isinstance( fig, type(None) ):
@@ -2411,7 +2422,7 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 
     # Set colourbar limits
     if isinstance( fixcb, type(None) ):
-        fixcb = np.array([(i.min(), i.max()) for i in [arr.mean(axis=0)] ][0])
+        fixcb = np.array([(i.min(), i.max()) for i in [arr] ][0])
 
     # Set readable levels for cb, then use these to dictate cmap
     lvls = get_human_readable_gradations( vmax=fixcb[1],  \
@@ -2422,20 +2433,22 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     cmap, fixcb_buffered = get_colormap( np.array( fixcb ), \
             nticks=nticks, fixcb=fixcb, buffer_cmap_upper=True )
 
-    #  Plot 
+    #  Plot  elephant
     axn =[ 111 ]
     ax = fig.add_subplot( *axn )  
-    zonal_plot( arr.mean(axis=0), fig,  ax=ax, set_window=set_window, \
-                        format=format, cmap=cmap, lat_0=lat_0, lat_1=lat_1, \
-                        fixcb=fixcb, f_size=f_size*.75, res=res, \
-                        no_cb=True, debug=debug )
+    zonal_plot( arr, fig,  ax=ax, set_window=set_window, \
+            format=format, cmap=cmap, lat_0=lat_0, lat_1=lat_1, \
+            fixcb=fixcb, f_size=f_size*.75, res=res, \
+            fixcb_buffered=fixcb_buffered, no_cb=no_cb, debug=debug )
 
     # Only show troposphere
     t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], trop_limit=True )
     greyoutstrat( fig, t_ps.mean(axis=0).mean(axis=-1), axn=axn, res=res )
 
     # Manually Add colorbar
-    mk_cb(fig, units=units, left=cb_left,  height=cb_height, bottom=cb_bottom, \
+    if no_cb:
+        mk_cb(fig, units=units, left=cb_left,  height=cb_height, \
+                bottom=cb_bottom, \
                 cmap=cmap, vmin=fixcb_buffered[0],\
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
                 extend=extend, lvls=lvls, \
@@ -2445,10 +2458,13 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     # Adjust plot ascetics
     fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right,     
                                         hspace=hspace, wspace=wspace)
-    # Show
-    plt.show()
-
-
+    # Show/Save as PDF?
+    if pdf:
+        plot2pdf( title=pdftitle )    
+    if show:
+        plt.show()
+    if return_m:
+        return [ fig, cmap, fixcb ]# + plt_vars + [ fixcb ] #+= [ cb_ax ]
 
 # --------------------------- Section 4 ------------------------------------
 # -------------- Plotting Ancillaries 

@@ -1972,31 +1972,37 @@ def get_pl_in_Gg( specs=None, ctm_f=None, wd=None , years=None, months=None,
 
     if debug:
         print 'Specs',  specs
+    
+    if pygchem.__version__ == '0.2.0':
+        print 'WARNING: this approach needs updating to PyGChem 0.3.0'
+    else:
+        # -- Get Vars
+        if not isinstance(vol, np.ndarray):
+            vol = get_volume_np( ctm_f=ctm_f, wd=wd, res=res, debug=debug)
+        if (  not isinstance(years, list) or not isinstance(months, list)):
+            years  = get_gc_years( ctm_f=ctm_f, set_=False, wd=wd ) 
+            months = get_gc_months( ctm_f=ctm_f, wd=wd)
 
-    # -- Get Vars
-    if not isinstance(vol, np.ndarray):
-        vol = get_volume_np( ctm_f=ctm_f, wd=wd, res=res, debug=debug)
-    if (  not isinstance(years, list) or not isinstance(months, list)):
-        years  = get_gc_years( ctm_f=ctm_f, set_=False, wd=wd ) 
-        months = get_gc_months( ctm_f=ctm_f, wd=wd)
-
-    # --- Process data  # [molec/cm3/s] =>  Gg I /s 
-    # Extract as [molec/cm3/s] for specs 
-    specs_ = [ PLO3_to_PD( i, ver=ver, fp=True ) for i in specs ]
-    ars = get_GC_output( wd, vars=['PORL_L_S__'+i for i in specs_], r_list=True)
-    # convert to Gg [I/Ox... ] /s ( terms of mass defined by "spec" variable )
-    ars = [ molec_cm3_s_2_Gg_Ox_np( arr, specs[n], vol, ctm_f=ctm_f, \
+        # --- Process data  # [molec/cm3/s] =>  Gg I /s 
+        # Extract as [molec/cm3/s] for specs 
+        specs_ = [ PLO3_to_PD( i, ver=ver, fp=True ) for i in specs ]
+        ars = get_GC_output( wd, vars=['PORL_L_S__'+i for i in specs_], \
+                    r_list=True)
+        # convert to Gg [I/Ox... ] /s 
+        # ( terms of mass defined by "spec" variable )
+        ars = [ molec_cm3_s_2_Gg_Ox_np( arr, specs[n], vol, ctm_f=ctm_f, \
             spec=spec, Iodine=Iodine, IO=IO, I=I, year_eq=False,debug=debug)   \
             for n, arr in enumerate( ars ) ]
 
-    # adjust to per month.
-    day_adjust = d_adjust( months, years)
-    ars = [  i*day_adjust  for i in ars ]  
+        # adjust to per month.
+        day_adjust = d_adjust( months, years)
+        ars = [  i*day_adjust  for i in ars ]  
 
-    if monthly: # concat. specs 
-        return np.concatenate( [ i[...,None] for i in ars ], axis=4 ) 
-    else: # yearly sum. dep*, concat. 
-        return np.concatenate([ i.sum(axis=3)[...,None] for i in ars ], axis=3)
+        if monthly: # concat. specs 
+            return np.concatenate( [ i[...,None] for i in ars ], axis=4 ) 
+        else: # yearly sum. dep*, concat. 
+            return np.concatenate([ i.sum(axis=3)[...,None] for i in ars ], \
+                    axis=3)
 
 # --------------
 # 2.11 - Get Emission of species in Gg
