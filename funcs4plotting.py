@@ -468,7 +468,8 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
     # TESTING NEEDED HERE !!! ( Update )
     if log:    
         # Normalise to Log space
-        norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
+        if isinstance( norm, type(None) ):
+            norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
         # Create poly collection
         poly = ax.pcolor( lat, alt, arr.T, norm=norm, cmap=cmap)        
 
@@ -2331,7 +2332,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     discrete_cmap=False, f_size=15, fig=None, left_cb_pos=0.86,\
     bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
     dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, \
-    no_cb=True, return_m=False, verbose=False, debug=False ):
+    no_cb=True, return_m=False, log=False, verbose=False, debug=False ):
     """
         Provide an array of lon, lat, time
     """
@@ -2350,7 +2351,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 
     # Set readable levels for cb, then use these to dictate cmap
     lvls = get_human_readable_gradations( vmax=fixcb[1],  \
-                    vmin=fixcb[0], nticks=nticks, \
+                    vmin=fixcb[0], nticks=nticks, 
                     sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
 
     # Setup Colormap
@@ -2366,7 +2367,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 
     # Plot up
     plt_vars = map_plot( arr[...,0].T, format=format, cmap=cmap, 
-                    fixcb=fixcb, return_m=return_m, \
+                    fixcb=fixcb, return_m=return_m, log=log, \
                     no_cb=no_cb, norm=norm, f_size=f_size*.75,  res=res, \
                     fixcb_buffered=fixcb_buffered, debug=debug )
 
@@ -2375,7 +2376,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         cb_ax = mk_cb(fig, units=units, left=left_cb_pos,  cmap=cmap, \
                 vmin=fixcb_buffered[0],\
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
-                extend=extend, lvls=lvls, \
+                extend=extend, lvls=lvls, log=log, \
                 sigfig_rounding_on_cb=sigfig_rounding_on_cb, nticks=nticks, \
                 norm=norm, discrete_cmap=discrete_cmap, debug=debug )    
 
@@ -2400,10 +2401,11 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     bottom=0.1, top=0.975, hspace=0.4, wspace=0.5, left=0.075, right=0.875, \
     cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160, no_cb=True, \
     region='All', lat_0=None, lat_1=None, pdftitle=None, return_m=False, 
-    set_window=False, pdf=False, show=True, verbose=False, debug=False ):
+    set_window=False, pdf=False, show=True, log=False, \
+    verbose=False, debug=False ):
 
     if verbose:
-        print 'plot_zonal_figure called ', region, arr.shape
+        print 'plot_zonal_figure called ', region, arr.shape, log
 
     # If lon, lat, alt array provided then take mean of lon
 #    print any( [arr.shape[0] ==i for i in 72, 144, 121, 177 ] ), arr.shape[-1]
@@ -2415,7 +2417,7 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         fig = plt.figure(figsize=(15, 10), dpi=dpi, 
                     facecolor='w', edgecolor='k') 
 
-    # if OC
+    # if just plotting over the ocean, remove white space
     if region == 'Oceanic':
         set_window=True
         lat_0, lat_1 = -65, 80
@@ -2425,8 +2427,18 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         fixcb = np.array([(i.min(), i.max()) for i in [arr] ][0])
 
     # Set readable levels for cb, then use these to dictate cmap
-    lvls = get_human_readable_gradations( vmax=fixcb[1],  \
-                vmin=fixcb[0], nticks=nticks, \
+    if log:
+            # Get logarithmically spaced integers
+            lvls = np.logspace( np.log10(fixcb[0]), np.log10(fixcb[1]), \
+                                                num=nticks)
+            # Normalise to Log space
+#            norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
+            if isinstance( norm, type(None) ):
+                norm=mpl.colors.LogNorm(vmin=fixcb[0], vmax=fixcb[1])
+
+    else:
+        lvls = get_human_readable_gradations( vmax=fixcb[1],  \
+                vmin=fixcb[0], nticks=nticks,\
                 sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
 
     # Setup Colormap
@@ -2436,9 +2448,9 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     #  Plot  elephant
     axn =[ 111 ]
     ax = fig.add_subplot( *axn )  
-    zonal_plot( arr, fig,  ax=ax, set_window=set_window, \
+    zonal_plot( arr, fig,  ax=ax, set_window=set_window, log=log,\
             format=format, cmap=cmap, lat_0=lat_0, lat_1=lat_1, \
-            fixcb=fixcb, f_size=f_size*.75, res=res, \
+            fixcb=fixcb, f_size=f_size*.75, res=res, norm=norm, \
             fixcb_buffered=fixcb_buffered, no_cb=no_cb, debug=debug )
 
     # Only show troposphere
@@ -2448,7 +2460,7 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     # Manually Add colorbar
     if no_cb:
         mk_cb(fig, units=units, left=cb_left,  height=cb_height, \
-                bottom=cb_bottom, \
+                bottom=cb_bottom, log=log, \
                 cmap=cmap, vmin=fixcb_buffered[0],\
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
                 extend=extend, lvls=lvls, \
@@ -2875,7 +2887,7 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     extend='neither', norm=None, log=False,  format=None, cmap=None,\
     vmin=0, vmax=10, cb_ax=None, ticklocation='auto', extendfrac=None, \
     sigfig_rounding_on_cb=2, lvls=None, discrete_cmap=False, boundaries=None, \
-    debug=False):
+    verbose=True, debug=False):
     """ Create Colorbar. This allows for avoidance of basemap's issues with 
         spacing definitions when conbining with colorbar objects within a plot 
     """
@@ -2891,8 +2903,8 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     # Make new axis
     if isinstance( cb_ax, type(None) ):
         cb_ax = fig.add_axes([left, bottom, width, height])
-
-    print '>'*5, left, bottom, width, height
+        if debug:
+            print '>'*5, left, bottom, width, height
 
     # Setup normalisation for colorbar
     if isinstance( norm, type(None) ):
@@ -2905,8 +2917,8 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
         else:
             # Normalise to linear space
             norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
-
-    print lvls, vmin, vmax, norm
+    if verbose:
+        print lvls, vmin, vmax, norm
 
     if isinstance( lvls, type(None) ):            
         # make graduations in colourbar to be human readable
@@ -2982,11 +2994,12 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     # Standard approach below
 #        if (extend == 'neither') or (log==True):
     else:
+        if verbose:
+            print lvls, norm, boundaries, extend
         cb = mpl.colorbar.ColorbarBase(cb_ax, cmap=cmap, format=format,\
                 norm=norm, ticks=lvls, extend=extend, \
                 orientation=orientation, ticklocation=ticklocation)
 
-        print lvls, norm, boundaries, extend
 
     if log:    
         round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
