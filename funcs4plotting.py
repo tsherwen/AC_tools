@@ -1043,10 +1043,10 @@ def timeseries_May_Sept_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
 # -------------
 def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
             title=None, legend=False, everyother=7*24,  x_nticks=12, \
-            window=False, label=None, ylabel=None, loc='upper right',  \
+            window=False, label=None, ylabel=None, loc='upper left',  \
             lw=1,ls='-', color=None, start_month=7, end_month=7, \
             boxplot=True, showmeans=False, alt_text=None, r_plt=False, \
-            unitrotation=45, color_by_z=False, fig=None,  
+            unitrotation=45, color_by_z=False, fig=None,  xlabel=True, \
             positive=None, debug=False ):
     """ Plot up month timeseries of values. Requires data, and dates in numpy 
         array form. Dates must be as datetime.datetime objects. """
@@ -1083,18 +1083,21 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         plt.plot( days, df.values, label=label, color=color, ls=ls, lw=lw  )
 
     # set xticks
-    plt.xticks( days[::everyother], labels, rotation=unitrotation )
+    if xlabel:
+        plt.xticks( days[::everyother], labels, rotation=unitrotation )
+    else:
+        plt.tick_params( axis='x', which='both', labelbottom='off')
 
     # Beatify plot
     if not isinstance( title, type(None) ):
         plt.title( title + ' for {}-{}'.format( num2month(start_month),\
             num2month(end_month))  )
     if not isinstance( alt_text, type(None) ):
-        plt.figtext(x=0.05,y=0.85, s=alt_text, fontsize=f_size*.75)
+        plt.figtext(x=0.05,y=0.85, s=alt_text, fontsize=f_size*.75 )
     if not isinstance( ylabel, type(None) ):
         plt.ylabel( ylabel )
     if legend:
-        plt.legend()
+        plt.legend( fontsize=f_size*.75, loc=loc )
 
 #    if r_plt:
 #        return plt
@@ -1773,7 +1776,7 @@ def create_plot4case( fig, ax, dates, data, spec, f_size=20, lw=None, ls=None, \
 # --------
 def PDF_obs_vs_mod( ax, dates, data, f_size=20, pos=0, posn=1,  \
             title=None, legend=False, everyother=7*24,  x_nticks=12, \
-            window=False, label=None, ylabel=None, loc='upper right',  \
+            window=False, label=None, ylabel=None, loc='upper left',  \
             lw=1,ls='-', color=None, start_month=1, end_month=12, 
             unitrotation=45, alpha=.5, bins=100, alt_text=None, debug=False ):
     """Constructs a PDF plot with given dates and data.
