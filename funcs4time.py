@@ -364,7 +364,7 @@ def normalise2dailymean(dates, data, debug=False ):
         print [( type(i), i.shape ) for i in data, dates ]#,  [(i.shape, np.ma.max(i), np.ma.min(i)) for i in [ data ] ]
 
     # Get list of unique dates & remove mean from dates
-    dates = np.ma.array([ datetime.datetime(*i.timetuple()[:3]) for i in dates ] )
+    dates = np.ma.array([datetime.datetime(*i.timetuple()[:3]) for i in dates ])
     idates =np.ma.array((sorted(set( dates ) ) ))
     for s in idates:
         data[np.ma.where( dates == s) ]  = data[np.ma.where( dates == s) ] - np.ma.mean(data[np.ma.where( dates == s )] )
@@ -566,3 +566,16 @@ def year_to_since_2006(model):
               for i in range(len(year))]
     since2006=[doy[i].days+doy[i].seconds/(24.*60.*60.) for i in range(len(doy))]
     return since2006
+    
+# --------------
+# 1.31 - Datetime hours between datetime a and datetime b
+# -------------
+def dt_days_a2b( a, b, period=1, debug=False ) :
+    dates = [a]
+    if debug:
+        print dates, a, b, period
+    while dates[-1] < b:
+        dates += [ add_days(dates[-1], period) ]
+    if debug:
+        print dates[0], dates[-1]
+    return dates
