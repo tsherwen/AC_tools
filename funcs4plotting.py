@@ -3072,7 +3072,8 @@ def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
 # --------
 def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
             npoints=100, cb='CMRmap_r', maintain_scaling=True, \
-            negative=False, positive=False, sigfig_rounding_on_cb=2, \
+            negative=False, positive=False, divergent=False, \
+            sigfig_rounding_on_cb=2, \
             buffer_cmap_upper=False, fixcb=None, nticks=10,  \
             verbose=True, debug=False ):
     """ Create correct color map for values given array.
@@ -3111,7 +3112,8 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         print '>'*5, ('ask' not in str( type( arr ) )), type( arr )
     
     # If postive/negative not given, check if +ve/-ve
-    if any( [ not isinstance( i, type(None) ) for i in positive, negative ] ):
+#    if any( [ not isinstance( i, type(None) ) for i in positive, negative ] ):
+    if not any( np.array([ positive, negative ]) ):
 
         # --- sequential
         # negative?
@@ -3153,7 +3155,7 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
                 b=maxval), cmap(np.linspace(minval, maxval, npoints)))
 
     # --- divergent
-    if ( not positive) and (not negative):
+    if ( ( not positive) and (not negative) ) or divergent:
         if debug:
             print 'diverging data? =={}, for values range: '.format( True ),
         arr.mask = False

@@ -2345,7 +2345,7 @@ def molec_cm2_s_2_Gg_Ox_np( arr, spec='O3', s_area=None, ctm_f=None, \
 
     # Kludge (loads all output surface areas, 
     # only requires a single time dimensions as does not chnage... )
-#    s_area = s_area[...,None]  # tmp bug fix 
+    s_area = s_area[...,None]  # tmp bug fix 
     #  anti-kludge 
 #    if fix_Kludge:
 #    s_area = s_area[...,0]
@@ -2608,7 +2608,7 @@ def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
         arrs = get_GC_output( wd, vars=['PORL_L_S__'+i for i in specs] )
         arrs = [ arrs[i,...] for i in range( len(specs) ) ]
 
-    if (all_data):
+    if all_data:
         # [molec/cm3/s] => Gg Ox / month 
         months = [ get_gc_months( ctm) for ctm in ctms ]
         years =  [ get_gc_years( ctm, set_=False ) for ctm in ctms ]
@@ -2623,7 +2623,10 @@ def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
         # [molec/cm3/s] => Gg Ox / yr
         arrs = [ molec_cm3_s_2_Gg_Ox_np(arr, specs[i], vol=vol, \
             debug=debug) for i, arr in enumerate(arrs) ] 
-        arrs = [ (arr*t_p).mean(axis=3) for arr in arrs ] # get yearly mean
+#        arrs = [ (arr*t_p).mean(axis=3) for arr in arrs ] # get yearly mean
+#        arrs = [ (arr*t_p).mean(axis=3) for arr in arrs ] # get yearly mean#            
+        arrs = [ arr.mean(axis=3)*t_p.mean(axis=3) \
+                        for arr in arrs ] # get yearly mean
 
         return [ int(np.sum( np.ma.masked_invalid( arrs[i] ) )/1E3)  \
             for i in range(len(specs )) ] # Tg

@@ -859,7 +859,8 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, \
             units = 'ppbC'
 
     if ClearFlo_unit:
-        if any( [ x == i for i in  [ 'NO', 'MACR', 'MVK', 'PRPE','ALK4' ] ] ):
+        units2ppbv = [ 'NO', 'MACR', 'MVK', 'PRPE','ALK4', 'ALD2' ] 
+        if any( [ x == i for i in units2ppbv  ] ):
             units = 'ppbv'
         if any( [ x == i for i in  [ 'PAN', ] ] ):
             units = 'pptv'
