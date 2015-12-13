@@ -1104,7 +1104,8 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             [ 'NOHAL (v9-2)', 'Br-I (v9-2)'] 
 
     if IO_obs:
-        l = 'run_CVO', 'run_GRO', 'run_MAL', 'run_HAL', 'run_TOR_updated.respun' 
+        l = 'run_CVO', 'run_GRO', 'run_MAL', 'run_HAL', \
+            'run_TOR_updated.respun', 'run_TOR_updated_surface.respun'
         r = [d+ i for i in l]
         if no_I2Ox:
             r = [ i+'_no_I2Ox' for i in r ]

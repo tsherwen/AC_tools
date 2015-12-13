@@ -494,7 +494,7 @@ def get_arr_edge_indices( arr, res='4x5', extra_points_point_on_edge=None, \
 
                 # Add given number of points along edge
                 else: 
-                    coords += [ [point_lon+(lon_diff*i), point_lat ] for i in \
+                    coords += [ [lon_e[nn]+(lon_diff*i), point_lat ] for i in \
                         np.linspace(0, 1, extra_points_point_on_edge, \
                         endpoint=True) ]
 
