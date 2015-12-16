@@ -190,6 +190,10 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     x, y = np.meshgrid(lon,lat)
     if debug:
         print 1, len(x), len(y)
+
+    # Set existing axis to current if axis provided
+    if not isinstance( ax, type( None ) ):
+        plt.sca( ax )
  
     # ---- Setup map ("m") using Basemap
     m = get_basemap( lat=lat, lon=lon, resolution=resolution, res=res, \
@@ -366,16 +370,15 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
     rotatecbunits='horizontal', extend='neither', ylabel=True, \
     cb=None, lvls=None, sigfig_rounding_on_cb=2, nticks=10, norm=None, \
     set_window=False, lat_0=None, lat_1=None, lat40_2_40=False, \
-    xlabel=True, mask_invalids=False, verbose=True, debug=False, \
+    xlabel=True, mask_invalids=False, trop_limit=True, \
+    verbose=True, debug=False, \
     # redundent?
     lower_limited=False, nlvls=25,  ):
     """ Creates a zonal plot from provide 2D array of longditude and latitude
-
-        Input resolution must be provide for non-default (4x5) output 
-        
+        Input resolution must be provide for non-default (4x5) output         
         This function will also apply maskes if set in arguments """
     if verbose:
-        print 'zonal plot called for arr of shape: ', arr.shape
+        print 'zonal plot called for arr of shape: ', arr.shape, set_window, xlabel
     
     # Kludge, for pcent arrays with invalid within them, mask for these. 
     if mask_invalids:
@@ -415,7 +418,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
 
     # Plot settings for window plots
     if window:
-        if interval == None:
+        if isinstance( interval, type(None) ):
             interval = 3
     else:
         interval = 1
@@ -564,27 +567,38 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
     # Setup Y axis    
     if (not isinstance( units, type( None) )) and (not no_cb):
         cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)
-    plt.ylim(alt[0], alt[-1])
+#    plt.ylim(alt[0], alt[-1])
+    ax.set_xlim( alt[0], alt[-1])
+
     if ylabel:
-        plt.ylabel('Altitude (km)', fontsize=f_size*.75)
-    
+#        plt.ylabel('Altitude (km)', fontsize=f_size*.75)
+        ax.set_ylabel('Altitude (km)', fontsize=f_size*.75)
+    if trop_limit:
+        ax.set_ylim( 0, 18 )
+
     # Setup X axis
-    plt.xticks( parallels, fontsize=f_size*.75 ) # draw parrelel lines 
+    ax.set_xticks( parallels ) #, labelsize=f_size*.75 ) 
+    ax.tick_params( labelsize=f_size*.75 )
     if tropics:
-        plt.xlim( -26, 26 )
+        ax.set_xlim(  -26, 26 ) 
     if lat40_2_40:
-        plt.xlim( -40, 40 )
+        ax.set_xlim( -40, 40 )  
     else:
-        plt.xlim( lat[0], lat[-1] )
+        ax.set_xlim( lat[0], lat[-1] ) 
     if not isinstance( xlimit, type(None) ):
-        plt.xlim(xlimit[0], xlimit[1])
-    if xlabel:
-        plt.xlabel('Latitude', fontsize=f_size*.75)
-    plt.yticks( fontsize=f_size*.75 )
+        ax.set_xlim(xlimit[0], xlimit[1])
+    if xlabel: 
+        ax.set_xlabel('Latitude', fontsize=f_size*.75)
+    else:
+        ax.tick_params( axis='x', which='both', labelbottom='off')
+
+    # Y axis
+    for tick in ax.yaxis.get_major_ticks():
+        tick.label.set_fontsize( fontsize=f_size*.75 )
 
     # Add title if provided    
     if (title != None):
-        plt.title(title, fontsize=f_size*1.5)
+        ax.title(title, fontsize=f_size*1.5)
 
 # --------   
 # 1.05 - Lat plot
@@ -2331,10 +2345,10 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
 # 1.32 - Spatial Figure maker ( just provide lon, lat, time,  np array )
 # --------
 def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
-    norm=None, nticks=10, format=None, units=None, extend='neither',\
-    discrete_cmap=False, f_size=15, fig=None, left_cb_pos=0.86,\
+    norm=None, nticks=10, format=None, units=None, extend='neither', ax=None, \
+    discrete_cmap=False, f_size=15, fig=None, left_cb_pos=0.86, cb_ax=None, \
     bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
-    dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, \
+    dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, window=False, \
     no_cb=True, return_m=False, log=False, verbose=False, debug=False ):
     """
         Provide an array of lon, lat, time
@@ -2369,15 +2383,15 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         print  [ (i.min(), i.max(), i.mean()) for i in [ arr[...,0] ] ]
 
     # Plot up
-    plt_vars = map_plot( arr[...,0].T, format=format, cmap=cmap, 
-                    fixcb=fixcb, return_m=return_m, log=log, \
+    plt_vars = map_plot( arr[...,0].T, format=format, cmap=cmap, ax=ax, \
+                    fixcb=fixcb, return_m=return_m, log=log, window=window, \
                     no_cb=no_cb, norm=norm, f_size=f_size*.75,  res=res, \
                     fixcb_buffered=fixcb_buffered, debug=debug )
 
     # Manually Add colorbar
     if no_cb:
         cb_ax = mk_cb(fig, units=units, left=left_cb_pos,  cmap=cmap, \
-                vmin=fixcb_buffered[0],\
+                vmin=fixcb_buffered[0], cb_ax=cb_ax, \
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
                 extend=extend, lvls=lvls, log=log, \
                 sigfig_rounding_on_cb=sigfig_rounding_on_cb, nticks=nticks, \
@@ -2398,17 +2412,17 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 # --------
 # 1.33 - Zonal Figure maker ( just provide lon, lat np array )
 # --------
-def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
-    norm=None, nticks=10, format=None, units=None, extend='neither',\
-    discrete_cmap=False, f_size=15, fig=None,  res='4x5', wd=None, \
+def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
+    norm=None, nticks=10, format=None, units=None, extend='neither', axn=None, cb_ax=None,\
+    discrete_cmap=False, f_size=15, fig=None, res='4x5', wd=None, trop_limit=True, \
     bottom=0.1, top=0.975, hspace=0.4, wspace=0.5, left=0.075, right=0.875, \
     cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160, no_cb=True, \
-    region='All', lat_0=None, lat_1=None, pdftitle=None, return_m=False, 
-    set_window=False, pdf=False, show=True, log=False, \
-    verbose=False, debug=False ):
+    region='All', lat_0=None, lat_1=None, pdftitle=None, return_m=False, \
+    rtn_plt_vars=False, set_window=False, pdf=False, show=True, log=False, \
+    window=False, xlabel=True, interval=None, verbose=False, debug=False ):
 
     if verbose:
-        print 'plot_zonal_figure called ', region, arr.shape, log
+        print 'plot_zonal_figure called ', region, arr.shape, log, units, pdf, show
 
     # If lon, lat, alt array provided then take mean of lon
 #    print any( [arr.shape[0] ==i for i in 72, 144, 121, 177 ] ), arr.shape[-1]
@@ -2424,6 +2438,8 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     if region == 'Oceanic':
         set_window=True
         lat_0, lat_1 = -65, 80
+        if isinstance( interval, type(None) ):
+            interval = 3
 
     # Set colourbar limits
     if isinstance( fixcb, type(None) ):
@@ -2433,7 +2449,7 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     if log:
             # Get logarithmically spaced integers
             lvls = np.logspace( np.log10(fixcb[0]), np.log10(fixcb[1]), \
-                                                num=nticks)
+                                                 num=nticks)
             # Normalise to Log space
 #            norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
             if isinstance( norm, type(None) ):
@@ -2448,13 +2464,16 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     cmap, fixcb_buffered = get_colormap( np.array( fixcb ), \
             nticks=nticks, fixcb=fixcb, buffer_cmap_upper=True )
 
-    #  Plot  elephant
-    axn =[ 111 ]
-    ax = fig.add_subplot( *axn )  
+    #  Plot 
+    if isinstance( axn, type( None ) ):
+        axn =[ 111 ]
+    if isinstance( ax, type( None ) ):
+        ax = fig.add_subplot( *axn )  
     zonal_plot( arr, fig,  ax=ax, set_window=set_window, log=log,\
             format=format, cmap=cmap, lat_0=lat_0, lat_1=lat_1, \
             fixcb=fixcb, f_size=f_size*.75, res=res, norm=norm, \
-            fixcb_buffered=fixcb_buffered, no_cb=no_cb, debug=debug )
+            fixcb_buffered=fixcb_buffered, no_cb=no_cb, trop_limit=True,\
+            window=window, interval=interval, xlabel=xlabel, debug=debug )
 
     # Only show troposphere
     t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], trop_limit=True )
@@ -2466,7 +2485,7 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
                 bottom=cb_bottom, log=log, \
                 cmap=cmap, vmin=fixcb_buffered[0],\
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
-                extend=extend, lvls=lvls, \
+                extend=extend, lvls=lvls, cb_ax=cb_ax, \
                 sigfig_rounding_on_cb=sigfig_rounding_on_cb, nticks=nticks, \
                 norm=norm, discrete_cmap=discrete_cmap, debug=debug )    
 
@@ -2478,8 +2497,9 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         plot2pdf( title=pdftitle )    
     if show:
         plt.show()
-    if return_m:
+    if return_m or rtn_plt_vars:
         return [ fig, cmap, fixcb ]# + plt_vars + [ fixcb ] #+= [ cb_ax ]
+
 
 # --------------------------- Section 4 ------------------------------------
 # -------------- Plotting Ancillaries 
@@ -2998,7 +3018,9 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
 #        if (extend == 'neither') or (log==True):
     else:
         if verbose:
-            print lvls, norm, boundaries, extend
+            print lvls, norm, boundaries, extend, orientation, ticklocation, \
+                    cb_ax
+#        cb = mpl.colorbar.ColorbarBase(cb_ax )
         cb = mpl.colorbar.ColorbarBase(cb_ax, cmap=cmap, format=format,\
                 norm=norm, ticks=lvls, extend=extend, \
                 orientation=orientation, ticklocation=ticklocation)

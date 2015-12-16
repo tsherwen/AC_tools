@@ -548,6 +548,7 @@ def species_mass( spec ):
     'HCl': 36.5, 'HOCl': 52.5, 'ClNO2': 81.5, 'ClNO3': 97.5 , 'ClOO': 67.5, 'Cl2O2': 103.0,  'CH3Cl':  50.5, 'CH2Cl2': 85.0, 'CHCl3': 119.5, 'BrSALA': 80, 'BrSALC': 80, 'ISALA': 127. ,  'ISALC': 127. , 
     # Additional "species" to allow for ease of  processing
     'AERI_AVG': ( (286.0+302.0+318.0)/3 )/2, 'SO4S': 96, 
+    'IO3': 127+(3*16) ,
     }
     
     return d[spec]
