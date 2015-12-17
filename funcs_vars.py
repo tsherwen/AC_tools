@@ -880,13 +880,13 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, \
 
     if IUPAC_unit:
         if units == 'ppbv':
-            units = 'nmol / mol'
+            units = 'nmol mol$^{-1}'
         if units == 'ppbC':
-            units = 'nmol (C) / mol'
+            units = 'nmol (C) mol$^{-1}'
         if units == 'pptv':
-            units = 'pmol / mol'
+            units = 'pmol mol$^{-1}$'
         if units == 'pptC':
-            units = 'pmol (C)/ mol'
+            units = 'pmol (C) mol$^{-1}'
 
     if scale and (not adjustment):
         return units, scaleby           

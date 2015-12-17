@@ -568,14 +568,15 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
     if (not isinstance( units, type( None) )) and (not no_cb):
         cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)
 #    plt.ylim(alt[0], alt[-1])
-    ax.set_xlim( alt[0], alt[-1])
-
+#    ax.set_xlim( alt[0], alt[-1])
+    ax.set_ylim( alt[0], alt[-1])
     if ylabel:
 #        plt.ylabel('Altitude (km)', fontsize=f_size*.75)
         ax.set_ylabel('Altitude (km)', fontsize=f_size*.75)
     if trop_limit:
         ax.set_ylim( 0, 18 )
-
+    if interval != 1:
+        ax.set_yticks( ax.get_yticks()[::interval] ) #, labelsize=f_size*.75 )                                                                                                      
     # Setup X axis
     ax.set_xticks( parallels ) #, labelsize=f_size*.75 ) 
     ax.tick_params( labelsize=f_size*.75 )
@@ -756,7 +757,7 @@ def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
 # --------
 def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
             f_size=10, color=None, rasterized=True, err_bar=False, obs=True, \
-            legend=False, units='nmol / mol', stddev=True, \
+            legend=False, units='nmol mol$^{-1}$', stddev=True, \
             c_l=[ 'k', 'red','green', 'blue' , 'purple'], xlimit=None, \
             loc='upper left', c_off = 37, label=None, ancillary=True, \
             ylabel=True, xlabel=True, hPa_labels=True, debug=False ):
@@ -1408,7 +1409,7 @@ def plot_specs_surface_change_monthly2pdf( arr, res='4x5', dpi=160, \
 #            if units == 'ratio':
 #                fixcb = [ fixcb[0], 0.2 ]
 #                extend = 'max'
-            if (units == 'pmol / m$^3$') and ( spec == 'AERI' ):
+            if (units == 'pmol mol$^{-1}$ m$^{-3}$') and ( spec == 'AERI' ):
                 fixcb = [ fixcb[0], 500 ]
                 extend = 'max'                
 
@@ -2169,7 +2170,7 @@ def plot_specs_surface_change_annual2pdf( arr, res='4x5', dpi=160, \
 #            if units == 'ratio':
 #                fixcb = [ fixcb[0], 0.2 ]
 #                extend = 'max'
-            if (units == 'pmol / m$^3$') and ( spec == 'AERI' ):
+            if (units == 'pmol mol$^{-1}$ m$^{-3}$') and ( spec == 'AERI' ):
                 fixcb = [ fixcb[0], 500 ]
                 extend = 'max'                
 
@@ -2348,7 +2349,8 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     norm=None, nticks=10, format=None, units=None, extend='neither', ax=None, \
     discrete_cmap=False, f_size=15, fig=None, left_cb_pos=0.86, cb_ax=None, \
     bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
-    dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, window=False, \
+    dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, \
+    window=False, interval=1, \
     no_cb=True, return_m=False, log=False, verbose=False, debug=False ):
     """
         Provide an array of lon, lat, time
@@ -2362,6 +2364,10 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     if isinstance( fig, type(None) ):
         fig = plt.figure(figsize=(15, 10), dpi=dpi, facecolor='w', \
                                         edgecolor='k') 
+    # setup fig if not provided
+    if not isinstance( ax, type(None) ):
+        plt.sca( ax )
+
     # Set colourbar limits        
     if isinstance( fixcb, type(None) ):
         fixcb = np.array( [ (i.min(), i.max()) for i in [arr[...,0] ] ][0] )
@@ -2386,7 +2392,8 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     plt_vars = map_plot( arr[...,0].T, format=format, cmap=cmap, ax=ax, \
                     fixcb=fixcb, return_m=return_m, log=log, window=window, \
                     no_cb=no_cb, norm=norm, f_size=f_size*.75,  res=res, \
-                    fixcb_buffered=fixcb_buffered, debug=debug )
+                    fixcb_buffered=fixcb_buffered, interval=interval,\
+                    verbose=verbose, debug=debug )
 
     # Manually Add colorbar
     if no_cb:
