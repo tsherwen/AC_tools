@@ -973,7 +973,8 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
 # 2.17 -  Retrieve individual 4D mask of locations except region given
 # --------
 def mask_all_but( region='All', M_all=False, saizlopez=False, \
-            res='4x5', mask3D=False, mask4D=False, trop_limit=True, \
+            res='4x5', trop_limit=True, \
+            mask2D=False, mask3D=False, mask4D=False, \
             use_multiply_method=True, verbose=False, debug=False ):
     """ Mask selector for analysis. global mask provided for with given region 
         unmasked 
@@ -1088,6 +1089,9 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
             mask = np.ma.mask_or( land_unmasked( res=res ),  \
                     tropics_unmasked( res=res, saizlopez=saizlopez ) )
     
+    if debug:
+        print 'prior to setting dimensions:', mask.shape
+
     # Apply Saiz-Lopez Marine MFT/MUT? <= should this be before multiply op.?
     if M_all:
         if use_multiply_method:  # Kludge
@@ -1095,6 +1099,16 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
         else:
             # check this!!!
             mask = np.ma.mask_or( mask, land_unmasked(res=res) )
+
+    # Ensure returned arrays are 2D
+    if mask2D:
+        if len( mask.shape ) == 2:
+            pass
+        if len( mask.shape ) == 3:
+            mask = mask[..., 0]
+        if len( mask.shape ) == 4:
+            mask = mask[..., 0, 0]
+
 
     # Create 3D array by concatenating through altitude dimension
     if mask3D:
@@ -1105,7 +1119,10 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
 
     # Remove above the "chemical tropopause" from GEOS-Chem (v9-2)
     if trop_limit:
-        mask = mask[...,:38] 
+        if ( len( mask.shape ) == 2 ) or mask2D:
+            pass
+        else:
+            mask = mask[...,:38] 
 
     # Create 4D array by concatenating through time dimension
     # ( assuming year long array of 1 months )
@@ -1115,6 +1132,9 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
         else: # concatenate dimensions
             mask = np.concatenate( [ mask[...,None] ]*12, axis=3 )
 
+    if debug:
+        print 'post to setting dimensions: ', mask.shape
+    
     return mask
     
 # --------

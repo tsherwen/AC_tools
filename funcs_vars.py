@@ -255,9 +255,10 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, \
             takes TRA_## & returns GC ID or other wayround """
     # select correct naming dictionary
     var ={  \
+    '1.6': 'GCFP_d2TRA_all_1.6',
     '1.7': 'GCFP_d2TRA_all_1.7',
     '2.0': 'GCFP_d2TRA_all_2.0',    
-    '1.6': 'GCFP_d2TRA_all_1.6'
+    '3.0':  'GCFP_d2TRA_all_2.0' # Same as 2.0
     }[ver]
 
 #    special_case = 'EOH'
@@ -829,7 +830,10 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, \
     'TSKIN':'K', 'GMAO_TEMP': 'K', 'GMAO_VWND' :'m/s','GMAO_UWND': 'm/s', 'RO2': 'pptv', 'U10M':'m/s','V10M': 'm/s' , 'PRESS': 'hPa', 'CH2OO':'pptv', 'Bry':'ppbv',
     # Extra ClearFlo compounds
     u'acetylene': 'pptv', u'propene': 'pptv', u'Napthalene': 'pptv', u'Styrene': 'pptv', u'1,3-butadiene': 'pptv', u'1,2-butadiene': 'pptv', u'iso-butene': 'pptv', u'm+p-xylene': 'pptv', u'1-butene': 'pptv', u't-2 pentene': 'pptv', u'cis-2-butene': 'pptv', u'1  pentene': 'pptv', u'Trans-2-butene': 'pptv', u'o-xylene': 'pptv',
-    u'iso-pentane': 'pptv', u'n-hexane': 'pptv', u'iso-butane': 'pptv', u'Nonane, 2-methyl-': 'pptv', u'Butane, 2,2,3-trimethyl-': 'pptv', u'Dodecane': 'pptv', u'Pentane, 2,2,4-trimethyl-': 'pptv', u'2,3methylpentane': 'pptv', u'Nonane': 'pptv', u'cyclopentane': 'pptv', u'n- heptane': 'pptv', u'n-butane': 'pptv', u'n-pentane': 'pptv', u'Undecane': 'pptv', u'Decane': 'pptv', u'Octane': 'pptv', u'n-octane': 'pptv'
+    u'iso-pentane': 'pptv', u'n-hexane': 'pptv', u'iso-butane': 'pptv', u'Nonane, 2-methyl-': 'pptv', u'Butane, 2,2,3-trimethyl-': 'pptv', u'Dodecane': 'pptv', u'Pentane, 2,2,4-trimethyl-': 'pptv', u'2,3methylpentane': 'pptv', u'Nonane': 'pptv', u'cyclopentane': 'pptv', u'n- heptane': 'pptv', u'n-butane': 'pptv', u'n-pentane': 'pptv', u'Undecane': 'pptv', u'Decane': 'pptv', u'Octane': 'pptv', u'n-octane': 'pptv',
+    # Extra Cly species 
+    'ClNO2': 'ppbv'
+
     } 
     units = tra_unit[x]
 
@@ -880,13 +884,13 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, \
 
     if IUPAC_unit:
         if units == 'ppbv':
-            units = 'nmol mol$^{-1}'
+            units = 'nmol mol$^{-1}$'
         if units == 'ppbC':
-            units = 'nmol (C) mol$^{-1}'
+            units = 'nmol (C) mol$^{-1}$'
         if units == 'pptv':
             units = 'pmol mol$^{-1}$'
         if units == 'pptC':
-            units = 'pmol (C) mol$^{-1}'
+            units = 'pmol (C) mol$^{-1}$'
 
     if scale and (not adjustment):
         return units, scaleby           
