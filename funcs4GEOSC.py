@@ -1972,31 +1972,37 @@ def get_pl_in_Gg( specs=None, ctm_f=None, wd=None , years=None, months=None,
 
     if debug:
         print 'Specs',  specs
+    
+    if pygchem.__version__ == '0.2.0':
+        print 'WARNING: this approach needs updating to PyGChem 0.3.0'
+    else:
+        # -- Get Vars
+        if not isinstance(vol, np.ndarray):
+            vol = get_volume_np( ctm_f=ctm_f, wd=wd, res=res, debug=debug)
+        if (  not isinstance(years, list) or not isinstance(months, list)):
+            years  = get_gc_years( ctm_f=ctm_f, set_=False, wd=wd ) 
+            months = get_gc_months( ctm_f=ctm_f, wd=wd)
 
-    # -- Get Vars
-    if not isinstance(vol, np.ndarray):
-        vol = get_volume_np( ctm_f=ctm_f, wd=wd, res=res, debug=debug)
-    if (  not isinstance(years, list) or not isinstance(months, list)):
-        years  = get_gc_years( ctm_f=ctm_f, set_=False, wd=wd ) 
-        months = get_gc_months( ctm_f=ctm_f, wd=wd)
-
-    # --- Process data  # [molec/cm3/s] =>  Gg I /s 
-    # Extract as [molec/cm3/s] for specs 
-    specs_ = [ PLO3_to_PD( i, ver=ver, fp=True ) for i in specs ]
-    ars = get_GC_output( wd, vars=['PORL_L_S__'+i for i in specs_], r_list=True)
-    # convert to Gg [I/Ox... ] /s ( terms of mass defined by "spec" variable )
-    ars = [ molec_cm3_s_2_Gg_Ox_np( arr, specs[n], vol, ctm_f=ctm_f, \
+        # --- Process data  # [molec/cm3/s] =>  Gg I /s 
+        # Extract as [molec/cm3/s] for specs 
+        specs_ = [ PLO3_to_PD( i, ver=ver, fp=True ) for i in specs ]
+        ars = get_GC_output( wd, vars=['PORL_L_S__'+i for i in specs_], \
+                    r_list=True)
+        # convert to Gg [I/Ox... ] /s 
+        # ( terms of mass defined by "spec" variable )
+        ars = [ molec_cm3_s_2_Gg_Ox_np( arr, specs[n], vol, ctm_f=ctm_f, \
             spec=spec, Iodine=Iodine, IO=IO, I=I, year_eq=False,debug=debug)   \
             for n, arr in enumerate( ars ) ]
 
-    # adjust to per month.
-    day_adjust = d_adjust( months, years)
-    ars = [  i*day_adjust  for i in ars ]  
+        # adjust to per month.
+        day_adjust = d_adjust( months, years)
+        ars = [  i*day_adjust  for i in ars ]  
 
-    if monthly: # concat. specs 
-        return np.concatenate( [ i[...,None] for i in ars ], axis=4 ) 
-    else: # yearly sum. dep*, concat. 
-        return np.concatenate([ i.sum(axis=3)[...,None] for i in ars ], axis=3)
+        if monthly: # concat. specs 
+            return np.concatenate( [ i[...,None] for i in ars ], axis=4 ) 
+        else: # yearly sum. dep*, concat. 
+            return np.concatenate([ i.sum(axis=3)[...,None] for i in ars ], \
+                    axis=3)
 
 # --------------
 # 2.11 - Get Emission of species in Gg
@@ -2339,7 +2345,7 @@ def molec_cm2_s_2_Gg_Ox_np( arr, spec='O3', s_area=None, ctm_f=None, \
 
     # Kludge (loads all output surface areas, 
     # only requires a single time dimensions as does not chnage... )
-#    s_area = s_area[...,None]  # tmp bug fix 
+    s_area = s_area[...,None]  # tmp bug fix 
     #  anti-kludge 
 #    if fix_Kludge:
 #    s_area = s_area[...,0]
@@ -2602,7 +2608,7 @@ def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
         arrs = get_GC_output( wd, vars=['PORL_L_S__'+i for i in specs] )
         arrs = [ arrs[i,...] for i in range( len(specs) ) ]
 
-    if (all_data):
+    if all_data:
         # [molec/cm3/s] => Gg Ox / month 
         months = [ get_gc_months( ctm) for ctm in ctms ]
         years =  [ get_gc_years( ctm, set_=False ) for ctm in ctms ]
@@ -2617,7 +2623,10 @@ def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
         # [molec/cm3/s] => Gg Ox / yr
         arrs = [ molec_cm3_s_2_Gg_Ox_np(arr, specs[i], vol=vol, \
             debug=debug) for i, arr in enumerate(arrs) ] 
-        arrs = [ (arr*t_p).mean(axis=3) for arr in arrs ] # get yearly mean
+#        arrs = [ (arr*t_p).mean(axis=3) for arr in arrs ] # get yearly mean
+#        arrs = [ (arr*t_p).mean(axis=3) for arr in arrs ] # get yearly mean#            
+        arrs = [ arr.mean(axis=3)*t_p.mean(axis=3) \
+                        for arr in arrs ] # get yearly mean
 
         return [ int(np.sum( np.ma.masked_invalid( arrs[i] ) )/1E3)  \
             for i in range(len(specs )) ] # Tg

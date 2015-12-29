@@ -206,7 +206,9 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
         Kludge_fortan_output=Kludge_fortan_output,  \
                                                             debug=debug )
     # Set list of surface datasets
-    surface_data =[ 'MAL', 'HAL','GRO', 'CVO', 'ANT', 'M91', 'KEN', 'BTT']
+    surface_data =[ 
+    'MAL', 'HAL','GRO', 'CVO', 'ANT', 'M91', 'KEN', 'BTT', 'TRB'
+    ]
     plane_data = ['TOR', 'BAE', 'GCV', 'CGV' ]
 
     # Pull values for a variable from data arrays and scale
