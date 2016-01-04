@@ -558,7 +558,7 @@ def species_mass( spec ):
 # 4.03 -  return the stiochometry of Iodine in species
 # --------------
 def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
-            C=False, Br=False ): 
+            C=False, Br=False, Cl=False ): 
 #    if I:  # note -  re-write to take stioch species (e.g. OH, I instead of booleans ) - asssume I == True as default
     #  C3H5I == C2H5I (this is a vestigle typo, left in to allow for use of older model runs    
     # aerosol cycling specs
@@ -598,8 +598,17 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         }
     if Br:
          d= {
-        'CH3Br': 1.0, 'HOBr': 1.0, 'BrO': 1.0, 'CHBr3': 3.0, 'Br2': 2.0, 'BrSALC': 1.0, 'CH2IBr': 1.0, 'BrCl': 1.0, 'Br': 1.0, 'CH2Br2': 2.0, 'IBr': 1.0, 'BrSALA': 1.0, 'BrNO2': 1.0, 'BrNO3': 1.0, 'HBr': 1.0 
+        'CH3Br': 1.0, 'HOBr': 1.0, 'BrO': 1.0, 'CHBr3': 3.0, 'Br2': 2.0, 
+        'BrSALC': 1.0, 'CH2IBr': 1.0, 'BrCl': 1.0, 'Br': 1.0, 'CH2Br2': 2.0, 
+        'IBr': 1.0, 'BrSALA': 1.0, 'BrNO2': 1.0, 'BrNO3': 1.0, 'HBr': 1.0 
     }
+    if Cl:
+        d= {
+        'ClO': 1.0, 'Cl': 1.0, 'ClOO': 1.0, 'ClNO3': 1.0, 'ClNO2': 1.0, 
+        'Cl2': 2.0, 'OClO': 1.0, 'HOCl': 1.0, 'HCl': 1.0, 'Cl2O2': 2.0,
+         'BrCl': 1.0, 'ICl':1.0
+        }
+
     return d[spec]
 
 # --------------
@@ -725,11 +734,12 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
                     'I2_het_cyc'  : ['RD59','RD92','RD63'],  # IONO2, IONO, HOI
                     'I_het_loss'  : [ 'RD58', 'RD62', 'RD93' ,'RD95'], # HI, I2O2, I2O4, I2O3 uptake (prev: 2OIO excuded as I2Ox formaed, IO+OIO included as I2O3 not treated )
  #['RD60','RD61','RD62','RD52','RD53','RD54','RD55','RD13'],  # RD13 = OIO + OH => HIO3  86 => AERI loss
-                    'NOx'          : ['NO', 'NO2' ],
-                    'N_specs'  :  ['NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4', 'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN', 'NO3', 'HNO2', 'IONO', 'IONO2', 'INO'],
+                    'NOx' : ['NO', 'NO2' ],
+                    'N_specs' : ['NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4', 'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN', 'NO3', 'HNO2', 'IONO', 'IONO2', 'INO'],
                     'N_specs_no_I'  :  ['NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4', 'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN', 'NO3', 'HNO2'],
-                    'Bry'         : ['Br2', 'BrNO3', 'Br', 'HBr', 'BrCl', 'BrNO2', 'HOBr', 'IBr', 'BrO'],
-                    'Br_specs'         : ['Br2', 'BrNO3', 'Br', 'HBr', 'CH2IBr', 'CH3Br', 'CH2Br2', 'BrCl', 'BrNO2', 'BrSALC', 'BrSALA', 'HOBr', 'IBr', 'BrO', 'CHBr3'],
+                    'Bry' : ['Br2', 'BrNO3', 'Br', 'HBr', 'BrCl', 'BrNO2', 'HOBr', 'IBr', 'BrO'],
+                    'Cly' : ['BrCl', 'Cl2', 'Cl', 'ClO', 'HCl', 'HOCl', 'ClNO2', 'ClNO3', 'ClOO', 'OClO', 'Cl2O2'],
+                    'Br_specs' : ['Br2', 'BrNO3', 'Br', 'HBr', 'CH2IBr', 'CH3Br', 'CH2Br2', 'BrCl', 'BrNO2', 'BrSALC', 'BrSALA', 'HOBr', 'IBr', 'BrO', 'CHBr3'],
                     'johan_GRL_TRAs': ['BrCl', 'Cl2', 'Cl', 'ClO', 'HCl', 'HOCl', 'ClNO2', 'ClNO3', 'ClOO', 'OClO', 'Cl2O2', 'CH3Cl', 'CH2Cl2', 'CHCl3', 'BrSALA', 'BrSALC' ], 
                     'I_N_tags' : ['RD10', 'RD23', 'RD19', 'RD16', 'RD22', 'RD56', 'RD24', 'LO3_30', 'RD69', 'RD68', 'RD20', 'RD21', 'RD25', 'LO3_39', 'RD17', 'RD18', 'RD75'],
                     'Br_N_tags' : ['LR7', 'LR18', 'LR17', 'LR11', 'LR8', 'LR20', 'LR26', 'LR28', 'LR27'],

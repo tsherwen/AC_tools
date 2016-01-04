@@ -1781,10 +1781,10 @@ def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
     # Get (fam) specs if not given
     if isinstance( specs, type(None) ):
         # get species in family
-        d = { 'NOy':'N_specs', 'Iy':'Iy',  'Bry':'Bry' }
+        d = { 'NOy':'N_specs', 'Iy':'Iy',  'Bry':'Bry', 'Cly':'Cly' }
         specs = GC_var( d[fam] )
 
-    # if  <= improve this
+    # Use correct stiochmetry  <= improve this
     if fam =='Bry':
         Br=True
     if fam =='Iy':
@@ -1796,12 +1796,13 @@ def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
 
     # Get mixing ratio 
     arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ],
-            trop_limit=trop_limit ) 
-    print arr.shape
+            trop_limit=trop_limit, r_list=True ) 
+    print [ i.shape for i in arr], np.sum( arr )
 
     # Adjust to stiochmetry  ( Vars )
-    arr = [ arr[n,...]*spec_stoich(i, I=I, N=N, Br=Br) \
+    arr = [ arr[n]*spec_stoich(i, I=I, N=N, Br=Br, Cl=Cl) \
         for n,i in enumerate( specs) ]
+    print [ i.shape for i in arr], np.sum( arr )
 
     # Sum over stiochmertically adjusted list of specs
     arr = np.array( arr ).sum(axis=0)

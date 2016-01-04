@@ -131,7 +131,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             interval=1, resolution='c', shrink=0.4, window=False, everyother=1,\
             extend='neither', degrade_resolution=False, discrete_cmap=False, \
             lon_0=None, lon_1=None, lat_0=None, lat_1=None, norm=None,\
-            sigfig_rounding_on_cb=2, fixcb_buffered=None, \
+            sigfig_rounding_on_cb=2, fixcb_buffered=None, ylabel=True, \
             verbose=True, debug=False, **Kwargs):
     """ Plots Global/regional 2D (lon, lat) slices. Takes a numpy array and the 
         resolution of the output. The plot extent is then set by this output.
@@ -198,7 +198,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     # ---- Setup map ("m") using Basemap
     m = get_basemap( lat=lat, lon=lon, resolution=resolution, res=res, \
                 everyother=everyother, interval=interval, f_size=f_size, \
-                drawcountries=drawcountries )
+                ylabel=ylabel, drawcountries=drawcountries )
 
     # Process data to grid
     x, y = np.meshgrid( *m(lon, lat) )
@@ -573,6 +573,9 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
     if ylabel:
 #        plt.ylabel('Altitude (km)', fontsize=f_size*.75)
         ax.set_ylabel('Altitude (km)', fontsize=f_size*.75)
+    else:
+        ax.tick_params( axis='y', which='both', labelleft='off')
+
     if trop_limit:
         ax.set_ylim( 0, 18 )
     if interval != 1:
@@ -2350,7 +2353,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     discrete_cmap=False, f_size=15, fig=None, left_cb_pos=0.86, cb_ax=None, \
     bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
     dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, \
-    window=False, interval=1, \
+    window=False, interval=1, ylabel=True,\
     no_cb=True, return_m=False, log=False, verbose=False, debug=False ):
     """
         Provide an array of lon, lat, time
@@ -2392,9 +2395,9 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     # Plot up
     plt_vars = map_plot( arr[...,0].T, format=format, cmap=cmap, ax=ax, \
                     fixcb=fixcb, return_m=return_m, log=log, window=window, \
-                    no_cb=no_cb, norm=norm, f_size=f_size*.75,  res=res, \
+                    no_cb=True, norm=norm, f_size=f_size*.75,  res=res, \
                     fixcb_buffered=fixcb_buffered, interval=interval,\
-                    verbose=verbose, debug=debug )
+                    ylabel=ylabel, verbose=verbose, debug=debug )
 
     # Manually Add colorbar
     if no_cb:
@@ -2421,13 +2424,15 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 # 1.33 - Zonal Figure maker ( just provide lon, lat np array )
 # --------
 def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
-    norm=None, nticks=10, format=None, units=None, extend='neither', axn=None, cb_ax=None,\
-    discrete_cmap=False, f_size=15, fig=None, res='4x5', wd=None, trop_limit=True, \
+    norm=None, nticks=10, format=None, units=None, extend='neither', \
+    discrete_cmap=False, f_size=15, fig=None, res='4x5', wd=None, \
+    trop_limit=True, axn=None, cb_ax=None, orientation='vertical', \
     bottom=0.1, top=0.975, hspace=0.4, wspace=0.5, left=0.075, right=0.875, \
     cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160, no_cb=True, \
     region='All', lat_0=None, lat_1=None, pdftitle=None, return_m=False, \
     rtn_plt_vars=False, set_window=False, pdf=False, show=True, log=False, \
-    window=False, xlabel=True, interval=None, verbose=False, debug=False ):
+    window=False, xlabel=True, ylabel=True, \
+    interval=None, verbose=False, debug=False ):
 
     if verbose:
         print 'plot_zonal_figure called ', region, arr.shape, log, units, pdf, show
@@ -2480,17 +2485,18 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
     zonal_plot( arr, fig,  ax=ax, set_window=set_window, log=log,\
             format=format, cmap=cmap, lat_0=lat_0, lat_1=lat_1, \
             fixcb=fixcb, f_size=f_size*.75, res=res, norm=norm, \
-            fixcb_buffered=fixcb_buffered, no_cb=no_cb, trop_limit=True,\
-            window=window, interval=interval, xlabel=xlabel, debug=debug )
+            fixcb_buffered=fixcb_buffered, no_cb=True, trop_limit=True,\
+            window=window, interval=interval, xlabel=xlabel, ylabel=ylabel,\
+            debug=debug )
 
     # Only show troposphere
     t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], trop_limit=True )
     greyoutstrat( fig, t_ps.mean(axis=0).mean(axis=-1), axn=axn, res=res )
 
     # Manually Add colorbar
-    if no_cb:
+    if no_cb: 
         mk_cb(fig, units=units, left=cb_left,  height=cb_height, \
-                bottom=cb_bottom, log=log, \
+                bottom=cb_bottom, log=log, orientation=orientation, \
                 cmap=cmap, vmin=fixcb_buffered[0],\
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
                 extend=extend, lvls=lvls, cb_ax=cb_ax, \
@@ -3058,8 +3064,8 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
 # 4.36 - Create base map for plotting
 # --------
 def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
-            everyother=1, f_size=10, interval=1, label_y=False, \
-            show_grid=True, drawcountries=False ):
+            everyother=1, f_size=10, interval=1, axis_titles=False, \
+            show_grid=True, drawcountries=False, ylabel=True ):
     """ Creates a basemap object. 
 
         This should be used for first slide in python animated 
@@ -3070,7 +3076,7 @@ def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
                         urcrnrlon=lon[-1],\
                         resolution=resolution  )
 
-    if label_y:
+    if axis_titles:
         plt.ylabel('Latitude', fontsize = f_size*.75)
         plt.xlabel('Longitude',fontsize = f_size*.75)
     if (res == '0.5x0.666') or drawcountries :
@@ -3094,6 +3100,10 @@ def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
     plt.yticks( parallels[::everyother], fontsize = f_size ) 
     m.drawcoastlines()
     plt.grid( show_grid )
+    # remove tick labels on y axis 
+    if not ylabel:
+        ax_tmp = ax_tmp = plt.gca()
+        ax_tmp.tick_params( axis='y', which='both', labelleft='off')
 
     return m
  
