@@ -1767,6 +1767,113 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
 
     return A1x1
 
+
+
+# ----
+# 1.26 - Process species for given family arrays to (v/v)
+# ---
+def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
+    trop_limit=True, N=False, I=False, Cl=False, Br=False, 
+    verbose=True, debug=False ):
+    """  Return array of family in mols of X ( e.g. Cl, Br, I, N ) equiv. in 
+            mol/mol.  """
+
+    # Get (fam) specs if not given
+    if isinstance( specs, type(None) ):
+        # get species in family
+        d = { 'NOy':'N_specs', 'Iy':'Iy',  'Bry':'Bry' }
+        specs = GC_var( d[fam] )
+
+    # if  <= improve this
+    if fam =='Bry':
+        Br=True
+    if fam =='Iy':
+        I=True
+    if fam =='Cly': # needs adding to spec_stioch
+        Cl=True        
+    if any( [( fam ==i) for i in  ' NOy', 'NOx' ] ):
+        N=True
+
+    # Get mixing ratio 
+    arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ],
+            trop_limit=trop_limit ) 
+    print arr.shape
+
+    # Adjust to stiochmetry  ( Vars )
+    arr = [ arr[n,...]*spec_stoich(i, I=I, N=N, Br=Br) \
+        for n,i in enumerate( specs) ]
+
+    # Sum over stiochmertically adjusted list of specs
+    arr = np.array( arr ).sum(axis=0)
+
+    return arr, specs
+
+# ----
+# 1.27 - Convert v/v array to DU array 
+# ---
+def convert_v_v_2_DU( arr, wd=None, \
+     a_m=None, trop_limit=True, s_area=None, molecs=None, \
+    verbose=True, debug=False):
+    """ Convert a 4D array of v/v for species ( or family) to  DU
+    """
+
+    # Get DU values for each array (2D not 3D )
+    if isinstance( molecs, type(None) ):
+        # If 'a_m' not given, get air mass ('a_m') in kg
+        if isinstance( a_m, type(None) ):
+            a_m = get_GC_output( wd=wd, vars=['BXHGHT_S__AD'], 
+                trop_limit=trop_limit, dtype=np.float64) 
+        # Get molecs in troposphere
+        molecs = a_m*1E3/constants( 'RMM_air')*constants('AVG')
+
+    # Get surface area
+    if isinstance( s_area, type(None) ):
+        s_area = get_surface_area( res=res, debug=debug )
+
+    # Molecules O3 in trop. summed
+    DUarrs = arr*molecs
+    if debug:
+        print [ ( i.shape, i.sum() ) for i in [DUarrs, s_area] ]
+    # sum over altitude in 4D array ( lon, lat, alt, time )
+    DUarrs = DUarrs.sum(axis=-2)
+    if debug:
+        print [ ( i.shape, i.sum() ) for i in [DUarrs, s_area] ]
+
+    # adjust to per unit area ( cm3 ) 
+    DUarrs =  DUarrs/ s_area
+
+    if debug:
+        print [ ( i.shape, i.sum() ) for i in DUarrs, tmp_s_area,s_area  ]
+
+    # convert to DU   
+    DUarrs = DUarrs/constants('mol2DU')
+
+    return DUarrs 
+    
+# ----
+# 1.28 - Get common GC diagnostic arrays 
+# ---   
+def get_common_GC_vars( wd=None, trop_limit=True, res='4x5', \
+        verbose=True, debug=False):
+    """  Returns t_ps, a_m, molecs, s_area
+        This appraoch is taken to avoid circular calls 
+        + reducde code repitions """
+
+    # Get species time Tropopause diagnostic
+    t_ps = get_GC_output( wd=wd, vars=['TIME_TPS__TIMETROP'], \
+            trop_limit=trop_limit )
+    # Get air mass in kg
+    a_m = get_GC_output( wd=wd, vars=['BXHGHT_S__AD'], 
+        trop_limit=trop_limit, dtype=np.float64) 
+
+    # Get molecs in troposphere
+    molecs = a_m*1E3/constants( 'RMM_air')*constants('AVG')
+
+    # Get surface area
+    s_area = get_surface_area( res=res, debug=debug )
+
+    return t_ps, a_m, molecs, s_area
+
 # ----------------------- Section 3 -------------------------------------------
 # -------------- Data Processing tools/drivers
 #

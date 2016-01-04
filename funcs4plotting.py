@@ -2372,6 +2372,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     if isinstance( fixcb, type(None) ):
         fixcb = np.array( [ (i.min(), i.max()) for i in [arr[...,0] ] ][0] )
 
+    print '!'*100, fixcb
     # Set readable levels for cb, then use these to dictate cmap
     lvls = get_human_readable_gradations( vmax=fixcb[1],  \
                     vmin=fixcb[0], nticks=nticks, 
@@ -3353,25 +3354,34 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
 
     # --- Adjust graduations in colourbar to be human readable
     # in both min and max have absolute values less than 0, then sig figs +1
-    if ( ( abs( int( vmax)) == 0) and (abs( int( vmax)) == 0) ):
+    if ( ( abs( int( vmin)) == 0) and (abs( int( vmax)) == 0) ):
+        if verbose:
+            print 'both vmin ({}), and vmax ({}) are <0'.format( vmin, vmax )
         sigfig_rounding_on_cb += 1
 
     # significant figure ( sig. fig. ) rounding func.
     round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
     
-    # Get current gradations
+    # --- Get current gradations
     if verbose:
         print abs(lvls[-2])-abs(lvls[-3]), abs(lvls[-3])-abs(lvls[-2]), lvls,\
                      sigfig_rounding_on_cb
     try:
         lvls_diff = round_to_n( abs(lvls[-2])-abs(lvls[-3]), \
                                 sigfig_rounding_on_cb_ticks)
-    # handle if values (2,3) are both negative
+
+    # handle if values (2,3) are both negative or abs. of both <0
     except:
         if verbose:
             print abs(lvls[-3])-abs(lvls[-2]), sigfig_rounding_on_cb_ticks
-        lvls_diff = round_to_n( abs(lvls[-3])-abs(lvls[-2]), \
+        try:    # handle if values (2,3) are both negative
+            lvls_diff = round_to_n( abs(lvls[-3])-abs(lvls[-2]), \
                                 sigfig_rounding_on_cb_ticks)                                
+        except: # If both absolute of vmin and vmax  are <0 ( and +ve )
+            print lvls, lvls[-2], lvls[-3], sigfig_rounding_on_cb_ticks
+            lvls_diff = round_to_n( lvls[-2]-lvls[-3], \
+                                sigfig_rounding_on_cb_ticks)                                
+
 
     # ---  Round top of colorbar lvls, then count down from this
     # first get top numer rounded up to nearest 'lvls_diff'
