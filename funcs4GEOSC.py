@@ -3056,7 +3056,8 @@ def get_trop_Ox_loss( wd, pl_dict=None,  spec_l=None, ver='1.6' ,   \
 # 2.36 - Split Tropospheric Ox loss routes 
 # -------------
 def split_Ox_loss_by_fam( wd, arr, r_t=None, pl_dict=None, \
-            NOy_as_HOx=True, as_numpy=True, ver='1.6', debug=False ):
+            NOy_as_HOx=True, as_numpy=True, ver='1.6', 
+            Include_Chlorine=False, debug=False ):
     """ Takes a n dimension array ( typically: 2D/4D) array, then splits this
     into a list of single arrays for each Ox family  """
 
@@ -3065,18 +3066,25 @@ def split_Ox_loss_by_fam( wd, arr, r_t=None, pl_dict=None, \
         pl_dict = get_pl_dict( wd, spec='LOX', ver=ver, rmx2=True )
     if isinstance( r_t, type(None)):
         if NOy_as_HOx:
-            r_t  = [ 'Photolysis','HOx ','Bromine', 'Iodine' ] #+ ['Total']
+            if Include_Chlorine:
+                r_t = [ 'Photolysis','HOx', 'Chlorine', 'Bromine', 'Iodine' ] 
+            else:
+                r_t = [ 'Photolysis','HOx','Bromine', 'Iodine' ] 
         else:
-            r_t  = [ 'Photolysis','HOx ','NOy' ,'Bromine', 'Iodine' ] #+ ['Total']
+            if Include_Chlorine:
+                r_t = [ 'Photolysis','HOx','NOy','Chlorine','Bromine','Iodine'] 
+
+            else:
+                r_t = [ 'Photolysis','HOx','NOy' ,'Bromine', 'Iodine' ] 
 
     # generate indicies map to split Ox loss by route.   
     spec_l =  pl_dict.keys()
     if debug:
         print len( spec_l)
     r_, fam, spec_l = get_indicies_4_fam( spec_l, fam=True, IO_BrOx2=True,\
-        rtnspecs=True )
+        rtnspecs=True, Include_Chlorine=Include_Chlorine )
     if debug:
-        print len( spec_l)
+        print len( spec_l), r_t
 
     # split list of arrays and combine into Ox loss families
     ars = [ np.array( [ arr[r,...]  for r in r_[f] ] ).sum(axis=0) \
@@ -3098,7 +3106,10 @@ def split_Ox_loss_by_fam( wd, arr, r_t=None, pl_dict=None, \
             print 3, [ i.shape for i in [ ars ] ], np.ma.array( ars).sum()
 
     # manually rename plot labels
-    r_t = GC_var('r_tn' )
+    if Include_Chlorine:
+        r_t = GC_var( 'r_tn_Cly' )
+    else:
+        r_t = GC_var('r_tn' )
 
     return ars, r_t
 

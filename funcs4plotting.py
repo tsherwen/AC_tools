@@ -602,7 +602,9 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
 
     # Add title if provided    
     if (title != None):
-        ax.title(title, fontsize=f_size*1.5)
+        print [ type( i ) for i in ax, plt ]
+        print title
+        ax.set_title(title, fontsize=f_size*1.5)
 
 # --------   
 # 1.05 - Lat plot

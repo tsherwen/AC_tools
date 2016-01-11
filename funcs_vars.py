@@ -502,6 +502,11 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
                     'r_t'         : [ 'Photolysis','HOx','Bromine', 'Iodine' ], 
                     'r_tn'       : ['Photolysis','HOx' ,'Bromine', 'Iodine' ],                     
                     'r_tn_lc'  : ['photolysis','HOx' ,'bromine', 'iodine' ],                     
+                    # Ox loss families inc. Cly
+                    'r_tn_Cly' : [ \
+                    'Photolysis','HOx' ,'Chlorine','Bromine', 'Iodine' ],                     
+                    'r_tn_lc_Cly' : [ \
+                    'photolysis','HOx' ,'chlorine', 'bromine', 'iodine' ],                     
 
 #                    'Ox'         : ['Ox','POX','LOX','O3df','NO2df', 'PANdf', 'PMNdf', 'PPNdf', 'N2O5df','HNO3df', 'HOBrdf','BrNO3df','HOIdf','IONO2df', 'I2O2df', 'I2O4df','I2O3df'], 
 #                    'Ox1.1'         : ['Ox','POX','LOX','O3df','NO2df', 'PANdf', 'PMNdf', 'PPNdf', 'N2O5df','HNO3df', 'HOBrdf','BrNO3df','HOIdf','IONO2df', 'I2O2df'], 
@@ -1200,11 +1205,14 @@ def rxn4pl( pls, wd='example/example', rdict=None, reduce_size=True, \
 # 6.04 - Construct a list of indicies for each fam from given tags
 # ------------- 
 def get_indicies_4_fam( tags, fam=False, IO_BrOx2=False, rtnspecs=False,
-         NOy_as_HOx=True, debug=False ):
+         NOy_as_HOx=True, Include_Chlorine=False, debug=False ):
     """ Return indicies (in list form) for in a given family """
     # assign family
 #    famsn = [ 'Photolysis','HOx','NOy' ,'Bromine', 'Iodine' ]
-    famsn = [ 'Photolysis','HOx' ,'Bromine', 'Iodine' ]
+    if Include_Chlorine:
+        famsn = [ 'Photolysis','HOx' ,'Chlorine','Bromine', 'Iodine' ]
+    else:
+        famsn = [ 'Photolysis','HOx' ,'Bromine', 'Iodine' ]
     fams = []
     for tag in tags:
         fams.append( get_tag_fam( tag) )
@@ -1212,21 +1220,36 @@ def get_indicies_4_fam( tags, fam=False, IO_BrOx2=False, rtnspecs=False,
     if NOy_as_HOx:
         fams = [x if (x!='NOy') else 'HOx' for x in fams]
 
+    # Create dictionary from tags and fam assignment
     fd = dict(zip(tags, fams) )
 
+    # Select tags with assigned family in list ("famsn")
     ll =  []
     [ ll.append([]) for i in famsn ]
     for n, tag in enumerate( tags ) :
         for fn in range(len(famsn)):
             if fd[tag] == famsn[fn] :
                 ll[fn].append( n)
+
+    # Consider Ox loss for 
     if fam:
         # Kludge - to allow for counting Ox loss via IO +BrO 50/50, 
         # ( add extra loss tag. )
         if IO_BrOx2:
+            # Add extra tag for reaction ( IO + BrO )
             ll[famsn.index('Bromine')].append(  max([max(i) for i in ll])+1 )
             fams = fams +[ 'Bromine' ] 
             tags = tags +  [ 'LO3_24'] 
+        if Include_Chlorine:
+            # Add extra tag for reaction ( ClO + BrO )
+            ll[famsn.index('Chlorine')].append(  max([max(i) for i in ll])+1 )
+            fams = fams +[ 'Chlorine' ] 
+            tags = tags +  [ 'LO3_82'] 
+            # Add extra tag for reaction  ( ClO + IO )
+            ll[famsn.index('Chlorine')].append(  max([max(i) for i in ll])+1 )
+            fams = fams +[ 'Chlorine' ] 
+            tags = tags +  [ 'LO3_87'] 
+
         if rtnspecs:
             return ll, fams, tags 
         else:
@@ -1439,20 +1462,26 @@ def get_tag_details( wd, tag=None, PDs=None,  rdict=None, \
 # ------------- 
 def get_rxn_Coe(wd, num, tag, nums=None, rxns=None, tags=None, \
             Coe=None, spec='LOX', ver='1.6', debug=False):
-    """ Retrieve given reaction coefficient for smvgear (from smv2.log) """
+    """ Retrieve given reaction coefficient for smvgear (from smv2.log)
+
+        If using dev. Iy scheme, then the listed values from fuction
+        Ox_in_species() will be used. """
 
     # --- get dictionaries for reactions within
     if all( [ (i == None) for i in nums, rxns, tags, Coe ] ):
         nums, rxns, tags, Coe = prod_loss_4_spec( wd,  spec, all_clean=True, \
                 ver=ver )
 
-    # Pull reaction coefficient 
+    # Pull reaction coefficient  from dictionary
     Coe_dict = dict(zip(nums, Coe) )             
     Coe = float(Coe_dict[ num ])
-    if ('P' not in tag ): # consider all change positive - Kludge due to the assignment approach.
+    # Consider all change positive - Kludge 
+    # ( This is due to the assignment approach, where P=prod, L=loss )
+    if ('P' not in tag ): 
         Coe =  Coe*-1.0
 
     # --- over write Ox in species with prod_mod_tms values
+    # ( This is only used for the Ox tracers from dev. Iy simulation )
     try:
         Coe = Ox_in_species(tag, rxns=True)
         if debug:
