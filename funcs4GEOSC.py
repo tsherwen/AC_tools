@@ -2283,7 +2283,7 @@ def get_volume_np(ctm_f=None, box_height=None, s_area=None, res='4x5', \
             box_height =  get_gc_data_np(ctm_f, 'BXHEIGHT',\
                 category="BXHGHT-$", debug=debug)  # ( m )
         else:
-            box_height = get_GC_output( wd, ['BXHGHT_S__BXHEIGHT'], \
+            box_height = get_GC_output( wd=wd, vars=['BXHGHT_S__BXHEIGHT'], \
                 debug=debug )
 
             # Gotcha for single (None) time dimension output:
@@ -2503,7 +2503,8 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
         res = get_gc_res( wd=wd )
     ocean_mask = mask_all_but( region='Ocean', res=res )[...,None]
     # Get core variables from variable dictionary <= update this
-    if any( [(ver ==i) for i in  '1.3' ,'1.4' ,'1.5', '1.6', '1.7' ]):
+    versions = [ '1.3' ,'1.4' ,'1.5', '1.6', '1.7' , '2.0', '3.0']
+    if any( [(ver ==i) for i in versions ] ):
         vars =  [  'p_l', 'd_dep_specs', 'w_dep_specs', 'Iy','IOx', 'LIOx' ]
     else:
         print 'FAIL'
@@ -2561,10 +2562,14 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
     # Get Loss routes for Iy and cal Iy lifetime Gg / Gg/year => days  
     # (inc. wet & dry dep)
     # Iodine dry deposition
-    d_dep =  [ spec_dep( spec=spec, wd=wd, s_area=s_area, months=months, \
-        years=years, vol=vol, Iodine=False ) \
-        for spec in [ i.split('df')[0] for i in d_dep_specs[:-1] ] ]
-    d_dep = np.ma.array( d_dep )
+    try:
+        d_dep =  [ spec_dep( spec=spec, wd=wd, s_area=s_area, months=months, \
+            years=years, vol=vol, Iodine=False ) \
+            for spec in [ i.split('df')[0] for i in d_dep_specs[:-1] ] ]
+        d_dep = np.ma.array( d_dep )
+    except:
+        d_dep =  np.ones(  get_dims4res(res)  )
+
     # Iodine wet dep
     try:
         w_dep = get_wet_dep( months=months, years=years, vol=vol,  \
@@ -2713,7 +2718,7 @@ def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
             ver=ver, fp=True),category="PORL-L=$", debug=debug) \
             for ctm in ctms ],  axis=3 )  for spec in specs  ]
     else:
-        arrs = get_GC_output( wd, vars=['PORL_L_S__'+i for i in specs] )
+        arrs = get_GC_output( wd=wd, vars=['PORL_L_S__'+i for i in specs] )
         arrs = [ arrs[i,...] for i in range( len(specs) ) ]
 
     if all_data:
@@ -2723,7 +2728,8 @@ def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
         months = [j for i in months for j in i ]
         years = [j for i in years for j in i ]        
         arrs = [ molec_cm3_s_2_Gg_Ox_np(arr, specs[i], vol=vol, months=months, \
-                    years=years, debug=debug, month_eq=True, year_eq=False) \
+                    years=years, debug=debug, wd=wd, \
+                    month_eq=True, year_eq=False) \
                     for i, arr in enumerate(arrs) ] 
         return [ arrs[i] for i in range(len(specs )) ]  # Gg
 

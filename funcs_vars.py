@@ -4,12 +4,13 @@
 
 # Section 0 - Required modules
 # Section 1 - Planeflight variables
-# Section 2 - Drivers functions
+
 # Section 3 - GeosChem (bpch) prod loss variables
 # Section 4 - GeosChem (bpch) general variables
 # Section 5 - Misc
 # Section 6 - Dynamic p/l processing
 # Section 7 - Obervational variables
+# Section 8- Drivers functions
 
 # ---------------------------- ------------- ------------- ------------- 
 # --------------  Contents
@@ -20,12 +21,6 @@
 # ---- Section 1 ----- Planeflight variables
 # 1.01 - PF variable dictionary ***
 # 1.02 - TRA_?? to Geos-Chem species name ***
-
-# --------------- ------------- ------------- -------------
-# ---- Section 2 ----- Drivers functions
-# 2.01 - P/L tag to PD tag ***
-# 2.02 - Get P/L dictionary for a given family ***
-# 2.03 - Get P/L dictionary for a given species ***
 
 # --------------- ------------- ------------- -------------
 # ---- Section 3 ----- GeosChem (bpch) prod loss variables
@@ -79,6 +74,12 @@
 # 7.06 - Get Locations of observations (lats, lons, alts ) for given sites
 # 7.07 - sonde station variables (list of 432 sondes)
 # 7.08 - returns  (lat, lon, alt (press), timezone (UTC) ) for a given site
+
+# --------------- ------------- ------------- -------------
+# ---- Section 8 ----- Drivers functions
+# 8.01 - P/L tag to PD tag ***
+# 8.02 - Get P/L dictionary for a given family ***
+# 8.03 - Get P/L dictionary for a given species ***
 
 
 # ------------------ Section 0 -----------------------------------
@@ -294,153 +295,6 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, \
         return d[input]
 
 
-# ---------------- Section 2 -------------------------------------------
-# -------------- Drivers
-#
-
-# --------------
-# 2.01 - Convert Production/Loss RD IDs for O3 to PD## for input.geos/tracer.dat linked files
-# -------------
-def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',debug=False): 
-
-    """ Converts """
-
-    if any( [(ver ==i) for i in  '1.3' ,'1.4' ,'1.5' , '1.6', '1.7', '2.0' ]):
-
-        if wd==None:
-            if debug:
-                print 'WARNING: Using MUTD wd'
-            wd = MUTD_runs(ver=ver, res=res, debug=debug)[0]
-        PDs, vars = p_l_species_input_geos( wd, ver=ver,
-             rm_multiple_tagged_rxs=True)
-
-        # Add other vars for ease of processing
-        vars += ['PIOx', 'iLOX', 'LIOx', 'iPOX', 'POX', 'LOX', 'LOx', 'L_Iy']
-        PDs += ['PIOx', 'iLOX', 'LIOx', 'iPOX', 'POX', 'LOX', 'LOx', 'L_Iy']
-    
-        return dict( zip(vars, PDs))[PL ]
-    else:
-        print 'update programme - manual PLdict now obsolete. '
-
-# -------------
-# 2.02 - Uses functions to build a dictionary for a given family of loss
-# ------------- 
-def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
-    """ Get reaction IDs for each rxn. in spec (p/l, e.g. LOX) 
-        This is the driver for the prod/loss programmes """
-
-    # Extract details on reactio in p/l family
-    nums, rxns, tags, Coe = prod_loss_4_spec( wd,  spec, all_clean=True, \
-        ver=ver, debug=debug )
-
-    # Make a dictionary of coeffiecnts of reaction
-    Coe_dict = dict(zip(nums, Coe) )
-
-    # unpack for mulutple tags of same reactions, then get details
-    unpacked_tags = [j for k in tags for j in k ]
-    details  = [  get_tag_details( wd, tag, ver=ver ) for tag in unpacked_tags ]
-
-    # Kludge - 1 rxn missing from POx tracking? - 999  + "'ISOPND+OH', '+', '=1.0ISOPND'"
-    [ details.pop(n) for n, i in enumerate( details ) if i[1]==364]
-    ind =  [n for n, i  in enumerate( nums ) if i ==354 ]
-    
-    # Get Coes and overwrite where prog_mod_tms has values
-    Coes = [  get_rxn_Coe( wd, d[1], unpacked_tags[n], nums=nums, \
-                    rxns=rxns, tags=tags, Coe=Coe, spec=spec, debug=debug ) \
-                    for  n, d in enumerate( details ) ]
-
-    # Remove double ups, which are present due to Loss (LO3_??) and rate tagging (RD??) originally performed separately  
-    if rmx2:
-        d = [ 
-        ['RD62', 'LO3_38'], ['RD59', 'LO3_30'], ['RD65', 'LO3_34'],  \
-        ['RD93', 'LO3_55'], ['RD92', 'LO3_39'], [ 'RD95', 'LO3_36'],   \
-        ['RD67', 'LO3_35'] 
-        ]
-        d = [i[0] for i in d ]
-        ind = [ n for n, i in enumerate(details) if any( [ i[0] == ii \
-            for ii in d ] )  ]
-        if debug:
-            print d, ind, [len(i) for i in details, Coes ] ,  [ [i[0] \
-                for i in details][ii] for ii in ind ][::-1]
-        [ l.pop(i) for i in ind[::-1] for l in details, Coes ]
-        if debug:
-            print  [len(i) for i in details, Coes ]
-            
-    # return a dictionary indexed by p/l tracer, with rxn #, 
-    # reaction str and Coe of rxn.
-    return dict( zip( [i[0] for i in details], [ i[1:] + [ Coes[n] ]  \
-            for n, i in enumerate( details) ] ) )
-
-# -------------
-# 2.03 - Get prod loss reactions for a given family.
-# ------------- 
-def prod_loss_4_spec( wd, fam, all_clean=True, \
-        ver='1.7', debug=False ):
-    # ---  Get Dict of all reactions, Keys = #s
-    rdict = rxn_dict_from_smvlog( wd, ver=ver )
-
-    # ---  Get reaction # tracked by p/l diag for spec and coefficient.
-    rxns = rxns_in_pl(wd, fam)
-    nums =  rxns.keys() 
-    Coe = [ rxn[-1] for rxn in rxns.values() ]
-
-    # --- get all details from full reaction dictionary
-    rxns =  [ rdict[i] for i in nums ]
-
-    # --- get tags for tracked reactions, state where reactions are un tracked
-    tags = get_p_l_tags( rxns )
-
-    # --- cleaned tags
-    if all_clean:
-        tags = [ [re.sub('\+\d.\d', '',  i) for i in u ] for u in tags ]  
-        tags = [ [re.sub('\=\d.\d', '',  i) for i in u ] for u in tags ]  
-
-        # -- remove erroneous read/  Kludge on val
-        # ---  Fortran write error leads to combination of species at the
-        #  end of long line 
-        if debug:
-            print [  i[:3] for i in nums, rxns, tags, Coe]
-            print [ len(i) for i in nums, rxns, tags, Coe]
-
-        # LO3_36RD95 is present twice as this reaction is present 2 times in the code
-        errs = ['LO3_36RD95', 'LO3_36RD95' , 'ISOPNDPO3_50', 'ISOPNDLR40']
-        cerrs = [ ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], ['PO3_50'], ['LR40'] ]
-#        errs = ['LO3_36RD95' , 'ISOPNDPO3_50', 'ISOPNDLR40']
-#        cerrs = [ ['RD95'], ['PO3_50'], ['LR40'] ]
-        for n, e in enumerate( errs ):
-            try:
-                ind = [ nn  for nn, i in enumerate( tags) if \
-                                any([ ( e in ii) for ii in i ]) ] [0]
-                vars =  [ i[ind] for i in nums, rxns, tags, Coe]
-                if debug:
-                    print 3, [ i[-1] for i in nums, rxns, tags, Coe], vars,  \
-                            [ len(i) for i in nums, rxns, tags, Coe]
-                [i.pop(ind) for i in nums, rxns, tags, Coe ]
-
-                # add the cerrs values on the end
-                if debug:
-                    print 4, [ i[-1] for i in nums, rxns, tags, Coe],  \
-                            [ len(i) for i in nums, rxns, tags, Coe]
-                nums +=  [ vars[0] ]
-                rxns   +=  [vars[1] ]
-                tags    += [cerrs[n]]
-                Coe    +=  [vars[-1] ]
-
-                if debug:
-                    print 6, [ i[-1] for i in nums, rxns, tags, Coe], \
-                         [ len(i) for i in nums, rxns, tags, Coe]
-                    print '->'*30,  'SUCCESS >{}<  >{}<'.format( n, e )
-            except:
-                print '>'*100, 'FAIL >{}< >{}<'.format( n, e )
-
-    # KLUDGE! - rm empty list values of ones that contain errs
-#    ind = [ n for n,i in enumerate(tags) if ( (len(i)==0) or (i[0] in errs) ) ] 
-#    [ [ l.pop(i) for i in sorted(ind)[::-1] ] for  l in nums, rxns, tags, Coe ]
-    if debug:
-        print tags 
-
-    return nums, rxns, tags, Coe
-
 # ------------------------------------------- Section 3 -------------------------------------------
 # --------------  GeosChem (bpch) prod loss variables
 #
@@ -475,12 +329,23 @@ def get_tag_fam( tag ):
     , 'RD63': 'Iodine', 'RD62':'Iodine',  'LO3_38': 'Iodine', 'RD59': 'Iodine', 'LO3_30' : 'Iodine', 'RD65': 'Iodine', 'LO3_34': 'Iodine',  'RD93': 'Iodine', 'LO3_55': 'Iodine', 'RD92': 'Iodine', 'LO3_39': 'Iodine' , 'LO3_36': 'Iodine','RD95': 'Iodine' , 'RD67': 'Iodine', 'LO3_35': 'Iodine' 
 #    , 'RD36': 'Bromine' # Kludge to allow combination reactions 
     # Kludge - from Chris Holmes (paranox deposition, goes through p/l as Ox losss )
-    ,'LO3_70' : 'Photolysis'
-
-    # Extra tags not in list? 
+    ,'LO3_70' : 'Photolysis', \
+    # Add in new from updates to Cly, + Bry scheme ( 2.0, 3.0 )
+    'LO3_79' : 'Chlorine', 'LO3_80' : 'Chlorine', 'LO3_81':  'Chlorine',  \
+    'LO3_83': 'Chlorine', 'LO3_85': 'Chlorine', 'LO3_86': 'Chlorine', \
+    'LO3_78' : 'Chlorine', 'LO3_84': 'Bromine', 'LO3_76': 'Bromine', \
+    # This is a crossover reaction (HOBr + HCl ), but only Bry species losses Ox 
+    'LO3_75': 'Bromine', \
+    # This is a crossover reaction (ClNO3+HBr), but only Cly species losses Ox
+    'LO3_77': 'Chlorine', \
+    # This is a cross over reaction (ClO + BrO) - need to consider for both fam
+    'LO3_82': 'Bromine', \
+    # This is a cross over reaction (ClO + IO) - need to consider for both fam
+    'LO3_87': 'Iodine' \
+    # Extra tags not in list?  - obsolete. 
     #  (these reactions are appearing due to lack of inclusion of iodine 
-    # species in Ox family... )
-#    ,'RD19': 'iodine', 'RD37': 'iodine', 'RD01': 'iodine' 
+    # species in Ox family... )  - obsolete. 
+#    ,'RD19': 'iodine', 'RD37': 'iodine', 'RD01': 'iodine'   - obsolete. 
     }
     
     # Creigee reaction class/"family" dictionary
@@ -1061,6 +926,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
     } }[res]
     d=d[ver]
 
+    # Select out for ACPD sensitivity run
     if sensitivity:
         l = [ 
         'no_hal', 'Just_Br',  'just_I', 'run', 'Just_I_org',  'I2Ox_double',\
@@ -1144,12 +1010,26 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
     if skip3:
         [ [ i.pop(0) for i in l, r ] for ii in range(3) ]
     if overide:
-        r = [ 
-        'iGEOSChem_1.7_v10/run', 'iGEOSChem_2.0_v10/run' 
+            # Version  2.0/1.7 runs
+#        r = [ 
+#        'iGEOSChem_1.7_v10/run', 'iGEOSChem_2.0_v10/run' 
 #            'iGEOSChem_1.7_v10/run' , 'johan/bpch_v10'
-        ]
+#        ]
 #        l = '1.6', '1.7'
-        l = 'v10, I+Br Parella', 'v10, I+Br+Cl johan'
+#        l = 'v10, I+Br Parella', 'v10, I+Br+Cl johan'
+            # Version  3.0 runs
+        r = [
+            'iGEOSChem_3.0_v10/no_hal',
+             'iGEOSChem_3.0_v10/Just_Br',
+             'iGEOSChem_3.0_v10/run.Cl.Br.I.IX.acid.Cl.org.HIssa.III',
+             'iGEOSChem_3.0_v10/run.Cl.Br.I.MUTD.preindustrial']            
+
+        l = [ 
+        'no_hal', 'Just_Br', 
+        'run.Cl.Br.I.IX.acid.Cl.org.HIssa.III',
+        'run.Cl.Br.I.MUTD.preindustrial']
+
+
     # return list with inc. main dir
     rtn_list = [pwd + i for i in r ] 
     if titles:
@@ -1184,7 +1064,7 @@ def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
     
     if isinstance( PHOTOPROCESS, type(None) ):
         PHOTOPROCESS = {
-        '1.6' : 457, '1.7' : 467, '2.0': 555
+        '1.6' : 457, '1.7' : 467, '2.0': 555, '3.0': 536
         }[ver]
     
     fn =  'smv2.log'
@@ -1518,7 +1398,7 @@ def get_tag_details( wd, tag=None, PDs=None,  rdict=None, \
     # what is the number of the first photolysis reaction?
     if isinstance( PHOTOPROCESS, type(None) ):
         PHOTOPROCESS = {
-        '1.6' : 457, '1.7' : 467, '2.0': 555
+        '1.6' : 457, '1.7' : 467, '2.0': 555, '3.0': 536
         }[ver]
 
     # ---  get all reactions tags are active in smv.log    
@@ -1781,3 +1661,157 @@ def gaw_2_loc(site,  f =  'GLOBAL_SURFACE_O3_2006_2012.nc'):#, f
             lat =  f.groups[site].latitude
             print [ (i, type(i) ) for i in lat, lon, alt ]
         return (lat, lon, float( hPa_to_Km([alt], reverse=True)[0] ), -9999 )
+
+
+# ---------------- Section 2 -------------------------------------------
+# -------------- Drivers
+#
+
+# --------------
+# 8.01 - Convert Production/Loss RD IDs for O3 to PD## for input.geos/tracer.dat linked files
+# -------------
+def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',debug=False): 
+
+    """ Converts """
+
+    versions =  '1.3' ,'1.4' ,'1.5' , '1.6', '1.7', '2.0', '3.0' 
+    if any( [(ver ==i) for i in versions ]):
+
+        if wd==None:
+            if debug:
+                print 'WARNING: Using MUTD wd'
+            wd = MUTD_runs(ver=ver, res=res, debug=debug)[0]
+        PDs, vars = p_l_species_input_geos( wd, ver=ver,
+             rm_multiple_tagged_rxs=True)
+
+        # Add other vars for ease of processing
+        vars += ['PIOx', 'iLOX', 'LIOx', 'iPOX', 'POX', 'LOX', 'LOx', 'L_Iy']
+        PDs += ['PIOx', 'iLOX', 'LIOx', 'iPOX', 'POX', 'LOX', 'LOx', 'L_Iy']
+    
+        return dict( zip(vars, PDs))[PL ]
+    else:
+        print 'update programme - manual PLdict now obsolete. '
+
+# -------------
+# 8.02 - Uses functions to build a dictionary for a given family of loss
+# ------------- 
+def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
+    """ Get reaction IDs for each rxn. in spec (p/l, e.g. LOX) 
+        This is the driver for the prod/loss programmes """
+
+    # Extract details on reactio in p/l family
+    nums, rxns, tags, Coe = prod_loss_4_spec( wd,  spec, all_clean=True, \
+        ver=ver, debug=debug )
+
+    # Make a dictionary of coeffiecnts of reaction
+    Coe_dict = dict(zip(nums, Coe) )
+
+    # unpack for mulutple tags of same reactions, then get details
+    unpacked_tags = [j for k in tags for j in k ]
+    details  = [  get_tag_details( wd, tag, ver=ver ) for tag in unpacked_tags ]
+
+    # Kludge - 1 rxn missing from POx tracking? - 999  + "'ISOPND+OH', '+', '=1.0ISOPND'"
+    [ details.pop(n) for n, i in enumerate( details ) if i[1]==364]
+    ind =  [n for n, i  in enumerate( nums ) if i ==354 ]
+    
+    # Get Coes and overwrite where prog_mod_tms has values
+    Coes = [  get_rxn_Coe( wd, d[1], unpacked_tags[n], nums=nums, \
+                    rxns=rxns, tags=tags, Coe=Coe, spec=spec, debug=debug ) \
+                    for  n, d in enumerate( details ) ]
+
+    # Remove double ups, which are present due to Loss (LO3_??) and rate tagging (RD??) originally performed separately  
+    if rmx2:
+        d = [ 
+        ['RD62', 'LO3_38'], ['RD59', 'LO3_30'], ['RD65', 'LO3_34'],  \
+        ['RD93', 'LO3_55'], ['RD92', 'LO3_39'], [ 'RD95', 'LO3_36'],   \
+        ['RD67', 'LO3_35'] 
+        ]
+        d = [i[0] for i in d ]
+        ind = [ n for n, i in enumerate(details) if any( [ i[0] == ii \
+            for ii in d ] )  ]
+        if debug:
+            print d, ind, [len(i) for i in details, Coes ] ,  [ [i[0] \
+                for i in details][ii] for ii in ind ][::-1]
+        [ l.pop(i) for i in ind[::-1] for l in details, Coes ]
+        if debug:
+            print  [len(i) for i in details, Coes ]
+            
+    # return a dictionary indexed by p/l tracer, with rxn #, 
+    # reaction str and Coe of rxn.
+    return dict( zip( [i[0] for i in details], [ i[1:] + [ Coes[n] ]  \
+            for n, i in enumerate( details) ] ) )
+
+# -------------
+# 8.03 - Get prod loss reactions for a given family.
+# ------------- 
+def prod_loss_4_spec( wd, fam, all_clean=True, \
+        ver='1.7', debug=False ):
+    # ---  Get Dict of all reactions, Keys = #s
+    rdict = rxn_dict_from_smvlog( wd, ver=ver )
+
+    # ---  Get reaction # tracked by p/l diag for spec and coefficient.
+    rxns = rxns_in_pl(wd, fam)
+    nums =  rxns.keys() 
+    Coe = [ rxn[-1] for rxn in rxns.values() ]
+
+    # --- get all details from full reaction dictionary
+    rxns =  [ rdict[i] for i in nums ]
+
+    # --- get tags for tracked reactions, state where reactions are un tracked
+    tags = get_p_l_tags( rxns )
+
+    # --- cleaned tags
+    if all_clean:
+        tags = [ [re.sub('\+\d.\d', '',  i) for i in u ] for u in tags ]  
+        tags = [ [re.sub('\=\d.\d', '',  i) for i in u ] for u in tags ]  
+
+        # -- remove erroneous read/  Kludge on val
+        # ---  Fortran write error leads to combination of species at the
+        #  end of long line 
+        if debug:
+            print [  i[:3] for i in nums, rxns, tags, Coe]
+            print [ len(i) for i in nums, rxns, tags, Coe]
+
+        # LO3_36RD95 is present twice as this reaction is present 2 times in the code
+        # update 16 01 11: LO3_36RD95 is now present x3 in version 3.0 
+        #( due split uptake)
+        errs = [ \
+        'LO3_36RD95', 'LO3_36RD95','LO3_36RD95', 'ISOPNDPO3_50', 'ISOPNDLR40']
+        cerrs = [ \
+        ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], \
+        ['PO3_50'], ['LR40'] ]
+#        errs = ['LO3_36RD95' , 'ISOPNDPO3_50', 'ISOPNDLR40']
+#        cerrs = [ ['RD95'], ['PO3_50'], ['LR40'] ]
+        for n, e in enumerate( errs ):
+            try:
+                ind = [ nn  for nn, i in enumerate( tags) if \
+                                any([ ( e in ii) for ii in i ]) ] [0]
+                vars =  [ i[ind] for i in nums, rxns, tags, Coe]
+                if debug:
+                    print 3, [ i[-1] for i in nums, rxns, tags, Coe], vars,  \
+                            [ len(i) for i in nums, rxns, tags, Coe]
+                [i.pop(ind) for i in nums, rxns, tags, Coe ]
+
+                # add the cerrs values on the end
+                if debug:
+                    print 4, [ i[-1] for i in nums, rxns, tags, Coe],  \
+                            [ len(i) for i in nums, rxns, tags, Coe]
+                nums +=  [ vars[0] ]
+                rxns   +=  [vars[1] ]
+                tags    += [cerrs[n]]
+                Coe    +=  [vars[-1] ]
+
+                if debug:
+                    print 6, [ i[-1] for i in nums, rxns, tags, Coe], \
+                         [ len(i) for i in nums, rxns, tags, Coe]
+                    print '->'*30,  'SUCCESS >{}<  >{}<'.format( n, e )
+            except:
+                print '>'*100, 'FAIL >{}< >{}<'.format( n, e )
+
+    # KLUDGE! - rm empty list values of ones that contain errs
+#    ind = [ n for n,i in enumerate(tags) if ( (len(i)==0) or (i[0] in errs) ) ] 
+#    [ [ l.pop(i) for i in sorted(ind)[::-1] ] for  l in nums, rxns, tags, Coe ]
+    if debug:
+        print tags 
+
+    return nums, rxns, tags, Coe
