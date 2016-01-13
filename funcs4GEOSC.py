@@ -2191,23 +2191,23 @@ def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
 # --------
 def get_CH4_lifetime( ctm_f=None, wd=None, years=None, months=None, \
             vol=None, a_m=None, t_p=None, monthly=False, trop_limit=True, \
-            debug=False ):
+            use_OH_from_geos_log=True, average_value=True, debug=False ):
     """ Get CH4 lifetime using reaction rate in globchem.dat and OH/CH4
          mean concentrations from geos.log
          detail on rxn rate from globchem.dat = K(o)= 2.45E-12, Ea/R= -1775  """
 
-    if not isinstance(vol, np.ndarray):
-        vol = get_volume_np( ctm_f =ctm_f, wd=wd, trop_limit=trop_limit ) # cm^3 
-    if not isinstance(a_m, np.ndarray):
-        a_m = get_air_mass_np( ctm_f=ctm_f, wd=wd, trop_limit=trop_limit )  # Kg
+#    if not isinstance(vol, np.ndarray):
+#        vol = get_volume_np( ctm_f =ctm_f, wd=wd, trop_limit=trop_limit ) # cm^3 
+#    if not isinstance(a_m, np.ndarray):
+#        a_m = get_air_mass_np( ctm_f=ctm_f, wd=wd, trop_limit=trop_limit )  # Kg
 
     #  number of moles in box
-    moles = ( a_m *1E3 ) / constants( 'RMM_air') * constants( 'AVG')  
+#    moles = ( a_m *1E3 ) / constants( 'RMM_air') * constants( 'AVG')  
 
-    # Get CH4 from geos.log
-    arr = get_CH4_mean( wd )
+    # Get CH4 from geos.log (v/v)
+#    arr = get_CH4_mean( wd )
     #*  kg  per grid box
-    arr = arr * moles *  constants( 'AVG') / vol 
+#    arr = arr * moles *  constants( 'AVG') / vol 
 
     # get loss rate - in kg/s - only works for CH4 sim.
 #    LCH4 = get_gc_data_np(ctm_f, spec='CH4Loss', \
@@ -2215,12 +2215,24 @@ def get_CH4_lifetime( ctm_f=None, wd=None, years=None, months=None, \
 
     # calc from reaction loss rate with OH
 #    K    = get_gc_data_np(ctm_f, spec='TMPU', category='DAO-3D-$')  # K
-    K = get_GC_output( wd=wd, vars=[u'DAO_3D_S__TMPU'] ) # K
+    K = get_GC_output( wd=wd, vars=[u'DAO_3D_S__TMPU'], \
+            trop_limit=trop_limit  ) # K
 
-    OH   = get_OH_mean( wd ) * 1E5   # [molec/cm3] 
-    LCH4 = 2.45E-12 * np.exp( (-1775. / K)  )   # cm^3  molec.^-1  s^-1    # rate per grid box 
+    # [molec/cm3] 
+    if use_OH_from_geos_log:
+        OH   = get_OH_mean( wd ) * 1E5   
+    else:
+        OH = get_GC_output( wd=wd, vars=['CHEM_L_S__'+'OH'], \
+            trop_limit=trop_limit )
 
-    return ( 1 / ( np.mean( LCH4 * OH ) )) /60/60/24/365
+    # rate per grid box  ( cm^3  molec.^-1  s^-1  )
+    LCH4 = 2.45E-12 * np.exp( (-1775. / K)  )   
+
+    arr = LCH4 * OH 
+    if average_value:
+        arr = np.mean(  arr  )
+
+    return ( 1 / arr ) /60/60/24/365
 
 # ----
 # 2.13 - get Land / Water /Ice fraction

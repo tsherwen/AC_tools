@@ -655,17 +655,36 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
                     'LCH2Br'     : ['RD89' ],                        
                     'LCH3IT'     : ['RD15' , 'RD71'],                        
                      'sHOX'       : ['HOI', 'HOBr'],
-                    'HO2_loss'   : ['PO3_14','RD09','RD02', 'LR2', 'LR3', 'PO3_46','PO3_02', 'PO3_03', 'PO3_05'],
-                    'CAST_int'   : ['IO', 'OIO','HOI','I2','I','HOI','CH3I','CH2I2','CH2ICl', 'CH2IBr', 'C3H7I','C3H5I', 'BrO', 'Br', 'HOBr','Br2','CH3Br', 'CH2Br2', 'CHBr3', 'O3', 'CO', 'OH', 'HO2','NO','NO2'],
-                    'CAST_intn'  : ['IO', 'OIO','HOI','I2','I','HOI','CH3IT','CH2I2','CH2ICl', 'CH2IBr', 'C3H7I','C2H5I', 'BrO', 'Br', 'HOBr','Br2','CH3Br', 'CH2Br2', 'CHBr3', 'O3', 'CO', 'DMS', 'NO','HNO3','HNO4', 'NO2','NO3' , 'PAN' , 'HNO2', 'N2O5'],
-                    'CAST_int_n' : ['IO', 'OIO','HOI','I2','I','HOI','CH3I','CH2I2','CH2ICl', 'CH2IBr', 'C3H7I','C2H5I', 'BrO', 'Br', 'HOBr','Br2','CH3Br', 'CH2Br2', 'CHBr3', 'O3', 'CO', 'OH', 'HO2','NO','NO2'],
+                    'HO2_loss'   : [\
+            'PO3_14','RD09','RD02', 'LR2', 'LR3', 'PO3_46','PO3_02', 'PO3_03', \
+            'PO3_05'],
+                    'CAST_int'   : [ \
+            'IO', 'OIO','HOI','I2','I','HOI','CH3I','CH2I2','CH2ICl', 'CH2IBr',\
+            'C3H7I','C3H5I', 'BrO', 'Br', 'HOBr','Br2','CH3Br', 'CH2Br2', \
+            'CHBr3', 'O3', 'CO', 'OH', 'HO2','NO','NO2'],
+                    'CAST_intn'  : [\
+            'IO', 'OIO', 'HOI',' I2', 'I', 'HOI', 'CH3IT', 'CH2I2', 'CH2ICl', \
+            'CH2IBr', 'C3H7I','C2H5I', 'BrO', 'Br', 'HOBr', 'Br2', 'CH3Br', \
+            'CH2Br2', 'CHBr3', 'O3', 'CO', 'DMS', 'NO','HNO3','HNO4', \
+            'NO2','NO3' , 'PAN' , 'HNO2', 'N2O5'],
+                    'CAST_int_n' : [\
+            'IO', 'OIO','HOI','I2','I','HOI','CH3I','CH2I2','CH2ICl', 'CH2IBr',\
+            'C3H7I','C2H5I', 'BrO', 'Br', 'HOBr','Br2','CH3Br', 'CH2Br2', \
+            'CHBr3', 'O3', 'CO', 'OH', 'HO2','NO','NO2'],
                     'diurnal_sp' : ['IO','I2', 'CH2I2', 'BrO' ]  ,
-                    'obs_comp'   : ['CH3IT','CH2I2','CH2ICl','CH2IBr','C2H5I','C3H7I','I2','IO'] ,                    
-                    'emiss_specs': ['CH3IT','CH2I2','CH2ICl','CH2IBr','I2','HOI'] ,
-                    'w_dep_specs': ['I2' ,'HI'  ,'HOI'  ,'IONO', 'IONO2','I2O2', 'I2O4', 'I2O3' ,'AERI'],  #, 'IBr', 'ICl']
+                    'obs_comp'   : [\
+            'CH3IT', 'CH2I2', 'CH2ICl', 'CH2IBr', 'C2H5I', 'C3H7I','I2','IO'] ,
+                    'emiss_specs': [\
+            'CH3IT', 'CH2I2','CH2ICl','CH2IBr','I2','HOI'] ,
+                    'w_dep_specs': [\
+            'I2' ,'HI'  ,'HOI'  ,'IONO', 'IONO2','I2O2', 'I2O4', 'I2O3',\
+            'AERI'],  #, 'IBr', 'ICl']
   #                  'd_dep_specsl' : ['I2', 'HI', 'HOI', 'IONO', 'IONO2',  'I2O2', 'I2O4', 'I2O3','AERI'], #, 'IO', 'OIO'] ,                      
-                    'd_dep_specsl1.1' : ['I2', 'HI', 'HOI', 'IONO', 'IONO2',  'I2O2', 'I2O4', 'AERI'], #, 'IO', 'OIO'] ,                      
-                    'd_dep_specs': ['I2df', 'HIdf', 'HOIdf', 'IONOdf', 'IONO2df',  'I2O2df', 'I2O4df', 'I2O3df', 'AERIdf',], #, 'IOdf', 'OIOdf'], #
+                    'd_dep_specsl1.1' : [\
+            'I2', 'HI', 'HOI', 'IONO', 'IONO2',  'I2O2', 'I2O4', 'AERI'], #, 'IO', 'OIO'] ,                      
+                    'd_dep_specs': [ \
+            'I2df', 'HIdf', 'HOIdf', 'IONOdf', 'IONO2df',  'I2O2df', 'I2O4df', \
+            'I2O3df', 'AERIdf',], #, 'IOdf', 'OIOdf'], #
 #                    'd_dep_specs1.1': ['I2df', 'HIdf', 'HOIdf', 'IONOdf', 'IONO2df',  'I2O2df', 'I2O4df','AERIdf',], #, 'IOdf', 'OIOdf'], #
                     'I2_het_cyc'  : ['RD59','RD92','RD63'],  # IONO2, IONO, HOI
                     'I_het_loss'  : [ 'RD58', 'RD62', 'RD93' ,'RD95'], # HI, I2O2, I2O4, I2O3 uptake (prev: 2OIO excuded as I2Ox formaed, IO+OIO included as I2O3 not treated )
@@ -991,6 +1010,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
         preindustrial=False, skip3=False, v10v92comp=False,              \
         nested_EU=False, just_bcase_no_hal=False, just_std=False, \
         just_bcase_std=False, ver='1.6', res='4x5', overide=False,    \
+        inc_schmidt_2015=False, inc_iGC_ver1_6=False, \
         debug=False): 
     """ Dictionary storage for iGEOSChem most up to date (MUTD)
             runs. 
@@ -1131,13 +1151,17 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
     # Override run names if version 3.0 used.
     if ver == '3.0':
 
-        l =  ['NOHAL(v10)', 'BROMINE', 'Cl-Br-I' ]
-        inc_iGC_ver1_6=True
+        l =  ['NOHAL', 'BROMINE', 'Cl-Br-I' ]
+
+        # Add extra runs?
         if inc_iGC_ver1_6:
             extra = 'iGEOSChem_1.6_G5/run/'
             r = r[:2]+ [extra]+r[2:]        
-            l = l[:2]+ ['Br-I']+l[2:]        
-
+            l = l[:2]+ ['Br-I(v9.2)']+l[2:]        
+        if inc_schmidt_2015:
+            extra = '/../../collaboration/johan/v9-2//run.johan.v92.rundir/'
+            r = r[:2]+ [extra]+r[2:]        
+            l = l[:2]+ ['Br_het-Cl(v9.2)']+l[2:]        
 
     # return list with inc. main dir
     rtn_list = [rwd + i for i in r ] 

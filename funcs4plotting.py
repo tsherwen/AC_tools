@@ -2440,7 +2440,6 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
         print 'plot_zonal_figure called ', region, arr.shape, log, units, pdf, show
 
     # If lon, lat, alt array provided then take mean of lon
-#    print any( [arr.shape[0] ==i for i in 72, 144, 121, 177 ] ), arr.shape[-1]
     if any( [arr.shape[0] ==i for i in 72, 144, 121, 177] ):
         arr = arr.mean(axis=0)
 
@@ -3125,7 +3124,7 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         this function also will can adjust colormaps to fit a given set of
         ticks
     """
-    positive=True
+#    positive=True
 
     # Make sure cmap includes range of all readable levels (lvls)
     # i.e head of colormap often rounded for ascetic/readability reasons
