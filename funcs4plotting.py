@@ -794,7 +794,7 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
 
     # Add legend
     if legend:
-        plt.legend( loc=loc )#, fontsize=f_size*.5)
+        plt.legend( loc=loc, fontsize=f_size*.75)
 
     # Sonde data  = mean, 1st and 3rd Q
     if err_bar:     

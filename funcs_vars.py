@@ -414,7 +414,7 @@ def species_mass( spec ):
     'HCl': 36.5, 'HOCl': 52.5, 'ClNO2': 81.5, 'ClNO3': 97.5 , 'ClOO': 67.5, 'Cl2O2': 103.0,  'CH3Cl':  50.5, 'CH2Cl2': 85.0, 'CHCl3': 119.5, 'BrSALA': 80, 'BrSALC': 80, 'ISALA': 127. ,  'ISALC': 127. , 
     # Additional "species" to allow for ease of  processing
     'AERI_AVG': ( (286.0+302.0+318.0)/3 )/2, 'SO4S': 96, 
-    'IO3': 127+(3*16) ,
+    'IO3': 127+(3*16) , 'SSBr2': 160.0
     }
     
     return d[spec]
@@ -423,29 +423,84 @@ def species_mass( spec ):
 # 4.03 -  return the stiochometry of Iodine in species
 # --------------
 def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
-            C=False, Br=False, Cl=False ): 
-#    if I:  # note -  re-write to take stioch species (e.g. OH, I instead of booleans ) - asssume I == True as default
-    #  C3H5I == C2H5I (this is a vestigle typo, left in to allow for use of older model runs    
-    # aerosol cycling specs
+            C=False, Br=False, Cl=False, ref_spec=None ): 
+    """ Returns unit equivelent of X ( e.g. I ) for a give species. 
+        
+        This can be automatically set by providing a reference species
+        
+        Notes:
+            (1) Update Needed:
+        re-write to take stioch species (e.g. OH, I instead of booleans )
+         - asssume I == True as default
+            (2) C3H5I == C2H5I 
+        (this is a vestigle typo, left in to allow for use of older model runs )
+            (3) aerosol cycling specs
     # 'LO3_36' : (2.0/3.0) , 'LO3_37' : (2.0/4.0),           # aersol loss rxns... 'LO3_37' isn't true loss, as I2O4 is regen. temp
-    # aerosol loss rxns - corrected stochio for Ox, adjsutment need for I
+            (4) Aerosol loss rxns 
+         corrected stochio for Ox, adjsutment need for I
+    """
+    # If reference species provided automatically select family
+    if not isinstance( ref_spec, type(None) ):
+        if ref_spec == 'I':
+            I=True
+        if ref_spec == 'Br':
+            Br=True
+        if ref_spec == 'Cl':
+            Cl=True
+        if ref_spec == 'C':
+            C=True
+        if ref_spec == 'N':
+            N=True
+        if ref_spec == 'OH':
+            OH=True
+        if ref_spec == 'IO':
+            IO=True
+        if ref_spec == 'NO':
+            NO=True
+
+    # Select dictionary
     d = {
-    'RD11': 1.0, 'RD10': 1.0, 'HIO3': 1.0, 'RD15': 1.0, 'RD62': 2.0, 'RD17': 1.0, 'RD16': 1.0, 'RD19': 1.0, 'LO3_37': 0.5, 'CH2I2': 2.0, 'AERII': 1.0, 'CH2ICl': 1.0, 'PIOx': 1.0, 'C3H7I': 1.0, 'RD73': 1.0, 'RD72': 2.0, 'RD71': 1.0, 'RD70': 1.0, 'C3H5I': 1.0, 'RD57': 1.0, 'CH3IT': 1.0, 'IO': 1.0, 'LO3_38': 1.0, 'RD61': 1.0, 'RD68': 1.0, 'I2': 2.0, 'IONO': 1.0, 'LO3_36': 0.6666666666666666, 'INO': 1.0, 'RD88': 1.0, 'RD89': 1.0, 'LOx': 1.0, 'RD06': 1.0, 'RD07': 1.0, 'RD02': 1.0, 'RD01': 1.0, 'I': 1.0, 'LO3_24': 0.5, 'AERI': 1.0, 'HOI': 1.0, 'RD64': 2.0, 'RD65': 1.0, 'RD66': 1.0, 'RD67': 1.0, 'RD60': 1.0, 'RD47': 1.0, 'C2H5I': 1.0, 'RD63': 1.0, 'RD20': 1.0, 'RD22': 1.0, 'RD24': 1.0, 'RD69': 1.0, 'RD27': 1.0, 'OIO': 1.0, 'CH2IBr': 1.0, 'LIOx': 1.0, 'L_Iy': 1.0, 'ICl': 1.0, 'IBr': 1.0, 'RD95': 2.0, 'I2O2': 2.0, 'I2O3': 2.0, 'I2O4': 2.0, 'I2O5': 2.0, 'HI': 1.0, 'I2O': 2.0, 'RD59': 1.0, 'RD93': 2.0, 'RD92': 1.0, 'IONO2': 1.0, 'RD58': 1.0, 'ISALA':1.0, 'ISALC':1.0, 
+    'RD11': 1.0, 'RD10': 1.0, 'HIO3': 1.0, 'RD15': 1.0, 'RD62': 2.0, \
+    'RD17': 1.0, 'RD16': 1.0, 'RD19': 1.0, 'LO3_37': 0.5, 'CH2I2': 2.0, \
+    'AERII': 1.0, 'CH2ICl': 1.0, 'PIOx': 1.0, 'C3H7I': 1.0, 'RD73': 1.0, \
+    'RD72': 2.0, 'RD71': 1.0, 'RD70': 1.0, 'C3H5I': 1.0, 'RD57': 1.0, \
+    'CH3IT': 1.0, 'IO': 1.0, 'LO3_38': 1.0, 'RD61': 1.0, 'RD68': 1.0, \
+    'I2': 2.0, 'IONO': 1.0, 'LO3_36': 0.6666666666666666, 'INO': 1.0, \
+    'RD88': 1.0, 'RD89': 1.0, 'LOx': 1.0, 'RD06': 1.0, 'RD07': 1.0, \
+    'RD02': 1.0, 'RD01': 1.0, 'I': 1.0, 'LO3_24': 0.5, 'AERI': 1.0, \
+    'HOI': 1.0, 'RD64': 2.0, 'RD65': 1.0, 'RD66': 1.0, 'RD67': 1.0, \
+    'RD60': 1.0, 'RD47': 1.0, 'C2H5I': 1.0, 'RD63': 1.0, 'RD20': 1.0, \
+    'RD22': 1.0, 'RD24': 1.0, 'RD69': 1.0, 'RD27': 1.0, 'OIO': 1.0, \
+    'CH2IBr': 1.0, 'LIOx': 1.0, 'L_Iy': 1.0, 'ICl': 1.0, 'IBr': 1.0, \
+    'RD95': 2.0, 'I2O2': 2.0, 'I2O3': 2.0, 'I2O4': 2.0, 'I2O5': 2.0, \
+    'HI': 1.0, 'I2O': 2.0, 'RD59': 1.0, 'RD93': 2.0, 'RD92': 1.0, \
+    'IONO2': 1.0, 'RD58': 1.0, 'ISALA':1.0, 'ISALC':1.0, 
     # p/l for: IO, I
-    'RD15': 1.0, 'RD17': 1.0, 'RD75': 1.0, 'RD72': 2.0, 'RD71': 1.0, 'RD70': 1.0, 'RD56': 1.0, 'RD69': 1.0, 'RD88': 1.0, 'RD89': 1.0, 'RD06': 1.0, 'RD07': 1.0, 'RD08': 1.0, 'RD64': 2.0, 'RD65': 1.0, 'RD67': 1.0, 'RD46': 2.0, 'RD47': 1.0, 'RD20': 1.0, 'RD22': 1.0, 'RD68': 1.0, 'RD25': 1.0, 'RD96': 1.0 ,
-    'RD11': 1.0, 'RD12': 2.0, 'RD02': 1.0, 'RD16': 1.0, 'RD19': 1.0, 'RD24': 1.0, 'RD09': 1.0, 'RD23': 1.0, 'RD37': 1.0, 'RD97': 1.0, 
+    'RD15': 1.0, 'RD17': 1.0, 'RD75': 1.0, 'RD72': 2.0, 'RD71': 1.0, \
+    'RD70': 1.0, 'RD56': 1.0, 'RD69': 1.0, 'RD88': 1.0, 'RD89': 1.0, \
+    'RD06': 1.0, 'RD07': 1.0, 'RD08': 1.0, 'RD64': 2.0, 'RD65': 1.0, \
+    'RD67': 1.0, 'RD46': 2.0, 'RD47': 1.0, 'RD20': 1.0, 'RD22': 1.0, \
+    'RD68': 1.0, 'RD25': 1.0, 'RD96': 1.0 ,'RD11': 1.0, 'RD12': 2.0, \
+    'RD02': 1.0, 'RD16': 1.0, 'RD19': 1.0, 'RD24': 1.0, 'RD09': 1.0, \
+    'RD23': 1.0, 'RD37': 1.0, 'RD97': 1.0, \
     # kludge for test analysis (HEMCO emissions )
     'ACET' : 1.0, 'ISOP': 1.0, 'CH2Br2': 1.0, 'CHBr3':1.0, 'CH3Br':1.0
-
     }
 
     if IO:
         d = {
-        'RD11': 2.0, 'RD10': 1.0, 'RD12': 2.0, 'LO3_36': 1./3., 'RD09': 1.0, 'RD66': 1.0, 'RD23': 1.0, 'RD37': 1.0, 'LO3_24': 1.0/2.0, 'RD56': 1.0, 'RD01': 1.0, 'RD08': 1.0, 'RD46': 2.0, 'RD30': 1.0, 'RD25': 1.0, 'RD27': 1.0, 'RD97':1.0
+        'RD11': 2.0, 'RD10': 1.0, 'RD12': 2.0, 'LO3_36': 1./3., 'RD09': 1.0, \
+        'RD66': 1.0, 'RD23': 1.0, 'RD37': 1.0, 'LO3_24': 1.0/2.0, 'RD56': 1.0, \
+        'RD01': 1.0, 'RD08': 1.0, 'RD46': 2.0, 'RD30': 1.0, 'RD25': 1.0, \
+        'RD27': 1.0, 'RD97':1.0
         }
     if NO:
         d ={
-        'NO2': 1.0, 'NO3': 1.0, 'N2O5': 2.0, 'NO': 1.0, 'PPN': 1.0, 'R4N2': 1.0, 'BrNO3': 1.0, 'INO': 1.0, 'PAN': 1.0, 'PMN': 1.0, 'HNO3': 1.0, 'HNO2': 1.0, 'NH3': 1.0, 'HNO4': 1.0, 'BrNO2': 1.0, 'IONO': 1.0, 'PROPNN': 1.0, 'NH4': 1.0, 'MPN': 1.0, 'MMN': 1.0, 'ISOPN': 1.0, 'IONO2': 1.0
+        'NO2': 1.0, 'NO3': 1.0, 'N2O5': 2.0, 'NO': 1.0, 'PPN': 1.0, 'R4N2': 1.0, 
+        'BrNO3': 1.0, 'INO': 1.0, 'PAN': 1.0, 'PMN': 1.0, 'HNO3': 1.0, \
+        'HNO2': 1.0, 'NH3': 1.0, 'HNO4': 1.0, 'BrNO2': 1.0, \
+        'IONO': 1.0, 'PROPNN': 1.0, 'NH4': 1.0, 'MPN': 1.0, 'MMN': 1.0, \
+        'ISOPN': 1.0, 'IONO2': 1.0 \
         }
     if OH:
         d = {
@@ -453,9 +508,18 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         }
     if N:
         d= {
-        'RD10': 1.0, 'LR26': 1.0, 'LR27': 1.0, 'LR20': 1.0, 'RD17': 1.0, 'RD16': 1.0, 'RD19': 1.0, 'RD18': 2.0, 'LR28': 1.0, 'LO3_30': 1.0, 'RD75': 1.0, 'LR7': 1.0, 'LR8': 1.0, 'RD56': 1.0, 'RD24': 1.0, 'LO3_39': 1.0, 'RD25': 1.0, 'RD81': 1.0, 'LR35': 1.0, 'LR18': 1.0, 'LR17': 1.0, 'LR11': 1.0, 'LR39': 1.0, 'RD20': 1.0, 'RD21': 2.0, 'RD22': 1.0, 'RD23': 1.0, 'RD68': 1.0, 'RD69': 1.0
+        'RD10': 1.0, 'LR26': 1.0, 'LR27': 1.0, 'LR20': 1.0, 'RD17': 1.0, \
+        'RD16': 1.0, 'RD19': 1.0, 'RD18': 2.0, 'LR28': 1.0, 'LO3_30': 1.0, \
+        'RD75': 1.0, 'LR7': 1.0, 'LR8': 1.0, 'RD56': 1.0, 'RD24': 1.0, \
+        'LO3_39': 1.0, 'RD25': 1.0, 'RD81': 1.0, 'LR35': 1.0, 'LR18': 1.0, \
+        'LR17': 1.0, 'LR11': 1.0, 'LR39': 1.0, 'RD20': 1.0, 'RD21': 2.0, \
+        'RD22': 1.0, 'RD23': 1.0, 'RD68': 1.0, 'RD69': 1.0, \
     # NOy ( N in 'NOy')
-, 'NO2': 1.0, 'NO3': 1.0, 'N2O5': 2.0, 'NO': 1.0, 'PPN': 1.0, 'R4N2': 2.0, 'BrNO3': 1.0, 'INO': 1.0, 'PAN': 1.0, 'PMN': 1.0, 'HNO3': 1.0, 'HNO2': 1.0, 'NH3': 1.0, 'HNO4': 1.0, 'BrNO2': 1.0, 'IONO': 1.0, 'PROPNN': 1.0, 'NH4': 1.0, 'MPN': 1.0, 'MMN': 1.0, 'ISOPN': 1.0, 'IONO2': 1.0
+        'NO2': 1.0, 'NO3': 1.0, 'N2O5': 2.0, 'NO': 1.0, 'PPN': 1.0, \
+        'R4N2': 2.0, 'BrNO3': 1.0, 'INO': 1.0, 'PAN': 1.0, 'PMN': 1.0, \
+        'HNO3': 1.0, 'HNO2': 1.0, 'NH3': 1.0, 'HNO4': 1.0, 'BrNO2': 1.0, \
+        'IONO': 1.0, 'PROPNN': 1.0, 'NH4': 1.0, 'MPN': 1.0, 'MMN': 1.0, \
+        'ISOPN': 1.0, 'IONO2': 1.0
         }
     if C:
         d = {
@@ -463,13 +527,15 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         }
     if Br:
          d= {
-        'CH3Br': 1.0, 'HOBr': 1.0, 'BrO': 1.0, 'CHBr3': 3.0, 'Br2': 2.0, 
-        'BrSALC': 1.0, 'CH2IBr': 1.0, 'BrCl': 1.0, 'Br': 1.0, 'CH2Br2': 2.0, 
-        'IBr': 1.0, 'BrSALA': 1.0, 'BrNO2': 1.0, 'BrNO3': 1.0, 'HBr': 1.0 
+        'CH3Br': 1.0, 'HOBr': 1.0, 'BrO': 1.0, 'CHBr3': 3.0, 'Br2': 2.0, \
+        'BrSALC': 1.0, 'CH2IBr': 1.0, 'BrCl': 1.0, 'Br': 1.0, 'CH2Br2': 2.0, \
+        'IBr': 1.0, 'BrSALA': 1.0, 'BrNO2': 1.0, 'BrNO3': 1.0, 'HBr': 1.0, \
+        # for ease of processing also include Seasalt Br2
+         'SSBr2': 2.0, 
     }
     if Cl:
         d= {
-        'ClO': 1.0, 'Cl': 1.0, 'ClOO': 1.0, 'ClNO3': 1.0, 'ClNO2': 1.0, 
+        'ClO': 1.0, 'Cl': 1.0, 'ClOO': 1.0, 'ClNO3': 1.0, 'ClNO2': 1.0, \
         'Cl2': 2.0, 'OClO': 1.0, 'HOCl': 1.0, 'HCl': 1.0, 'Cl2O2': 2.0,
          'BrCl': 1.0, 'ICl':1.0
         }
@@ -605,17 +671,40 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
                     'I_het_loss'  : [ 'RD58', 'RD62', 'RD93' ,'RD95'], # HI, I2O2, I2O4, I2O3 uptake (prev: 2OIO excuded as I2Ox formaed, IO+OIO included as I2O3 not treated )
  #['RD60','RD61','RD62','RD52','RD53','RD54','RD55','RD13'],  # RD13 = OIO + OH => HIO3  86 => AERI loss
                     'NOx' : ['NO', 'NO2' ],
-                    'N_specs' : ['NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4', 'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN', 'NO3', 'HNO2', 'IONO', 'IONO2', 'INO'],
-                    'N_specs_no_I'  :  ['NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4', 'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN', 'NO3', 'HNO2'],
-                    'Bry' : ['Br2', 'BrNO3', 'Br', 'HBr', 'BrCl', 'BrNO2', 'HOBr', 'IBr', 'BrO'],
-                    'Cly' : ['BrCl', 'Cl2', 'Cl', 'ClO', 'HCl', 'HOCl', 'ClNO2', 'ClNO3', 'ClOO', 'OClO', 'Cl2O2'],
-                    'Br_specs' : ['Br2', 'BrNO3', 'Br', 'HBr', 'CH2IBr', 'CH3Br', 'CH2Br2', 'BrCl', 'BrNO2', 'BrSALC', 'BrSALA', 'HOBr', 'IBr', 'BrO', 'CHBr3'],
-                    'johan_GRL_TRAs': ['BrCl', 'Cl2', 'Cl', 'ClO', 'HCl', 'HOCl', 'ClNO2', 'ClNO3', 'ClOO', 'OClO', 'Cl2O2', 'CH3Cl', 'CH2Cl2', 'CHCl3', 'BrSALA', 'BrSALC' ], 
-                    'I_N_tags' : ['RD10', 'RD23', 'RD19', 'RD16', 'RD22', 'RD56', 'RD24', 'LO3_30', 'RD69', 'RD68', 'RD20', 'RD21', 'RD25', 'LO3_39', 'RD17', 'RD18', 'RD75'],
-                    'Br_N_tags' : ['LR7', 'LR18', 'LR17', 'LR11', 'LR8', 'LR20', 'LR26', 'LR28', 'LR27'],
-                    'inactive_I'  : ['BrCl', 'OClO', 'ClO', 'HOCl', 'Cl', 'Cl2', 'I2O5', 'I2O', 'HIO3', 'IBr', 'ICl', 'C2H5I','C3H7I'], # I2O3 now active.
-                    'active_I' : ['I2', 'HOI', 'IO', 'I', 'HI', 'OIO', 'INO', 'IONO', 'IONO2', 'I2O2', 'I2O4', 'I2O3', 'CH3IT', 'CH2I2', 'CH2ICl', 'CH2IBr'], 
-                    'surface_specs' : ['O3', 'NO', 'NO2', 'NO3' ,'N2O5', 'IO', 'IONO2' ],
+                    'N_specs' : [
+        'NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4',\
+        'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN',\
+        'NO3', 'HNO2', 'IONO', 'IONO2', 'INO'],
+                    'N_specs_no_I'  :  [
+        'NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4', \
+        'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN',\
+         'NO3', 'HNO2'],
+                    'Bry' : [\
+        'Br2', 'BrNO3', 'Br', 'HBr', 'BrCl', 'BrNO2', 'HOBr', 'IBr', 'BrO'],
+                    'Cly' : [
+        'BrCl', 'Cl2', 'Cl', 'ClO', 'HCl', 'HOCl', 'ClNO2', 'ClNO3', 'ClOO', \
+        'OClO', 'Cl2O2'],
+                    'Br_specs' : ['Br2', 'BrNO3', 'Br', 'HBr', 'CH2IBr', \
+        'CH3Br', 'CH2Br2', 'BrCl', 'BrNO2', 'BrSALC', 'BrSALA', \
+        'HOBr', 'IBr', 'BrO', 'CHBr3'],
+                    'Br_emiss' : [ 'CH2Br2', 'CHBr3', 'SSBr2' ],#'CH3Br'
+                    'johan_GRL_TRAs': [
+        'BrCl', 'Cl2', 'Cl', 'ClO', 'HCl', 'HOCl', 'ClNO2', 'ClNO3', \
+        'ClOO', 'OClO', 'Cl2O2', 'CH3Cl', 'CH2Cl2', 'CHCl3', 'BrSALA', \
+        'BrSALC' ], 
+                    'I_N_tags' : ['RD10', 'RD23', 'RD19', 'RD16', 'RD22', \
+        'RD56', 'RD24', 'LO3_30', 'RD69', 'RD68', 'RD20', 'RD21', 'RD25', \
+        'LO3_39', 'RD17', 'RD18', 'RD75'],
+                    'Br_N_tags' : ['LR7', 'LR18', 'LR17', 'LR11', 'LR8', \
+        'LR20', 'LR26', 'LR28', 'LR27'],
+                    'inactive_I'  : [ \
+        'BrCl', 'OClO', 'ClO', 'HOCl', 'Cl', 'Cl2', 'I2O5', 'I2O', 'HIO3', \
+        'IBr', 'ICl', 'C2H5I','C3H7I'], # I2O3 now active.
+                    'active_I' : [ \
+        'I2', 'HOI', 'IO', 'I', 'HI', 'OIO', 'INO', 'IONO', 'IONO2', 'I2O2', 
+        'I2O4', 'I2O3', 'CH3IT', 'CH2I2', 'CH2ICl', 'CH2IBr'], 
+                    'surface_specs' : [\
+        'O3', 'NO', 'NO2', 'NO3' ,'N2O5', 'IO', 'IONO2' ],
                 
                     # Model run title dictionaries
                     'run_name_dict': {'run': 'Br-I', 'Br_2ppt': 'Halogens (I+,Br+) + fixed 2 pptv BrO', 'just_I': 'IODINE', 'no_hal': 'NOHAL', 'just_Br': 'BROMINE', 'Br_1ppt': 'Halogens (I+,Br+) + fixed 1 pptv BrO', 'obs': 'Observations'}   ,
@@ -913,7 +1002,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
     if debug:
         print standard, sensitivity, titles, IO_obs, preindustrial, skip3,\
                     nested_EU, just_bcase_std, ver
-    pwd = get_dir( 'rwd' )
+    rwd = get_dir( 'rwd' )
     l_dict= GC_var('latex_run_names')
 
     # Get version directories for versions
@@ -957,9 +1046,14 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             if ver == '1.7':
 #                l = ['no_hal', 'run' ]
                 l = ['Just_Br', 'run' ]
+            # IA runs ( Sherwen et al + Schmidt et al )
             elif ver == '2.0':
                 l = ['no_hal', 'run.Cl.Br.I.aerosol.no.SSA.Br2' ]
 #                l = ['no_hal', 'run.Cl.Br.I.aerosol' ]
+            # Couple halogen runs 
+            elif ver == '3.0':
+                l = ['no_hal', 'Just_Br', 'run' ]
+            # Main 2 ACPD runs + 2 extra runs 
             else:
                 l = ['no_hal', 'Just_Br', 'just_I', 'run' ]
 #        if any( [ (ver ==i) for i in  '1.5', '1.6' ] ) :
@@ -1008,10 +1102,10 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             ]
 
     if debug:                         
-        print [pwd + i for i in r ], l
+        print [rwd + i for i in r ], l
 
     if debug:
-        [pwd + i for i in r ]
+        [rwd + i for i in r ]
     if skip3:
         [ [ i.pop(0) for i in l, r ] for ii in range(3) ]
     if overide:
@@ -1034,9 +1128,19 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
         'run.Cl.Br.I.IX.acid.Cl.org.HIssa.III',
         'run.Cl.Br.I.MUTD.preindustrial']
 
+    # Override run names if version 3.0 used.
+    if ver == '3.0':
+
+        l =  ['NOHAL(v10)', 'BROMINE', 'Cl-Br-I' ]
+        inc_iGC_ver1_6=True
+        if inc_iGC_ver1_6:
+            extra = 'iGEOSChem_1.6_G5/run/'
+            r = r[:2]+ [extra]+r[2:]        
+            l = l[:2]+ ['Br-I']+l[2:]        
+
 
     # return list with inc. main dir
-    rtn_list = [pwd + i for i in r ] 
+    rtn_list = [rwd + i for i in r ] 
     if titles:
         rtn_list = [ rtn_list, l ]
     return   rtn_list

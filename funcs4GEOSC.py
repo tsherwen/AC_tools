@@ -82,6 +82,8 @@
 # 2.36 - Split Tropospheric Ox by loss route families 
 # 2.37 - Select only active wet dep tracers from given list
 # 2.38 - split 4D ( lon, lat, alt, time) output by season
+# 2.39 - Convert v/v to ng/m^3
+# 2.40 - Print array weighed 
 
 # --------------- 
 # ---- Section 3 ----- Time processing
@@ -3204,7 +3206,7 @@ def convert_v_v2ngm3(  arr, wd=None, spec='AERI', trop_limit=True,\
     return arr
     
 # --------------
-# 2.38 - Print array weighed 
+# 2.40 - Print array weighed 
 # -------------   
 def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
             region='All', monthly=False, mask3D=True, trop_limit=True, \
@@ -3336,16 +3338,9 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
 
 
 # --------------
-# 2.39 - Print amount of 4D (e.g. lon, lat) array above a value
+# 2.39 - 
 # -------------   
-def prt_area_above_value( arr=None, res='4x5', area_weight=True, zonal=False, \
-            region='All', monthly=False, mask3D=True, trop_limit=True, \
-            prt_by_3D_region=False, hPa=None, wd=None, \
-            verbose=True, debug=False ):
-    """ Provide amount of surface area wieghed values above a given value
-    """
 
-    #
 
 
 # ------------------ Section 6 -------------------------------------------
