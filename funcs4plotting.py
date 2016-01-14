@@ -262,7 +262,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     # standard plot 
     if any( [ (case==i) for i in 3, 9 ] ):
 
-        print fixcb_[0], fixcb_[1]
+#        print fixcb_[0], fixcb_[1]
         if debug:
             print fixcb_, arr.shape, [ len(i) for i in lon, lat ], norm, cmap
         poly = m.pcolor( lon, lat, arr, cmap=cmap, norm=norm, 
@@ -434,7 +434,6 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
 
     # -------- Colorbar/colomap variables...
     # Set cmap range I to limit poly, if not given cmap )
-    print fixcb
     fixcb_ = fixcb
     print fixcb, fixcb_,  [ (i.min(), i.max()) for i in [arr ] ]
     if isinstance( fixcb_, type(None) ) :#and isinstance( cmap, type(None) ):
@@ -474,7 +473,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
         if isinstance( norm, type(None) ):
             norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
         # Create poly collection
-        poly = ax.pcolor( lat, alt, arr.T, norm=norm, cmap=cmap)        
+        poly = ax.pcolor( lat, alt, arr.T, norm=norm, cmap=cmap, alpha=alpha)        
 
         if no_cb:
             pass
@@ -518,7 +517,10 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
                     [ np.array(i).shape for i in lat, alt, arr, arr.T ]
         # Create poly collection
         poly = ax.pcolor( lat, alt, arr.T, cmap=cmap, vmin=fixcb_[0],  \
-                                vmax=fixcb_[1], norm=norm )
+                                vmax=fixcb_[1], norm=norm, alpha=alpha )
+#        poly = ax.contourf( lat, alt, arr.T, cmap=cmap, vmin=fixcb_[0],  \
+#                                vmax=fixcb_[1], norm=norm )
+
 
     # ----------------  Colorbars  ----------------  
     if no_cb:
@@ -2472,11 +2474,14 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
     else:
         lvls = get_human_readable_gradations( vmax=fixcb[1],  \
                 vmin=fixcb[0], nticks=nticks,\
-                sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
+                sigfig_rounding_on_cb=sigfig_rounding_on_cb, \
+                verbose=verbose, debug=debug  )
 
+#elephant
     # Setup Colormap
     cmap, fixcb_buffered = get_colormap( np.array( fixcb ), \
-            nticks=nticks, fixcb=fixcb, buffer_cmap_upper=True )
+            nticks=nticks, fixcb=fixcb, buffer_cmap_upper=True, \
+            verbose=verbose, debug=debug )
 
     #  Plot 
     if isinstance( axn, type( None ) ):
@@ -2488,7 +2493,7 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
             fixcb=fixcb, f_size=f_size*.75, res=res, norm=norm, \
             fixcb_buffered=fixcb_buffered, no_cb=True, trop_limit=True,\
             window=window, interval=interval, xlabel=xlabel, ylabel=ylabel,\
-            debug=debug )
+            verbose=verbose, debug=debug )
 
     # Only show troposphere
     t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], trop_limit=True )
@@ -2502,7 +2507,8 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
                 extend=extend, lvls=lvls, cb_ax=cb_ax, \
                 sigfig_rounding_on_cb=sigfig_rounding_on_cb, nticks=nticks, \
-                norm=norm, discrete_cmap=discrete_cmap, debug=debug )    
+                norm=norm, discrete_cmap=discrete_cmap, 
+                verbose=verbose, debug=debug )    
 
     # Adjust plot ascetics
     fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right,     
@@ -2843,7 +2849,8 @@ def annotate_gc_grid(ax, res='4x5', f_size=6.5, loc_list=[ [-9999,-9999] ],
 # --------
 def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, \
             upper=1,start_center=0.5, stop=1.0, maintain_scaling=True,\
-            arr=None, name='shiftedcmap', npoints=257):
+            arr=None, name='shiftedcmap', npoints=257, \
+            verbose=True, debug=False ):
     '''
     adapted from stackoverflow to allow for maintaining scaling: 
     original: "http://stackoverflow.com/questions/7404116/defining-the-  \
@@ -2891,9 +2898,10 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, \
                 'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=lower, \
                 b=upper ), cmap(np.linspace(lower, upper, npoints)))
 
-            print 'maintain scale: ', [float(i) for i in list( [ eq_range,\
-                act_range, vmin, vmax, abs(vmin), abs(vmax), cut_off, \
-                start_center, lower, upper, midpoint, start, stop] )  ]
+            if verbose:
+                print 'maintain scale: ', [float(i) for i in list( [ eq_range,\
+                    act_range, vmin, vmax, abs(vmin), abs(vmax), cut_off, \
+                    start_center, lower, upper, midpoint, start, stop] )  ]
     cdict = { 'red': [], 'green': [], 'blue': [], 'alpha': [] }
 
     # regular index to compute the colors
@@ -3200,13 +3208,15 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         if debug:
             print 'diverging data? =={}, for values range: '.format( True ),
         arr.mask = False
-        cmap = plt.cm.RdBu_r
+#        cmap = plt.cm.RdBu_r
+        cmap = plt.cm.Spectral
         # Centre color bar around zero
         if center_zero:
             vmin, vmax = arr.min(), arr.max()
             print 1-vmax/(vmax + abs(vmin)), vmin, vmax
-            cmap = shiftedColorMap(cmap, midpoint=1-vmax/(vmax + abs(vmin)), 
-                maintain_scaling=maintain_scaling, arr=arr, name='shifted')
+            cmap = shiftedColorMap(cmap, midpoint=1-vmax/(vmax + abs(vmin)), \
+                maintain_scaling=maintain_scaling, arr=arr, name='shifted', \
+                verbose=verbose, debug=debug )
 
     # Use updated jet replacements from mpl
     # : https://github.com/bids/colormap
@@ -3374,7 +3384,7 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
     
     # --- Get current gradations
-    if verbose:
+    if debug:
         print abs(lvls[-2])-abs(lvls[-3]), abs(lvls[-3])-abs(lvls[-2]), lvls,\
                      sigfig_rounding_on_cb
     try:
@@ -3383,13 +3393,14 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
 
     # handle if values (2,3) are both negative or abs. of both <0
     except:
-        if verbose:
+        if debug:
             print abs(lvls[-3])-abs(lvls[-2]), sigfig_rounding_on_cb_ticks
         try:    # handle if values (2,3) are both negative
             lvls_diff = round_to_n( abs(lvls[-3])-abs(lvls[-2]), \
                                 sigfig_rounding_on_cb_ticks)                                
         except: # If both absolute of vmin and vmax  are <0 ( and +ve )
-            print lvls, lvls[-2], lvls[-3], sigfig_rounding_on_cb_ticks
+            if debug:
+                print lvls, lvls[-2], lvls[-3], sigfig_rounding_on_cb_ticks
             lvls_diff = round_to_n( lvls[-2]-lvls[-3], \
                                 sigfig_rounding_on_cb_ticks)                                
 
@@ -3400,7 +3411,7 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     # solution: use get_colormap, with buffer_cmap_upper=True
     #  if values are >0, 
     if vmax > lvls_diff:
-        if verbose:
+        if debug:
             print vmax, lvls_diff
         vmax_rounded = myround( vmax, base=lvls_diff,  integer=False )
         vmax_rounded = round_to_n( vmax_rounded, sigfig_rounding_on_cb)

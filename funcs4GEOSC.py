@@ -84,6 +84,7 @@
 # 2.38 - split 4D ( lon, lat, alt, time) output by season
 # 2.39 - Convert v/v to ng/m^3
 # 2.40 - Print array weighed 
+# 2.41 - Extract data by family for a given wd
 
 # --------------- 
 # ---- Section 3 ----- Time processing
@@ -3350,9 +3351,94 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
 
 
 # --------------
-# 2.39 - 
+# 2.41 - Extract data by family for a given wd
 # -------------   
+def fam_data_extractor( wd=None, fam=None, trop_limit=True,  \
+            annual_mean=True, t_ps=None, verbose=False, debug=False ):
+    """ Driver to extract data requested, as families have differing output
+    
+        ( e.g. NOy, NOx, POx, CH4 loss rate, ... )
+    """
 
+    if verbose:
+        print 'fam_data_extractor called for ', fam, wd
+
+    # NOx
+    if fam == 'NOx' :
+        # Select species in family
+        specs = [ 'NO2', 'NO' ] 
+        scale =1E12
+#        units, scale = tra_unit(specs[0], IUPAC_unit=True, scale=True)
+        # Extract data
+        arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ], \
+                    trop_limit=trop_limit )
+        if debug:
+            print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in [arr ] ]
+        arr = arr.sum( axis=0) *scale
+
+    # OH ( in molec/cm3 )
+    if fam == 'OH' :
+        spec = 'OH'
+        arr = get_GC_output( wd=wd, vars=['CHEM_L_S__'+spec], \
+            trop_limit=trop_limit )
+
+
+    # NOy
+    if fam == 'NOy' :
+        # Select species in family
+        specs = GC_var('N_specs' )
+#        units, scale = tra_unit(specs[0], IUPAC_unit=True, scale=True)
+        scale =1E12
+        # Extract data
+        arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ], \
+                    trop_limit=trop_limit )
+        # Adjust to stiocmetry
+        print 'WARNING - adjust to stiochmetry'
+        sys.exit()
+        
+        if debug:
+            print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in [arr ] ]
+        arr = arr.sum( axis=0) *scale
+
+    # NOy
+    if fam == 'O3' :
+        # Select species in family
+        units, scale = tra_unit(fam, IUPAC_unit=True, scale=True)
+        # Extract data
+        arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+fam ], \
+                    trop_limit=trop_limit )
+        if debug:
+            print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in [arr ] ]
+        arr = arr *scale
+
+    # Get Ox prod (POx/POX) ([molec/cm3/s])
+    if fam == 'POX' :
+        # Select species in family
+        arr = get_GC_output( wd=wd, vars=['PORL_L_S__'+fam], 
+                    trop_limit=trop_limit )
+
+    # Get Ox prod (POx/POX) ([molec/cm3/s])
+    if fam == 'CH4 loss' :
+        # Select species in family
+#        arr = get_GC_output( wd=wd, vars=['PORL_L_S__'+fam], 
+#                    trop_limit=trop_limit )
+        arr = get_CH4_lifetime( wd=wd, use_OH_from_geos_log=False,\
+            average_value=False )
+        # Want in units of yr^-1
+        arr = 1/arr
+
+    if debug:
+        print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in [arr ] ]    
+    if not isinstance( t_ps, type(None) ):
+        arr = arr *t_ps
+    if debug:
+        print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in [arr ] ]    
+
+    # Take annual mean?
+    if annual_mean:
+        arr = arr.mean( axis=-1 )
+
+    return arr
 
 
 # ------------------ Section 6 -------------------------------------------

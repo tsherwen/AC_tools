@@ -247,9 +247,9 @@ def get_xy(Lon,Lat, lon_edges, lat_edges, debug=False):
 # --------   
 # 1.12 - Save as pdf.
 # --------
-def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,
-                         justHH=False, no_dstr=True, save2png=True, 
-                         save2eps=False, debug=False ):
+def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,\
+            justHH=False, no_dstr=True, save2png=True, \
+            save2eps=False, transparent=True, debug=False ):
     """ Save figures (matplotlib) to pdf file """
 
     # set save directory ( using default directory dictionary )
@@ -275,16 +275,18 @@ def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,
 
     # save and close
     type = 'PDF' 
-    pdf.savefig( dpi=dpi )
+    pdf.savefig( dpi=dpi, transparent=transparent )
     pdf.close()
 
     # Also export to png and eps?
     if save2png:
         type += '/PDF' 
-        plt.savefig(npdf+'.png', format='png', dpi=dpi)
+        plt.savefig(npdf+'.png', format='png', dpi=dpi, \
+            transparent=transparent )
     if save2eps:
         type += '/EPS' 
-        plt.savefig(npdf+'.eps', format='eps', dpi=dpi)
+        plt.savefig(npdf+'.eps', format='eps', dpi=dpi, \
+            transparent=transparent)
     print type+' saved & Closed as/at: ', npdf
 
 # --------   
