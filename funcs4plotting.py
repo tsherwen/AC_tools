@@ -2366,6 +2366,8 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         print 'plot_spatial_figure called, with shape {}, fixcb: {}'.format(\
                 arr.shape,  fixcb)+', min: {}, max:{}'.format( arr.min(), \
                 arr.max()  )
+        print '@ surface, min: {} and max: {}'.format( \
+                arr[...,0].min(), arr[...,0].max() )
 
     # setup fig if not provided
     if isinstance( fig, type(None) ):
@@ -3132,7 +3134,6 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         this function also will can adjust colormaps to fit a given set of
         ticks
     """
-#    positive=True
 
     # Make sure cmap includes range of all readable levels (lvls)
     # i.e head of colormap often rounded for ascetic/readability reasons
@@ -3143,12 +3144,13 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
 
         # increase maximum value in color by 5% of level diff 
         # to allow space for max lvl 
-#        fixcb_ = ( fixcb[0],  lvls[-1]+ ( lvls_diff*0.20 )) # Kludge test. 
         fixcb_ = ( fixcb[0],  lvls[-1]+ ( lvls_diff*0.05 ))
         arr = np.array( fixcb_ )
-        
-#        print arr, fixcb, fixcb_, lvls
-#        sys.exit()
+
+        # Gotcha - make sure max(lvls)  not increased > 0        
+        if (max(lvls) <= 0) and ( not (arr.max() < 0 ) ):
+            arr = np.array(  [ arr[0], 0 ] )
+            
         
     # make sure array has a mask
     if debug:
@@ -3157,12 +3159,15 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
     if 'ask' not in str(type( arr ) ):
         arr = np.ma.array(arr) 
 #        s_mask = arr.mask
+        
     if debug:
         print '>'*5, ('ask' not in str( type( arr ) )), type( arr )
     
     # If postive/negative not given, check if +ve/-ve
-#    if any( [ not isinstance( i, type(None) ) for i in positive, negative ] ):
     if not any( np.array([ positive, negative ]) ):
+        if debug:
+            print 'Testing if arr is +ve/-ve, for arr with min' +\
+                '{} and max {}'.format( arr.min(), arr.max() )
 
         # --- sequential
         # negative?
@@ -3208,8 +3213,8 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         if debug:
             print 'diverging data? =={}, for values range: '.format( True ),
         arr.mask = False
-#        cmap = plt.cm.RdBu_r
-        cmap = plt.cm.Spectral
+        cmap = plt.cm.RdBu_r
+#        cmap = plt.cm.Spectral
         # Centre color bar around zero
         if center_zero:
             vmin, vmax = arr.min(), arr.max()

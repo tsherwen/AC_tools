@@ -1803,7 +1803,7 @@ def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
     print [ i.shape for i in arr], np.sum( arr )
 
     # Adjust to stiochmetry  ( Vars )
-    arr = [ arr[n]*spec_stoich(i, I=I, N=N, Br=Br, Cl=Cl) \
+    arr = [ arr[n]*spec_stoich(i, ref_spec=fam) \
         for n,i in enumerate( specs) ]
     print [ i.shape for i in arr], np.sum( arr )
 

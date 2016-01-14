@@ -441,15 +441,15 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
     """
     # If reference species provided automatically select family
     if not isinstance( ref_spec, type(None) ):
-        if ref_spec == 'I':
+        if any( [(ref_spec==i)  for i in 'I', 'Iy' ] ):
             I=True
-        if ref_spec == 'Br':
+        if any( [(ref_spec==i) for i in 'Br', 'Bry' ] ):
             Br=True
-        if ref_spec == 'Cl':
+        if any( [(ref_spec==i)  for i in 'Cl', 'Cly' ] ):
             Cl=True
         if ref_spec == 'C':
             C=True
-        if ref_spec == 'N':
+        if any( [(ref_spec==i) for i in  'N', 'NOy', 'NOx' ] ):
             N=True
         if ref_spec == 'OH':
             OH=True
@@ -1012,12 +1012,13 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
         just_bcase_std=False, ver='1.6', res='4x5', overide=False,    \
         inc_schmidt_2015=False, inc_iGC_ver1_6=False, \
         debug=False): 
-    """ Dictionary storage for iGEOSChem most up to date (MUTD)
-            runs. 
-            
-            returns list of directories and titles 
+    """ Dictionary of storage of model runs.
+      
+        returns list of directories ("r") and titles ( "l")
+
+        Note: 
+            (1) To set directories mannually here, set override=True 
     """
-#    overide=True # what programmes are using this overide?
 
     if debug:
         print standard, sensitivity, titles, IO_obs, preindustrial, skip3,\
@@ -1111,15 +1112,19 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             r = [ i+'_no_I2Ox' for i in r ]
 
     if preindustrial:
+        if ver == '1.5':
             r = [ 
             'iGEOS_Chem_1.5_G5/no_hal', 'iGEOS_Chem_1.5_G5/run' ,   \
             'iGEOS_Chem_1.5_G5_preindustrial_no_hal/no_hal',    \
             'iGEOS_Chem_1.5_G5_preindustrial/run'  
             ]
 
-            l =  [
-            '(I-,Br-)', '(I+,Br+)' , '(I-,Br-) - 1750',  '(I+,Br+) - 1750'  
-            ]
+            l =  [ \
+            '(I-,Br-)', '(I+,Br+)' , '(I-,Br-) - 1750',  '(I+,Br+) - 1750']
+        if ver == '3.0':
+            r = [ 'no_hal', 'run', 'no_hal.preind', 'run.preind' ]
+            r = [d +i for i in r ]
+            l = [ 'NOHAL', 'Cl-Br-I', 'NH-PRE', 'Cl-Br-I-PRE' ]
 
     if debug:                         
         print [rwd + i for i in r ], l
@@ -1149,7 +1154,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
         'run.Cl.Br.I.MUTD.preindustrial']
 
     # Override run names if version 3.0 used.
-    if ver == '3.0':
+    if (ver == '3.0') and (not preindustrial):
 
         l =  ['NOHAL', 'BROMINE', 'Cl-Br-I' ]
 
