@@ -1210,7 +1210,7 @@ def get_cruise_track_mask(  max_lon=None, min_lon=None, max_lat=None, \
                         res=res )[:,:,None]
     
     # Mask over given latitude range, if provided
-    if not isinstance( max_lon, type(None) ):
+    if not isinstance( max_lat, type(None) ):
         m = m + lat2lat_2D_unmasked( lowerlat=min_lat, higherlat=max_lat, \
                     res=res )[:,:,None]
 
