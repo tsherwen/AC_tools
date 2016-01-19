@@ -147,8 +147,8 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
     # Setup list of tracers
     if ver == '1.7':
         ntracers=85
-    if ver == '2.0':
-        ntracers=101
+    if any( [ (ver == i) for i in '2.0', '3.0' ] ):
+        ntracers=103
     if ver == 'johan_br.v92':
         ntracers=87
     TRAs = ['TRA_'+ str(i) for i in range(1, ntracers+1) ] 
@@ -165,6 +165,8 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
         PHOT_1st, PHOT_last = 453, 529
     if ver == '2.0':    
         PHOT_1st, PHOT_last = 413, 614
+    if ver == '3.0':    
+        PHOT_1st, PHOT_last = 537, 627
 
     JREAs = ['REA_'+ str(i) for i in range(PHOT_1st, PHOT_last) ] 
     REAs_all = ['REA_'+ str(i) for i in range(0, 533) ] 
@@ -1133,25 +1135,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
         [rwd + i for i in r ]
     if skip3:
         [ [ i.pop(0) for i in l, r ] for ii in range(3) ]
-    if overide:
-            # Version  2.0/1.7 runs
-#        r = [ 
-#        'iGEOSChem_1.7_v10/run', 'iGEOSChem_2.0_v10/run' 
-#            'iGEOSChem_1.7_v10/run' , 'johan/bpch_v10'
-#        ]
-#        l = '1.6', '1.7'
-#        l = 'v10, I+Br Parella', 'v10, I+Br+Cl johan'
-            # Version  3.0 runs
-        r = [
-            'iGEOSChem_3.0_v10/no_hal',
-             'iGEOSChem_3.0_v10/Just_Br',
-             'iGEOSChem_3.0_v10/run.Cl.Br.I.IX.acid.Cl.org.HIssa.III',
-             'iGEOSChem_3.0_v10/run.Cl.Br.I.MUTD.preindustrial']            
 
-        l = [ 
-        'no_hal', 'Just_Br', 
-        'run.Cl.Br.I.IX.acid.Cl.org.HIssa.III',
-        'run.Cl.Br.I.MUTD.preindustrial']
 
     # Override run names if version 3.0 used.
     if (ver == '3.0') and (not preindustrial):
@@ -1166,7 +1150,34 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
         if inc_schmidt_2015:
             extra = '/../../collaboration/johan/v9-2//run.johan.v92.rundir/'
             r = r[:2]+ [extra]+r[2:]        
-            l = l[:2]+ ['Br_het-Cl(v9.2)']+l[2:]        
+            l = l[:2]+ ['Br_het-Cl(v9.2)']+l[2:]  
+
+    # Mannually overide run names
+    if overide:
+            # Version  2.0/1.7 runs
+#        r = [ 
+#        'iGEOSChem_1.7_v10/run', 'iGEOSChem_2.0_v10/run' 
+#            'iGEOSChem_1.7_v10/run' , 'johan/bpch_v10'
+#        ]
+#        l = '1.6', '1.7'
+#        l = 'v10, I+Br Parella', 'v10, I+Br+Cl johan'
+            # Version  3.0 runs
+        r = [
+            'iGEOSChem_3.0_v10/no_hal',
+            'iGEOSChem_3.0_v10/no_hal.ClBrI.PI',
+             'iGEOSChem_3.0_v10/Just_Br',
+             'iGEOSChem_3.0_v10/run.ClBrI.noClNO2',
+             'iGEOSChem_3.0_v10/run.ClBrI',
+             'iGEOSChem_3.0_v10/run.ClBrI.PI']            
+
+        l = [ 
+        'NOHAL', 
+        'NOHAL(PI)', 
+        'Just_Br', 
+        'Cl-Br-I', 
+        'Cl-Br-I (ClNO2)' ,
+        'Cl-Br-I(PI)' ]
+
 
     # return list with inc. main dir
     rtn_list = [rwd + i for i in r ] 

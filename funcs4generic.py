@@ -1187,3 +1187,34 @@ def get_EU_unmasked( res='1x1',  ):
     m = m1 + m2 
     
     return m
+    
+# --------
+# 2.20 - Cruise track mask
+# --------
+def get_cruise_track_mask(  max_lon=None, min_lon=None, max_lat=None, \
+        min_lat=None, unmask_water=True, res='4x5', trop_limit=True ):
+    """ Mask whole area of ship based research campaigns 
+        for bulk comparison
+    """
+    
+    # only look at surface
+    m = surface_unmasked( res=res, trop_limit=trop_limit )
+    
+    # apply ocean mask
+    if unmask_water:
+        m = m + ocean_unmasked(res=res)
+    
+    # Mask over given longitude range, if provided
+    if not isinstance( max_lon, type(None) ):
+        m = m  + lon2lon_2D_unmasked(lowerlon=min_lon, higherlon=max_lon, \
+                        res=res )[:,:,None]
+    
+    # Mask over given latitude range, if provided
+    if not isinstance( max_lon, type(None) ):
+        m = m + lat2lat_2D_unmasked( lowerlat=min_lat, higherlat=max_lat, \
+                    res=res )[:,:,None]
+
+    # Invert 
+    m = np.logical_not( m )
+    
+    return m

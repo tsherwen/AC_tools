@@ -59,7 +59,6 @@ import numpy as np
 # General fucntions
 from AC_tools.funcs4core import *
 from AC_tools.funcs4generic import *
-#from funcs4GEOSC import *
 
 # Time functions
 from AC_tools.funcs4time import *
@@ -107,9 +106,12 @@ def read_in_kml_sites(filename, limter=10, ind=[0, 3, 1, 2 ], debug=False):
     """ Read in list format csv, with details of sites to output planeflight for
         double up of function 1.00
     """
+    debug=False
+
     if debug:
-        print 'read_in_kml_sites called'
-    reader = csv.reader(open(filename,'rb'), delimiter=',') 
+        print 'read_in_kml_sites called for ', filename
+    reader = csv.reader( open( filename, 'rb' ), delimiter=',' ) 
+
     if debug:
         print reader
     for row in reader:
@@ -160,6 +162,9 @@ def read_in_kml_sites(filename, limter=10, ind=[0, 3, 1, 2 ], debug=False):
 # -------------
 def read_TOR_IO_files(filename, debug = False):
     """ Read in csv files from TORERO campaign """
+    if debug:
+        print 'read_TOR_IO_files called for ', filename
+
     reader = csv.reader(open(filename,'rb'), delimiter=',') 
     print reader, filename
     data_line = False
@@ -195,10 +200,14 @@ def read_TOR_IO_files(filename, debug = False):
 #  3.01 - Get plane flight data for a given location and species
 # ----
 def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
-            Kludge_fortan_output=False, verbose=True, debug=False):
+            Kludge_fortan_output=False, ver=None, verbose=True, debug=False):
     """ Read in sites from files in a given working directory """
     if verbose:
         print wd, spec, location, scale
+
+    # Get version if not given as agrument
+    if isinstance( ver, type(None) ):
+        ver = iGEOSChem_ver( wd )  
 
     # Extract from planeflight.dat files 
     model, names = readfile_basic( sorted(glob.glob(wd + \
@@ -217,10 +226,11 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
     except:
         print '>'*30, 'ERROR: failed to find >', spec , \
             '< in names list, trying planeflight equivilent', '<'*30
-        print spec, GC_var('GCFP_d2TRA')[spec]
+#        print spec, GC_var('GCFP_d2TRA')[spec]
+        spec = what_species_am_i( spec, ver=ver, invert=True ) 
 
         # Get index in list
-        k=names.index( GC_var('GCFP_d2TRA')[spec] )
+        k=names.index( spec )
         if debug:
             print k, len(model[:,0] ) , scale
 

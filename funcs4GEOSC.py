@@ -2000,10 +2000,13 @@ def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
         return dates
     
 # -------------
-# 2.08 - Work out iGEOS-Chem version- e.g. iGeosChem 1.1 or 1.2 from dir name ( wd ) 
+# 2.08 - Work out iGEOS-Chem version 
 # ------------- 
+# NOTE: moved to funcs4core ... 
 def iGEOSChem_ver(wd, verbose=True, debug=False):
-    """ get GEOS-Chem verson - iGEOS-Chem """
+    """ get iGEOS-Chem verson - iGEOS-Chem 
+        e.g. iGeosChem 1.1 or 1.2 from dir name ( wd ) 
+    """
 
     vers = [
     '1.1','1.2', '1.3', '1.4', '1.5', '1.6', '1.7', '2.0', '3.0'
