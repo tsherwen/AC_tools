@@ -224,7 +224,10 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     # -------- colorbar variables...
     # Set cmap range I to limit poly, if not given cmap )
     fixcb_ = fixcb
-    if isinstance( fixcb_, type(None) ) or isinstance( cmap, type(None) ):
+    # Old approach
+    if isinstance( fixcb_, type(None) ):# or isinstance( cmap, type(None) ):
+    # New approach
+#    if isinstance( fixcb_, type(None) ) or isinstance( cmap, type(None) ):
         fixcb_ = np.array( [ (i.min(), i.max()) for i in [arr ] ][0] )
 
     if isinstance( cmap, type(None) ):
@@ -245,6 +248,10 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     if isinstance( fixcb_buffered, type(None) ):
         fixcb_buffered = fixcb_
     fixcb_ = fixcb_buffered
+
+    print fixcb, fixcb_, fixcb_buffered, nticks, lvls
+#    fixcb_ = fixcb
+#    sys.exit()
 
     if verbose:
         print 'colorbar variables: ', fixcb_buffered, fixcb, fixcb_, lvls, \
@@ -304,9 +311,13 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         if verbose:
             print shrink, m, m.ax, poly, alpha, format, lvls, norm,  \
                     extend, ax
-        cb = plt.colorbar( poly, ax=ax, shrink=shrink, alpha=alpha,  \
-#            cb = plt.colorbar( poly, ax=m.ax, shrink=shrink, alpha=alpha,  \
-#                        format=format, ticks=lvls, norm=norm, \
+#        sys.exit()
+        # New approach
+#        cb = plt.colorbar( poly, ax=ax, shrink=shrink, alpha=alpha,  \
+#                    extend=extend )
+        # Old approach
+            cb = plt.colorbar( poly, ax=m.ax, shrink=shrink, alpha=alpha,  \
+                        format=format, ticks=lvls, norm=norm, \
                     extend=extend )
 
         for t in cb.ax.get_yticklabels():
@@ -3244,16 +3255,16 @@ def color4sensitstudy( title=None, rtn_dict=False):
     """ function to define plot colouring used for iodine mechanism 
     paper in ACPD"""
     d =  {
-    'I$_{2}$Ox X-sections x2': 'red',
-     'I$_{2}$Ox exp. X-sections': 'red',
-     'I$_{2}$Ox loss ($\\gamma$) /2': 'deepskyblue',
-     'I$_{2}$Ox loss ($\\gamma$) x2': 'deepskyblue',
+    'I$_{2}$O$_{X}$ X-sections x2': 'red',
+     'I$_{2}$O$_{X}$ exp. X-sections': 'red',
+     'I$_{2}$O$_{X}$ loss ($\\gamma$) /2': 'deepskyblue',
+     'I$_{2}$O$_{X}$ loss ($\\gamma$) x2': 'deepskyblue',
      'Br-I': 'purple',
      'Just org. I': 'blue',
-     'MBL BrO 2 pptv': 'saddlebrown',
+     'MBL BrO 2 pmol mol$^{-1}$': 'saddlebrown',
      'Ocean iodide': 'magenta',
-     'No I$_{2}$Ox Photolysis': 'red',
-     'Sulfate Uptake': 'orange',
+      'No I$_{2}$O$_{X}$ Photolysis': 'red',
+     'Sulfate uptake': 'orange',
      'het. cycle ($\\gamma$) /2': 'orange',
      'het. cycle ($\\gamma$) x2': 'orange',
      'no het. cycle ': 'orange'
@@ -3271,16 +3282,16 @@ def markers4sensitstudy( title=None, rtn_dict=False):
      paper in ACPD"""
 
     d =  {
-    'I$_{2}$Ox X-sections x2': 'd',
-     'I$_{2}$Ox exp. X-sections': 'h',
-     'I$_{2}$Ox loss ($\\gamma$) /2': '^',
-     'I$_{2}$Ox loss ($\\gamma$) x2': 'h',
+     'I$_{2}$O$_{X}$ X-sections x2': 'd',
+     'I$_{2}$O$_{X}$ exp. X-sections': 'h',
+     'I$_{2}$O$_{X}$ loss ($\\gamma$) /2': '^',
+     'I$_{2}$O$_{X}$ loss ($\\gamma$) x2': 'h',
      'Br-I': '^',
      'Just org. I': '^',
-     'MBL BrO 2 pptv': '^',
+     'MBL BrO 2 pmol mol$^{-1}$': '^',
      'Ocean iodide': '^',
-     'No I$_{2}$Ox Photolysis': '^',
-     'Sulfate Uptake': '^',
+     'No I$_{2}$O$_{X}$ Photolysis': '^',
+     'Sulfate uptake': '^',
      'het. cycle ($\\gamma$) /2': 'd',
      'het. cycle ($\\gamma$) x2': 'h',
      'no het. cycle ': '+'
@@ -3289,6 +3300,26 @@ def markers4sensitstudy( title=None, rtn_dict=False):
         return d
     else:
          return d[title]
+ 
+#                     'I2Ox_half': 'I$_{2}$O$_{X}$ loss ($\\gamma$) /2', 
+#                    'run': 'Br-I', 
+#                    'MacDonald_iodide': 'Ocean iodide', 
+#                    'Sulfate_up': 'Sulfate Uptake', 
+#                    'I2Ox_phot_exp': 'I$_{2}$O$_{X}$ exp. X-sections',  
+#                    'het_double': 'het. cycle ($\\gamma$) x2', 
+#                    'I2Ox_phot_x2': 'I$_{2}$O$_{X}$ X-sections x2', 
+#                    'no_het': 'no het. cycle ', 
+#                    'I2Ox_double': 'I$_{2}$O$_{X}$ loss ($\\gamma$) x2', 
+#                    'just_I': 'IODINE', 
+#                    'BrO1pptv': 'MBL BrO 1 pmol mol$^{-1}$', 
+#                    'het_half': 'het. cycle ($\\gamma$) /2', 
+#                    'Just_I_org': 'Just org. I', 
+#                    'no_I2Ox': 'No I$_{2}$O$_{X}$ Photolysis', 
+#                    'BrO1pptv_ALL' : 'BrO 1 pptv in Trop.', 
+#                    'BrO2pptv' : 'MBL BrO 2 pmol mol$^{-1}$',
+ 
+ 
+ 
  
 # --------
 # 4.40 -Make segments for variable line color plot

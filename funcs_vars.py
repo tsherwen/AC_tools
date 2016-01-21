@@ -729,7 +729,23 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
                 
                     # Model run title dictionaries
                     'run_name_dict': {'run': 'Br-I', 'Br_2ppt': 'Halogens (I+,Br+) + fixed 2 pptv BrO', 'just_I': 'IODINE', 'no_hal': 'NOHAL', 'just_Br': 'BROMINE', 'Br_1ppt': 'Halogens (I+,Br+) + fixed 1 pptv BrO', 'obs': 'Observations'}   ,
-                    'latex_run_names': {'I2Ox_half': 'I$_{2}$Ox loss ($\\gamma$) /2', 'run': 'Br-I', 'MacDonald_iodide': 'Ocean iodide', 'Sulfate_up': 'Sulfate Uptake', 'I2Ox_phot_exp': 'I$_{2}$Ox exp. X-sections',  'het_double': 'het. cycle ($\\gamma$) x2', 'I2Ox_phot_x2': 'I$_{2}$Ox X-sections x2', 'no_het': 'no het. cycle ', 'I2Ox_double': 'I$_{2}$Ox loss ($\\gamma$) x2', 'just_I': 'IODINE', 'BrO1pptv': 'MBL BrO 1 pptv', 'het_half': 'het. cycle ($\\gamma$) /2', 'Just_I_org': 'Just org. I', 'no_I2Ox': 'No I$_{2}$Ox Photolysis', 'BrO1pptv_ALL' : 'BrO 1 pptv in Trop.', 'BrO2pptv' : 'MBL BrO 2 pptv',
+                    'latex_run_names': {
+                    'I2Ox_half': 'I$_{2}$O$_{X}$ loss ($\\gamma$) /2', 
+                    'run': 'Br-I', 
+                    'MacDonald_iodide': 'Ocean iodide', 
+                    'Sulfate_up': 'Sulfate uptake', 
+                    'I2Ox_phot_exp': 'I$_{2}$O$_{X}$ exp. X-sections',  
+                    'het_double': 'het. cycle ($\\gamma$) x2', 
+                    'I2Ox_phot_x2': 'I$_{2}$O$_{X}$ X-sections x2', 
+                    'no_het': 'no het. cycle ', 
+                    'I2Ox_double': 'I$_{2}$O$_{X}$ loss ($\\gamma$) x2', 
+                    'just_I': 'IODINE', 
+                    'BrO1pptv': 'MBL BrO 1 pmol mol$^{-1}$', 
+                    'het_half': 'het. cycle ($\\gamma$) /2', 
+                    'Just_I_org': 'Just org. I', 
+                    'no_I2Ox': 'No I$_{2}$O$_{X}$ Photolysis', 
+                    'BrO1pptv_ALL' : 'BrO 1 pptv in Trop.', 
+                    'BrO2pptv' : 'MBL BrO 2 pmol mol$^{-1}$',
                     # adjust from GBC to ACP names
 #                    'no_hal': '(I-,Br-)', 'Just_Br': '(I-,Br+)', 
                     'no_hal': 'NOHAL', 'Just_Br': 'BROMINE', 
@@ -1124,7 +1140,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             l =  [ \
             '(I-,Br-)', '(I+,Br+)' , '(I-,Br-) - 1750',  '(I+,Br+) - 1750']
         if ver == '3.0':
-            r = [ 'no_hal', 'run', 'no_hal.preind', 'run.preind' ]
+            r = [ 'no_hal', 'run.ClBrI', 'no_hal.PI', 'run.ClBrI.PI' ]
             r = [d +i for i in r ]
             l = [ 'NOHAL', 'Cl-Br-I', 'NH-PRE', 'Cl-Br-I-PRE' ]
 

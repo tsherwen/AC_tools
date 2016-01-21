@@ -895,16 +895,19 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
         ]
         tsects3D= [  'MBL', 'BL','FT',  'UT']
         maskes = [ 
-        np.logical_not( i) for i in  all_unmasked(res=res), ocean_unmasked(res=res) \
-        , land_unmasked(res=res), ice_unmasked(res=res), surface_unmasked(res=res)] +  [                        
-        np.logical_not( i)*np.logical_not( surface_unmasked(res=res) ) 
-        for i in ocean_unmasked(res=res), land_unmasked(res=res)
-        , ice_unmasked(res=res) ] + [  
-        np.logical_not( i) for i in 
-        NH_unmasked( res=res), SH_unmasked( res=res) ]    + [   
-        np.logical_not( i)  for i in  tropics_unmasked(res, saizlopez=saizlopez)
-        , extratropics_unmasked(res),mid_lats_unmasked(res, saizlopez=saizlopez) 
-        ]
+        np.logical_not( i) for i in  all_unmasked(res=res), \
+        ocean_unmasked(res=res) \
+        , land_unmasked(res=res), ice_unmasked(res=res), \
+        surface_unmasked(res=res)] +  [ \
+        np.logical_not( i)*np.logical_not( surface_unmasked(res=res) )  \
+        for i in ocean_unmasked(res=res), land_unmasked(res=res) \
+        , ice_unmasked(res=res) ] + [  \
+        np.logical_not( i) for i in \
+        NH_unmasked( res=res), SH_unmasked( res=res) ]    + [   \
+        np.logical_not( i)  \
+        for i in  tropics_unmasked(res, saizlopez=saizlopez)\
+        , extratropics_unmasked(res),  \
+        mid_lats_unmasked(res, saizlopez=saizlopez) ]
 
         # if comparison with saiz-lopez 2014, 
         if M_all:

@@ -20,7 +20,6 @@ import platform
 # 1.08 - Work out iGEOS-Chem version 
 # 1.99 - Get Reference data (lon, lat, and alt)  for a given resolution/nest
 
-
 # --------------                                                                                              
 # 1.01 - Store of dirs for earth0, atmosviz1, and tms mac                                                     
 # -------------                                                                                               
