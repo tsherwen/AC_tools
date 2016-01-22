@@ -1760,12 +1760,15 @@ def iodocarbon_obs():
 # --------------
 # 7.05 - Stores locations for use by funcs/progs - 
 # --------------
-def get_loc(loc=None, rtn_dict=False, debug=False):
+def get_loc( loc=None, rtn_dict=False, debug=False ):
     """
         Dictionary to store locations for automated analysis
 
         Data arranged: LON, LAT, ALT 
-        - double up? ( with 5.02 ?? )
+        ( LON in deg E, LAT in deg N, ALT in metres a.s.l. )
+
+        Notes:
+            - double up? ( with 5.02 ?? )
     """
 
     loc_dict ={    
@@ -1781,7 +1784,15 @@ def get_loc(loc=None, rtn_dict=False, debug=False):
     'North Ken' :  (-0.214174, 51.520718, 0),
     'KEN' :  (-0.214174, 51.520718, 0),
     'BT tower': (-0.139055, 51.521556, 190),
-    'BTT': (-0.139055, 51.521556, 190)
+    'BTT': (-0.139055, 51.521556, 190),
+    # ClNO2 sites
+    'HOU' : (-95.22, 29.45, 0  ) ,
+    'BOL' : ( -105.1507, 40.0139, 1655+ 150    ) ,
+    'LAC' : ( -118.14, 34.3, 	0 ),
+    'HES' : ( 8.45, 50.22, 	825 ),
+    'SCH': ( 114.15, 22.13, 60 ),
+    'TEX': (-95.425000, 30.350278 ), 
+     'CAL' : ( -114.12950, 51.07933,  1100)
     }
     if rtn_dict:
         return loc_dict

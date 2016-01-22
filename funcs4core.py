@@ -245,7 +245,9 @@ def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
 # 1.06 - Convert from hPa to km or vice versa.
 # -------------
 def hPa_to_Km(input, reverse=False, debug=False):
-    """ hPa/km convertor"""
+    """ hPa/km convertor
+        Set "reverse" to True to convert Km to hPa 
+    """
     if reverse:
          return [ np.exp(  np.float(i) /-7.6)*1013. for i in input ]
     else:

@@ -225,9 +225,9 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     # Set cmap range I to limit poly, if not given cmap )
     fixcb_ = fixcb
     # Old approach
-    if isinstance( fixcb_, type(None) ):# or isinstance( cmap, type(None) ):
+#    if isinstance( fixcb_, type(None) ):# or isinstance( cmap, type(None) ):
     # New approach
-#    if isinstance( fixcb_, type(None) ) or isinstance( cmap, type(None) ):
+    if isinstance( fixcb_, type(None) ) or isinstance( cmap, type(None) ):
         fixcb_ = np.array( [ (i.min(), i.max()) for i in [arr ] ][0] )
 
     if isinstance( cmap, type(None) ):
@@ -313,12 +313,12 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
                     extend, ax
 #        sys.exit()
         # New approach
-#        cb = plt.colorbar( poly, ax=ax, shrink=shrink, alpha=alpha,  \
-#                    extend=extend )
-        # Old approach
-            cb = plt.colorbar( poly, ax=m.ax, shrink=shrink, alpha=alpha,  \
-                        format=format, ticks=lvls, norm=norm, \
+        cb = plt.colorbar( poly, ax=ax, shrink=shrink, alpha=alpha,  \
                     extend=extend )
+        # Old approach
+#            cb = plt.colorbar( poly, ax=m.ax, shrink=shrink, alpha=alpha,  \
+#                        format=format, ticks=lvls, norm=norm, \
+#                    extend=extend )
 
         for t in cb.ax.get_yticklabels():
             t.set_fontsize(f_size)
