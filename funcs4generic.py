@@ -247,9 +247,9 @@ def get_xy(Lon,Lat, lon_edges, lat_edges, debug=False):
 # --------   
 # 1.12 - Save as pdf.
 # --------
-def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,
-                         justHH=False, no_dstr=True, save2png=True, 
-                         save2eps=False, debug=False ):
+def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,\
+            justHH=False, no_dstr=True, save2png=True, \
+            save2eps=False, transparent=True, debug=False ):
     """ Save figures (matplotlib) to pdf file """
 
     # set save directory ( using default directory dictionary )
@@ -275,16 +275,18 @@ def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,
 
     # save and close
     type = 'PDF' 
-    pdf.savefig( dpi=dpi )
+    pdf.savefig( dpi=dpi, transparent=transparent )
     pdf.close()
 
     # Also export to png and eps?
     if save2png:
         type += '/PDF' 
-        plt.savefig(npdf+'.png', format='png', dpi=dpi)
+        plt.savefig(npdf+'.png', format='png', dpi=dpi, \
+            transparent=transparent )
     if save2eps:
         type += '/EPS' 
-        plt.savefig(npdf+'.eps', format='eps', dpi=dpi)
+        plt.savefig(npdf+'.eps', format='eps', dpi=dpi, \
+            transparent=transparent)
     print type+' saved & Closed as/at: ', npdf
 
 # --------   
@@ -893,16 +895,19 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
         ]
         tsects3D= [  'MBL', 'BL','FT',  'UT']
         maskes = [ 
-        np.logical_not( i) for i in  all_unmasked(res=res), ocean_unmasked(res=res) \
-        , land_unmasked(res=res), ice_unmasked(res=res), surface_unmasked(res=res)] +  [                        
-        np.logical_not( i)*np.logical_not( surface_unmasked(res=res) ) 
-        for i in ocean_unmasked(res=res), land_unmasked(res=res)
-        , ice_unmasked(res=res) ] + [  
-        np.logical_not( i) for i in 
-        NH_unmasked( res=res), SH_unmasked( res=res) ]    + [   
-        np.logical_not( i)  for i in  tropics_unmasked(res, saizlopez=saizlopez)
-        , extratropics_unmasked(res),mid_lats_unmasked(res, saizlopez=saizlopez) 
-        ]
+        np.logical_not( i) for i in  all_unmasked(res=res), \
+        ocean_unmasked(res=res) \
+        , land_unmasked(res=res), ice_unmasked(res=res), \
+        surface_unmasked(res=res)] +  [ \
+        np.logical_not( i)*np.logical_not( surface_unmasked(res=res) )  \
+        for i in ocean_unmasked(res=res), land_unmasked(res=res) \
+        , ice_unmasked(res=res) ] + [  \
+        np.logical_not( i) for i in \
+        NH_unmasked( res=res), SH_unmasked( res=res) ]    + [   \
+        np.logical_not( i)  \
+        for i in  tropics_unmasked(res, saizlopez=saizlopez)\
+        , extratropics_unmasked(res),  \
+        mid_lats_unmasked(res, saizlopez=saizlopez) ]
 
         # if comparison with saiz-lopez 2014, 
         if M_all:
@@ -1183,5 +1188,36 @@ def get_EU_unmasked( res='1x1',  ):
 
     #  conbine maskes 
     m = m1 + m2 
+    
+    return m
+    
+# --------
+# 2.20 - Cruise track mask
+# --------
+def get_cruise_track_mask(  max_lon=None, min_lon=None, max_lat=None, \
+        min_lat=None, unmask_water=True, res='4x5', trop_limit=True ):
+    """ Mask whole area of ship based research campaigns 
+        for bulk comparison
+    """
+    
+    # only look at surface
+    m = surface_unmasked( res=res, trop_limit=trop_limit )
+    
+    # apply ocean mask
+    if unmask_water:
+        m = m + ocean_unmasked(res=res)
+    
+    # Mask over given longitude range, if provided
+    if not isinstance( max_lon, type(None) ):
+        m = m  + lon2lon_2D_unmasked(lowerlon=min_lon, higherlon=max_lon, \
+                        res=res )[:,:,None]
+    
+    # Mask over given latitude range, if provided
+    if not isinstance( max_lat, type(None) ):
+        m = m + lat2lat_2D_unmasked( lowerlat=min_lat, higherlat=max_lat, \
+                    res=res )[:,:,None]
+
+    # Invert 
+    m = np.logical_not( m )
     
     return m

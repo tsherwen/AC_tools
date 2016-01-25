@@ -4,12 +4,13 @@
 
 # Section 0 - Required modules
 # Section 1 - Planeflight variables
-# Section 2 - Drivers functions
+
 # Section 3 - GeosChem (bpch) prod loss variables
 # Section 4 - GeosChem (bpch) general variables
 # Section 5 - Misc
 # Section 6 - Dynamic p/l processing
 # Section 7 - Obervational variables
+# Section 8- Drivers functions
 
 # ---------------------------- ------------- ------------- ------------- 
 # --------------  Contents
@@ -20,12 +21,6 @@
 # ---- Section 1 ----- Planeflight variables
 # 1.01 - PF variable dictionary ***
 # 1.02 - TRA_?? to Geos-Chem species name ***
-
-# --------------- ------------- ------------- -------------
-# ---- Section 2 ----- Drivers functions
-# 2.01 - P/L tag to PD tag ***
-# 2.02 - Get P/L dictionary for a given family ***
-# 2.03 - Get P/L dictionary for a given species ***
 
 # --------------- ------------- ------------- -------------
 # ---- Section 3 ----- GeosChem (bpch) prod loss variables
@@ -79,6 +74,12 @@
 # 7.06 - Get Locations of observations (lats, lons, alts ) for given sites
 # 7.07 - sonde station variables (list of 432 sondes)
 # 7.08 - returns  (lat, lon, alt (press), timezone (UTC) ) for a given site
+
+# --------------- ------------- ------------- -------------
+# ---- Section 8 ----- Drivers functions
+# 8.01 - P/L tag to PD tag ***
+# 8.02 - Get P/L dictionary for a given family ***
+# 8.03 - Get P/L dictionary for a given species ***
 
 
 # ------------------ Section 0 -----------------------------------
@@ -146,8 +147,8 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
     # Setup list of tracers
     if ver == '1.7':
         ntracers=85
-    if ver == '2.0':
-        ntracers=101
+    if any( [ (ver == i) for i in '2.0', '3.0' ] ):
+        ntracers=103
     if ver == 'johan_br.v92':
         ntracers=87
     TRAs = ['TRA_'+ str(i) for i in range(1, ntracers+1) ] 
@@ -164,6 +165,8 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
         PHOT_1st, PHOT_last = 453, 529
     if ver == '2.0':    
         PHOT_1st, PHOT_last = 413, 614
+    if ver == '3.0':    
+        PHOT_1st, PHOT_last = 537, 627
 
     JREAs = ['REA_'+ str(i) for i in range(PHOT_1st, PHOT_last) ] 
     REAs_all = ['REA_'+ str(i) for i in range(0, 533) ] 
@@ -294,153 +297,6 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, \
         return d[input]
 
 
-# ---------------- Section 2 -------------------------------------------
-# -------------- Drivers
-#
-
-# --------------
-# 2.01 - Convert Production/Loss RD IDs for O3 to PD## for input.geos/tracer.dat linked files
-# -------------
-def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',debug=False): 
-
-    """ Converts """
-
-    if any( [(ver ==i) for i in  '1.3' ,'1.4' ,'1.5' , '1.6', '1.7', '2.0' ]):
-
-        if wd==None:
-            if debug:
-                print 'WARNING: Using MUTD wd'
-            wd = MUTD_runs(ver=ver, res=res, debug=debug)[0]
-        PDs, vars = p_l_species_input_geos( wd, ver=ver,
-             rm_multiple_tagged_rxs=True)
-
-        # Add other vars for ease of processing
-        vars += ['PIOx', 'iLOX', 'LIOx', 'iPOX', 'POX', 'LOX', 'LOx', 'L_Iy']
-        PDs += ['PIOx', 'iLOX', 'LIOx', 'iPOX', 'POX', 'LOX', 'LOx', 'L_Iy']
-    
-        return dict( zip(vars, PDs))[PL ]
-    else:
-        print 'update programme - manual PLdict now obsolete. '
-
-# -------------
-# 2.02 - Uses functions to build a dictionary for a given family of loss
-# ------------- 
-def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
-    """ Get reaction IDs for each rxn. in spec (p/l, e.g. LOX) 
-        This is the driver for the prod/loss programmes """
-
-    # Extract details on reactio in p/l family
-    nums, rxns, tags, Coe = prod_loss_4_spec( wd,  spec, all_clean=True, \
-        ver=ver, debug=debug )
-
-    # Make a dictionary of coeffiecnts of reaction
-    Coe_dict = dict(zip(nums, Coe) )
-
-    # unpack for mulutple tags of same reactions, then get details
-    unpacked_tags = [j for k in tags for j in k ]
-    details  = [  get_tag_details( wd, tag, ver=ver ) for tag in unpacked_tags ]
-
-    # Kludge - 1 rxn missing from POx tracking? - 999  + "'ISOPND+OH', '+', '=1.0ISOPND'"
-    [ details.pop(n) for n, i in enumerate( details ) if i[1]==364]
-    ind =  [n for n, i  in enumerate( nums ) if i ==354 ]
-    
-    # Get Coes and overwrite where prog_mod_tms has values
-    Coes = [  get_rxn_Coe( wd, d[1], unpacked_tags[n], nums=nums, \
-                    rxns=rxns, tags=tags, Coe=Coe, spec=spec, debug=debug ) \
-                    for  n, d in enumerate( details ) ]
-
-    # Remove double ups, which are present due to Loss (LO3_??) and rate tagging (RD??) originally performed separately  
-    if rmx2:
-        d = [ 
-        ['RD62', 'LO3_38'], ['RD59', 'LO3_30'], ['RD65', 'LO3_34'],  \
-        ['RD93', 'LO3_55'], ['RD92', 'LO3_39'], [ 'RD95', 'LO3_36'],   \
-        ['RD67', 'LO3_35'] 
-        ]
-        d = [i[0] for i in d ]
-        ind = [ n for n, i in enumerate(details) if any( [ i[0] == ii \
-            for ii in d ] )  ]
-        if debug:
-            print d, ind, [len(i) for i in details, Coes ] ,  [ [i[0] \
-                for i in details][ii] for ii in ind ][::-1]
-        [ l.pop(i) for i in ind[::-1] for l in details, Coes ]
-        if debug:
-            print  [len(i) for i in details, Coes ]
-            
-    # return a dictionary indexed by p/l tracer, with rxn #, 
-    # reaction str and Coe of rxn.
-    return dict( zip( [i[0] for i in details], [ i[1:] + [ Coes[n] ]  \
-            for n, i in enumerate( details) ] ) )
-
-# -------------
-# 2.03 - Get prod loss reactions for a given family.
-# ------------- 
-def prod_loss_4_spec( wd, fam, all_clean=True, \
-        ver='1.7', debug=False ):
-    # ---  Get Dict of all reactions, Keys = #s
-    rdict = rxn_dict_from_smvlog( wd, ver=ver )
-
-    # ---  Get reaction # tracked by p/l diag for spec and coefficient.
-    rxns = rxns_in_pl(wd, fam)
-    nums =  rxns.keys() 
-    Coe = [ rxn[-1] for rxn in rxns.values() ]
-
-    # --- get all details from full reaction dictionary
-    rxns =  [ rdict[i] for i in nums ]
-
-    # --- get tags for tracked reactions, state where reactions are un tracked
-    tags = get_p_l_tags( rxns )
-
-    # --- cleaned tags
-    if all_clean:
-        tags = [ [re.sub('\+\d.\d', '',  i) for i in u ] for u in tags ]  
-        tags = [ [re.sub('\=\d.\d', '',  i) for i in u ] for u in tags ]  
-
-        # -- remove erroneous read/  Kludge on val
-        # ---  Fortran write error leads to combination of species at the
-        #  end of long line 
-        if debug:
-            print [  i[:3] for i in nums, rxns, tags, Coe]
-            print [ len(i) for i in nums, rxns, tags, Coe]
-
-        # LO3_36RD95 is present twice as this reaction is present 2 times in the code
-        errs = ['LO3_36RD95', 'LO3_36RD95' , 'ISOPNDPO3_50', 'ISOPNDLR40']
-        cerrs = [ ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], ['PO3_50'], ['LR40'] ]
-#        errs = ['LO3_36RD95' , 'ISOPNDPO3_50', 'ISOPNDLR40']
-#        cerrs = [ ['RD95'], ['PO3_50'], ['LR40'] ]
-        for n, e in enumerate( errs ):
-            try:
-                ind = [ nn  for nn, i in enumerate( tags) if \
-                                any([ ( e in ii) for ii in i ]) ] [0]
-                vars =  [ i[ind] for i in nums, rxns, tags, Coe]
-                if debug:
-                    print 3, [ i[-1] for i in nums, rxns, tags, Coe], vars,  \
-                            [ len(i) for i in nums, rxns, tags, Coe]
-                [i.pop(ind) for i in nums, rxns, tags, Coe ]
-
-                # add the cerrs values on the end
-                if debug:
-                    print 4, [ i[-1] for i in nums, rxns, tags, Coe],  \
-                            [ len(i) for i in nums, rxns, tags, Coe]
-                nums +=  [ vars[0] ]
-                rxns   +=  [vars[1] ]
-                tags    += [cerrs[n]]
-                Coe    +=  [vars[-1] ]
-
-                if debug:
-                    print 6, [ i[-1] for i in nums, rxns, tags, Coe], \
-                         [ len(i) for i in nums, rxns, tags, Coe]
-                    print '->'*30,  'SUCCESS >{}<  >{}<'.format( n, e )
-            except:
-                print '>'*100, 'FAIL >{}< >{}<'.format( n, e )
-
-    # KLUDGE! - rm empty list values of ones that contain errs
-#    ind = [ n for n,i in enumerate(tags) if ( (len(i)==0) or (i[0] in errs) ) ] 
-#    [ [ l.pop(i) for i in sorted(ind)[::-1] ] for  l in nums, rxns, tags, Coe ]
-    if debug:
-        print tags 
-
-    return nums, rxns, tags, Coe
-
 # ------------------------------------------- Section 3 -------------------------------------------
 # --------------  GeosChem (bpch) prod loss variables
 #
@@ -475,12 +331,23 @@ def get_tag_fam( tag ):
     , 'RD63': 'Iodine', 'RD62':'Iodine',  'LO3_38': 'Iodine', 'RD59': 'Iodine', 'LO3_30' : 'Iodine', 'RD65': 'Iodine', 'LO3_34': 'Iodine',  'RD93': 'Iodine', 'LO3_55': 'Iodine', 'RD92': 'Iodine', 'LO3_39': 'Iodine' , 'LO3_36': 'Iodine','RD95': 'Iodine' , 'RD67': 'Iodine', 'LO3_35': 'Iodine' 
 #    , 'RD36': 'Bromine' # Kludge to allow combination reactions 
     # Kludge - from Chris Holmes (paranox deposition, goes through p/l as Ox losss )
-    ,'LO3_70' : 'Photolysis'
-
-    # Extra tags not in list? 
+    ,'LO3_70' : 'Photolysis', \
+    # Add in new from updates to Cly, + Bry scheme ( 2.0, 3.0 )
+    'LO3_79' : 'Chlorine', 'LO3_80' : 'Chlorine', 'LO3_81':  'Chlorine',  \
+    'LO3_83': 'Chlorine', 'LO3_85': 'Chlorine', 'LO3_86': 'Chlorine', \
+    'LO3_78' : 'Chlorine', 'LO3_84': 'Bromine', 'LO3_76': 'Bromine', \
+    # This is a crossover reaction (HOBr + HCl ), but only Bry species losses Ox 
+    'LO3_75': 'Bromine', \
+    # This is a crossover reaction (ClNO3+HBr), but only Cly species losses Ox
+    'LO3_77': 'Chlorine', \
+    # This is a cross over reaction (ClO + BrO) - need to consider for both fam
+    'LO3_82': 'Bromine', \
+    # This is a cross over reaction (ClO + IO) - need to consider for both fam
+    'LO3_87': 'Iodine' \
+    # Extra tags not in list?  - obsolete. 
     #  (these reactions are appearing due to lack of inclusion of iodine 
-    # species in Ox family... )
-#    ,'RD19': 'iodine', 'RD37': 'iodine', 'RD01': 'iodine' 
+    # species in Ox family... )  - obsolete. 
+#    ,'RD19': 'iodine', 'RD37': 'iodine', 'RD01': 'iodine'   - obsolete. 
     }
     
     # Creigee reaction class/"family" dictionary
@@ -549,7 +416,7 @@ def species_mass( spec ):
     'HCl': 36.5, 'HOCl': 52.5, 'ClNO2': 81.5, 'ClNO3': 97.5 , 'ClOO': 67.5, 'Cl2O2': 103.0,  'CH3Cl':  50.5, 'CH2Cl2': 85.0, 'CHCl3': 119.5, 'BrSALA': 80, 'BrSALC': 80, 'ISALA': 127. ,  'ISALC': 127. , 
     # Additional "species" to allow for ease of  processing
     'AERI_AVG': ( (286.0+302.0+318.0)/3 )/2, 'SO4S': 96, 
-    'IO3': 127+(3*16) ,
+    'IO3': 127+(3*16) , 'SSBr2': 160.0
     }
     
     return d[spec]
@@ -558,29 +425,84 @@ def species_mass( spec ):
 # 4.03 -  return the stiochometry of Iodine in species
 # --------------
 def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
-            C=False, Br=False ): 
-#    if I:  # note -  re-write to take stioch species (e.g. OH, I instead of booleans ) - asssume I == True as default
-    #  C3H5I == C2H5I (this is a vestigle typo, left in to allow for use of older model runs    
-    # aerosol cycling specs
+            C=False, Br=False, Cl=False, ref_spec=None ): 
+    """ Returns unit equivelent of X ( e.g. I ) for a give species. 
+        
+        This can be automatically set by providing a reference species
+        
+        Notes:
+            (1) Update Needed:
+        re-write to take stioch species (e.g. OH, I instead of booleans )
+         - asssume I == True as default
+            (2) C3H5I == C2H5I 
+        (this is a vestigle typo, left in to allow for use of older model runs )
+            (3) aerosol cycling specs
     # 'LO3_36' : (2.0/3.0) , 'LO3_37' : (2.0/4.0),           # aersol loss rxns... 'LO3_37' isn't true loss, as I2O4 is regen. temp
-    # aerosol loss rxns - corrected stochio for Ox, adjsutment need for I
+            (4) Aerosol loss rxns 
+         corrected stochio for Ox, adjsutment need for I
+    """
+    # If reference species provided automatically select family
+    if not isinstance( ref_spec, type(None) ):
+        if any( [(ref_spec==i)  for i in 'I', 'Iy' ] ):
+            I=True
+        if any( [(ref_spec==i) for i in 'Br', 'Bry' ] ):
+            Br=True
+        if any( [(ref_spec==i)  for i in 'Cl', 'Cly' ] ):
+            Cl=True
+        if ref_spec == 'C':
+            C=True
+        if any( [(ref_spec==i) for i in  'N', 'NOy', 'NOx' ] ):
+            N=True
+        if ref_spec == 'OH':
+            OH=True
+        if ref_spec == 'IO':
+            IO=True
+        if ref_spec == 'NO':
+            NO=True
+
+    # Select dictionary
     d = {
-    'RD11': 1.0, 'RD10': 1.0, 'HIO3': 1.0, 'RD15': 1.0, 'RD62': 2.0, 'RD17': 1.0, 'RD16': 1.0, 'RD19': 1.0, 'LO3_37': 0.5, 'CH2I2': 2.0, 'AERII': 1.0, 'CH2ICl': 1.0, 'PIOx': 1.0, 'C3H7I': 1.0, 'RD73': 1.0, 'RD72': 2.0, 'RD71': 1.0, 'RD70': 1.0, 'C3H5I': 1.0, 'RD57': 1.0, 'CH3IT': 1.0, 'IO': 1.0, 'LO3_38': 1.0, 'RD61': 1.0, 'RD68': 1.0, 'I2': 2.0, 'IONO': 1.0, 'LO3_36': 0.6666666666666666, 'INO': 1.0, 'RD88': 1.0, 'RD89': 1.0, 'LOx': 1.0, 'RD06': 1.0, 'RD07': 1.0, 'RD02': 1.0, 'RD01': 1.0, 'I': 1.0, 'LO3_24': 0.5, 'AERI': 1.0, 'HOI': 1.0, 'RD64': 2.0, 'RD65': 1.0, 'RD66': 1.0, 'RD67': 1.0, 'RD60': 1.0, 'RD47': 1.0, 'C2H5I': 1.0, 'RD63': 1.0, 'RD20': 1.0, 'RD22': 1.0, 'RD24': 1.0, 'RD69': 1.0, 'RD27': 1.0, 'OIO': 1.0, 'CH2IBr': 1.0, 'LIOx': 1.0, 'L_Iy': 1.0, 'ICl': 1.0, 'IBr': 1.0, 'RD95': 2.0, 'I2O2': 2.0, 'I2O3': 2.0, 'I2O4': 2.0, 'I2O5': 2.0, 'HI': 1.0, 'I2O': 2.0, 'RD59': 1.0, 'RD93': 2.0, 'RD92': 1.0, 'IONO2': 1.0, 'RD58': 1.0, 'ISALA':1.0, 'ISALC':1.0, 
+    'RD11': 1.0, 'RD10': 1.0, 'HIO3': 1.0, 'RD15': 1.0, 'RD62': 2.0, \
+    'RD17': 1.0, 'RD16': 1.0, 'RD19': 1.0, 'LO3_37': 0.5, 'CH2I2': 2.0, \
+    'AERII': 1.0, 'CH2ICl': 1.0, 'PIOx': 1.0, 'C3H7I': 1.0, 'RD73': 1.0, \
+    'RD72': 2.0, 'RD71': 1.0, 'RD70': 1.0, 'C3H5I': 1.0, 'RD57': 1.0, \
+    'CH3IT': 1.0, 'IO': 1.0, 'LO3_38': 1.0, 'RD61': 1.0, 'RD68': 1.0, \
+    'I2': 2.0, 'IONO': 1.0, 'LO3_36': 0.6666666666666666, 'INO': 1.0, \
+    'RD88': 1.0, 'RD89': 1.0, 'LOx': 1.0, 'RD06': 1.0, 'RD07': 1.0, \
+    'RD02': 1.0, 'RD01': 1.0, 'I': 1.0, 'LO3_24': 0.5, 'AERI': 1.0, \
+    'HOI': 1.0, 'RD64': 2.0, 'RD65': 1.0, 'RD66': 1.0, 'RD67': 1.0, \
+    'RD60': 1.0, 'RD47': 1.0, 'C2H5I': 1.0, 'RD63': 1.0, 'RD20': 1.0, \
+    'RD22': 1.0, 'RD24': 1.0, 'RD69': 1.0, 'RD27': 1.0, 'OIO': 1.0, \
+    'CH2IBr': 1.0, 'LIOx': 1.0, 'L_Iy': 1.0, 'ICl': 1.0, 'IBr': 1.0, \
+    'RD95': 2.0, 'I2O2': 2.0, 'I2O3': 2.0, 'I2O4': 2.0, 'I2O5': 2.0, \
+    'HI': 1.0, 'I2O': 2.0, 'RD59': 1.0, 'RD93': 2.0, 'RD92': 1.0, \
+    'IONO2': 1.0, 'RD58': 1.0, 'ISALA':1.0, 'ISALC':1.0, 
     # p/l for: IO, I
-    'RD15': 1.0, 'RD17': 1.0, 'RD75': 1.0, 'RD72': 2.0, 'RD71': 1.0, 'RD70': 1.0, 'RD56': 1.0, 'RD69': 1.0, 'RD88': 1.0, 'RD89': 1.0, 'RD06': 1.0, 'RD07': 1.0, 'RD08': 1.0, 'RD64': 2.0, 'RD65': 1.0, 'RD67': 1.0, 'RD46': 2.0, 'RD47': 1.0, 'RD20': 1.0, 'RD22': 1.0, 'RD68': 1.0, 'RD25': 1.0, 'RD96': 1.0 ,
-    'RD11': 1.0, 'RD12': 2.0, 'RD02': 1.0, 'RD16': 1.0, 'RD19': 1.0, 'RD24': 1.0, 'RD09': 1.0, 'RD23': 1.0, 'RD37': 1.0, 'RD97': 1.0, 
+    'RD15': 1.0, 'RD17': 1.0, 'RD75': 1.0, 'RD72': 2.0, 'RD71': 1.0, \
+    'RD70': 1.0, 'RD56': 1.0, 'RD69': 1.0, 'RD88': 1.0, 'RD89': 1.0, \
+    'RD06': 1.0, 'RD07': 1.0, 'RD08': 1.0, 'RD64': 2.0, 'RD65': 1.0, \
+    'RD67': 1.0, 'RD46': 2.0, 'RD47': 1.0, 'RD20': 1.0, 'RD22': 1.0, \
+    'RD68': 1.0, 'RD25': 1.0, 'RD96': 1.0 ,'RD11': 1.0, 'RD12': 2.0, \
+    'RD02': 1.0, 'RD16': 1.0, 'RD19': 1.0, 'RD24': 1.0, 'RD09': 1.0, \
+    'RD23': 1.0, 'RD37': 1.0, 'RD97': 1.0, \
     # kludge for test analysis (HEMCO emissions )
     'ACET' : 1.0, 'ISOP': 1.0, 'CH2Br2': 1.0, 'CHBr3':1.0, 'CH3Br':1.0
-
     }
 
     if IO:
         d = {
-        'RD11': 2.0, 'RD10': 1.0, 'RD12': 2.0, 'LO3_36': 1./3., 'RD09': 1.0, 'RD66': 1.0, 'RD23': 1.0, 'RD37': 1.0, 'LO3_24': 1.0/2.0, 'RD56': 1.0, 'RD01': 1.0, 'RD08': 1.0, 'RD46': 2.0, 'RD30': 1.0, 'RD25': 1.0, 'RD27': 1.0, 'RD97':1.0
+        'RD11': 2.0, 'RD10': 1.0, 'RD12': 2.0, 'LO3_36': 1./3., 'RD09': 1.0, \
+        'RD66': 1.0, 'RD23': 1.0, 'RD37': 1.0, 'LO3_24': 1.0/2.0, 'RD56': 1.0, \
+        'RD01': 1.0, 'RD08': 1.0, 'RD46': 2.0, 'RD30': 1.0, 'RD25': 1.0, \
+        'RD27': 1.0, 'RD97':1.0
         }
     if NO:
         d ={
-        'NO2': 1.0, 'NO3': 1.0, 'N2O5': 2.0, 'NO': 1.0, 'PPN': 1.0, 'R4N2': 1.0, 'BrNO3': 1.0, 'INO': 1.0, 'PAN': 1.0, 'PMN': 1.0, 'HNO3': 1.0, 'HNO2': 1.0, 'NH3': 1.0, 'HNO4': 1.0, 'BrNO2': 1.0, 'IONO': 1.0, 'PROPNN': 1.0, 'NH4': 1.0, 'MPN': 1.0, 'MMN': 1.0, 'ISOPN': 1.0, 'IONO2': 1.0
+        'NO2': 1.0, 'NO3': 1.0, 'N2O5': 2.0, 'NO': 1.0, 'PPN': 1.0, 'R4N2': 1.0, 
+        'BrNO3': 1.0, 'INO': 1.0, 'PAN': 1.0, 'PMN': 1.0, 'HNO3': 1.0, \
+        'HNO2': 1.0, 'NH3': 1.0, 'HNO4': 1.0, 'BrNO2': 1.0, \
+        'IONO': 1.0, 'PROPNN': 1.0, 'NH4': 1.0, 'MPN': 1.0, 'MMN': 1.0, \
+        'ISOPN': 1.0, 'IONO2': 1.0 \
         }
     if OH:
         d = {
@@ -588,9 +510,18 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         }
     if N:
         d= {
-        'RD10': 1.0, 'LR26': 1.0, 'LR27': 1.0, 'LR20': 1.0, 'RD17': 1.0, 'RD16': 1.0, 'RD19': 1.0, 'RD18': 2.0, 'LR28': 1.0, 'LO3_30': 1.0, 'RD75': 1.0, 'LR7': 1.0, 'LR8': 1.0, 'RD56': 1.0, 'RD24': 1.0, 'LO3_39': 1.0, 'RD25': 1.0, 'RD81': 1.0, 'LR35': 1.0, 'LR18': 1.0, 'LR17': 1.0, 'LR11': 1.0, 'LR39': 1.0, 'RD20': 1.0, 'RD21': 2.0, 'RD22': 1.0, 'RD23': 1.0, 'RD68': 1.0, 'RD69': 1.0
+        'RD10': 1.0, 'LR26': 1.0, 'LR27': 1.0, 'LR20': 1.0, 'RD17': 1.0, \
+        'RD16': 1.0, 'RD19': 1.0, 'RD18': 2.0, 'LR28': 1.0, 'LO3_30': 1.0, \
+        'RD75': 1.0, 'LR7': 1.0, 'LR8': 1.0, 'RD56': 1.0, 'RD24': 1.0, \
+        'LO3_39': 1.0, 'RD25': 1.0, 'RD81': 1.0, 'LR35': 1.0, 'LR18': 1.0, \
+        'LR17': 1.0, 'LR11': 1.0, 'LR39': 1.0, 'RD20': 1.0, 'RD21': 2.0, \
+        'RD22': 1.0, 'RD23': 1.0, 'RD68': 1.0, 'RD69': 1.0, \
     # NOy ( N in 'NOy')
-, 'NO2': 1.0, 'NO3': 1.0, 'N2O5': 2.0, 'NO': 1.0, 'PPN': 1.0, 'R4N2': 2.0, 'BrNO3': 1.0, 'INO': 1.0, 'PAN': 1.0, 'PMN': 1.0, 'HNO3': 1.0, 'HNO2': 1.0, 'NH3': 1.0, 'HNO4': 1.0, 'BrNO2': 1.0, 'IONO': 1.0, 'PROPNN': 1.0, 'NH4': 1.0, 'MPN': 1.0, 'MMN': 1.0, 'ISOPN': 1.0, 'IONO2': 1.0
+        'NO2': 1.0, 'NO3': 1.0, 'N2O5': 2.0, 'NO': 1.0, 'PPN': 1.0, \
+        'R4N2': 2.0, 'BrNO3': 1.0, 'INO': 1.0, 'PAN': 1.0, 'PMN': 1.0, \
+        'HNO3': 1.0, 'HNO2': 1.0, 'NH3': 1.0, 'HNO4': 1.0, 'BrNO2': 1.0, \
+        'IONO': 1.0, 'PROPNN': 1.0, 'NH4': 1.0, 'MPN': 1.0, 'MMN': 1.0, \
+        'ISOPN': 1.0, 'IONO2': 1.0
         }
     if C:
         d = {
@@ -598,8 +529,19 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         }
     if Br:
          d= {
-        'CH3Br': 1.0, 'HOBr': 1.0, 'BrO': 1.0, 'CHBr3': 3.0, 'Br2': 2.0, 'BrSALC': 1.0, 'CH2IBr': 1.0, 'BrCl': 1.0, 'Br': 1.0, 'CH2Br2': 2.0, 'IBr': 1.0, 'BrSALA': 1.0, 'BrNO2': 1.0, 'BrNO3': 1.0, 'HBr': 1.0 
+        'CH3Br': 1.0, 'HOBr': 1.0, 'BrO': 1.0, 'CHBr3': 3.0, 'Br2': 2.0, \
+        'BrSALC': 1.0, 'CH2IBr': 1.0, 'BrCl': 1.0, 'Br': 1.0, 'CH2Br2': 2.0, \
+        'IBr': 1.0, 'BrSALA': 1.0, 'BrNO2': 1.0, 'BrNO3': 1.0, 'HBr': 1.0, \
+        # for ease of processing also include Seasalt Br2
+         'SSBr2': 2.0, 
     }
+    if Cl:
+        d= {
+        'ClO': 1.0, 'Cl': 1.0, 'ClOO': 1.0, 'ClNO3': 1.0, 'ClNO2': 1.0, \
+        'Cl2': 2.0, 'OClO': 1.0, 'HOCl': 1.0, 'HCl': 1.0, 'Cl2O2': 2.0,
+         'BrCl': 1.0, 'ICl':1.0
+        }
+
     return d[spec]
 
 # --------------
@@ -628,6 +570,11 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
                     'r_t'         : [ 'Photolysis','HOx','Bromine', 'Iodine' ], 
                     'r_tn'       : ['Photolysis','HOx' ,'Bromine', 'Iodine' ],                     
                     'r_tn_lc'  : ['photolysis','HOx' ,'bromine', 'iodine' ],                     
+                    # Ox loss families inc. Cly
+                    'r_tn_Cly' : [ \
+                    'Photolysis','HOx' ,'Chlorine','Bromine', 'Iodine' ],                     
+                    'r_tn_lc_Cly' : [ \
+                    'photolysis','HOx' ,'chlorine', 'bromine', 'iodine' ],                     
 
 #                    'Ox'         : ['Ox','POX','LOX','O3df','NO2df', 'PANdf', 'PMNdf', 'PPNdf', 'N2O5df','HNO3df', 'HOBrdf','BrNO3df','HOIdf','IONO2df', 'I2O2df', 'I2O4df','I2O3df'], 
 #                    'Ox1.1'         : ['Ox','POX','LOX','O3df','NO2df', 'PANdf', 'PMNdf', 'PPNdf', 'N2O5df','HNO3df', 'HOBrdf','BrNO3df','HOIdf','IONO2df', 'I2O2df'], 
@@ -710,36 +657,95 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
                     'LCH2Br'     : ['RD89' ],                        
                     'LCH3IT'     : ['RD15' , 'RD71'],                        
                      'sHOX'       : ['HOI', 'HOBr'],
-                    'HO2_loss'   : ['PO3_14','RD09','RD02', 'LR2', 'LR3', 'PO3_46','PO3_02', 'PO3_03', 'PO3_05'],
-                    'CAST_int'   : ['IO', 'OIO','HOI','I2','I','HOI','CH3I','CH2I2','CH2ICl', 'CH2IBr', 'C3H7I','C3H5I', 'BrO', 'Br', 'HOBr','Br2','CH3Br', 'CH2Br2', 'CHBr3', 'O3', 'CO', 'OH', 'HO2','NO','NO2'],
-                    'CAST_intn'  : ['IO', 'OIO','HOI','I2','I','HOI','CH3IT','CH2I2','CH2ICl', 'CH2IBr', 'C3H7I','C2H5I', 'BrO', 'Br', 'HOBr','Br2','CH3Br', 'CH2Br2', 'CHBr3', 'O3', 'CO', 'DMS', 'NO','HNO3','HNO4', 'NO2','NO3' , 'PAN' , 'HNO2', 'N2O5'],
-                    'CAST_int_n' : ['IO', 'OIO','HOI','I2','I','HOI','CH3I','CH2I2','CH2ICl', 'CH2IBr', 'C3H7I','C2H5I', 'BrO', 'Br', 'HOBr','Br2','CH3Br', 'CH2Br2', 'CHBr3', 'O3', 'CO', 'OH', 'HO2','NO','NO2'],
+                    'HO2_loss'   : [\
+            'PO3_14','RD09','RD02', 'LR2', 'LR3', 'PO3_46','PO3_02', 'PO3_03', \
+            'PO3_05'],
+                    'CAST_int'   : [ \
+            'IO', 'OIO','HOI','I2','I','HOI','CH3I','CH2I2','CH2ICl', 'CH2IBr',\
+            'C3H7I','C3H5I', 'BrO', 'Br', 'HOBr','Br2','CH3Br', 'CH2Br2', \
+            'CHBr3', 'O3', 'CO', 'OH', 'HO2','NO','NO2'],
+                    'CAST_intn'  : [\
+            'IO', 'OIO', 'HOI',' I2', 'I', 'HOI', 'CH3IT', 'CH2I2', 'CH2ICl', \
+            'CH2IBr', 'C3H7I','C2H5I', 'BrO', 'Br', 'HOBr', 'Br2', 'CH3Br', \
+            'CH2Br2', 'CHBr3', 'O3', 'CO', 'DMS', 'NO','HNO3','HNO4', \
+            'NO2','NO3' , 'PAN' , 'HNO2', 'N2O5'],
+                    'CAST_int_n' : [\
+            'IO', 'OIO','HOI','I2','I','HOI','CH3I','CH2I2','CH2ICl', 'CH2IBr',\
+            'C3H7I','C2H5I', 'BrO', 'Br', 'HOBr','Br2','CH3Br', 'CH2Br2', \
+            'CHBr3', 'O3', 'CO', 'OH', 'HO2','NO','NO2'],
                     'diurnal_sp' : ['IO','I2', 'CH2I2', 'BrO' ]  ,
-                    'obs_comp'   : ['CH3IT','CH2I2','CH2ICl','CH2IBr','C2H5I','C3H7I','I2','IO'] ,                    
-                    'emiss_specs': ['CH3IT','CH2I2','CH2ICl','CH2IBr','I2','HOI'] ,
-                    'w_dep_specs': ['I2' ,'HI'  ,'HOI'  ,'IONO', 'IONO2','I2O2', 'I2O4', 'I2O3' ,'AERI'],  #, 'IBr', 'ICl']
+                    'obs_comp'   : [\
+            'CH3IT', 'CH2I2', 'CH2ICl', 'CH2IBr', 'C2H5I', 'C3H7I','I2','IO'] ,
+                    'emiss_specs': [\
+            'CH3IT', 'CH2I2','CH2ICl','CH2IBr','I2','HOI'] ,
+                    'w_dep_specs': [\
+            'I2' ,'HI'  ,'HOI'  ,'IONO', 'IONO2','I2O2', 'I2O4', 'I2O3',\
+            'AERI'],  #, 'IBr', 'ICl']
   #                  'd_dep_specsl' : ['I2', 'HI', 'HOI', 'IONO', 'IONO2',  'I2O2', 'I2O4', 'I2O3','AERI'], #, 'IO', 'OIO'] ,                      
-                    'd_dep_specsl1.1' : ['I2', 'HI', 'HOI', 'IONO', 'IONO2',  'I2O2', 'I2O4', 'AERI'], #, 'IO', 'OIO'] ,                      
-                    'd_dep_specs': ['I2df', 'HIdf', 'HOIdf', 'IONOdf', 'IONO2df',  'I2O2df', 'I2O4df', 'I2O3df', 'AERIdf',], #, 'IOdf', 'OIOdf'], #
+                    'd_dep_specsl1.1' : [\
+            'I2', 'HI', 'HOI', 'IONO', 'IONO2',  'I2O2', 'I2O4', 'AERI'], #, 'IO', 'OIO'] ,                      
+                    'd_dep_specs': [ \
+            'I2df', 'HIdf', 'HOIdf', 'IONOdf', 'IONO2df',  'I2O2df', 'I2O4df', \
+            'I2O3df', 'AERIdf',], #, 'IOdf', 'OIOdf'], #
 #                    'd_dep_specs1.1': ['I2df', 'HIdf', 'HOIdf', 'IONOdf', 'IONO2df',  'I2O2df', 'I2O4df','AERIdf',], #, 'IOdf', 'OIOdf'], #
                     'I2_het_cyc'  : ['RD59','RD92','RD63'],  # IONO2, IONO, HOI
                     'I_het_loss'  : [ 'RD58', 'RD62', 'RD93' ,'RD95'], # HI, I2O2, I2O4, I2O3 uptake (prev: 2OIO excuded as I2Ox formaed, IO+OIO included as I2O3 not treated )
  #['RD60','RD61','RD62','RD52','RD53','RD54','RD55','RD13'],  # RD13 = OIO + OH => HIO3  86 => AERI loss
-                    'NOx'          : ['NO', 'NO2' ],
-                    'N_specs'  :  ['NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4', 'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN', 'NO3', 'HNO2', 'IONO', 'IONO2', 'INO'],
-                    'N_specs_no_I'  :  ['NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4', 'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN', 'NO3', 'HNO2'],
-                    'Bry'         : ['Br2', 'BrNO3', 'Br', 'HBr', 'BrCl', 'BrNO2', 'HOBr', 'IBr', 'BrO'],
-                    'Br_specs'         : ['Br2', 'BrNO3', 'Br', 'HBr', 'CH2IBr', 'CH3Br', 'CH2Br2', 'BrCl', 'BrNO2', 'BrSALC', 'BrSALA', 'HOBr', 'IBr', 'BrO', 'CHBr3'],
-                    'johan_GRL_TRAs': ['BrCl', 'Cl2', 'Cl', 'ClO', 'HCl', 'HOCl', 'ClNO2', 'ClNO3', 'ClOO', 'OClO', 'Cl2O2', 'CH3Cl', 'CH2Cl2', 'CHCl3', 'BrSALA', 'BrSALC' ], 
-                    'I_N_tags' : ['RD10', 'RD23', 'RD19', 'RD16', 'RD22', 'RD56', 'RD24', 'LO3_30', 'RD69', 'RD68', 'RD20', 'RD21', 'RD25', 'LO3_39', 'RD17', 'RD18', 'RD75'],
-                    'Br_N_tags' : ['LR7', 'LR18', 'LR17', 'LR11', 'LR8', 'LR20', 'LR26', 'LR28', 'LR27'],
-                    'inactive_I'  : ['BrCl', 'OClO', 'ClO', 'HOCl', 'Cl', 'Cl2', 'I2O5', 'I2O', 'HIO3', 'IBr', 'ICl', 'C2H5I','C3H7I'], # I2O3 now active.
-                    'active_I' : ['I2', 'HOI', 'IO', 'I', 'HI', 'OIO', 'INO', 'IONO', 'IONO2', 'I2O2', 'I2O4', 'I2O3', 'CH3IT', 'CH2I2', 'CH2ICl', 'CH2IBr'], 
-                    'surface_specs' : ['O3', 'NO', 'NO2', 'NO3' ,'N2O5', 'IO', 'IONO2' ],
+                    'NOx' : ['NO', 'NO2' ],
+                    'N_specs' : [
+        'NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4',\
+        'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN',\
+        'NO3', 'HNO2', 'IONO', 'IONO2', 'INO'],
+                    'N_specs_no_I'  :  [
+        'NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4', \
+        'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN',\
+         'NO3', 'HNO2'],
+                    'Bry' : [\
+        'Br2', 'BrNO3', 'Br', 'HBr', 'BrCl', 'BrNO2', 'HOBr', 'IBr', 'BrO'],
+                    'Cly' : [
+        'BrCl', 'Cl2', 'Cl', 'ClO', 'HCl', 'HOCl', 'ClNO2', 'ClNO3', 'ClOO', \
+        'OClO', 'Cl2O2'],
+                    'Br_specs' : ['Br2', 'BrNO3', 'Br', 'HBr', 'CH2IBr', \
+        'CH3Br', 'CH2Br2', 'BrCl', 'BrNO2', 'BrSALC', 'BrSALA', \
+        'HOBr', 'IBr', 'BrO', 'CHBr3'],
+                    'Br_emiss' : [ 'CH2Br2', 'CHBr3', 'SSBr2' ],#'CH3Br'
+                    'johan_GRL_TRAs': [
+        'BrCl', 'Cl2', 'Cl', 'ClO', 'HCl', 'HOCl', 'ClNO2', 'ClNO3', \
+        'ClOO', 'OClO', 'Cl2O2', 'CH3Cl', 'CH2Cl2', 'CHCl3', 'BrSALA', \
+        'BrSALC' ], 
+                    'I_N_tags' : ['RD10', 'RD23', 'RD19', 'RD16', 'RD22', \
+        'RD56', 'RD24', 'LO3_30', 'RD69', 'RD68', 'RD20', 'RD21', 'RD25', \
+        'LO3_39', 'RD17', 'RD18', 'RD75'],
+                    'Br_N_tags' : ['LR7', 'LR18', 'LR17', 'LR11', 'LR8', \
+        'LR20', 'LR26', 'LR28', 'LR27'],
+                    'inactive_I'  : [ \
+        'BrCl', 'OClO', 'ClO', 'HOCl', 'Cl', 'Cl2', 'I2O5', 'I2O', 'HIO3', \
+        'IBr', 'ICl', 'C2H5I','C3H7I'], # I2O3 now active.
+                    'active_I' : [ \
+        'I2', 'HOI', 'IO', 'I', 'HI', 'OIO', 'INO', 'IONO', 'IONO2', 'I2O2', 
+        'I2O4', 'I2O3', 'CH3IT', 'CH2I2', 'CH2ICl', 'CH2IBr'], 
+                    'surface_specs' : [\
+        'O3', 'NO', 'NO2', 'NO3' ,'N2O5', 'IO', 'IONO2' ],
                 
                     # Model run title dictionaries
                     'run_name_dict': {'run': 'Br-I', 'Br_2ppt': 'Halogens (I+,Br+) + fixed 2 pptv BrO', 'just_I': 'IODINE', 'no_hal': 'NOHAL', 'just_Br': 'BROMINE', 'Br_1ppt': 'Halogens (I+,Br+) + fixed 1 pptv BrO', 'obs': 'Observations'}   ,
-                    'latex_run_names': {'I2Ox_half': 'I$_{2}$Ox loss ($\\gamma$) /2', 'run': 'Br-I', 'MacDonald_iodide': 'Ocean iodide', 'Sulfate_up': 'Sulfate Uptake', 'I2Ox_phot_exp': 'I$_{2}$Ox exp. X-sections',  'het_double': 'het. cycle ($\\gamma$) x2', 'I2Ox_phot_x2': 'I$_{2}$Ox X-sections x2', 'no_het': 'no het. cycle ', 'I2Ox_double': 'I$_{2}$Ox loss ($\\gamma$) x2', 'just_I': 'IODINE', 'BrO1pptv': 'MBL BrO 1 pptv', 'het_half': 'het. cycle ($\\gamma$) /2', 'Just_I_org': 'Just org. I', 'no_I2Ox': 'No I$_{2}$Ox Photolysis', 'BrO1pptv_ALL' : 'BrO 1 pptv in Trop.', 'BrO2pptv' : 'MBL BrO 2 pptv',
+                    'latex_run_names': {
+                    'I2Ox_half': 'I$_{2}$O$_{X}$ loss ($\\gamma$) /2', 
+                    'run': 'Br-I', 
+                    'MacDonald_iodide': 'Ocean iodide', 
+                    'Sulfate_up': 'Sulfate uptake', 
+                    'I2Ox_phot_exp': 'I$_{2}$O$_{X}$ exp. X-sections',  
+                    'het_double': 'het. cycle ($\\gamma$) x2', 
+                    'I2Ox_phot_x2': 'I$_{2}$O$_{X}$ X-sections x2', 
+                    'no_het': 'no het. cycle ', 
+                    'I2Ox_double': 'I$_{2}$O$_{X}$ loss ($\\gamma$) x2', 
+                    'just_I': 'IODINE', 
+                    'BrO1pptv': 'MBL BrO 1 pmol mol$^{-1}$', 
+                    'het_half': 'het. cycle ($\\gamma$) /2', 
+                    'Just_I_org': 'Just org. I', 
+                    'no_I2Ox': 'No I$_{2}$O$_{X}$ Photolysis', 
+                    'BrO1pptv_ALL' : 'BrO 1 pptv in Trop.', 
+                    'BrO2pptv' : 'MBL BrO 2 pmol mol$^{-1}$',
                     # adjust from GBC to ACP names
 #                    'no_hal': '(I-,Br-)', 'Just_Br': '(I-,Br+)', 
                     'no_hal': 'NOHAL', 'Just_Br': 'BROMINE', 
@@ -1022,18 +1028,20 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
         preindustrial=False, skip3=False, v10v92comp=False,              \
         nested_EU=False, just_bcase_no_hal=False, just_std=False, \
         just_bcase_std=False, ver='1.6', res='4x5', overide=False,    \
+        inc_schmidt_2015=False, inc_iGC_ver1_6=False, \
         debug=False): 
-    """ Dictionary storage for iGEOSChem most up to date (MUTD)
-            runs. 
-            
-            returns list of directories and titles 
+    """ Dictionary of storage of model runs.
+      
+        returns list of directories ("r") and titles ( "l")
+
+        Note: 
+            (1) To set directories mannually here, set override=True 
     """
-#    overide=True # what programmes are using this overide?
 
     if debug:
         print standard, sensitivity, titles, IO_obs, preindustrial, skip3,\
                     nested_EU, just_bcase_std, ver
-    pwd = get_dir( 'rwd' )
+    rwd = get_dir( 'rwd' )
     l_dict= GC_var('latex_run_names')
 
     # Get version directories for versions
@@ -1051,6 +1059,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
     } }[res]
     d=d[ver]
 
+    # Select out for ACPD sensitivity run
     if sensitivity:
         l = [ 
         'no_hal', 'Just_Br',  'just_I', 'run', 'Just_I_org',  'I2Ox_double',\
@@ -1076,9 +1085,14 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             if ver == '1.7':
 #                l = ['no_hal', 'run' ]
                 l = ['Just_Br', 'run' ]
+            # IA runs ( Sherwen et al + Schmidt et al )
             elif ver == '2.0':
                 l = ['no_hal', 'run.Cl.Br.I.aerosol.no.SSA.Br2' ]
 #                l = ['no_hal', 'run.Cl.Br.I.aerosol' ]
+            # Couple halogen runs 
+            elif ver == '3.0':
+                l = ['no_hal', 'Just_Br', 'run' ]
+            # Main 2 ACPD runs + 2 extra runs 
             else:
                 l = ['no_hal', 'Just_Br', 'just_I', 'run' ]
 #        if any( [ (ver ==i) for i in  '1.5', '1.6' ] ) :
@@ -1116,32 +1130,73 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             r = [ i+'_no_I2Ox' for i in r ]
 
     if preindustrial:
+        if ver == '1.5':
             r = [ 
             'iGEOS_Chem_1.5_G5/no_hal', 'iGEOS_Chem_1.5_G5/run' ,   \
             'iGEOS_Chem_1.5_G5_preindustrial_no_hal/no_hal',    \
             'iGEOS_Chem_1.5_G5_preindustrial/run'  
             ]
 
-            l =  [
-            '(I-,Br-)', '(I+,Br+)' , '(I-,Br-) - 1750',  '(I+,Br+) - 1750'  
-            ]
+            l =  [ \
+            '(I-,Br-)', '(I+,Br+)' , '(I-,Br-) - 1750',  '(I+,Br+) - 1750']
+        if ver == '3.0':
+            r = [ 'no_hal', 'run.ClBrI', 'no_hal.PI', 'run.ClBrI.PI' ]
+            r = [d +i for i in r ]
+            l = [ 'NOHAL', 'Cl-Br-I', 'NH-PRE', 'Cl-Br-I-PRE' ]
 
     if debug:                         
-        print [pwd + i for i in r ], l
+        print [rwd + i for i in r ], l
 
     if debug:
-        [pwd + i for i in r ]
+        [rwd + i for i in r ]
     if skip3:
         [ [ i.pop(0) for i in l, r ] for ii in range(3) ]
+
+
+    # Override run names if version 3.0 used.
+    if (ver == '3.0') and (not preindustrial):
+
+        l =  ['NOHAL', 'BROMINE', 'Cl-Br-I' ]
+
+        # Add extra runs?
+        if inc_iGC_ver1_6:
+            extra = 'iGEOSChem_1.6_G5/run/'
+            r = r[:2]+ [extra]+r[2:]        
+            l = l[:2]+ ['Br-I(v9.2)']+l[2:]        
+        if inc_schmidt_2015:
+            extra = '/../../collaboration/johan/v9-2//run.johan.v92.rundir/'
+            r = r[:2]+ [extra]+r[2:]        
+            l = l[:2]+ ['Br_het-Cl(v9.2)']+l[2:]  
+
+    # Mannually overide run names
     if overide:
-        r = [ 
-        'iGEOSChem_1.7_v10/run', 'iGEOSChem_2.0_v10/run' 
+            # Version  2.0/1.7 runs
+#        r = [ 
+#        'iGEOSChem_1.7_v10/run', 'iGEOSChem_2.0_v10/run' 
 #            'iGEOSChem_1.7_v10/run' , 'johan/bpch_v10'
-        ]
+#        ]
 #        l = '1.6', '1.7'
-        l = 'v10, I+Br Parella', 'v10, I+Br+Cl johan'
+#        l = 'v10, I+Br Parella', 'v10, I+Br+Cl johan'
+            # Version  3.0 runs
+        r = [
+            'iGEOSChem_3.0_v10/no_hal',
+            'iGEOSChem_3.0_v10/no_hal.ClBrI.PI',
+             'iGEOSChem_3.0_v10/Just_Br',
+             'iGEOSChem_3.0_v10/run.ClBrI.noClNO2',
+             'iGEOSChem_3.0_v10/run.ClBrI',
+             'iGEOSChem_3.0_v10/run.ClBrI.PI']            
+
+        l = [ 
+        'NOHAL', 
+        'NOHAL(PI)', 
+        'Just_Br', 
+        'Cl-Br-I', 
+        'Cl-Br-I (ClNO2)' ,
+        'Cl-Br-I(PI)' ]
+
+
     # return list with inc. main dir
-    rtn_list = [pwd + i for i in r ] 
+    rtn_list = [rwd + i for i in r ] 
     if titles:
         rtn_list = [ rtn_list, l ]
     return   rtn_list
@@ -1174,7 +1229,7 @@ def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
     
     if isinstance( PHOTOPROCESS, type(None) ):
         PHOTOPROCESS = {
-        '1.6' : 457, '1.7' : 467, '2.0': 555
+        '1.6' : 457, '1.7' : 467, '2.0': 555, '3.0': 536
         }[ver]
     
     fn =  'smv2.log'
@@ -1310,11 +1365,14 @@ def rxn4pl( pls, wd='example/example', rdict=None, reduce_size=True, \
 # 6.04 - Construct a list of indicies for each fam from given tags
 # ------------- 
 def get_indicies_4_fam( tags, fam=False, IO_BrOx2=False, rtnspecs=False,
-         NOy_as_HOx=True, debug=False ):
+         NOy_as_HOx=True, Include_Chlorine=False, debug=False ):
     """ Return indicies (in list form) for in a given family """
     # assign family
 #    famsn = [ 'Photolysis','HOx','NOy' ,'Bromine', 'Iodine' ]
-    famsn = [ 'Photolysis','HOx' ,'Bromine', 'Iodine' ]
+    if Include_Chlorine:
+        famsn = [ 'Photolysis','HOx' ,'Chlorine','Bromine', 'Iodine' ]
+    else:
+        famsn = [ 'Photolysis','HOx' ,'Bromine', 'Iodine' ]
     fams = []
     for tag in tags:
         fams.append( get_tag_fam( tag) )
@@ -1322,21 +1380,36 @@ def get_indicies_4_fam( tags, fam=False, IO_BrOx2=False, rtnspecs=False,
     if NOy_as_HOx:
         fams = [x if (x!='NOy') else 'HOx' for x in fams]
 
+    # Create dictionary from tags and fam assignment
     fd = dict(zip(tags, fams) )
 
+    # Select tags with assigned family in list ("famsn")
     ll =  []
     [ ll.append([]) for i in famsn ]
     for n, tag in enumerate( tags ) :
         for fn in range(len(famsn)):
             if fd[tag] == famsn[fn] :
                 ll[fn].append( n)
+
+    # Consider Ox loss for 
     if fam:
         # Kludge - to allow for counting Ox loss via IO +BrO 50/50, 
         # ( add extra loss tag. )
         if IO_BrOx2:
+            # Add extra tag for reaction ( IO + BrO )
             ll[famsn.index('Bromine')].append(  max([max(i) for i in ll])+1 )
             fams = fams +[ 'Bromine' ] 
             tags = tags +  [ 'LO3_24'] 
+        if Include_Chlorine:
+            # Add extra tag for reaction ( ClO + BrO )
+            ll[famsn.index('Chlorine')].append(  max([max(i) for i in ll])+1 )
+            fams = fams +[ 'Chlorine' ] 
+            tags = tags +  [ 'LO3_82'] 
+            # Add extra tag for reaction  ( ClO + IO )
+            ll[famsn.index('Chlorine')].append(  max([max(i) for i in ll])+1 )
+            fams = fams +[ 'Chlorine' ] 
+            tags = tags +  [ 'LO3_87'] 
+
         if rtnspecs:
             return ll, fams, tags 
         else:
@@ -1508,7 +1581,7 @@ def get_tag_details( wd, tag=None, PDs=None,  rdict=None, \
     # what is the number of the first photolysis reaction?
     if isinstance( PHOTOPROCESS, type(None) ):
         PHOTOPROCESS = {
-        '1.6' : 457, '1.7' : 467, '2.0': 555
+        '1.6' : 457, '1.7' : 467, '2.0': 555, '3.0': 536
         }[ver]
 
     # ---  get all reactions tags are active in smv.log    
@@ -1549,20 +1622,26 @@ def get_tag_details( wd, tag=None, PDs=None,  rdict=None, \
 # ------------- 
 def get_rxn_Coe(wd, num, tag, nums=None, rxns=None, tags=None, \
             Coe=None, spec='LOX', ver='1.6', debug=False):
-    """ Retrieve given reaction coefficient for smvgear (from smv2.log) """
+    """ Retrieve given reaction coefficient for smvgear (from smv2.log)
+
+        If using dev. Iy scheme, then the listed values from fuction
+        Ox_in_species() will be used. """
 
     # --- get dictionaries for reactions within
     if all( [ (i == None) for i in nums, rxns, tags, Coe ] ):
         nums, rxns, tags, Coe = prod_loss_4_spec( wd,  spec, all_clean=True, \
                 ver=ver )
 
-    # Pull reaction coefficient 
+    # Pull reaction coefficient  from dictionary
     Coe_dict = dict(zip(nums, Coe) )             
     Coe = float(Coe_dict[ num ])
-    if ('P' not in tag ): # consider all change positive - Kludge due to the assignment approach.
+    # Consider all change positive - Kludge 
+    # ( This is due to the assignment approach, where P=prod, L=loss )
+    if ('P' not in tag ): 
         Coe =  Coe*-1.0
 
     # --- over write Ox in species with prod_mod_tms values
+    # ( This is only used for the Ox tracers from dev. Iy simulation )
     try:
         Coe = Ox_in_species(tag, rxns=True)
         if debug:
@@ -1681,12 +1760,15 @@ def iodocarbon_obs():
 # --------------
 # 7.05 - Stores locations for use by funcs/progs - 
 # --------------
-def get_loc(loc=None, rtn_dict=False, debug=False):
+def get_loc( loc=None, rtn_dict=False, debug=False ):
     """
         Dictionary to store locations for automated analysis
 
         Data arranged: LON, LAT, ALT 
-        - double up? ( with 5.02 ?? )
+        ( LON in deg E, LAT in deg N, ALT in metres a.s.l. )
+
+        Notes:
+            - double up? ( with 5.02 ?? )
     """
 
     loc_dict ={    
@@ -1702,7 +1784,16 @@ def get_loc(loc=None, rtn_dict=False, debug=False):
     'North Ken' :  (-0.214174, 51.520718, 0),
     'KEN' :  (-0.214174, 51.520718, 0),
     'BT tower': (-0.139055, 51.521556, 190),
-    'BTT': (-0.139055, 51.521556, 190)
+    'BTT': (-0.139055, 51.521556, 190),
+    # ClNO2 sites
+    'HOU' : (-95.22, 29.45, 0  ) ,
+    'BOL' : ( -105.1507, 40.0139, 1655+ 150    ) ,
+    'LAC' : ( -118.14, 34.3, 	0 ),
+    'HES' : ( 8.45, 50.22, 	825 ),
+    'SCH': ( 114.15, 22.13, 60 ),
+    'TEX': (-95.425000, 30.350278 ), 
+    'CAL' : ( -114.12950, 51.07933,  1100), 
+    'PAS':  ( -118.12, 34.14, 246  )
     }
     if rtn_dict:
         return loc_dict
@@ -1771,3 +1862,157 @@ def gaw_2_loc(site,  f =  'GLOBAL_SURFACE_O3_2006_2012.nc'):#, f
             lat =  f.groups[site].latitude
             print [ (i, type(i) ) for i in lat, lon, alt ]
         return (lat, lon, float( hPa_to_Km([alt], reverse=True)[0] ), -9999 )
+
+
+# ---------------- Section 2 -------------------------------------------
+# -------------- Drivers
+#
+
+# --------------
+# 8.01 - Convert Production/Loss RD IDs for O3 to PD## for input.geos/tracer.dat linked files
+# -------------
+def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',debug=False): 
+
+    """ Converts """
+
+    versions =  '1.3' ,'1.4' ,'1.5' , '1.6', '1.7', '2.0', '3.0' 
+    if any( [(ver ==i) for i in versions ]):
+
+        if wd==None:
+            if debug:
+                print 'WARNING: Using MUTD wd'
+            wd = MUTD_runs(ver=ver, res=res, debug=debug)[0]
+        PDs, vars = p_l_species_input_geos( wd, ver=ver,
+             rm_multiple_tagged_rxs=True)
+
+        # Add other vars for ease of processing
+        vars += ['PIOx', 'iLOX', 'LIOx', 'iPOX', 'POX', 'LOX', 'LOx', 'L_Iy']
+        PDs += ['PIOx', 'iLOX', 'LIOx', 'iPOX', 'POX', 'LOX', 'LOx', 'L_Iy']
+    
+        return dict( zip(vars, PDs))[PL ]
+    else:
+        print 'update programme - manual PLdict now obsolete. '
+
+# -------------
+# 8.02 - Uses functions to build a dictionary for a given family of loss
+# ------------- 
+def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
+    """ Get reaction IDs for each rxn. in spec (p/l, e.g. LOX) 
+        This is the driver for the prod/loss programmes """
+
+    # Extract details on reactio in p/l family
+    nums, rxns, tags, Coe = prod_loss_4_spec( wd,  spec, all_clean=True, \
+        ver=ver, debug=debug )
+
+    # Make a dictionary of coeffiecnts of reaction
+    Coe_dict = dict(zip(nums, Coe) )
+
+    # unpack for mulutple tags of same reactions, then get details
+    unpacked_tags = [j for k in tags for j in k ]
+    details  = [  get_tag_details( wd, tag, ver=ver ) for tag in unpacked_tags ]
+
+    # Kludge - 1 rxn missing from POx tracking? - 999  + "'ISOPND+OH', '+', '=1.0ISOPND'"
+    [ details.pop(n) for n, i in enumerate( details ) if i[1]==364]
+    ind =  [n for n, i  in enumerate( nums ) if i ==354 ]
+    
+    # Get Coes and overwrite where prog_mod_tms has values
+    Coes = [  get_rxn_Coe( wd, d[1], unpacked_tags[n], nums=nums, \
+                    rxns=rxns, tags=tags, Coe=Coe, spec=spec, debug=debug ) \
+                    for  n, d in enumerate( details ) ]
+
+    # Remove double ups, which are present due to Loss (LO3_??) and rate tagging (RD??) originally performed separately  
+    if rmx2:
+        d = [ 
+        ['RD62', 'LO3_38'], ['RD59', 'LO3_30'], ['RD65', 'LO3_34'],  \
+        ['RD93', 'LO3_55'], ['RD92', 'LO3_39'], [ 'RD95', 'LO3_36'],   \
+        ['RD67', 'LO3_35'] 
+        ]
+        d = [i[0] for i in d ]
+        ind = [ n for n, i in enumerate(details) if any( [ i[0] == ii \
+            for ii in d ] )  ]
+        if debug:
+            print d, ind, [len(i) for i in details, Coes ] ,  [ [i[0] \
+                for i in details][ii] for ii in ind ][::-1]
+        [ l.pop(i) for i in ind[::-1] for l in details, Coes ]
+        if debug:
+            print  [len(i) for i in details, Coes ]
+            
+    # return a dictionary indexed by p/l tracer, with rxn #, 
+    # reaction str and Coe of rxn.
+    return dict( zip( [i[0] for i in details], [ i[1:] + [ Coes[n] ]  \
+            for n, i in enumerate( details) ] ) )
+
+# -------------
+# 8.03 - Get prod loss reactions for a given family.
+# ------------- 
+def prod_loss_4_spec( wd, fam, all_clean=True, \
+        ver='1.7', debug=False ):
+    # ---  Get Dict of all reactions, Keys = #s
+    rdict = rxn_dict_from_smvlog( wd, ver=ver )
+
+    # ---  Get reaction # tracked by p/l diag for spec and coefficient.
+    rxns = rxns_in_pl(wd, fam)
+    nums =  rxns.keys() 
+    Coe = [ rxn[-1] for rxn in rxns.values() ]
+
+    # --- get all details from full reaction dictionary
+    rxns =  [ rdict[i] for i in nums ]
+
+    # --- get tags for tracked reactions, state where reactions are un tracked
+    tags = get_p_l_tags( rxns )
+
+    # --- cleaned tags
+    if all_clean:
+        tags = [ [re.sub('\+\d.\d', '',  i) for i in u ] for u in tags ]  
+        tags = [ [re.sub('\=\d.\d', '',  i) for i in u ] for u in tags ]  
+
+        # -- remove erroneous read/  Kludge on val
+        # ---  Fortran write error leads to combination of species at the
+        #  end of long line 
+        if debug:
+            print [  i[:3] for i in nums, rxns, tags, Coe]
+            print [ len(i) for i in nums, rxns, tags, Coe]
+
+        # LO3_36RD95 is present twice as this reaction is present 2 times in the code
+        # update 16 01 11: LO3_36RD95 is now present x3 in version 3.0 
+        #( due split uptake)
+        errs = [ \
+        'LO3_36RD95', 'LO3_36RD95','LO3_36RD95', 'ISOPNDPO3_50', 'ISOPNDLR40']
+        cerrs = [ \
+        ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], \
+        ['PO3_50'], ['LR40'] ]
+#        errs = ['LO3_36RD95' , 'ISOPNDPO3_50', 'ISOPNDLR40']
+#        cerrs = [ ['RD95'], ['PO3_50'], ['LR40'] ]
+        for n, e in enumerate( errs ):
+            try:
+                ind = [ nn  for nn, i in enumerate( tags) if \
+                                any([ ( e in ii) for ii in i ]) ] [0]
+                vars =  [ i[ind] for i in nums, rxns, tags, Coe]
+                if debug:
+                    print 3, [ i[-1] for i in nums, rxns, tags, Coe], vars,  \
+                            [ len(i) for i in nums, rxns, tags, Coe]
+                [i.pop(ind) for i in nums, rxns, tags, Coe ]
+
+                # add the cerrs values on the end
+                if debug:
+                    print 4, [ i[-1] for i in nums, rxns, tags, Coe],  \
+                            [ len(i) for i in nums, rxns, tags, Coe]
+                nums +=  [ vars[0] ]
+                rxns   +=  [vars[1] ]
+                tags    += [cerrs[n]]
+                Coe    +=  [vars[-1] ]
+
+                if debug:
+                    print 6, [ i[-1] for i in nums, rxns, tags, Coe], \
+                         [ len(i) for i in nums, rxns, tags, Coe]
+                    print '->'*30,  'SUCCESS >{}<  >{}<'.format( n, e )
+            except:
+                print '>'*100, 'FAIL >{}< >{}<'.format( n, e )
+
+    # KLUDGE! - rm empty list values of ones that contain errs
+#    ind = [ n for n,i in enumerate(tags) if ( (len(i)==0) or (i[0] in errs) ) ] 
+#    [ [ l.pop(i) for i in sorted(ind)[::-1] ] for  l in nums, rxns, tags, Coe ]
+    if debug:
+        print tags 
+
+    return nums, rxns, tags, Coe

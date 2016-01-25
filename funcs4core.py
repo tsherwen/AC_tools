@@ -7,6 +7,7 @@
 import numpy as np
 from netCDF4 import Dataset
 import platform
+import sys
 
 # --------------- ------------- ------------- ------------- ------------- 
 # ---- Section 1 ----- Modules required
@@ -17,6 +18,7 @@ import platform
 # 1.05 - Get grid values of lon, lat, and alt for a given resolution 
 # 1.06 - Convert from hPa to km or vice versa.
 # 1.07 - find nearest
+# 1.08 - Work out iGEOS-Chem version 
 # 1.99 - Get Reference data (lon, lat, and alt)  for a given resolution/nest
 
 # --------------                                                                                              
@@ -244,14 +246,16 @@ def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
 # 1.06 - Convert from hPa to km or vice versa.
 # -------------
 def hPa_to_Km(input, reverse=False, debug=False):
-    """ hPa/km convertor"""
+    """ hPa/km convertor
+        Set "reverse" to True to convert Km to hPa 
+    """
     if reverse:
          return [ np.exp(  np.float(i) /-7.6)*1013. for i in input ]
     else:
         return [-7.6*np.log( float(i) / 1013.) for i in input ]
 
 # --------   
-# 1.16 - Find nearest
+# 1.07 - Find nearest
 # --------
 def find_nearest(array,value):
     """
@@ -260,6 +264,28 @@ def find_nearest(array,value):
     """
     idx = (np.abs(array-value)).argmin()
     return idx
+
+# -------------
+# 1.08 - Work out iGEOS-Chem version 
+# ------------- 
+def iGEOSChem_ver(wd, verbose=True, debug=False):
+    """ get iGEOS-Chem verson - iGEOS-Chem 
+        e.g. iGeosChem 1.1 or 1.2 from dir name ( wd ) 
+    """
+
+    vers = [
+    '1.1','1.2', '1.3', '1.4', '1.5', '1.6', '1.7', '2.0', '3.0'
+    ]
+    if verbose:
+        print wd
+    
+    v = [ (i in wd) for i in vers ]
+    if debug:
+        print vers, v
+    return [vers[n] for n, i in enumerate(v) if i==True ][0]
+
+
+
 
 # --------------                                                                                 
 # 1.99 - Reference data (lon, lat, and alt) adapted from gchem - credit: GK (Gerrit Kuhlmann )             
