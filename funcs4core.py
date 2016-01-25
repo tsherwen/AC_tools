@@ -7,6 +7,7 @@
 import numpy as np
 from netCDF4 import Dataset
 import platform
+import sys
 
 # --------------- ------------- ------------- ------------- ------------- 
 # ---- Section 1 ----- Modules required
