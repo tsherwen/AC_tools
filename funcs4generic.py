@@ -1020,7 +1020,8 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
 
 
     # --- This is a simple way of using masks ( as multiplers )
-    # i.e. all (future) functions should have use_multiply_method=True 
+    # i.e. all (future) functions should have use_multiply_method=False
+    # and not use the code below 
     if use_multiply_method:  # Kludge
     
         # For case, pull mask from case list 

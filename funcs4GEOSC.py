@@ -2083,7 +2083,9 @@ def get_pl_in_Gg( specs=None, ctm_f=None, wd=None , years=None, months=None,
             ver='1.6', debug=False  ):
     """ Return prod/loss diagnostic for griven p/l species/tags
         Note: this approach is not comparible with PyGChem >0.3.0"""
-
+    
+    print '!'*20, specs, 
+    
     if debug:
         print 'Specs',  specs
     
@@ -2099,7 +2101,7 @@ def get_pl_in_Gg( specs=None, ctm_f=None, wd=None , years=None, months=None,
 
         # --- Process data  # [molec/cm3/s] =>  Gg I /s 
         # Extract as [molec/cm3/s] for specs 
-        specs_ = [ PLO3_to_PD( i, ver=ver, fp=True ) for i in specs ]
+        specs_ = [ PLO3_to_PD( i, ver=ver, fp=True, wd=wd ) for i in specs ]
         ars = get_GC_output( wd, vars=['PORL_L_S__'+i for i in specs_], \
                     r_list=True)
         # convert to Gg [I/Ox... ] /s 
@@ -3053,7 +3055,7 @@ def get_trop_Ox_loss( wd, pl_dict=None,  spec_l=None, ver='1.6' ,   \
 
         # Get prod loss in  [molec/cm3/s]
         ars = get_GC_output( wd, vars=[ 'PORL_L_S__'+ \
-            PLO3_to_PD(i, fp=True,wd=wd, ver=ver )  for i in spec_l ] )
+            PLO3_to_PD(i, fp=True, wd=wd, ver=ver )  for i in spec_l ] )
 
     # convert species arrays [molec/cm3/s] into Gg Ox / yr
     if units == 'Gg Ox/yr':
@@ -3097,6 +3099,11 @@ def split_Ox_loss_by_fam( wd, arr, r_t=None, pl_dict=None, \
 
     # generate indicies map to split Ox loss by route.   
     spec_l =  pl_dict.keys()
+    # Allow for removal of ClBrI het tracer whilst testing.
+    hack_ClBrI_rm_tacers=True
+    if hack_ClBrI_rm_tacers:
+        spec_l = rm_ClBrI_het_loss( spec_l=spec_l )[0]
+
     if debug:
         print len( spec_l)
     r_, fam, spec_l = get_indicies_4_fam( spec_l, fam=True, IO_BrOx2=True,\
@@ -3522,3 +3529,4 @@ def np2chronological_fromctm( ctms, arr, debug=False ):
         print 2, ind
 
     return np.concatenate( [arr[...,i][...,None] for i in ind ], axis =3)
+
