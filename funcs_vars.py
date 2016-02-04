@@ -529,7 +529,17 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
     'RD02': 1.0, 'RD16': 1.0, 'RD19': 1.0, 'RD24': 1.0, 'RD09': 1.0, \
     'RD23': 1.0, 'RD37': 1.0, 'RD97': 1.0, \
     # kludge for test analysis (HEMCO emissions )
-    'ACET' : 1.0, 'ISOP': 1.0, 'CH2Br2': 1.0, 'CHBr3':1.0, 'CH3Br':1.0
+    'ACET' : 1.0, 'ISOP': 1.0, 'CH2Br2': 1.0, 'CHBr3':1.0, 'CH3Br':1.0, \
+    # Iodine in het loss/cycling reactions
+    # loss to SSA/other aerosols
+    # HOI
+    'LR44': 1.0, 'LR45': 1.0, 'LR32': 1.0,   \
+    # HI other
+    'LR34': 1.0, \
+    # IONO2
+    'LR42': 1.0, 'LR43':1.0, 'LR35': 1.0, \
+    # IONO    
+    'LR46': 1.0, 'LR47': 1.0, 'LR39': 1.0
     }
 
     if IO:
@@ -585,7 +595,12 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
          'BrCl': 1.0, 'ICl':1.0
         }
 
-    return d[spec]
+    # Kludge for testing. Allow values to equal 1.0 if not defined. 
+    try:
+        return d[spec]
+    except:
+        print '!'*100, 'Kludge assuming stiochmetry = 1.0, for ', spec
+        return 1.0
 
 # --------------
 # 4.04 -  GEOS-Chem/ctm.bpch values
@@ -606,244 +621,202 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     if debug:
         print 'GC_var called'
     GC_var_dict = { 
-                    # Ox budget analysis
-                    'f_var'      : ['EW-FLX-$', 'NS-FLX-$', 'UP-FLX-$' ], 
-#                    'r_t'         : [ 'Photolysis','HOx','NOy'    ,'Bromine', 'Iodine' ], 
-#                    'r_tn'       : ['NOy'  ,'Photolysis','HOx' ,'Bromine', 'Iodine' ],                     
-                    'r_t'         : [ 'Photolysis','HOx','Bromine', 'Iodine' ], 
-                    'r_tn'       : ['Photolysis','HOx' ,'Bromine', 'Iodine' ],                     
-                    'r_tn_lc'  : ['photolysis','HOx' ,'bromine', 'iodine' ],                     
-                    # Ox loss families inc. Cly
-                    'r_tn_Cly' : [ \
-                    'Photolysis','HOx' ,'Chlorine','Bromine', 'Iodine' ],                     
-                    'r_tn_lc_Cly' : [ \
-                    'photolysis','HOx' ,'chlorine', 'bromine', 'iodine' ],                     
-
-#                    'Ox'         : ['Ox','POX','LOX','O3df','NO2df', 'PANdf', 'PMNdf', 'PPNdf', 'N2O5df','HNO3df', 'HOBrdf','BrNO3df','HOIdf','IONO2df', 'I2O2df', 'I2O4df','I2O3df'], 
-#                    'Ox1.1'         : ['Ox','POX','LOX','O3df','NO2df', 'PANdf', 'PMNdf', 'PPNdf', 'N2O5df','HNO3df', 'HOBrdf','BrNO3df','HOIdf','IONO2df', 'I2O2df'], 
-#                    'Ox_spec'    : ['O3', 'NO2', 'NO3', 'PAN', 'PMN', 'PPN', 'HNO4', 'N2O5', 'HNO3', 'BrO', 'HOBr', 'BrNO2', 'BrNO3', 'MPN', 'IO', 'HOI', 'IONO', 'IONO2', 'OIO', 'I2O2', 'I2O4', 'I2O3'],
-#                    'Ox_spec1.1'    : ['O3', 'NO2', 'NO3', 'PAN', 'PMN', 'PPN', 'HNO4', 'N2O5', 'HNO3', 'BrO', 'HOBr', 'BrNO2', 'BrNO3', 'MPN', 'IO', 'HOI', 'IONO', 'IONO2', 'OIO', 'I2O2', 'I2O4'],                    
-#                    'Ox_p_1.3'  : ['PO3_85', 'PO3_76', 'PO3_62', 'PO3_63', 'RD06', 'PO3_01', 'PO3_77', 'PO3_86', 'PO3_79', 'PO3_14', 'PO3_87', 'PO3_66', 'PO3_15', 'PO3_67', 'PO3_51', 'PO3_88', 'PO3_56', 'PO3_89', 'PO3_90', 'PO3_72', 'PO3_91', 'PO3_02', 'PO3_03', 'PO3_92', 'PO3_64', 'PO3_68', 'LR9', 'PO3_58', 'PO3_57', 'PO3_70', 'PO3_60', 'PO3_65', 'PO3_18', 'PO3_73', 'PO3_19', 'PO3_20', 'PO3_21', 'PO3_22', 'PO3_24', 'PO3_25', 'PO3_26', 'PO3_27', 'PO3_34', 'PO3_35', 'PO3_37', 'PO3_38', 'PO3_39', 'PO3_05', 'PO3_45', 'PO3_69', 'PO3_46', 'PO3_97', 'PO3_47', 'PO3_48', 'PO3_52', 'PO3_53', 'PO3_80', 'PO3_40', 'PO3_54', 'PO3_81', 'PO3_55', 'PO3_74', 'PO3_41', 'PO3_43', 'PO3_93', 'PO3_94', 'PO3_95', 'PO3_96', 'PO3_84', 'PO3_61', 'PO3_83', 'PO3_59', 'PO3_71', 'PO3_98', 'PO3_99', 'PO3100', 'PO3101', 'PO3_75',  'PO3_50'], # 'ISOPND',
-#                    'Ox_l_fp'    : ['LO3_18','RD98','LO3_54', # hv
-#                                    'LO3_03', 'LO3_02', 'LO3_08', 'LO3_09', 'LO3_06', 'LO3_05', 'LO3_10', 'LO3_53', 'LO3_47', # HOx (ROx route) # HOx
-#                                    'LO3_52', 'LO3_51','LO3_50', 'LO3_49', 'LO3_46', 'LO3_44', 'LO3_42', 'LO3_41', 'LO3_40',#'LO3_48','LO3_04', # NOy route
-#                                    'LR25','LR21','LR5','LR6' ,'LR30',  'LR10', 'LO3_24', # Bry route
-#                                    'LO3_34','LO3_24','LO3_35','LO3_30', 'LO3_39', 'LO3_38','LO3_55' , 'LO3_36', 'RD63'], # Iy route
-#                    'Ox_l_fp1.1'    : ['LO3_18','LO3_54', # hv
-#                                    'LO3_03', 'LO3_02', 'LO3_08', 'LO3_09', 'LO3_06', 'LO3_05', 'LO3_10', 'LO3_53', 'LO3_47', # HOx (ROx route) # HOx
-#                                    'LO3_52', 'LO3_51','LO3_50', 'LO3_49', 'LO3_46', 'LO3_44', 'LO3_42', 'LO3_41', 'LO3_40',#'LO3_48','LO3_04', # NOy route
-#                                    'LR25','LR21','LR5','LR6' ,'LR30', 'LR10','LO3_24', # Bry route
-#                                    'LO3_34','LO3_24','LO3_35','LO3_30','LO3_39',  'LO3_38','LO3_55' , 'LO3_36', 'RD63'], # Iy route
-#                    'Ox_l_fp1.3'    : ['LO3_18','RD98','LO3_54', # hv
-#                                    'LO3_03', 'LO3_02', 'LO3_08', 'LO3_09', 'LO3_06', 'LO3_05', 'LO3_10', 'LO3_53', 'LO3_47', 'LO3_56','LR37', 'LR38',  # HOx (ROx route) # HOx
-#                                    'LO3_52', 'LO3_51','LO3_50', 'LO3_49', 'LO3_46', 'LO3_44', 'LO3_42', 'LO3_41', 'LO3_40','LR36', 'LO3_58', #'LO3_48','LO3_04',,# NOy route
-#                                    'LO3_57', 'LO3_07', 'LO3_60', 'LO3_61', 'LO3_62', 'LO3_63', 'LO3_64', 'LO3_65', 'LO3_66', 'LO3_67', 'LO3_68', 'LO3_69', 'LO3_72','LO3_71', # NOy route
-#                                    'LR25','LR21','LR5','LR6' ,'LR30',  'LR10', 'LO3_24', # Bry route
-#                                    'LO3_34','LO3_24','LO3_35','LO3_30', 'LO3_39', 'LO3_38','LO3_55' , 'LO3_36'],  # Iy route
-
-#                    'Ox_l_fp_r_' :  [(0, 3), (3, 11), (11, 21), (21, 28), (28, None)], #, (-2, -1)]
-#                    'Ox_l_fp_r_1.1' :  [(0, 2), (2, 11), (11, 21), (21, 28), (28, None)], #, (-2, -1)]
-#                    'Ox_l_fp_r_1.3' :  [(0, 3), (3, 14), (14, 40), (40, 47), (47, None)], #, (-2, -1)]                    
-                    # Iy families
-                    'fams'    :  [ \
-        'I2','HOI','IO', 'I', 'HI+OIO+IONO+INO', 'IONO2','IxOy', 'CH3I', \
-        'CH2IX'],   
-                    # Iy families + AERI
-                    'fams_A'    :  [ \
-        'I2','HOI','IO', 'I', 'HI+OIO+IONO+INO', 'IONO2','IxOy', 'CH3I', \
-        'CH2IX', 'AERI'],   
-                    'fam_slice' : [ \
-        (0, 1), (1, 2), (2, 3), (3,4 ),(4, 8), (8, 9), (9, 12), (12, 13), \
-        (13, None)],   # slice 
-                    'fam_slice_A' : [ \
-        (0, 1), (1, 2), (2, 3), (3,4 ),(4, 8), (8, 9), (9, 12), (12, 13),\
-        (13, 16),(16, None)],   # slice 
-#                    'POx_l_fp'   : ['PO3_01', 'PO3_03', 'PO3_02', 'PO3_05','PO3_14', 'PO3_15', 'PO3_18', 'PO3_19', 'PO3_20', 'PO3_21', 'PO3_22', 'PO3_24', 'PO3_25', 'PO3_26', 'PO3_27', 'PO3_30', 'PO3_31', 'PO3_32', 'PO3_33', 'PO3_34', 'PO3_35', 'PO3_37', 'PO3_38', 'PO3_39', 'PO3_40', 'PO3_41', 'PO3_43'],
-                    'Ox_key'     : ['POX', 'PO3_14', 'PO3_15',   'LOX'],#, 'LO3_18', 'LO3_03', 'LO3_02','LR25', 'LR21', 'LR5','LR6','LO3_34', 'LO3_33','LO3_24', 'LO3_35'  ],
-                    'POxLOx'     : ['POX', 'LOX'],
-                    'iPOxiLOx'   : ['POX', 'LOX', 'iPOX', 'iLOX'],
-
-                    # Iy/ Iodine budget analysis
-                    'BL_FT_UT'   : [(0, 6), (6, 26), (26, 38)] ,            
-                    'n_order'  :[ \
-        'CH2IX','CH3I', 'I2', 'HOI','IO', 'I', 'IONO2','HI+OIO+IONO+INO', \
-        'IxOy' ] ,
-                    'n_order_A'  :[ \
-        'CH2IX','CH3I', 'I2', 'HOI','IO', 'I', 'IONO2', 'HI+OIO+IONO+INO',\
-        'IxOy', 'AERI' ] ,
-                    'I_l': ['RD01', 'RD02', 'RD16', 'RD19', 'RD24', 'RD27'],
+    # --- Ox budget analysis
+    'f_var' : ['EW-FLX-$', 'NS-FLX-$', 'UP-FLX-$' ], 
+    'r_t' : [ 'Photolysis','HOx','Bromine', 'Iodine' ], 
+    'r_tn' : ['Photolysis','HOx' ,'Bromine', 'Iodine' ],                     
+    'r_tn_lc' : ['photolysis','HOx' ,'bromine', 'iodine' ],                     
+    # Ox loss families inc. Cly
+    'r_tn_Cly' : [ 'Photolysis','HOx' ,'Chlorine','Bromine', 'Iodine' ],                     
+    'r_tn_lc_Cly' : [ 'photolysis','HOx' ,'chlorine', 'bromine', 'iodine' ],                     
+    'fams' :[ 'I2','HOI','IO', 'I', 'HI+OIO+IONO+INO', 'IONO2','IxOy', \
+    'CH3I', 'CH2IX'],   
+    # Iy families + AERI
+    'fams_A'    :  [ 'I2','HOI','IO', 'I', 'HI+OIO+IONO+INO', 'IONO2', \
+    'IxOy', 'CH3I', 'CH2IX', 'AERI'],   
+     # List slices 
+    'fam_slice' : [ (0, 1), (1, 2), (2, 3), (3,4 ),(4, 8), (8, 9), (9, 12), \
+     (12, 13), (13, None)],   
+    'fam_slice_A' : [ (0, 1), (1, 2), (2, 3), (3,4 ),(4, 8), (8, 9), (9, 12), \
+    (12, 13), (13, 16),(16, None)], 
+    # POx lists - redundant?
+#   'POx_l_fp' : ['PO3_01', 'PO3_03', 'PO3_02', 'PO3_05','PO3_14',\
+#     'PO3_15', 'PO3_18', 'PO3_19', 'PO3_20', 'PO3_21', 'PO3_22', \
+#     'PO3_24', 'PO3_25', 'PO3_26', 'PO3_27', 'PO3_30', 'PO3_31', \
+#     'PO3_32', 'PO3_33', 'PO3_34', 'PO3_35', 'PO3_37', 'PO3_38', 'PO3_39', \
+#     'PO3_40', 'PO3_41', 'PO3_43'],
+        'Ox_key' : ['POX', 'PO3_14', 'PO3_15',   'LOX'],
+        #, 'LO3_18', 'LO3_03', 'LO3_02','LR25', 'LR21', 'LR5','LR6','LO3_34', 'LO3_33','LO3_24', 'LO3_35'  ],
+        'POxLOx'     : ['POX', 'LOX'],
+        'iPOxiLOx'   : ['POX', 'LOX', 'iPOX', 'iLOX'],
+        # --- Iy/ Iodine budget analysis
+        'BL_FT_UT'   : [(0, 6), (6, 26), (26, 38)] ,            
+        'n_order'  :[ 'CH2IX','CH3I', 'I2', 'HOI','IO', 'I', 'IONO2', \
+        'HI+OIO+IONO+INO', 'IxOy' ] ,
+        'n_order_A'  :[ 'CH2IX','CH3I', 'I2', 'HOI','IO', 'I', 'IONO2', \
+        'HI+OIO+IONO+INO','IxOy', 'AERI' ],
+        'I_l': ['RD01', 'RD02', 'RD16', 'RD19', 'RD24', 'RD27'],
         # LO37 swaped for RD97 as LO37 assigned to loss point of I2O3 uptake
-                    'IO_l': [ \
-        'RD09', 'RD10', 'RD11', 'RD12', 'RD23', 'LO3_24', 'RD37', 'RD97', \
-        'RD66'], 
-                    'I_p': [ \
+        'IO_l': [ 'RD09', 'RD10', 'RD11', 'RD12', 'RD23', 'LO3_24', 'RD37', \
+        'RD97', 'RD66'], 
+        'I_p': [ \
         'RD06', 'RD07', 'RD10', 'RD11', 'RD47', 'RD15', 'RD17', 'RD20', 'RD22',\
         'LO3_24', 'RD64', 'RD65', 'RD66', 'RD67','RD68','RD69', 'RD70', \
         'RD71','RD72', 'RD73', 'RD88', 'RD89'],
-                    'IO_p' : [ 'RD01', 'RD08', 'RD46', 'RD25', 'RD27','RD56'],
-                     'sOH'            :  ['LO3_18'],
-                    'd_dep'      : ['DRYD-FLX'],
-                    'w_dep'      : ['WETDCV-$','WETDLS-$'], 
-                    'BL_m'       : ['TURBMC-$'],
-                    'f_strat'    : ['STRT-FL'],
-                    'p_l'        : ['PORL-L=$'],
-                    'Cld_flx'    : ['CV-FLX-$'],
-                    'I_Br_O3'    : [ \
-            'IO', 'OIO', 'HOI', 'I2', 'I', 'CH3IT', 'CH2I2', 'CH2ICl', \
-            'CH2IBr', 'C3H7I', 'C2H5I', 'BrO', 'Br', 'HOBr','Br2',\
-            'CH3Br', 'CH2Br2', 'CHBr3', 'O3', 'CO'
-            ],
-                    'IOrg_RIS'   : [ \
-            'CH3IT','CH2ICl','CH2I2', 'CH2IBr', 'I2','HOI','I','IO', \
-            'OIO', 'HI','IONO','IONO2'],
-                    'I_specs'    : [ \
-            'I2','HOI','IO', 'OIO', 'HI','IONO', 'IONO2','I2O2', \
-            'I2O3','I2O4''CH3IT','CH2I2','I','INO'] ,
-                    'Iy'         : [ \
-            'I2','HOI','IO', 'OIO', 'HI','INO','IONO', 'IONO2','I2O2', \
-            'I2O3','I2O4','I'],
-                    'Iy1.1'      : [ \
-            'I2','HOI','IO', 'OIO', 'HI','IONO', 'IONO2', 'I2O2', \
-            'I2O4','I','INO'],
-                    'IOy'        : [ \
-            'HOI','IO', 'OIO', 'IONO', 'IONO2', 'INO', 'I2O2', \
-            'I2O4', 'I2O3'],
-                    'IOy1.1'     : [\
-            'HOI','IO', 'OIO', 'IONO', 'IONO2', 'INO', 'I2O2', 'I2O4'],
-                    'I2Ox'       : ['I2O2','I2O4','I2O3'],
-                    'I2Ox'       : ['I2O2','I2O4','I2O3'],
-                    'IyOx1.1'       : ['I2O2','I2O4'],
-                    'Iy_no_i2o4' : [ \
-            'I2','HOI','IO', 'OIO', 'HI','IONO', 'IONO2','I2O2','I','INO', \
-            'I2O3'],
-                    'Iy_no_i2o41.1' : [ \
-            'I2','HOI','IO', 'OIO', 'HI','IONO', 'IONO2','I2O2','I','INO'],
-                    'Phot_s_Iy'  : [ \
-            'CH3IT','CH2ICl','CH2I2', 'CH2IBr'],
-            #['RD89', 'RD88', 'RD71', 'RD72'],
-                    'HOI': ['HOI'],
-                    'IOx' : ['IO','I',],
-                    'IO' : ['IO'],
-                    'I' : ['I',],
-                    'OIO' : ['OIO'],
-                    # LOx is p/l tracer name, for Loss of IOx
-                    'LIOx' : ['LIOx'],  
-                    # LOx is p/l tracer name, for Loss of IOx
-                    'PIOx': ['PIOx'],  
-                    'iodine_all'  : ['I2','HOI','IO', 'I', 'HI', 'OIO', 'INO', \
-                    'IONO','IONO2','I2O2', 'I2O4', 'I2O3', 'I2O5', 'CH3IT',\
-                    'CH2I2', 'CH2ICl', 'CH2IBr', 'C3H7I','C2H5I','ICl', 'I2O', \
-                    'IBr', 'HIO3', ],
-                    'iodine_all_A': ['I2','HOI','IO', 'I', 'HI', 'OIO', 'INO', \
-                    'IONO','IONO2','I2O2', 'I2O4', 'I2O3', 'I2O5', 'CH3IT', \
-                    'CH2I2', 'CH2ICl', 'CH2IBr', 'C3H7I','C2H5I','ICl', 'I2O', \
-                    'IBr', 'HIO3','AERI' ],
-                    'iodine_all_A_v2': [
-                    'I2','HOI','IO', 'I', 'HI', 'OIO', 'INO',  'IONO', \
-                    'IONO2', 'I2O2', 'I2O4', 'I2O3', 'CH3IT', 'CH2I2', \
-                    'CH2ICl', 'CH2IBr', 'ICl', 'IBr', 'AERI', 'ISALA', 'ISALC'],
-                    # Misc analysis
-                    'LHOI'          : ['RD65', 'RD63', 'RD08'],
-                     'LHOBr'     : ['LR25', 'LR30','LR21'],
-                    'LI2'           : ['RD64', 'RD06', 'RD22'],
-                    'LCH2I2'     : ['RD72' ],
-                    'LCH2Cl'     : ['RD88' ] ,                       
-                    'LCH2Br'     : ['RD89' ],                        
-                    'LCH3IT'     : ['RD15' , 'RD71'],                        
-                     'sHOX'       : ['HOI', 'HOBr'],
-                    'HO2_loss'   : [\
-            'PO3_14','RD09','RD02', 'LR2', 'LR3', 'PO3_46','PO3_02', 'PO3_03', \
-            'PO3_05'],
-                    'CAST_int'   : [ \
-            'IO', 'OIO','HOI','I2','I','HOI','CH3I','CH2I2','CH2ICl', 'CH2IBr',\
-            'C3H7I','C3H5I', 'BrO', 'Br', 'HOBr','Br2','CH3Br', 'CH2Br2', \
-            'CHBr3', 'O3', 'CO', 'OH', 'HO2','NO','NO2'],
-                    'CAST_intn'  : [\
-            'IO', 'OIO', 'HOI',' I2', 'I', 'HOI', 'CH3IT', 'CH2I2', 'CH2ICl', \
-            'CH2IBr', 'C3H7I','C2H5I', 'BrO', 'Br', 'HOBr', 'Br2', 'CH3Br', \
-            'CH2Br2', 'CHBr3', 'O3', 'CO', 'DMS', 'NO','HNO3','HNO4', \
-            'NO2','NO3' , 'PAN' , 'HNO2', 'N2O5'],
-                    'CAST_int_n' : [\
-            'IO', 'OIO','HOI','I2','I','HOI','CH3I','CH2I2','CH2ICl', 'CH2IBr',\
-            'C3H7I','C2H5I', 'BrO', 'Br', 'HOBr','Br2','CH3Br', 'CH2Br2', \
-            'CHBr3', 'O3', 'CO', 'OH', 'HO2','NO','NO2'],
-                    'diurnal_sp' : ['IO','I2', 'CH2I2', 'BrO' ]  ,
-                    'obs_comp'   : [\
-            'CH3IT', 'CH2I2', 'CH2ICl', 'CH2IBr', 'C2H5I', 'C3H7I','I2','IO'] ,
-                    'emiss_specs': [\
-            'CH3IT', 'CH2I2','CH2ICl','CH2IBr','I2','HOI'] ,
-                    'w_dep_specs': [\
-            'I2' ,'HI'  ,'HOI'  ,'IONO', 'IONO2','I2O2', 'I2O4', 'I2O3',\
-            'AERI'],  #, 'IBr', 'ICl']
-  #                  'd_dep_specsl' : ['I2', 'HI', 'HOI', 'IONO', 'IONO2',  'I2O2', 'I2O4', 'I2O3','AERI'], #, 'IO', 'OIO'] ,                      
-                    'd_dep_specsl1.1' : [\
-            'I2', 'HI', 'HOI', 'IONO', 'IONO2',  'I2O2', 'I2O4', 'AERI'], #, 'IO', 'OIO'] ,                      
-                    'd_dep_specs': [ \
-            'I2df', 'HIdf', 'HOIdf', 'IONOdf', 'IONO2df',  'I2O2df', 'I2O4df', \
-            'I2O3df', 'AERIdf',], #, 'IOdf', 'OIOdf'], #
-#                    'd_dep_specs1.1': ['I2df', 'HIdf', 'HOIdf', 'IONOdf', 'IONO2df',  'I2O2df', 'I2O4df','AERIdf',], #, 'IOdf', 'OIOdf'], #
-        # -- Het ( v1.6/v2.0)
-        # IONO2, IONO, HOI
-                    'I2_het_cyc'  : ['RD59','RD92','RD63'],  
+        'IO_p' : [ 'RD01', 'RD08', 'RD46', 'RD25', 'RD27','RD56'],
+        'sOH' : ['LO3_18'],
+        'd_dep' : ['DRYD-FLX'],
+        'w_dep' : ['WETDCV-$','WETDLS-$'], 
+        'BL_m' : ['TURBMC-$'],
+        'f_strat' : ['STRT-FL'],
+        'p_l' : ['PORL-L=$'],
+        'Cld_flx' : ['CV-FLX-$'],
+        'I_Br_O3' : [ \
+        'IO', 'OIO', 'HOI', 'I2', 'I', 'CH3IT', 'CH2I2', 'CH2ICl', \
+        'CH2IBr', 'C3H7I', 'C2H5I', 'BrO', 'Br', 'HOBr','Br2',\
+        'CH3Br', 'CH2Br2', 'CHBr3', 'O3', 'CO', ],
+        'IOrg_RIS' : [ \
+        'CH3IT','CH2ICl','CH2I2', 'CH2IBr', 'I2','HOI','I','IO', \
+        'OIO', 'HI','IONO','IONO2'],
+        'I_specs' : [ \
+        'I2','HOI','IO', 'OIO', 'HI','IONO', 'IONO2','I2O2', \
+        'I2O3','I2O4''CH3IT','CH2I2','I','INO'] ,
+        'Iy' : [ \
+        'I2','HOI','IO', 'OIO', 'HI','INO','IONO', 'IONO2','I2O2', \
+        'I2O3','I2O4','I'],
+        'Iy1.1' : [ \
+        'I2','HOI','IO', 'OIO', 'HI','IONO', 'IONO2', 'I2O2', \
+        'I2O4','I','INO'],
+        'IOy' : [ \
+        'HOI','IO', 'OIO', 'IONO', 'IONO2', 'INO', 'I2O2', \
+        'I2O4', 'I2O3'],
+        'IOy1.1' : [\
+        'HOI','IO', 'OIO', 'IONO', 'IONO2', 'INO', 'I2O2', 'I2O4'],
+        'I2Ox' : ['I2O2','I2O4','I2O3'],
+        'IyOx1.1' : ['I2O2','I2O4'],
+        'Iy_no_i2o4' : [ \
+        'I2','HOI','IO', 'OIO', 'HI','IONO', 'IONO2','I2O2','I','INO', \
+        'I2O3'],
+        'Iy_no_i2o41.1' : [ \
+        'I2','HOI','IO', 'OIO', 'HI','IONO', 'IONO2','I2O2','I','INO'],
+        'Phot_s_Iy'  : [ 'CH3IT','CH2ICl','CH2I2', 'CH2IBr'],
+        #['RD89', 'RD88', 'RD71', 'RD72'],
+        'HOI': ['HOI'],
+        'IOx' : ['IO','I',],
+        'IO' : ['IO'],
+        'I' : ['I',],
+        'OIO' : ['OIO'],
+        # LOx is p/l tracer name, for Loss of IOx
+        'LIOx' : ['LIOx'],  
+        # LOx is p/l tracer name, for Loss of IOx
+        'PIOx': ['PIOx'],  
+        'iodine_all'  : ['I2','HOI','IO', 'I', 'HI', 'OIO', 'INO', \
+        'IONO','IONO2','I2O2', 'I2O4', 'I2O3', 'I2O5', 'CH3IT',\
+        'CH2I2', 'CH2ICl', 'CH2IBr', 'C3H7I','C2H5I','ICl', 'I2O', \
+        'IBr', 'HIO3', ],
+        'iodine_all_A': ['I2','HOI','IO', 'I', 'HI', 'OIO', 'INO', \
+        'IONO','IONO2','I2O2', 'I2O4', 'I2O3', 'I2O5', 'CH3IT', \
+        'CH2I2', 'CH2ICl', 'CH2IBr', 'C3H7I','C2H5I','ICl', 'I2O', \
+        'IBr', 'HIO3','AERI' ],
+        'iodine_all_A_v2': [
+        'I2','HOI','IO', 'I', 'HI', 'OIO', 'INO',  'IONO', \
+        'IONO2', 'I2O2', 'I2O4', 'I2O3', 'CH3IT', 'CH2I2', \
+        'CH2ICl', 'CH2IBr', 'ICl', 'IBr', 'AERI', 'ISALA', 'ISALC'],
+        # Misc analysis
+        'LHOI' : ['RD65', 'RD63', 'RD08'],
+        'LHOBr' : ['LR25', 'LR30','LR21'],
+        'LI2' : ['RD64', 'RD06', 'RD22'],
+        'LCH2I2' : ['RD72' ],
+        'LCH2Cl' : ['RD88' ] ,                       
+        'LCH2Br' : ['RD89' ],                        
+        'LCH3IT' : ['RD15' , 'RD71'],                        
+        'sHOX' : ['HOI', 'HOBr'],
+        'HO2_loss' : [\
+        'PO3_14','RD09','RD02', 'LR2', 'LR3', 'PO3_46','PO3_02', 'PO3_03', \
+        'PO3_05'],
+        'CAST_int'   : [ \
+        'IO', 'OIO','HOI','I2','I','HOI','CH3I','CH2I2','CH2ICl', 'CH2IBr',\
+        'C3H7I','C3H5I', 'BrO', 'Br', 'HOBr','Br2','CH3Br', 'CH2Br2', \
+        'CHBr3', 'O3', 'CO', 'OH', 'HO2','NO','NO2'],
+        'CAST_intn'  : [\
+        'IO', 'OIO', 'HOI',' I2', 'I', 'HOI', 'CH3IT', 'CH2I2', 'CH2ICl', \
+        'CH2IBr', 'C3H7I','C2H5I', 'BrO', 'Br', 'HOBr', 'Br2', 'CH3Br', \
+        'CH2Br2', 'CHBr3', 'O3', 'CO', 'DMS', 'NO','HNO3','HNO4', \
+        'NO2','NO3' , 'PAN' , 'HNO2', 'N2O5'],
+        'CAST_int_n' : [\
+        'IO', 'OIO','HOI','I2','I','HOI','CH3I','CH2I2','CH2ICl', 'CH2IBr',\
+        'C3H7I','C2H5I', 'BrO', 'Br', 'HOBr','Br2','CH3Br', 'CH2Br2', \
+        'CHBr3', 'O3', 'CO', 'OH', 'HO2','NO','NO2'],
+        'diurnal_sp' : ['IO','I2', 'CH2I2', 'BrO' ]  ,
+        'obs_comp'   : [\
+        'CH3IT', 'CH2I2', 'CH2ICl', 'CH2IBr', 'C2H5I', 'C3H7I','I2','IO'] ,
+        'emiss_specs': ['CH3IT', 'CH2I2','CH2ICl','CH2IBr','I2','HOI'] ,
+        'w_dep_specs': [\
+        'I2' ,'HI'  ,'HOI'  ,'IONO', 'IONO2','I2O2', 'I2O4', 'I2O3',\
+        'AERI'],  #, 'IBr', 'ICl']
+        'd_dep_specsl1.1' : [\
+        'I2', 'HI', 'HOI', 'IONO', 'IONO2',  'I2O2', 'I2O4', 'AERI'], #, 'IO', 'OIO'] ,                      
+        'd_dep_specs': [ \
+        'I2df', 'HIdf', 'HOIdf', 'IONOdf', 'IONO2df',  'I2O2df', 'I2O4df', \
+        'I2O3df', 'AERIdf',], #, 'IOdf', 'OIOdf'], #
+        'I2_het_cyc'  : ['RD59','RD92','RD63'],  
         # HI, I2O2, I2O4, I2O3 uptake (prev: 2OIO excuded as I2Ox formaed, IO+OIO included as I2O3 not treated )
-                    'I_het_loss'  : [ 'RD58', 'RD62', 'RD93' ,'RD95'], 
+        'I_het_loss'  : [ 'RD58', 'RD62', 'RD93' ,'RD95'], 
  #['RD60','RD61','RD62','RD52','RD53','RD54','RD55','RD13'],  # RD13 = OIO + OH => HIO3  86 => AERI loss
         # -- Het ( v3.0+)
-                    'I2_het_cyc_v3'  : ['RD59','RD92','RD63'],  
-                    'I_het_loss_v3'  : [ 
+        'I2_het_cyc_v3'  : ['RD59','RD92','RD63'],  
+        'I_het_loss_v3'  : [  \
         # I2O2 all ( RD62), HI ssa (RD58), 
-        'RD58', 'RD62', 'RD93' ,'RD95', 
+        'RD58', 'RD62', 'RD93' ,'RD95', \
         # loss to SSA/other aerosols
         'LR44', 'LR45', 'LR32',   # HOI
         'LR34', # HI other
         'LR42', 'LR43' , 'LR35', # IONO2
-        'LR46', 'LR47', 'LR39' # IONO
-                    ], 
-                    'NOx' : ['NO', 'NO2' ],
-                    'N_specs' : [
+        'LR46', 'LR47', 'LR39'],  # IONO
+        'NOx' : ['NO', 'NO2' ],
+        'N_specs' : [
         'NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4',\
         'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN',\
         'NO3', 'HNO2', 'IONO', 'IONO2', 'INO'],
-                    'N_specs_no_I'  :  [
+        'N_specs_no_I'  :  [
         'NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4', \
         'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN',\
          'NO3', 'HNO2'],
-                    'Bry' : [\
+        'Bry' : [\
         'Br2', 'BrNO3', 'Br', 'HBr', 'BrCl', 'BrNO2', 'HOBr', 'IBr', 'BrO'],
-                    'Cly' : [
+        'Cly' : [ \
         'BrCl', 'Cl2', 'Cl', 'ClO', 'HCl', 'HOCl', 'ClNO2', 'ClNO3', 'ClOO', \
         'OClO', 'Cl2O2'],
-                    'Br_specs' : ['Br2', 'BrNO3', 'Br', 'HBr', 'CH2IBr', \
+        'Br_specs' : ['Br2', 'BrNO3', 'Br', 'HBr', 'CH2IBr', \
         'CH3Br', 'CH2Br2', 'BrCl', 'BrNO2', 'BrSALC', 'BrSALA', \
         'HOBr', 'IBr', 'BrO', 'CHBr3'],
-                    'Br_emiss' : [ 'CH2Br2', 'CHBr3', 'SSBr2' ],#'CH3Br'
-                    'johan_GRL_TRAs': [
+        'Br_emiss' : [ 'CH2Br2', 'CHBr3', 'SSBr2' ],#'CH3Br'
+        'johan_GRL_TRAs': [ \
         'BrCl', 'Cl2', 'Cl', 'ClO', 'HCl', 'HOCl', 'ClNO2', 'ClNO3', \
         'ClOO', 'OClO', 'Cl2O2', 'CH3Cl', 'CH2Cl2', 'CHCl3', 'BrSALA', \
         'BrSALC' ], 
-                    'I_N_tags' : ['RD10', 'RD23', 'RD19', 'RD16', 'RD22', \
+        'I_N_tags' : ['RD10', 'RD23', 'RD19', 'RD16', 'RD22', \
         'RD56', 'RD24', 'LO3_30', 'RD69', 'RD68', 'RD20', 'RD21', 'RD25', \
         'LO3_39', 'RD17', 'RD18', 'RD75'],
-                    'Br_N_tags' : ['LR7', 'LR18', 'LR17', 'LR11', 'LR8', \
+        'Br_N_tags' : ['LR7', 'LR18', 'LR17', 'LR11', 'LR8', \
         'LR20', 'LR26', 'LR28', 'LR27'],
-                    'inactive_I'  : [ \
+        'inactive_I'  : [ \
         'BrCl', 'OClO', 'ClO', 'HOCl', 'Cl', 'Cl2', 'I2O5', 'I2O', 'HIO3', \
         'IBr', 'ICl', 'C2H5I','C3H7I'], # I2O3 now active.
-                    'active_I' : [ \
+        'active_I' : [ \
         'I2', 'HOI', 'IO', 'I', 'HI', 'OIO', 'INO', 'IONO', 'IONO2', 'I2O2', 
         'I2O4', 'I2O3', 'CH3IT', 'CH2I2', 'CH2ICl', 'CH2IBr'], 
-                    'surface_specs' : [\
+        'surface_specs' : [\
         'O3', 'NO', 'NO2', 'NO3' ,'N2O5', 'IO', 'IONO2' ],
-                
-                    # Model run title dictionaries
-                    'run_name_dict': {
+        # --- Model run title dictionaries
+        'run_name_dict': {
         'run': 'Br-I', \
         'Br_2ppt': 'Halogens (I+,Br+) + fixed 2 pptv BrO', \
         'just_I': 'IODINE', 'no_hal': 'NOHAL', 'just_Br': \
         'BROMINE', \
         'Br_1ppt': 'Halogens (I+,Br+) + fixed 1 pptv BrO', \
         'obs': 'Observations'}   ,
-                    'latex_run_names': {
+        'latex_run_names': {
         'I2Ox_half': 'I$_{2}$O$_{X}$ loss ($\\gamma$) /2', 
         'run': 'Br-I', 
         'MacDonald_iodide': 'Ocean iodide', 
@@ -868,8 +841,8 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
         # kludge for diurnal plot
         'Iodine simulation.':'Br-I.', '(I+,Br+)': 'Br-I.','(I+,Br-)': 'IODINE',\
         '(I-,Br+)': 'BROMINE', '(I-,Br-)': 'NOHAL'}, 
-                    # tracer unit handling
-                    'spec_2_pptv' : [ \
+        # --- Tracer unit handling
+        'spec_2_pptv' : [ \
         'I2', 'HOI', 'IO', 'OIO', 'HI', 'IONO', 'IONO2', 'I2O2', 'CH3IT', \
         'CH2I2', 'IBr', 'ICl', 'I', 'HIO3', 'I2O', 'INO', 'I2O3', 'I2O4', \
         'I2O5', 'AERI', 'Cl2', 'Cl', 'HOCl', 'ClO', 'OClO', 'BrCl', 'CH2ICl', \
@@ -878,42 +851,42 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
         'PMN', 'PPN', 'R4N2', 'DMS', 'SO4s', 'MSA', 'NITs', 'BCPO', 'DST4', \
         'ISOPN', 'MOBA', 'PROPNN', 'HAC', 'GLYC', 'MMN', 'RIP', 'IEPOX', \
         'MAP' ,'N2O5','NO3'], # 'HNO4',  'HNO2'],
-                    'spec_2_pptC' : ['PRPE', 'ISOP'],
-                    # global 
-                    'spec_2_ppbv': [ \
+        'spec_2_pptC' : ['PRPE', 'ISOP'],
+        # global 
+        'spec_2_ppbv': [ \
         'NO','DMS',  'RIP', 'IEPOX','BCPO', 'DST4', 'HAC', 'GLYC', \
         'MACR', 'ISOP'],
-                    'spec_2_ppbC' : ['ALK4'],
-                    # pf dictionaries
-                    # WARNING - remove non forwards combatible dicts: 
-                    # (GCFP_TRA_d ... GCFP_d2TRA  ... GCFP_d2TRA_justTRA . etc)
-# GCFP_TRA_d is in use by CVO plotters -  use what_species_am_i instead!
-                    'GCFP_TRA_d' : {'TRA_17': 'R4N2', 'TRA_16': 'PPN', 'TRA_15': 'PMN', 'TRA_14': 'MACR', 'TRA_13': 'MVK', 'TRA_12': 'RCHO', 'TRA_11': 'ALD2', 'TRA_19': 'C3H8', 'TRA_18': 'PRPE', 'TRA_96': 'C2H5I', 'TRA_95': 'C3H7I', 'TRA_94': 'CH2IBr', 'TRA_93': 'CH2ICl', 'TRA_92': 'BrCl', 'TRA_91': 'OClO', 'TRA_90': 'ClO', 'TRA_62': 'IEPOX', 'TRA_63': 'MAP', 'TRA_60': 'MMN', 'TRA_61': 'RIP', 'TRA_66': 'HNO2', 'TRA_67': 'I2', 'TRA_64': 'NO2', 'TRA_65': 'NO3', 'TRA_68': 'HOI', 'TRA_69': 'IO', 'TRA_71': 'HI', 'TRA_70': 'OIO', 'TRA_73': 'IONO2', 'TRA_72': 'IONO', 'TRA_75': 'CH3IT', 'TRA_74': 'I2O2', 'TRA_77': 'IBr', 'TRA_76': 'CH2I2', 'TRA_79': 'I', 'TRA_78': 'ICl', 'TRA_48': 'HBr', 'TRA_49': 'BrNO2', 'TRA_44': 'Br2', 'TRA_45': 'Br', 'TRA_46': 'BrO', 'TRA_47': 'HOBr', 'TRA_40': 'DST3', 'TRA_41': 'DST4', 'TRA_42': 'SALA', 'TRA_43': 'SALC', 'TRA_59': 'GLYC', 'TRA_58': 'HAC', 'TRA_53': 'CH3Br', 'TRA_52': 'CH2Br2', 'TRA_51': 'CHBr3', 'TRA_50': 'BrNO3', 'TRA_57': 'PROPNN', 'TRA_56': 'MOBA', 'TRA_55': 'ISOPN', 'TRA_54': 'MPN', 'TRA_28': 'SO4s', 'TRA_29': 'MSA', 'TRA_26': 'SO2', 'TRA_27': 'SO4', 'TRA_24': 'MP', 'TRA_25': 'DMS', 'TRA_22': 'N2O5', 'TRA_23': 'HNO4', 'TRA_20': 'CH2O', 'TRA_21': 'C2H6', 'TRA_39': 'DST2', 'TRA_38': 'DST1', 'TRA_35': 'OCPI', 'TRA_34': 'BCPI', 'TRA_37': 'OCPO', 'TRA_36': 'BCPO', 'TRA_31': 'NH4', 'TRA_30': 'NH3', 'TRA_33': 'NITs', 'TRA_32': 'NIT', 'TRA_08': 'H2O2', 'TRA_09': 'ACET', 'TRA_01': 'NO', 'TRA_02': 'O3', 'TRA_03': 'PAN', 'TRA_04': 'CO', 'TRA_05': 'ALK4', 'TRA_06': 'ISOP', 'TRA_07': 'HNO3', 'TRA_80': 'HIO3', 'TRA_81': 'I2O', 'TRA_82': 'INO', 'TRA_83': 'I2O3', 'TRA_84': 'I2O4', 'TRA_85': 'I2O5', 'TRA_86': 'AERI', 'TRA_87': 'Cl2', 'TRA_88': 'Cl', 'TRA_89': 'HOCl','O3':'O3', 'CO':'CO'} ,
+        'spec_2_ppbC' : ['ALK4'],
+        # --- PF dictionaries
+        # WARNING - remove non forwards combatible dicts: 
+        # (GCFP_TRA_d ... GCFP_d2TRA  ... GCFP_d2TRA_justTRA . etc)
+        # GCFP_TRA_d is in use by CVO plotters -  use what_species_am_i instead!
+        'GCFP_TRA_d' : {'TRA_17': 'R4N2', 'TRA_16': 'PPN', 'TRA_15': 'PMN', 'TRA_14': 'MACR', 'TRA_13': 'MVK', 'TRA_12': 'RCHO', 'TRA_11': 'ALD2', 'TRA_19': 'C3H8', 'TRA_18': 'PRPE', 'TRA_96': 'C2H5I', 'TRA_95': 'C3H7I', 'TRA_94': 'CH2IBr', 'TRA_93': 'CH2ICl', 'TRA_92': 'BrCl', 'TRA_91': 'OClO', 'TRA_90': 'ClO', 'TRA_62': 'IEPOX', 'TRA_63': 'MAP', 'TRA_60': 'MMN', 'TRA_61': 'RIP', 'TRA_66': 'HNO2', 'TRA_67': 'I2', 'TRA_64': 'NO2', 'TRA_65': 'NO3', 'TRA_68': 'HOI', 'TRA_69': 'IO', 'TRA_71': 'HI', 'TRA_70': 'OIO', 'TRA_73': 'IONO2', 'TRA_72': 'IONO', 'TRA_75': 'CH3IT', 'TRA_74': 'I2O2', 'TRA_77': 'IBr', 'TRA_76': 'CH2I2', 'TRA_79': 'I', 'TRA_78': 'ICl', 'TRA_48': 'HBr', 'TRA_49': 'BrNO2', 'TRA_44': 'Br2', 'TRA_45': 'Br', 'TRA_46': 'BrO', 'TRA_47': 'HOBr', 'TRA_40': 'DST3', 'TRA_41': 'DST4', 'TRA_42': 'SALA', 'TRA_43': 'SALC', 'TRA_59': 'GLYC', 'TRA_58': 'HAC', 'TRA_53': 'CH3Br', 'TRA_52': 'CH2Br2', 'TRA_51': 'CHBr3', 'TRA_50': 'BrNO3', 'TRA_57': 'PROPNN', 'TRA_56': 'MOBA', 'TRA_55': 'ISOPN', 'TRA_54': 'MPN', 'TRA_28': 'SO4s', 'TRA_29': 'MSA', 'TRA_26': 'SO2', 'TRA_27': 'SO4', 'TRA_24': 'MP', 'TRA_25': 'DMS', 'TRA_22': 'N2O5', 'TRA_23': 'HNO4', 'TRA_20': 'CH2O', 'TRA_21': 'C2H6', 'TRA_39': 'DST2', 'TRA_38': 'DST1', 'TRA_35': 'OCPI', 'TRA_34': 'BCPI', 'TRA_37': 'OCPO', 'TRA_36': 'BCPO', 'TRA_31': 'NH4', 'TRA_30': 'NH3', 'TRA_33': 'NITs', 'TRA_32': 'NIT', 'TRA_08': 'H2O2', 'TRA_09': 'ACET', 'TRA_01': 'NO', 'TRA_02': 'O3', 'TRA_03': 'PAN', 'TRA_04': 'CO', 'TRA_05': 'ALK4', 'TRA_06': 'ISOP', 'TRA_07': 'HNO3', 'TRA_80': 'HIO3', 'TRA_81': 'I2O', 'TRA_82': 'INO', 'TRA_83': 'I2O3', 'TRA_84': 'I2O4', 'TRA_85': 'I2O5', 'TRA_86': 'AERI', 'TRA_87': 'Cl2', 'TRA_88': 'Cl', 'TRA_89': 'HOCl','O3':'O3', 'CO':'CO'} ,
 # GCFP_d2TRA is in use by IO plotters -  use what_species_am_i instead!
-                    'GCFP_d2TRA' : {'HIO3': 'TRA_80', 'OCPO': 'TRA_37', 'PPN': 'TRA_16', 'OCPI': 'TRA_35', 'O3': 'TRA_2', 'PAN': 'TRA_3', 'ACET': 'TRA_9', 'IEPOX': 'TRA_62', 'BrNO3': 'TRA_50', 'Br': 'TRA_45', 'HBr': 'TRA_48', 'HAC': 'TRA_58', 'ALD2': 'TRA_11', 'HNO3': 'TRA_7', 'HNO2': 'TRA_66', 'C2H5I': 'TRA_96', 'HNO4': 'TRA_23', 'OIO': 'TRA_70', 'MAP': 'TRA_63', 'PRPE': 'TRA_18', 'HI': 'TRA_71', 'CH2I2': 'TRA_76', 'IONO2': 'TRA_73', 'NIT': 'TRA_32', 'CH3Br': 'TRA_53', 'C3H7I': 'TRA_95', 'C3H8': 'TRA_19', 'DMS': 'TRA_25', 'CH2O': 'TRA_20', 'CH3IT': 'TRA_75','CH3I': 'TRA_75', 'NO2': 'TRA_64', 'NO3': 'TRA_65', 'N2O5': 'TRA_22', 'CHBr3': 'TRA_51', 'DST4': 'TRA_41', 'DST3': 'TRA_40', 'DST2': 'TRA_39', 'DST1': 'TRA_38', 'HOCl': 'TRA_89', 'NITs': 'TRA_33', 'RCHO': 'TRA_12', 'C2H6': 'TRA_21', 'MPN': 'TRA_54', 'INO': 'TRA_82', 'MP': 'TRA_24', 'CH2Br2': 'TRA_52', 'SALC': 'TRA_43', 'NH3': 'TRA_30', 'CH2ICl': 'TRA_93', 'RIP': 'TRA_61', 'ClO': 'TRA_90', 'NO': 'TRA_1', 'SALA': 'TRA_42', 'MOBA': 'TRA_56', 'R4N2': 'TRA_17', 'BrCl': 'TRA_92', 'OClO': 'TRA_91', 'PMN': 'TRA_15', 'CO': 'TRA_4', 'CH2IBr': 'TRA_94', 'ISOP': 'TRA_6', 'BCPO': 'TRA_36', 'MVK': 'TRA_13', 'BrNO2': 'TRA_49', 'IONO': 'TRA_72', 'Cl2': 'TRA_87', 'HOBr': 'TRA_47', 'PROPNN': 'TRA_57', 'Cl': 'TRA_88', 'I2O2': 'TRA_74', 'I2O3': 'TRA_83', 'I2O4': 'TRA_84', 'I2O5': 'TRA_85', 'MEK': 'TRA_10', 'MMN': 'TRA_60', 'ISOPN': 'TRA_55', 'SO4s': 'TRA_28', 'I2O': 'TRA_81', 'ALK4': 'TRA_5', 'MSA': 'TRA_29', 'I2': 'TRA_67', 'Br2': 'TRA_44', 'IBr': 'TRA_77', 'MACR': 'TRA_14', 'I': 'TRA_79', 'AERI': 'TRA_86', 'HOI': 'TRA_68', 'BrO': 'TRA_46', 'NH4': 'TRA_31', 'SO2': 'TRA_26', 'SO4': 'TRA_27', 'IO': 'TRA_69', 'H2O2': 'TRA_8', 'BCPI': 'TRA_34', 'ICl': 'TRA_78', 'GLYC': 'TRA_59','ALK4': 'ALK4', 'MSA': 'MSA', 'MO2': 'MO2', 'C3H8': 'C3H8', 'ISOP': 'ISOP', 'DMS': 'DMS', 'CH2O': 'CH2O', 'O3': 'O3', 'PAN': 'PAN', 'NO3': 'NO3', 'N2O5': 'N2O5', 'H2O2': 'H2O2', 'NO': 'NO', 'PPN': 'PPN', 'R4N2': 'R4N2', 'HO2': 'HO2', 'NO2': 'NO2', 'PMN': 'PMN', 'ACET': 'ACET', 'CO': 'CO', 'ALD2': 'ALD2', 'RCHO': 'RCHO', 'HNO3': 'HNO3', 'HNO2': 'HNO2', 'SO2': 'SO2', 'SO4': 'SO4', 'HNO4': 'HNO4', 'C2H6': 'C2H6', 'RO2': 'RO2', 'MVK': 'MVK', 'PRPE': 'PRPE', 'OH': 'OH', 'ETO2': 'ETO2', 'MEK': 'MEK', 'MP': 'MP' , 'GMAO_TEMP':'GMAO_TEMP' },
+        'GCFP_d2TRA' : {'HIO3': 'TRA_80', 'OCPO': 'TRA_37', 'PPN': 'TRA_16', 'OCPI': 'TRA_35', 'O3': 'TRA_2', 'PAN': 'TRA_3', 'ACET': 'TRA_9', 'IEPOX': 'TRA_62', 'BrNO3': 'TRA_50', 'Br': 'TRA_45', 'HBr': 'TRA_48', 'HAC': 'TRA_58', 'ALD2': 'TRA_11', 'HNO3': 'TRA_7', 'HNO2': 'TRA_66', 'C2H5I': 'TRA_96', 'HNO4': 'TRA_23', 'OIO': 'TRA_70', 'MAP': 'TRA_63', 'PRPE': 'TRA_18', 'HI': 'TRA_71', 'CH2I2': 'TRA_76', 'IONO2': 'TRA_73', 'NIT': 'TRA_32', 'CH3Br': 'TRA_53', 'C3H7I': 'TRA_95', 'C3H8': 'TRA_19', 'DMS': 'TRA_25', 'CH2O': 'TRA_20', 'CH3IT': 'TRA_75','CH3I': 'TRA_75', 'NO2': 'TRA_64', 'NO3': 'TRA_65', 'N2O5': 'TRA_22', 'CHBr3': 'TRA_51', 'DST4': 'TRA_41', 'DST3': 'TRA_40', 'DST2': 'TRA_39', 'DST1': 'TRA_38', 'HOCl': 'TRA_89', 'NITs': 'TRA_33', 'RCHO': 'TRA_12', 'C2H6': 'TRA_21', 'MPN': 'TRA_54', 'INO': 'TRA_82', 'MP': 'TRA_24', 'CH2Br2': 'TRA_52', 'SALC': 'TRA_43', 'NH3': 'TRA_30', 'CH2ICl': 'TRA_93', 'RIP': 'TRA_61', 'ClO': 'TRA_90', 'NO': 'TRA_1', 'SALA': 'TRA_42', 'MOBA': 'TRA_56', 'R4N2': 'TRA_17', 'BrCl': 'TRA_92', 'OClO': 'TRA_91', 'PMN': 'TRA_15', 'CO': 'TRA_4', 'CH2IBr': 'TRA_94', 'ISOP': 'TRA_6', 'BCPO': 'TRA_36', 'MVK': 'TRA_13', 'BrNO2': 'TRA_49', 'IONO': 'TRA_72', 'Cl2': 'TRA_87', 'HOBr': 'TRA_47', 'PROPNN': 'TRA_57', 'Cl': 'TRA_88', 'I2O2': 'TRA_74', 'I2O3': 'TRA_83', 'I2O4': 'TRA_84', 'I2O5': 'TRA_85', 'MEK': 'TRA_10', 'MMN': 'TRA_60', 'ISOPN': 'TRA_55', 'SO4s': 'TRA_28', 'I2O': 'TRA_81', 'ALK4': 'TRA_5', 'MSA': 'TRA_29', 'I2': 'TRA_67', 'Br2': 'TRA_44', 'IBr': 'TRA_77', 'MACR': 'TRA_14', 'I': 'TRA_79', 'AERI': 'TRA_86', 'HOI': 'TRA_68', 'BrO': 'TRA_46', 'NH4': 'TRA_31', 'SO2': 'TRA_26', 'SO4': 'TRA_27', 'IO': 'TRA_69', 'H2O2': 'TRA_8', 'BCPI': 'TRA_34', 'ICl': 'TRA_78', 'GLYC': 'TRA_59','ALK4': 'ALK4', 'MSA': 'MSA', 'MO2': 'MO2', 'C3H8': 'C3H8', 'ISOP': 'ISOP', 'DMS': 'DMS', 'CH2O': 'CH2O', 'O3': 'O3', 'PAN': 'PAN', 'NO3': 'NO3', 'N2O5': 'N2O5', 'H2O2': 'H2O2', 'NO': 'NO', 'PPN': 'PPN', 'R4N2': 'R4N2', 'HO2': 'HO2', 'NO2': 'NO2', 'PMN': 'PMN', 'ACET': 'ACET', 'CO': 'CO', 'ALD2': 'ALD2', 'RCHO': 'RCHO', 'HNO3': 'HNO3', 'HNO2': 'HNO2', 'SO2': 'SO2', 'SO4': 'SO4', 'HNO4': 'HNO4', 'C2H6': 'C2H6', 'RO2': 'RO2', 'MVK': 'MVK', 'PRPE': 'PRPE', 'OH': 'OH', 'ETO2': 'ETO2', 'MEK': 'MEK', 'MP': 'MP' , 'GMAO_TEMP':'GMAO_TEMP' },
 #                    'GCFP_d2TRA_justTRA_1.6' : {'HIO3': 'TRA_80', 'OCPO': 'TRA_37', 'PPN': 'TRA_16', 'OCPI': 'TRA_35', 'O3': 'TRA_2', 'PAN': 'TRA_3', 'ACET': 'TRA_9', 'IEPOX': 'TRA_62', 'BrNO3': 'TRA_50', 'Br': 'TRA_45', 'HBr': 'TRA_48', 'HAC': 'TRA_58', 'ALD2': 'TRA_11', 'HNO3': 'TRA_7', 'HNO2': 'TRA_66', 'C2H5I': 'TRA_96', 'HNO4': 'TRA_23', 'OIO': 'TRA_70', 'MAP': 'TRA_63', 'PRPE': 'TRA_18', 'HI': 'TRA_71', 'CH2I2': 'TRA_76', 'IONO2': 'TRA_73', 'NIT': 'TRA_32', 'CH3Br': 'TRA_53', 'C3H7I': 'TRA_95', 'C3H8': 'TRA_19', 'DMS': 'TRA_25', 'CH2O': 'TRA_20', 'CH3IT': 'TRA_75','CH3I': 'TRA_75', 'NO2': 'TRA_64', 'NO3': 'TRA_65', 'N2O5': 'TRA_22', 'CHBr3': 'TRA_51', 'DST4': 'TRA_41', 'DST3': 'TRA_40', 'DST2': 'TRA_39', 'DST1': 'TRA_38', 'HOCl': 'TRA_89', 'NITs': 'TRA_33', 'RCHO': 'TRA_12', 'C2H6': 'TRA_21', 'MPN': 'TRA_54', 'INO': 'TRA_82', 'MP': 'TRA_24', 'CH2Br2': 'TRA_52', 'SALC': 'TRA_43', 'NH3': 'TRA_30', 'CH2ICl': 'TRA_93', 'RIP': 'TRA_61', 'ClO': 'TRA_90', 'NO': 'TRA_1', 'SALA': 'TRA_42', 'MOBA': 'TRA_56', 'R4N2': 'TRA_17', 'BrCl': 'TRA_92', 'OClO': 'TRA_91', 'PMN': 'TRA_15', 'CO': 'TRA_4', 'CH2IBr': 'TRA_94', 'ISOP': 'TRA_6', 'BCPO': 'TRA_36', 'MVK': 'TRA_13', 'BrNO2': 'TRA_49', 'IONO': 'TRA_72', 'Cl2': 'TRA_87', 'HOBr': 'TRA_47', 'PROPNN': 'TRA_57', 'Cl': 'TRA_88', 'I2O2': 'TRA_74', 'I2O3': 'TRA_83', 'I2O4': 'TRA_84', 'I2O5': 'TRA_85', 'MEK': 'TRA_10', 'MMN': 'TRA_60', 'ISOPN': 'TRA_55', 'SO4s': 'TRA_28', 'I2O': 'TRA_81', 'ALK4': 'TRA_5', 'MSA': 'TRA_29', 'I2': 'TRA_67', 'Br2': 'TRA_44', 'IBr': 'TRA_77', 'MACR': 'TRA_14', 'I': 'TRA_79', 'AERI': 'TRA_86', 'HOI': 'TRA_68', 'BrO': 'TRA_46', 'NH4': 'TRA_31', 'SO2': 'TRA_26', 'SO4': 'TRA_27', 'IO': 'TRA_69', 'H2O2': 'TRA_8', 'BCPI': 'TRA_34', 'ICl': 'TRA_78', 'GLYC': 'TRA_59','OH': 'OH','HO2': 'HO2',},
-                    'GCFP_d2TRA_all_1.6' :{'HIO3': 'TRA_80', 'TRA_17': 'TRA_17', 'TRA_16': 'TRA_16', 'TRA_15': 'TRA_15', 'TRA_14': 'TRA_14', 'TRA_13': 'TRA_13', 'TRA_12': 'TRA_12', 'TRA_11': 'TRA_11', 'TRA_19': 'TRA_19', 'ACET': 'ACET', 'RIP': 'TRA_61', 'BrNO3': 'TRA_50', 'HAC': 'TRA_58', 'ALD2': 'ALD2', 'HNO3': 'HNO3', 'HNO2': 'HNO2', 'HNO4': 'HNO4', 'OIO': 'TRA_70', 'MAP': 'TRA_63', 'PRPE': 'PRPE', 'TRA_29': 'TRA_29', 'CH2I2': 'TRA_76', 'I2O2': 'TRA_74', 'NIT': 'TRA_32', 'CH3Br': 'TRA_53', 'C3H7I': 'TRA_95', 'MO2': 'MO2', 'C3H8': 'C3H8', 'I2O5': 'TRA_85', 'TRA_71': 'TRA_71', 'TRA_70': 'TRA_70', 'TRA_73': 'TRA_73', 'DMS': 'DMS', 'TRA_75': 'TRA_75', 'TRA_74': 'TRA_74', 'TRA_77': 'TRA_77', 'TRA_76': 'TRA_76', 'CH2O': 'CH2O', 'TRA_78': 'TRA_78', 'CH3IT': 'TRA_75', 'NO2': 'NO2', 'NO3': 'NO3', 'N2O5': 'N2O5', 'H2O2': 'H2O2', 'PAN': 'PAN', 'HOCl': 'TRA_89', 'TRA_18': 'TRA_18', 'GMAO_TEMP': 'GMAO_TEMP', 'RCHO': 'RCHO', 'C2H6': 'C2H6', 'INO': 'TRA_82', 'MP': 'MP', 'CH2Br2': 'TRA_52', 'CH2ICl': 'TRA_93', 'TRA_59': 'TRA_59', 'TRA_58': 'TRA_58', 'IEPOX': 'TRA_62', 'TRA_53': 'TRA_53', 'TRA_52': 'TRA_52', 'TRA_51': 'TRA_51', 'TRA_50': 'TRA_50', 'TRA_57': 'TRA_57', 'TRA_56': 'TRA_56', 'TRA_55': 'TRA_55', 'TRA_54': 'TRA_54', 'MOBA': 'TRA_56', 'CH3I': 'TRA_75', 'BrCl': 'TRA_92', 'OClO': 'TRA_91', 'CO': 'CO', 'BCPI': 'TRA_34', 'ISOP': 'ISOP', 'BCPO': 'TRA_36', 'MVK': 'MVK', 'TRA_28': 'TRA_28', 'Cl': 'TRA_88', 'TRA_26': 'TRA_26', 'TRA_27': 'TRA_27', 'TRA_24': 'TRA_24', 'I2O3': 'TRA_83', 'I2O4': 'TRA_84', 'TRA_23': 'TRA_23', 'TRA_20': 'TRA_20', 'TRA_21': 'TRA_21', 'MMN': 'TRA_60', 'I2O': 'TRA_81', 'HBr': 'TRA_48', 'ALK4': 'ALK4', 'I2': 'TRA_67', 'PPN': 'PPN', 'IBr': 'TRA_77', 'I': 'TRA_79', 'AERI': 'TRA_86', 'NH4': 'TRA_31', 'SO2': 'SO2', 'SO4': 'SO4', 'NH3': 'TRA_30', 'TRA_08': 'TRA_08', 'TRA_09': 'TRA_09', 'TRA_01': 'TRA_01', 'TRA_02': 'TRA_02', 'TRA_03': 'TRA_03', 'TRA_04': 'TRA_04', 'TRA_05': 'TRA_05', 'TRA_06': 'TRA_06', 'TRA_07': 'TRA_07', 'OCPI': 'TRA_35', 'OCPO': 'TRA_37', 'Br2': 'TRA_44', 'O3': 'O3', 'Br': 'TRA_45', 'TRA_96': 'TRA_96', 'TRA_95': 'TRA_95', 'TRA_94': 'TRA_94', 'TRA_93': 'TRA_93', 'TRA_92': 'TRA_92', 'TRA_91': 'TRA_91', 'TRA_90': 'TRA_90', 'TRA_62': 'TRA_62', 'TRA_63': 'TRA_63', 'TRA_60': 'TRA_60', 'TRA_61': 'TRA_61', 'TRA_66': 'TRA_66', 'TRA_67': 'TRA_67', 'C2H5I': 'TRA_96', 'TRA_65': 'TRA_65', 'TRA_68': 'TRA_68', 'TRA_69': 'TRA_69', 'OH': 'OH', 'IONO2': 'TRA_73', 'HI': 'TRA_71', 'CHBr3': 'TRA_51', 'TRA_46': 'TRA_46', 'DST4': 'TRA_41', 'DST3': 'TRA_40', 'DST2': 'TRA_39', 'DST1': 'TRA_38', 'NITs': 'TRA_33', 'TRA_48': 'TRA_48', 'TRA_49': 'TRA_49', 'TRA_44': 'TRA_44', 'TRA_45': 'TRA_45', 'RO2': 'RO2', 'TRA_47': 'TRA_47', 'TRA_40': 'TRA_40', 'TRA_41': 'TRA_41', 'TRA_42': 'TRA_42', 'TRA_43': 'TRA_43', 'MPN': 'TRA_54', 'ETO2': 'ETO2', 'IO': 'TRA_69', 'TRA_64': 'TRA_64', 'ClO': 'TRA_90', 'NO': 'NO', 'SALA': 'TRA_42', 'SALC': 'TRA_43', 'R4N2': 'R4N2', 'PMN': 'PMN', 'TRA_25': 'TRA_25', 'CH2IBr': 'TRA_94', 'TRA_22': 'TRA_22', 'BrNO2': 'TRA_49', 'IONO': 'TRA_72', 'Cl2': 'TRA_87', 'HOBr': 'TRA_47', 'PROPNN': 'TRA_57', 'MEK': 'MEK', 'TRA_72': 'TRA_72', 'ISOPN': 'TRA_55', 'SO4s': 'TRA_28', 'TRA_79': 'TRA_79', 'MSA': 'MSA', 'TRA_39': 'TRA_39', 'TRA_38': 'TRA_38', 'GLYC': 'TRA_59', 'TRA_35': 'TRA_35', 'TRA_34': 'TRA_34', 'TRA_37': 'TRA_37', 'TRA_36': 'TRA_36', 'TRA_31': 'TRA_31', 'TRA_30': 'TRA_30', 'TRA_33': 'TRA_33', 'TRA_32': 'TRA_32', 'HO2': 'HO2', 'MACR': 'TRA_14', 'HOI': 'TRA_68', 'BrO': 'TRA_46', 'ICl': 'TRA_78', 'TRA_80': 'TRA_80', 'TRA_81': 'TRA_81', 'TRA_82': 'TRA_82', 'TRA_83': 'TRA_83', 'TRA_84': 'TRA_84', 'TRA_85': 'TRA_85', 'TRA_86': 'TRA_86', 'TRA_87': 'TRA_87', 'TRA_88': 'TRA_88', 'TRA_89': 'TRA_89','GMAO_TEMP': 'GMAO_TEMP', 'GMAO_UWND': 'GMAO_UWND', 'GMAO_VWND': 'GMAO_VWND'},
-                'GCFP_d2TRA_justTRA_1.6' :{'TRA_17': 'R4N2', 'TRA_16': 'PPN', 'TRA_15': 'PMN', 'TRA_14': 'MACR', 'TRA_13': 'MVK', 'TRA_12': 'RCHO', 'TRA_11': 'ALD2', 'TRA_10': 'MEK', 'TRA_19': 'C3H8', 'TRA_18': 'PRPE', 'TRA_96': 'C2H5I', 'TRA_95': 'C3H7I', 'TRA_94': 'CH2IBr', 'TRA_93': 'CH2ICl', 'TRA_92': 'BrCl', 'TRA_91': 'OClO', 'TRA_90': 'ClO', 'TRA_62': 'IEPOX', 'TRA_63': 'MAP', 'TRA_60': 'MMN', 'TRA_61': 'RIP', 'TRA_66': 'HNO2', 'TRA_67': 'I2', 'TRA_64': 'NO2', 'TRA_65': 'NO3', 'TRA_68': 'HOI', 'TRA_69': 'IO', 'TRA_71': 'HI', 'TRA_70': 'OIO', 'TRA_73': 'IONO2', 'TRA_72': 'IONO', 'TRA_75': 'CH3IT', 'TRA_74': 'I2O2', 'TRA_77': 'IBr', 'TRA_76': 'CH2I2', 'TRA_79': 'I', 'TRA_78': 'ICl', 'TRA_48': 'HBr', 'TRA_49': 'BrNO2', 'TRA_44': 'Br2', 'TRA_45': 'Br', 'TRA_46': 'BrO', 'TRA_47': 'HOBr', 'TRA_40': 'DST3', 'TRA_41': 'DST4', 'TRA_42': 'SALA', 'TRA_43': 'SALC', 'TRA_59': 'GLYC', 'TRA_58': 'HAC', 'TRA_53': 'CH3Br', 'TRA_52': 'CH2Br2', 'TRA_51': 'CHBr3', 'TRA_50': 'BrNO3', 'TRA_57': 'PROPNN', 'TRA_56': 'MOBA', 'TRA_55': 'ISOPN', 'TRA_54': 'MPN', 'TRA_28': 'SO4s', 'TRA_29': 'MSA', 'TRA_26': 'SO2', 'TRA_27': 'SO4', 'TRA_24': 'MP', 'TRA_25': 'DMS', 'TRA_22': 'N2O5', 'TRA_23': 'HNO4', 'TRA_20': 'CH2O', 'TRA_21': 'C2H6', 'TRA_39': 'DST2', 'TRA_38': 'DST1', 'TRA_35': 'OCPI', 'TRA_34': 'BCPI', 'TRA_37': 'OCPO', 'TRA_36': 'BCPO', 'TRA_31': 'NH4', 'TRA_30': 'NH3', 'TRA_33': 'NITs', 'TRA_32': 'NIT', 'TRA_9': 'ACET', 'TRA_8': 'H2O2', 'TRA_7': 'HNO3', 'TRA_6': 'ISOP', 'TRA_5': 'ALK4', 'TRA_4': 'CO', 'TRA_3': 'PAN', 'TRA_2': 'O3', 'TRA_1': 'NO', 'TRA_80': 'HIO3', 'TRA_81': 'I2O', 'TRA_82': 'INO', 'TRA_83': 'I2O3', 'TRA_84': 'I2O4', 'TRA_85': 'I2O5', 'TRA_86': 'AERI', 'TRA_87': 'Cl2', 'TRA_88': 'Cl', 'TRA_89': 'HOCl'},
+        'GCFP_d2TRA_all_1.6' :{'HIO3': 'TRA_80', 'TRA_17': 'TRA_17', 'TRA_16': 'TRA_16', 'TRA_15': 'TRA_15', 'TRA_14': 'TRA_14', 'TRA_13': 'TRA_13', 'TRA_12': 'TRA_12', 'TRA_11': 'TRA_11', 'TRA_19': 'TRA_19', 'ACET': 'ACET', 'RIP': 'TRA_61', 'BrNO3': 'TRA_50', 'HAC': 'TRA_58', 'ALD2': 'ALD2', 'HNO3': 'HNO3', 'HNO2': 'HNO2', 'HNO4': 'HNO4', 'OIO': 'TRA_70', 'MAP': 'TRA_63', 'PRPE': 'PRPE', 'TRA_29': 'TRA_29', 'CH2I2': 'TRA_76', 'I2O2': 'TRA_74', 'NIT': 'TRA_32', 'CH3Br': 'TRA_53', 'C3H7I': 'TRA_95', 'MO2': 'MO2', 'C3H8': 'C3H8', 'I2O5': 'TRA_85', 'TRA_71': 'TRA_71', 'TRA_70': 'TRA_70', 'TRA_73': 'TRA_73', 'DMS': 'DMS', 'TRA_75': 'TRA_75', 'TRA_74': 'TRA_74', 'TRA_77': 'TRA_77', 'TRA_76': 'TRA_76', 'CH2O': 'CH2O', 'TRA_78': 'TRA_78', 'CH3IT': 'TRA_75', 'NO2': 'NO2', 'NO3': 'NO3', 'N2O5': 'N2O5', 'H2O2': 'H2O2', 'PAN': 'PAN', 'HOCl': 'TRA_89', 'TRA_18': 'TRA_18', 'GMAO_TEMP': 'GMAO_TEMP', 'RCHO': 'RCHO', 'C2H6': 'C2H6', 'INO': 'TRA_82', 'MP': 'MP', 'CH2Br2': 'TRA_52', 'CH2ICl': 'TRA_93', 'TRA_59': 'TRA_59', 'TRA_58': 'TRA_58', 'IEPOX': 'TRA_62', 'TRA_53': 'TRA_53', 'TRA_52': 'TRA_52', 'TRA_51': 'TRA_51', 'TRA_50': 'TRA_50', 'TRA_57': 'TRA_57', 'TRA_56': 'TRA_56', 'TRA_55': 'TRA_55', 'TRA_54': 'TRA_54', 'MOBA': 'TRA_56', 'CH3I': 'TRA_75', 'BrCl': 'TRA_92', 'OClO': 'TRA_91', 'CO': 'CO', 'BCPI': 'TRA_34', 'ISOP': 'ISOP', 'BCPO': 'TRA_36', 'MVK': 'MVK', 'TRA_28': 'TRA_28', 'Cl': 'TRA_88', 'TRA_26': 'TRA_26', 'TRA_27': 'TRA_27', 'TRA_24': 'TRA_24', 'I2O3': 'TRA_83', 'I2O4': 'TRA_84', 'TRA_23': 'TRA_23', 'TRA_20': 'TRA_20', 'TRA_21': 'TRA_21', 'MMN': 'TRA_60', 'I2O': 'TRA_81', 'HBr': 'TRA_48', 'ALK4': 'ALK4', 'I2': 'TRA_67', 'PPN': 'PPN', 'IBr': 'TRA_77', 'I': 'TRA_79', 'AERI': 'TRA_86', 'NH4': 'TRA_31', 'SO2': 'SO2', 'SO4': 'SO4', 'NH3': 'TRA_30', 'TRA_08': 'TRA_08', 'TRA_09': 'TRA_09', 'TRA_01': 'TRA_01', 'TRA_02': 'TRA_02', 'TRA_03': 'TRA_03', 'TRA_04': 'TRA_04', 'TRA_05': 'TRA_05', 'TRA_06': 'TRA_06', 'TRA_07': 'TRA_07', 'OCPI': 'TRA_35', 'OCPO': 'TRA_37', 'Br2': 'TRA_44', 'O3': 'O3', 'Br': 'TRA_45', 'TRA_96': 'TRA_96', 'TRA_95': 'TRA_95', 'TRA_94': 'TRA_94', 'TRA_93': 'TRA_93', 'TRA_92': 'TRA_92', 'TRA_91': 'TRA_91', 'TRA_90': 'TRA_90', 'TRA_62': 'TRA_62', 'TRA_63': 'TRA_63', 'TRA_60': 'TRA_60', 'TRA_61': 'TRA_61', 'TRA_66': 'TRA_66', 'TRA_67': 'TRA_67', 'C2H5I': 'TRA_96', 'TRA_65': 'TRA_65', 'TRA_68': 'TRA_68', 'TRA_69': 'TRA_69', 'OH': 'OH', 'IONO2': 'TRA_73', 'HI': 'TRA_71', 'CHBr3': 'TRA_51', 'TRA_46': 'TRA_46', 'DST4': 'TRA_41', 'DST3': 'TRA_40', 'DST2': 'TRA_39', 'DST1': 'TRA_38', 'NITs': 'TRA_33', 'TRA_48': 'TRA_48', 'TRA_49': 'TRA_49', 'TRA_44': 'TRA_44', 'TRA_45': 'TRA_45', 'RO2': 'RO2', 'TRA_47': 'TRA_47', 'TRA_40': 'TRA_40', 'TRA_41': 'TRA_41', 'TRA_42': 'TRA_42', 'TRA_43': 'TRA_43', 'MPN': 'TRA_54', 'ETO2': 'ETO2', 'IO': 'TRA_69', 'TRA_64': 'TRA_64', 'ClO': 'TRA_90', 'NO': 'NO', 'SALA': 'TRA_42', 'SALC': 'TRA_43', 'R4N2': 'R4N2', 'PMN': 'PMN', 'TRA_25': 'TRA_25', 'CH2IBr': 'TRA_94', 'TRA_22': 'TRA_22', 'BrNO2': 'TRA_49', 'IONO': 'TRA_72', 'Cl2': 'TRA_87', 'HOBr': 'TRA_47', 'PROPNN': 'TRA_57', 'MEK': 'MEK', 'TRA_72': 'TRA_72', 'ISOPN': 'TRA_55', 'SO4s': 'TRA_28', 'TRA_79': 'TRA_79', 'MSA': 'MSA', 'TRA_39': 'TRA_39', 'TRA_38': 'TRA_38', 'GLYC': 'TRA_59', 'TRA_35': 'TRA_35', 'TRA_34': 'TRA_34', 'TRA_37': 'TRA_37', 'TRA_36': 'TRA_36', 'TRA_31': 'TRA_31', 'TRA_30': 'TRA_30', 'TRA_33': 'TRA_33', 'TRA_32': 'TRA_32', 'HO2': 'HO2', 'MACR': 'TRA_14', 'HOI': 'TRA_68', 'BrO': 'TRA_46', 'ICl': 'TRA_78', 'TRA_80': 'TRA_80', 'TRA_81': 'TRA_81', 'TRA_82': 'TRA_82', 'TRA_83': 'TRA_83', 'TRA_84': 'TRA_84', 'TRA_85': 'TRA_85', 'TRA_86': 'TRA_86', 'TRA_87': 'TRA_87', 'TRA_88': 'TRA_88', 'TRA_89': 'TRA_89','GMAO_TEMP': 'GMAO_TEMP', 'GMAO_UWND': 'GMAO_UWND', 'GMAO_VWND': 'GMAO_VWND'},
+        'GCFP_d2TRA_justTRA_1.6' :{'TRA_17': 'R4N2', 'TRA_16': 'PPN', 'TRA_15': 'PMN', 'TRA_14': 'MACR', 'TRA_13': 'MVK', 'TRA_12': 'RCHO', 'TRA_11': 'ALD2', 'TRA_10': 'MEK', 'TRA_19': 'C3H8', 'TRA_18': 'PRPE', 'TRA_96': 'C2H5I', 'TRA_95': 'C3H7I', 'TRA_94': 'CH2IBr', 'TRA_93': 'CH2ICl', 'TRA_92': 'BrCl', 'TRA_91': 'OClO', 'TRA_90': 'ClO', 'TRA_62': 'IEPOX', 'TRA_63': 'MAP', 'TRA_60': 'MMN', 'TRA_61': 'RIP', 'TRA_66': 'HNO2', 'TRA_67': 'I2', 'TRA_64': 'NO2', 'TRA_65': 'NO3', 'TRA_68': 'HOI', 'TRA_69': 'IO', 'TRA_71': 'HI', 'TRA_70': 'OIO', 'TRA_73': 'IONO2', 'TRA_72': 'IONO', 'TRA_75': 'CH3IT', 'TRA_74': 'I2O2', 'TRA_77': 'IBr', 'TRA_76': 'CH2I2', 'TRA_79': 'I', 'TRA_78': 'ICl', 'TRA_48': 'HBr', 'TRA_49': 'BrNO2', 'TRA_44': 'Br2', 'TRA_45': 'Br', 'TRA_46': 'BrO', 'TRA_47': 'HOBr', 'TRA_40': 'DST3', 'TRA_41': 'DST4', 'TRA_42': 'SALA', 'TRA_43': 'SALC', 'TRA_59': 'GLYC', 'TRA_58': 'HAC', 'TRA_53': 'CH3Br', 'TRA_52': 'CH2Br2', 'TRA_51': 'CHBr3', 'TRA_50': 'BrNO3', 'TRA_57': 'PROPNN', 'TRA_56': 'MOBA', 'TRA_55': 'ISOPN', 'TRA_54': 'MPN', 'TRA_28': 'SO4s', 'TRA_29': 'MSA', 'TRA_26': 'SO2', 'TRA_27': 'SO4', 'TRA_24': 'MP', 'TRA_25': 'DMS', 'TRA_22': 'N2O5', 'TRA_23': 'HNO4', 'TRA_20': 'CH2O', 'TRA_21': 'C2H6', 'TRA_39': 'DST2', 'TRA_38': 'DST1', 'TRA_35': 'OCPI', 'TRA_34': 'BCPI', 'TRA_37': 'OCPO', 'TRA_36': 'BCPO', 'TRA_31': 'NH4', 'TRA_30': 'NH3', 'TRA_33': 'NITs', 'TRA_32': 'NIT', 'TRA_9': 'ACET', 'TRA_8': 'H2O2', 'TRA_7': 'HNO3', 'TRA_6': 'ISOP', 'TRA_5': 'ALK4', 'TRA_4': 'CO', 'TRA_3': 'PAN', 'TRA_2': 'O3', 'TRA_1': 'NO', 'TRA_80': 'HIO3', 'TRA_81': 'I2O', 'TRA_82': 'INO', 'TRA_83': 'I2O3', 'TRA_84': 'I2O4', 'TRA_85': 'I2O5', 'TRA_86': 'AERI', 'TRA_87': 'Cl2', 'TRA_88': 'Cl', 'TRA_89': 'HOCl'},
 #                    'GCFP_d2TRA_all_1.7' : {'TRA_74': 'ICl', 'TRA_25': 'DMS', 'TRA_68': 'CH2I2', 'TRA_44': 'Br2', 'TRA_70': 'CH2IBr', 'TRA_22': 'N2O5', 'TRA_76': 'IO', 'TRA_79': 'INO', 'TRA_23': 'HNO4', 'TRA_17': 'R4N2', 'TRA_16': 'PPN', 'TRA_15': 'PMN', 'TRA_14': 'MACR', 'TRA_13': 'MVK', 'TRA_12': 'RCHO', 'TRA_11': 'ALD2', 'TRA_10': 'MEK', 'TRA_53': 'CH3Br', 'TRA_52': 'CH2Br2', 'TRA_51': 'CHBr3', 'TRA_21': 'C2H6', 'TRA_57': 'PROPNN', 'TRA_56': 'MOBA', 'TRA_19': 'C3H8', 'TRA_18': 'PRPE', 'TRA_69': 'CH2ICl', 'TRA_50': 'BrNO3', 'TRA_39': 'DST2', 'TRA_38': 'DST1', 'TRA_73': 'IBr', 'TRA_35': 'OCPI', 'TRA_34': 'BCPI', 'TRA_37': 'OCPO', 'TRA_36': 'BCPO', 'TRA_31': 'NH4', 'TRA_30': 'NH3', 'TRA_33': 'NITs', 'TRA_32': 'NIT', 'TRA_77': 'HI', 'TRA_83': 'I2O3', 'TRA_55': 'ISOPN', 'TRA_54': 'MPN', 'TRA_72': 'I2', 'TRA_59': 'GLYC', 'TRA_62': 'IEPOX', 'TRA_63': 'MAP', 'TRA_60': 'MMN', 'TRA_61': 'RIP', 'TRA_48': 'HBr', 'TRA_49': 'BrNO2', 'TRA_64': 'NO2', 'TRA_65': 'NO3', 'TRA_20': 'CH2O', 'TRA_45': 'Br', 'TRA_46': 'BrO', 'TRA_47': 'HOBr', 'TRA_40': 'DST3', 'TRA_41': 'DST4', 'TRA_42': 'SALA', 'TRA_43': 'SALC', 'TRA_08': 'H2O2', 'TRA_09': 'ACET', 'TRA_75': 'I', 'TRA_28': 'SO4s', 'TRA_29': 'MSA', 'TRA_26': 'SO2', 'TRA_01': 'NO', 'TRA_02': 'O3', 'TRA_03': 'PAN', 'TRA_04': 'CO', 'TRA_05': 'ALK4', 'TRA_06': 'ISOP', 'TRA_07': 'HNO3', 'TRA_80': 'IONO', 'TRA_81': 'IONO2', 'TRA_82': 'I2O2', 'TRA_58': 'HAC', 'TRA_84': 'I2O4', 'TRA_85': 'AERI', 'TRA_27': 'SO4', 'TRA_78': 'OIO', 'TRA_66': 'HNO2', 'TRA_71': 'HOI', 'TRA_24': 'MP', 'TRA_67': 'CH3IT', 'TRA_9': 'ACET', 'TRA_8': 'H2O2', 'TRA_7': 'HNO3', 'TRA_6': 'ISOP', 'TRA_5': 'ALK4', 'TRA_4': 'CO', 'TRA_3': 'PAN', 'TRA_2': 'O3', 'TRA_1': 'NO'},           
-                'GCFP_d2TRA_all_1.7' : {'TRA_25': 'DMS', 'TRA_77': 'HI', 'TRA_76': 'IO', 'TRA_23': 'HNO4', 'TRA_71': 'HOI', 'TRA_70': 'CH2IBr', 'TRA_15': 'PMN', 'TRA_14': 'MACR', 'TRA_13': 'MVK', 'TRA_12': 'RCHO', 'TRA_11': 'ALD2', 'TRA_10': 'MEK', 'TRA_79': 'INO', 'TRA_78': 'OIO', 'TRA_51': 'CHBr3', 'TRA_50': 'BrNO3', 'TRA_52': 'CH2Br2', 'TRA_46': 'BrO', 'TRA_19': 'C3H8', 'TRA_18': 'PRPE', 'TRA_47': 'HOBr', 'TRA_39': 'DST2', 'TRA_38': 'DST1', 'TRA_81': 'IONO2', 'TRA_35': 'OCPI', 'TRA_57': 'PROPNN', 'TRA_37': 'OCPO', 'TRA_36': 'BCPO', 'TRA_31': 'NH4', 'TRA_30': 'NH3', 'TRA_33': 'NITs', 'TRA_56': 'MOBA', 'TRA_83': 'I2O3', 'TRA_55': 'ISOPN', 'TRA_84': 'I2O4', 'TRA_54': 'MPN', 'TRA_5': 'ALK4', 'TRA_49': 'BrNO2', 'TRA_32': 'NIT', 'TRA_9': 'ACET', 'TRA_8': 'H2O2', 'TRA_7': 'HNO3', 'TRA_6': 'ISOP', 'TRA_59': 'GLYC', 'TRA_4': 'CO', 'TRA_3': 'PAN', 'TRA_2': 'O3', 'TRA_1': 'NO', 'TRA_62': 'IEPOX', 'TRA_63': 'MAP', 'TRA_60': 'MMN', 'TRA_61': 'RIP', 'TRA_66': 'HNO2', 'TRA_67': 'CH3IT', 'TRA_64': 'NO2', 'TRA_65': 'NO3', 'TRA_44': 'Br2', 'TRA_45': 'Br', 'TRA_68': 'CH2I2', 'TRA_69': 'CH2ICl', 'TRA_40': 'DST3', 'TRA_41': 'DST4', 'TRA_42': 'SALA', 'TRA_43': 'SALC', 'TRA_17': 'R4N2', 'TRA_28': 'SO4s', 'TRA_16': 'PPN', 'TRA_58': 'HAC', 'TRA_27': 'SO4', 'TRA_24': 'MP', 'TRA_29': 'MSA', 'TRA_22': 'N2O5', 'TRA_73': 'IBr', 'TRA_20': 'CH2O', 'TRA_21': 'C2H6', 'TRA_80': 'IONO', 'TRA_26': 'SO2', 'TRA_82': 'I2O2', 'TRA_72': 'I2', 'TRA_48': 'HBr', 'TRA_85': 'AERI', 'TRA_34': 'BCPI', 'TRA_75': 'I', 'TRA_53': 'CH3Br', 'TRA_74': 'ICl'}, 
-                'GCFP_d2TRA_all_2.0' :{'TRA_17': 'R4N2', 'TRA_16': 'PPN', 'TRA_15': 'PMN', 'TRA_14': 'MACR', 'TRA_13': 'MVK', 'TRA_12': 'RCHO', 'TRA_11': 'ALD2', 'TRA_10': 'MEK', 'TRA_19': 'C3H8', 'TRA_18': 'PRPE', 'TRA_99': 'I2O3', 'TRA_98': 'I2O2', 'TRA_97': 'IONO2', 'TRA_96': 'IONO', 'TRA_95': 'INO', 'TRA_94': 'OIO', 'TRA_93': 'HI', 'TRA_92': 'IO', 'TRA_91': 'I', 'TRA_90': 'ICl', 'TRA_100': 'I2O4', 'TRA_101': 'ISALA', 'TRA_102': 'ISALC', 'TRA_103': 'AERI', 'TRA_62': 'IEPOX', 'TRA_63': 'MAP', 'TRA_60': 'MMN', 'TRA_61': 'RIP', 'TRA_66': 'HNO2', 'TRA_67': 'BrCl', 'TRA_64': 'NO2', 'TRA_65': 'NO3', 'TRA_68': 'Cl2', 'TRA_69': 'Cl', 'TRA_71': 'HOCl', 'TRA_70': 'ClO', 'TRA_73': 'ClNO2', 'TRA_72': 'HCl', 'TRA_75': 'ClOO', 'TRA_74': 'ClNO3', 'TRA_77': 'Cl2O2', 'TRA_76': 'OClO', 'TRA_79': 'CH2Cl2', 'TRA_78': 'CH3Cl', 'TRA_48': 'HBr', 'TRA_49': 'BrNO2', 'TRA_44': 'Br2', 'TRA_45': 'Br', 'TRA_46': 'BrO', 'TRA_47': 'HOBr', 'TRA_40': 'DST3', 'TRA_41': 'DST4', 'TRA_42': 'SALA', 'TRA_43': 'SALC', 'TRA_59': 'GLYC', 'TRA_58': 'HAC', 'TRA_53': 'CH3Br', 'TRA_52': 'CH2Br2', 'TRA_51': 'CHBr3', 'TRA_50': 'BrNO3', 'TRA_57': 'PROPNN', 'TRA_56': 'MOBA', 'TRA_55': 'ISOPN', 'TRA_54': 'MPN', 'TRA_28': 'SO4s', 'TRA_29': 'MSA', 'TRA_26': 'SO2', 'TRA_27': 'SO4', 'TRA_24': 'MP', 'TRA_25': 'DMS', 'TRA_22': 'N2O5', 'TRA_23': 'HNO4', 'TRA_20': 'CH2O', 'TRA_21': 'C2H6', 'TRA_39': 'DST2', 'TRA_38': 'DST1', 'TRA_35': 'OCPI', 'TRA_34': 'BCPI', 'TRA_37': 'OCPO', 'TRA_36': 'BCPO', 'TRA_31': 'NH4', 'TRA_30': 'NH3', 'TRA_33': 'NITs', 'TRA_32': 'NIT', 'TRA_9': 'ACET', 'TRA_8': 'H2O2', 'TRA_7': 'HNO3', 'TRA_6': 'ISOP', 'TRA_5': 'ALK4', 'TRA_4': 'CO', 'TRA_3': 'PAN', 'TRA_2': 'O3', 'TRA_1': 'NO', 'TRA_80': 'CHCl3', 'TRA_81': 'BrSALA', 'TRA_82': 'BrSALC', 'TRA_83': 'CH3IT', 'TRA_84': 'CH2I2', 'TRA_85': 'CH2ICl', 'TRA_86': 'CH2IBr', 'TRA_87': 'HOI', 'TRA_88': 'I2', 'TRA_89': 'IBr'},
-                    'GCFP_d2TRA_all_1.7_EOH_actual_names' : {'HNO4': 'HNO4', 'PPN': 'PPN', 'TRA_17': 'R4N2', 'TRA_16': 'PPN', 'TRA_15': 'PMN', 'TRA_14': 'MACR', 'TRA_13': 'MVK', 'TRA_12': 'RCHO', 'TRA_11': 'ALD2', 'TRA_10': 'MEK', 'O3': 'O3', 'TRA_19': 'C3H8', 'TRA_18': 'PRPE', 'GMAO_UWND': 'GMAO_UWND', 'TRA_62': 'IEPOX', 'TRA_63': 'MAP', 'TRA_60': 'MMN', 'TRA_61': 'RIP', 'TRA_66': 'HNO2', 'TRA_67': 'CH3IT', 'TRA_65': 'NO3', 'TRA_68': 'CH2I2', 'TRA_69': 'CH2ICl', 'OH': 'OH', 'LAT': 'LAT', 'TRA_71': 'HOI', 'TRA_70': 'CH2IBr', 'TRA_73': 'IBr', 'TRA_72': 'I2', 'TRA_75': 'I', 'TRA_74': 'ICl', 'TRA_77': 'HI', 'TRA_76': 'IO', 'TRA_79': 'INO', 'TRA_78': 'OIO', 'NO2': 'NO2', 'NO3': 'NO3', 'N2O5': 'N2O5', 'H2O2': 'H2O2', 'GMAO_VWND': 'GMAO_VWND', 'PAN': 'PAN', 'GMAO_TEMP': 'GMAO_TEMP', 'TRA_48': 'HBr', 'TRA_49': 'BrNO2', 'TRA_44': 'Br2', 'TRA_45': 'Br', 'TRA_46': 'BrO', 'TRA_47': 'HOBr', 'TRA_40': 'DST3', 'TRA_41': 'DST4', 'TRA_42': 'SALA', 'TRA_43': 'SALC', 'TRA_59': 'GLYC', 'TRA_58': 'HAC', 'TRA_53': 'CH3Br', 'TRA_52': 'CH2Br2', 'TRA_51': 'CHBr3', 'TRA_50': 'BrNO3', 'TRA_57': 'PROPNN', 'TRA_56': 'MOBA', 'TRA_55': 'ISOPN', 'TRA_54': 'MPN', 'NO': 'NO', 'PMN': 'PMN', 'HNO3': 'HNO3', 'TRA_28': 'SO4s', 'TRA_29': 'MSA', 'TRA_26': 'SO2', 'TRA_27': 'SO4', 'TRA_24': 'MP', 'TRA_25': 'DMS', 'TRA_22': 'N2O5', 'TRA_23': 'HNO4', 'TRA_20': 'CH2O', 'TRA_21': 'C2H6', 'RO2': 'RO2', 'LON': 'LON', 'TRA_39': 'DST2', 'TRA_38': 'DST1', 'TRA_35': 'OCPI', 'TRA_34': 'BCPI', 'TRA_37': 'OCPO', 'TRA_36': 'BCPO', 'TRA_31': 'NH4', 'TRA_30': 'NH3', 'TRA_33': 'NITs', 'TRA_32': 'NIT', 'HO2': 'HO2', 'SO2': 'SO2', 'SO4': 'SO4', 'TRA_08': 'H2O2', 'TRA_09': 'ACET', 'HNO2': 'HNO2', 'TRA_03': 'PAN', 'TRA_04': 'CO', 'TRA_05': 'ALK4', 'TRA_06': 'ISOP', 'TRA_07': 'HNO3', 'TRA_80': 'IONO', 'TRA_81': 'IONO2', 'TRA_82': 'I2O2', 'TRA_83': 'I2O3', 'TRA_84': 'I2O4', 'TRA_85': 'AERI', 'TRA_86': 'EOH'},      
+        'GCFP_d2TRA_all_1.7' : {'TRA_25': 'DMS', 'TRA_77': 'HI', 'TRA_76': 'IO', 'TRA_23': 'HNO4', 'TRA_71': 'HOI', 'TRA_70': 'CH2IBr', 'TRA_15': 'PMN', 'TRA_14': 'MACR', 'TRA_13': 'MVK', 'TRA_12': 'RCHO', 'TRA_11': 'ALD2', 'TRA_10': 'MEK', 'TRA_79': 'INO', 'TRA_78': 'OIO', 'TRA_51': 'CHBr3', 'TRA_50': 'BrNO3', 'TRA_52': 'CH2Br2', 'TRA_46': 'BrO', 'TRA_19': 'C3H8', 'TRA_18': 'PRPE', 'TRA_47': 'HOBr', 'TRA_39': 'DST2', 'TRA_38': 'DST1', 'TRA_81': 'IONO2', 'TRA_35': 'OCPI', 'TRA_57': 'PROPNN', 'TRA_37': 'OCPO', 'TRA_36': 'BCPO', 'TRA_31': 'NH4', 'TRA_30': 'NH3', 'TRA_33': 'NITs', 'TRA_56': 'MOBA', 'TRA_83': 'I2O3', 'TRA_55': 'ISOPN', 'TRA_84': 'I2O4', 'TRA_54': 'MPN', 'TRA_5': 'ALK4', 'TRA_49': 'BrNO2', 'TRA_32': 'NIT', 'TRA_9': 'ACET', 'TRA_8': 'H2O2', 'TRA_7': 'HNO3', 'TRA_6': 'ISOP', 'TRA_59': 'GLYC', 'TRA_4': 'CO', 'TRA_3': 'PAN', 'TRA_2': 'O3', 'TRA_1': 'NO', 'TRA_62': 'IEPOX', 'TRA_63': 'MAP', 'TRA_60': 'MMN', 'TRA_61': 'RIP', 'TRA_66': 'HNO2', 'TRA_67': 'CH3IT', 'TRA_64': 'NO2', 'TRA_65': 'NO3', 'TRA_44': 'Br2', 'TRA_45': 'Br', 'TRA_68': 'CH2I2', 'TRA_69': 'CH2ICl', 'TRA_40': 'DST3', 'TRA_41': 'DST4', 'TRA_42': 'SALA', 'TRA_43': 'SALC', 'TRA_17': 'R4N2', 'TRA_28': 'SO4s', 'TRA_16': 'PPN', 'TRA_58': 'HAC', 'TRA_27': 'SO4', 'TRA_24': 'MP', 'TRA_29': 'MSA', 'TRA_22': 'N2O5', 'TRA_73': 'IBr', 'TRA_20': 'CH2O', 'TRA_21': 'C2H6', 'TRA_80': 'IONO', 'TRA_26': 'SO2', 'TRA_82': 'I2O2', 'TRA_72': 'I2', 'TRA_48': 'HBr', 'TRA_85': 'AERI', 'TRA_34': 'BCPI', 'TRA_75': 'I', 'TRA_53': 'CH3Br', 'TRA_74': 'ICl'}, 
+        'GCFP_d2TRA_all_2.0' :{'TRA_17': 'R4N2', 'TRA_16': 'PPN', 'TRA_15': 'PMN', 'TRA_14': 'MACR', 'TRA_13': 'MVK', 'TRA_12': 'RCHO', 'TRA_11': 'ALD2', 'TRA_10': 'MEK', 'TRA_19': 'C3H8', 'TRA_18': 'PRPE', 'TRA_99': 'I2O3', 'TRA_98': 'I2O2', 'TRA_97': 'IONO2', 'TRA_96': 'IONO', 'TRA_95': 'INO', 'TRA_94': 'OIO', 'TRA_93': 'HI', 'TRA_92': 'IO', 'TRA_91': 'I', 'TRA_90': 'ICl', 'TRA_100': 'I2O4', 'TRA_101': 'ISALA', 'TRA_102': 'ISALC', 'TRA_103': 'AERI', 'TRA_62': 'IEPOX', 'TRA_63': 'MAP', 'TRA_60': 'MMN', 'TRA_61': 'RIP', 'TRA_66': 'HNO2', 'TRA_67': 'BrCl', 'TRA_64': 'NO2', 'TRA_65': 'NO3', 'TRA_68': 'Cl2', 'TRA_69': 'Cl', 'TRA_71': 'HOCl', 'TRA_70': 'ClO', 'TRA_73': 'ClNO2', 'TRA_72': 'HCl', 'TRA_75': 'ClOO', 'TRA_74': 'ClNO3', 'TRA_77': 'Cl2O2', 'TRA_76': 'OClO', 'TRA_79': 'CH2Cl2', 'TRA_78': 'CH3Cl', 'TRA_48': 'HBr', 'TRA_49': 'BrNO2', 'TRA_44': 'Br2', 'TRA_45': 'Br', 'TRA_46': 'BrO', 'TRA_47': 'HOBr', 'TRA_40': 'DST3', 'TRA_41': 'DST4', 'TRA_42': 'SALA', 'TRA_43': 'SALC', 'TRA_59': 'GLYC', 'TRA_58': 'HAC', 'TRA_53': 'CH3Br', 'TRA_52': 'CH2Br2', 'TRA_51': 'CHBr3', 'TRA_50': 'BrNO3', 'TRA_57': 'PROPNN', 'TRA_56': 'MOBA', 'TRA_55': 'ISOPN', 'TRA_54': 'MPN', 'TRA_28': 'SO4s', 'TRA_29': 'MSA', 'TRA_26': 'SO2', 'TRA_27': 'SO4', 'TRA_24': 'MP', 'TRA_25': 'DMS', 'TRA_22': 'N2O5', 'TRA_23': 'HNO4', 'TRA_20': 'CH2O', 'TRA_21': 'C2H6', 'TRA_39': 'DST2', 'TRA_38': 'DST1', 'TRA_35': 'OCPI', 'TRA_34': 'BCPI', 'TRA_37': 'OCPO', 'TRA_36': 'BCPO', 'TRA_31': 'NH4', 'TRA_30': 'NH3', 'TRA_33': 'NITs', 'TRA_32': 'NIT', 'TRA_9': 'ACET', 'TRA_8': 'H2O2', 'TRA_7': 'HNO3', 'TRA_6': 'ISOP', 'TRA_5': 'ALK4', 'TRA_4': 'CO', 'TRA_3': 'PAN', 'TRA_2': 'O3', 'TRA_1': 'NO', 'TRA_80': 'CHCl3', 'TRA_81': 'BrSALA', 'TRA_82': 'BrSALC', 'TRA_83': 'CH3IT', 'TRA_84': 'CH2I2', 'TRA_85': 'CH2ICl', 'TRA_86': 'CH2IBr', 'TRA_87': 'HOI', 'TRA_88': 'I2', 'TRA_89': 'IBr'},
+        'GCFP_d2TRA_all_1.7_EOH_actual_names' : {'HNO4': 'HNO4', 'PPN': 'PPN', 'TRA_17': 'R4N2', 'TRA_16': 'PPN', 'TRA_15': 'PMN', 'TRA_14': 'MACR', 'TRA_13': 'MVK', 'TRA_12': 'RCHO', 'TRA_11': 'ALD2', 'TRA_10': 'MEK', 'O3': 'O3', 'TRA_19': 'C3H8', 'TRA_18': 'PRPE', 'GMAO_UWND': 'GMAO_UWND', 'TRA_62': 'IEPOX', 'TRA_63': 'MAP', 'TRA_60': 'MMN', 'TRA_61': 'RIP', 'TRA_66': 'HNO2', 'TRA_67': 'CH3IT', 'TRA_65': 'NO3', 'TRA_68': 'CH2I2', 'TRA_69': 'CH2ICl', 'OH': 'OH', 'LAT': 'LAT', 'TRA_71': 'HOI', 'TRA_70': 'CH2IBr', 'TRA_73': 'IBr', 'TRA_72': 'I2', 'TRA_75': 'I', 'TRA_74': 'ICl', 'TRA_77': 'HI', 'TRA_76': 'IO', 'TRA_79': 'INO', 'TRA_78': 'OIO', 'NO2': 'NO2', 'NO3': 'NO3', 'N2O5': 'N2O5', 'H2O2': 'H2O2', 'GMAO_VWND': 'GMAO_VWND', 'PAN': 'PAN', 'GMAO_TEMP': 'GMAO_TEMP', 'TRA_48': 'HBr', 'TRA_49': 'BrNO2', 'TRA_44': 'Br2', 'TRA_45': 'Br', 'TRA_46': 'BrO', 'TRA_47': 'HOBr', 'TRA_40': 'DST3', 'TRA_41': 'DST4', 'TRA_42': 'SALA', 'TRA_43': 'SALC', 'TRA_59': 'GLYC', 'TRA_58': 'HAC', 'TRA_53': 'CH3Br', 'TRA_52': 'CH2Br2', 'TRA_51': 'CHBr3', 'TRA_50': 'BrNO3', 'TRA_57': 'PROPNN', 'TRA_56': 'MOBA', 'TRA_55': 'ISOPN', 'TRA_54': 'MPN', 'NO': 'NO', 'PMN': 'PMN', 'HNO3': 'HNO3', 'TRA_28': 'SO4s', 'TRA_29': 'MSA', 'TRA_26': 'SO2', 'TRA_27': 'SO4', 'TRA_24': 'MP', 'TRA_25': 'DMS', 'TRA_22': 'N2O5', 'TRA_23': 'HNO4', 'TRA_20': 'CH2O', 'TRA_21': 'C2H6', 'RO2': 'RO2', 'LON': 'LON', 'TRA_39': 'DST2', 'TRA_38': 'DST1', 'TRA_35': 'OCPI', 'TRA_34': 'BCPI', 'TRA_37': 'OCPO', 'TRA_36': 'BCPO', 'TRA_31': 'NH4', 'TRA_30': 'NH3', 'TRA_33': 'NITs', 'TRA_32': 'NIT', 'HO2': 'HO2', 'SO2': 'SO2', 'SO4': 'SO4', 'TRA_08': 'H2O2', 'TRA_09': 'ACET', 'HNO2': 'HNO2', 'TRA_03': 'PAN', 'TRA_04': 'CO', 'TRA_05': 'ALK4', 'TRA_06': 'ISOP', 'TRA_07': 'HNO3', 'TRA_80': 'IONO', 'TRA_81': 'IONO2', 'TRA_82': 'I2O2', 'TRA_83': 'I2O3', 'TRA_84': 'I2O4', 'TRA_85': 'AERI', 'TRA_86': 'EOH'},      
         'TRA_spec_met_all_1.7_EOH': {'MAO3': 'MAO3', 'DHMOB': 'DHMOB', 'ETP': 'ETP', 'RCO3': 'RCO3', 'MO2': 'MO2', 'EOH': 'EOH', 'MVKN': 'MVKN', 'R4P': 'R4P', 'ISNP': 'ISNP', 'RB3P': 'RB3P', 'MGLY': 'MGLY', 'MAOPO2': 'MAOPO2', 'RIO2': 'RIO2', 'PMNN': 'PMNN', 'PP': 'PP', 'VRP': 'VRP', 'RP': 'RP', 'MRO2': 'MRO2', 'HC5': 'HC5', 'ATO2': 'ATO2', 'PYAC': 'PYAC', 'R4N1': 'R4N1', 'DIBOO': 'DIBOO', 'LISOPOH': 'LISOPOH', 'HO2': 'HO2', 'ETHLN': 'ETHLN', 'ISNOOB': 'ISNOOB', 'ISNOOA': 'ISNOOA', 'ROH': 'ROH', 'MAN2': 'MAN2', 'B3O2': 'B3O2', 'INPN': 'INPN', 'MACRN': 'MACRN', 'PO2': 'PO2', 'VRO2': 'VRO2', 'MRP': 'MRP', 'PRN1': 'PRN1', 'ISNOHOO': 'ISNOHOO', 'MOBAOO': 'MOBAOO', 'MACRNO2': 'MACRNO2', 'ISOPND': 'ISOPND', 'HC5OO': 'HC5OO', 'ISOPNBO2': 'ISOPNBO2', 'RA3P': 'RA3P', 'ISOPNB': 'ISOPNB', 'ISOPNDO2': 'ISOPNDO2', 'PMNO2': 'PMNO2', 'IAP': 'IAP', 'MCO3': 'MCO3', 'IEPOXOO': 'IEPOXOO', 'MAOP': 'MAOP', 'INO2': 'INO2', 'OH': 'OH', 'PRPN': 'PRPN', 'GLYX': 'GLYX', 'A3O2': 'A3O2', 'ETO2': 'ETO2', 'R4O2': 'R4O2', 'ISN1': 'ISN1', 'KO2': 'KO2', 'ATOOH': 'ATOOH','GMAO_PSFC': 'GMAO_PSFC', 'GMAO_SURF': 'GMAO_SURF', 'GMAO_TEMP': 'GMAO_TEMP', 'GMAO_ABSH': 'GMAO_ABSH', 'GMAO_UWND': 'GMAO_UWND', 'GMAO_VWND': 'GMAO_VWND', 'TRA_9': 'ACET', 'TRA_8': 'H2O2', 'TRA_7': 'HNO3', 'TRA_6': 'ISOP', 'TRA_5': 'ALK4', 'TRA_4': 'CO', 'TRA_3': 'PAN', 'TRA_2': 'O3', 'TRA_1': 'NO', 'TRA_74': 'ICl', 'TRA_25': 'DMS', 'TRA_68': 'CH2I2', 'TRA_44': 'Br2', 'TRA_70': 'CH2IBr', 'TRA_22': 'N2O5', 'TRA_76': 'IO', 'TRA_79': 'INO', 'TRA_23': 'HNO4', 'TRA_17': 'R4N2', 'TRA_16': 'PPN', 'TRA_15': 'PMN', 'TRA_14': 'MACR', 'TRA_13': 'MVK', 'TRA_12': 'RCHO', 'TRA_11': 'ALD2', 'TRA_10': 'MEK', 'TRA_53': 'CH3Br', 'TRA_52': 'CH2Br2', 'TRA_51': 'CHBr3', 'TRA_21': 'C2H6', 'TRA_57': 'PROPNN', 'TRA_56': 'MOBA', 'TRA_19': 'C3H8', 'TRA_18': 'PRPE', 'TRA_69': 'CH2ICl', 'TRA_50': 'BrNO3', 'TRA_39': 'DST2', 'TRA_38': 'DST1', 'TRA_73': 'IBr', 'TRA_35': 'OCPI', 'TRA_34': 'BCPI', 'TRA_37': 'OCPO', 'TRA_36': 'BCPO', 'TRA_31': 'NH4', 'TRA_30': 'NH3', 'TRA_33': 'NITs', 'TRA_32': 'NIT', 'TRA_77': 'HI', 'TRA_83': 'I2O3', 'TRA_55': 'ISOPN', 'TRA_54': 'MPN', 'TRA_72': 'I2', 'TRA_59': 'GLYC', 'TRA_62': 'IEPOX', 'TRA_63': 'MAP', 'TRA_60': 'MMN', 'TRA_61': 'RIP', 'TRA_48': 'HBr', 'TRA_49': 'BrNO2', 'TRA_64': 'NO2', 'TRA_65': 'NO3', 'TRA_20': 'CH2O', 'TRA_45': 'Br', 'TRA_46': 'BrO', 'TRA_47': 'HOBr', 'TRA_40': 'DST3', 'TRA_41': 'DST4', 'TRA_42': 'SALA', 'TRA_43': 'SALC', 'TRA_08': 'H2O2', 'TRA_09': 'ACET', 'TRA_75': 'I', 'TRA_28': 'SO4s', 'TRA_29': 'MSA', 'TRA_26': 'SO2', 'TRA_01': 'NO', 'TRA_02': 'O3', 'TRA_03': 'PAN', 'TRA_04': 'CO', 'TRA_05': 'ALK4', 'TRA_06': 'ISOP', 'TRA_07': 'HNO3', 'TRA_80': 'IONO', 'TRA_81': 'IONO2', 'TRA_82': 'I2O2', 'TRA_58': 'HAC', 'TRA_84': 'I2O4', 'TRA_85': 'AERI', 'TRA_27': 'SO4', 'TRA_78': 'OIO', 'TRA_66': 'HNO2', 'TRA_71': 'HOI', 'TRA_24': 'MP', 'TRA_67': 'CH3IT' }, 
-           'TRA_spec_met_all_1.7_EOH_no_trailing_zeroes':  {'MVKN': 'MVKN', 'ETP': 'ETP', 'MGLY': 'MGLY', 'EOH': 'EOH', 'TRA_17': 'R4N2', 'TRA_16': 'PPN', 'TRA_15': 'PMN', 'TRA_14': 'MACR', 'TRA_13': 'MVK', 'TRA_12': 'RCHO', 'TRA_11': 'ALD2', 'TRA_10': 'MEK', 'TRA_53': 'CH3Br', 'TRA_52': 'CH2Br2', 'TRA_51': 'CHBr3', 'TRA_50': 'BrNO3', 'TRA_57': 'PROPNN', 'TRA_56': 'MOBA', 'TRA_19': 'C3H8', 'TRA_18': 'PRPE', 'RIO2': 'RIO2', 'PYAC': 'PYAC', 'DHMOB': 'DHMOB', 'RP': 'RP', 'HC5OO': 'HC5OO', 'U10M': 'U10M', 'R4N1': 'R4N1', 'ISNOOB': 'ISNOOB', 'ETHLN': 'ETHLN', 'TRA_8': 'H2O2', 'GMAO_UWND': 'GMAO_UWND', 'GMAO_PSFC': 'GMAO_PSFC', 'MAN2': 'MAN2', 'TRA_32': 'NIT', 'B3O2': 'B3O2', 'TRA_59': 'GLYC', 'VRO2': 'VRO2', 'MRP': 'MRP', 'PRN1': 'PRN1', 'ISNOHOO': 'ISNOHOO', 'TRA_62': 'IEPOX', 'TRA_63': 'MAP', 'TRA_60': 'MMN', 'TRA_61': 'RIP', 'TRA_66': 'HNO2', 'TRA_67': 'CH3IT', 'TRA_64': 'NO2', 'TRA_65': 'NO3', 'TRA_68': 'CH2I2', 'TRA_69': 'CH2ICl', 'IAP': 'IAP', 'MCO3': 'MCO3', 'TRA_3': 'PAN', 'TRA_28': 'SO4s', 'GMAO_SURF': 'GMAO_SURF', 'OH': 'OH', 'PRPN': 'PRPN', 'TRA_27': 'SO4', 'TRA_24': 'MP', 'TRA_29': 'MSA', 'TRA_22': 'N2O5', 'TRA_23': 'HNO4', 'TRA_20': 'CH2O', 'TRA_21': 'C2H6', 'TRA_26': 'SO2', 'TRA_58': 'HAC', 'TRA_81': 'IONO2', 'GLYX': 'GLYX', 'R4P': 'R4P', 'MAO3': 'MAO3', 'TRA_25': 'DMS', 'TRA_77': 'HI', 'KO2': 'KO2', 'RCO3': 'RCO3', 'MO2': 'MO2', 'TRA2': 'O3', 'MACRNO2': 'MACRNO2', 'R4O2': 'R4O2', 'TRA_71': 'HOI', 'TRA_70': 'CH2IBr', 'TRA_73': 'IBr', 'TRA_72': 'I2', 'TRA_75': 'I', 'TRA_74': 'ICl', 'ISNP': 'ISNP', 'TRA_76': 'IO', 'TRA_79': 'INO', 'RB3P': 'RB3P', 'TRA_80': 'IONO', 'MAOPO2': 'MAOPO2', 'ROH': 'ROH', 'PMNN': 'PMNN', 'PP': 'PP', 'ISOPNDO2': 'ISOPNDO2', 'MRO2': 'MRO2', 'HC5': 'HC5', 'TRA_35': 'OCPI', 'TRA_34': 'BCPI', 'TRA_37': 'OCPO', 'TRA_36': 'BCPO', 'TRA_31': 'NH4', 'TRA_30': 'NH3', 'TRA_33': 'NITs', 'GMAO_VWND': 'GMAO_VWND', 'MACRN': 'MACRN', 'DIBOO': 'DIBOO', 'LISOPOH': 'LISOPOH', 'HO2': 'HO2', 'TRA_55': 'ISOPN', 'GMAO_ABSH': 'GMAO_ABSH', 'PRESS': 'PRESS', 'ATOOH': 'ATOOH', 'TRA8': 'H2O2', 'TRA_54': 'MPN', 'GMAO_TEMP': 'GMAO_TEMP', 'ISNOOA': 'ISNOOA', 'TRA_9': 'ACET', 'INPN': 'INPN', 'TRA_7': 'HNO3', 'TRA_6': 'ISOP', 'TRA_5': 'ALK4', 'TRA_4': 'CO', 'PO2': 'PO2', 'TRA_2': 'O3', 'TRA_1': 'NO', 'MOBAOO': 'MOBAOO', 'ISOPND': 'ISOPND', 'VRP': 'VRP', 'TRA_48': 'HBr', 'TRA_49': 'BrNO2', 'RA3P': 'RA3P', 'ISOPNB': 'ISOPNB', 'TRA_44': 'Br2', 'TRA_45': 'Br', 'TRA_46': 'BrO', 'TRA_47': 'HOBr', 'TRA_40': 'DST3', 'TRA_41': 'DST4', 'TRA_42': 'SALA', 'TRA_43': 'SALC', 'IEPOXOO': 'IEPOXOO', 'MAOP': 'MAOP', 'INO2': 'INO2', 'TRA_38': 'DST1', 'A3O2': 'A3O2', 'ETO2': 'ETO2', 'ISOPNBO2': 'ISOPNBO2', 'ATO2': 'ATO2', 'TRA_82': 'I2O2', 'TRA_83': 'I2O3', 'TRA_84': 'I2O4', 'TRA_85': 'AERI', 'ISN1': 'ISN1', 'TRA_78': 'OIO', 'TRA_39': 'DST2', 'PMNO2': 'PMNO2'},
-                    # Reduced output for EU grid
-                    'red_specs_f_name': [ \
+        'TRA_spec_met_all_1.7_EOH_no_trailing_zeroes':  {'MVKN': 'MVKN', 'ETP': 'ETP', 'MGLY': 'MGLY', 'EOH': 'EOH', 'TRA_17': 'R4N2', 'TRA_16': 'PPN', 'TRA_15': 'PMN', 'TRA_14': 'MACR', 'TRA_13': 'MVK', 'TRA_12': 'RCHO', 'TRA_11': 'ALD2', 'TRA_10': 'MEK', 'TRA_53': 'CH3Br', 'TRA_52': 'CH2Br2', 'TRA_51': 'CHBr3', 'TRA_50': 'BrNO3', 'TRA_57': 'PROPNN', 'TRA_56': 'MOBA', 'TRA_19': 'C3H8', 'TRA_18': 'PRPE', 'RIO2': 'RIO2', 'PYAC': 'PYAC', 'DHMOB': 'DHMOB', 'RP': 'RP', 'HC5OO': 'HC5OO', 'U10M': 'U10M', 'R4N1': 'R4N1', 'ISNOOB': 'ISNOOB', 'ETHLN': 'ETHLN', 'TRA_8': 'H2O2', 'GMAO_UWND': 'GMAO_UWND', 'GMAO_PSFC': 'GMAO_PSFC', 'MAN2': 'MAN2', 'TRA_32': 'NIT', 'B3O2': 'B3O2', 'TRA_59': 'GLYC', 'VRO2': 'VRO2', 'MRP': 'MRP', 'PRN1': 'PRN1', 'ISNOHOO': 'ISNOHOO', 'TRA_62': 'IEPOX', 'TRA_63': 'MAP', 'TRA_60': 'MMN', 'TRA_61': 'RIP', 'TRA_66': 'HNO2', 'TRA_67': 'CH3IT', 'TRA_64': 'NO2', 'TRA_65': 'NO3', 'TRA_68': 'CH2I2', 'TRA_69': 'CH2ICl', 'IAP': 'IAP', 'MCO3': 'MCO3', 'TRA_3': 'PAN', 'TRA_28': 'SO4s', 'GMAO_SURF': 'GMAO_SURF', 'OH': 'OH', 'PRPN': 'PRPN', 'TRA_27': 'SO4', 'TRA_24': 'MP', 'TRA_29': 'MSA', 'TRA_22': 'N2O5', 'TRA_23': 'HNO4', 'TRA_20': 'CH2O', 'TRA_21': 'C2H6', 'TRA_26': 'SO2', 'TRA_58': 'HAC', 'TRA_81': 'IONO2', 'GLYX': 'GLYX', 'R4P': 'R4P', 'MAO3': 'MAO3', 'TRA_25': 'DMS', 'TRA_77': 'HI', 'KO2': 'KO2', 'RCO3': 'RCO3', 'MO2': 'MO2', 'TRA2': 'O3', 'MACRNO2': 'MACRNO2', 'R4O2': 'R4O2', 'TRA_71': 'HOI', 'TRA_70': 'CH2IBr', 'TRA_73': 'IBr', 'TRA_72': 'I2', 'TRA_75': 'I', 'TRA_74': 'ICl', 'ISNP': 'ISNP', 'TRA_76': 'IO', 'TRA_79': 'INO', 'RB3P': 'RB3P', 'TRA_80': 'IONO', 'MAOPO2': 'MAOPO2', 'ROH': 'ROH', 'PMNN': 'PMNN', 'PP': 'PP', 'ISOPNDO2': 'ISOPNDO2', 'MRO2': 'MRO2', 'HC5': 'HC5', 'TRA_35': 'OCPI', 'TRA_34': 'BCPI', 'TRA_37': 'OCPO', 'TRA_36': 'BCPO', 'TRA_31': 'NH4', 'TRA_30': 'NH3', 'TRA_33': 'NITs', 'GMAO_VWND': 'GMAO_VWND', 'MACRN': 'MACRN', 'DIBOO': 'DIBOO', 'LISOPOH': 'LISOPOH', 'HO2': 'HO2', 'TRA_55': 'ISOPN', 'GMAO_ABSH': 'GMAO_ABSH', 'PRESS': 'PRESS', 'ATOOH': 'ATOOH', 'TRA8': 'H2O2', 'TRA_54': 'MPN', 'GMAO_TEMP': 'GMAO_TEMP', 'ISNOOA': 'ISNOOA', 'TRA_9': 'ACET', 'INPN': 'INPN', 'TRA_7': 'HNO3', 'TRA_6': 'ISOP', 'TRA_5': 'ALK4', 'TRA_4': 'CO', 'PO2': 'PO2', 'TRA_2': 'O3', 'TRA_1': 'NO', 'MOBAOO': 'MOBAOO', 'ISOPND': 'ISOPND', 'VRP': 'VRP', 'TRA_48': 'HBr', 'TRA_49': 'BrNO2', 'RA3P': 'RA3P', 'ISOPNB': 'ISOPNB', 'TRA_44': 'Br2', 'TRA_45': 'Br', 'TRA_46': 'BrO', 'TRA_47': 'HOBr', 'TRA_40': 'DST3', 'TRA_41': 'DST4', 'TRA_42': 'SALA', 'TRA_43': 'SALC', 'IEPOXOO': 'IEPOXOO', 'MAOP': 'MAOP', 'INO2': 'INO2', 'TRA_38': 'DST1', 'A3O2': 'A3O2', 'ETO2': 'ETO2', 'ISOPNBO2': 'ISOPNBO2', 'ATO2': 'ATO2', 'TRA_82': 'I2O2', 'TRA_83': 'I2O3', 'TRA_84': 'I2O4', 'TRA_85': 'AERI', 'ISN1': 'ISN1', 'TRA_78': 'OIO', 'TRA_39': 'DST2', 'PMNO2': 'PMNO2'},
+        # Reduced output for EU grid
+        'red_specs_f_name': [ \
         'O3', 'NO2', 'NO', 'NO3', 'N2O5', 'HNO4', 'HNO3', 'HNO2', 'PAN', \
         'PPN', 'PMN', 'H2O2', 'HO2', 'OH', 'RO2', 'SO2', 'SO4', \
         'GMAO_TEMP', 'GMAO_UWND', 'GMAO_VWND', 'I2', 'HOI', \
         'IO', 'I', 'HI', 'OIO', 'INO', 'IONO', 'IONO2', 'I2O2', 'I2O4', 'I2O3',\
         'CH3IT', 'CH2I2', 'CH2ICl', 'CH2IBr'], 
-                    # Photolysis/Fast-J
-                    'FastJ_lower' : [ \
+        # Photolysis/Fast-J
+        'FastJ_lower' : [ \
         289.0, 298.25, 307.45, 312.45, 320.3, 345.0, 412.45],
-                    'FastJ_upper' : [\
+        'FastJ_upper' : [\
         298.25, 307.45, 312.45, 320.3, 345.0, 412.45, 850.0],
-                    'FastJ_mids' :  [294,303,310,316,333,380,574],
-                    }  
+        'FastJ_mids' :  [294,303,310,316,333,380,574],
+        }  
     
     if rtn_dict:
         return GC_var_dict

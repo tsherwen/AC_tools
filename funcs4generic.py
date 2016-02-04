@@ -1023,6 +1023,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     # i.e. all (future) functions should have use_multiply_method=False
     # and not use the code below 
     if use_multiply_method:  # Kludge
+        print '!'*50, 'WARNING: using mulitply method for masking. '
     
         # For case, pull mask from case list 
         if case == 0:
