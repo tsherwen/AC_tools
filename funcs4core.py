@@ -273,15 +273,24 @@ def iGEOSChem_ver(wd, verbose=True, debug=False):
         e.g. iGeosChem 1.1 or 1.2 from dir name ( wd ) 
     """
 
+    # Get iGEOSChem version
     vers = [
     '1.1','1.2', '1.3', '1.4', '1.5', '1.6', '1.7', '2.0', '3.0'
     ]
     if verbose:
         print wd
-    
     v = [ (i in wd) for i in vers ]
+
+    # Check if using sub-version
+    try:    
+        sub_vers = [ '1.6.2', '1.6.3',]
+        sub_ver = [ (i in wd) for i in sub_vers ]
+        v = sub_ver
+    except:
+        pass
+
     if debug:
-        print vers, v
+        print sub_vers, vers, v
     return [vers[n] for n, i in enumerate(v) if i==True ][0]
 
 

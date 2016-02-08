@@ -847,7 +847,7 @@ def NH_unmasked(  res='4x5' ):
         lats = np.arange(1, 91,1 )
     if res == '2x2.5':
         lats = np.arange(0, 89,1 )
-        print 'CHECK mask for non 4x5 resolutions'
+        print 'CHECK (NH) mask for non 4x5 resolutions'
 #        sys.exit(0)
     lats = [ get_gc_lat(i, res=res) for i in lats ]
     for i in lats:
@@ -864,7 +864,7 @@ def SH_unmasked(  res='4x5' ):
         lats = np.arange(-89, 0,1 )        
     if res == '2x2.5':
         lats = np.arange(-90, 0,1 )
-        print 'CHECK mask for non 4x5 resolutions'
+        print 'CHECK (SH) mask for non 4x5 resolutions'
 #        sys.exit(0)
     lats = [ get_gc_lat(i, res=res) for i in lats ]
     for i in lats:
