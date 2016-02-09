@@ -413,7 +413,6 @@ def num2spec( num=69, rtn_dict=False, invert=False, ver = '1.7' ):
     # --- Get dictionary of tracer numbers
     d= what_species_am_i( ver=ver, rtn_dict=True, special_case=None )
 
-
     # --- Slice off just numbers
     # special case for dev version?
     if any( [ (ver == i) for i in '1.6', '1.6.2', ] ): 
@@ -614,7 +613,7 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
     try:
         return d[spec]
     except:
-        print '!'*100, 'Kludge assuming stiochmetry = 1.0, for ', spec
+        print '!'*50, 'Kludge assuming stiochmetry = 1.0, for ', spec
         return 1.0
 
 # --------------
@@ -622,15 +621,25 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
 # --------------
 def GC_var(input_x=None, rtn_dict=False, debug=False):
     """
-        Note: Most of this dictionary is vestigial. 
-        <= ACTION NEEDED  ( remove redundant variables )
-    f_var     = GC flux (EW, NS , UP) variables
-    Ox        = 'Ox', 'POX', 'LOX' + list of drydep species # not inc. 'NO3df', 'HNO4df', 'BrOdf' , 'BrNO2', 'IO', 'IONO', 'OIO', 
-    Ox_p      = Ox prod list
-    Ox-l      = Ox loss list
+    General Dictionary to manage common variables used by GC 
+    analysis programmes.  
+
+    Note(s): 
+        (A) A lot of this dictionary is vestigial. 
+
+        - Variables includes:
+    f_var = GC flux (EW, NS , UP) variables
+    Ox = 'Ox', 'POX', 'LOX' + list of drydep species 
+    ( # not inc. 'NO3df', 'HNO4df', 'BrOdf' , 'BrNO2', 'IO', 'IONO', 'OIO', )
+    Ox_p = Ox prod list
+    Ox-l = Ox loss list
     d_dep  = dry dep (category, name = species)
-    w_dep  = wet dep ( 3x categories (WETDCV = rain out loss in convective updrafts (kg/s), WETDLS = rainout in large scale precip (kg/s), CV-FLX = Mass change due to cloud convection (kg/s); name = species)
-    BL_m    = UPWARD MASS FLUX FROM BOUNDARY-LAYER MIXING,  (category, name = species) 
+    w_dep  = wet dep ( 3x categories 
+    ( WETDCV = rain out loss in convective updrafts (kg/s), 
+    WETDLS = rainout in large scale precip (kg/s), 
+    CV-FLX = Mass change due to cloud convection (kg/s); name = species)
+    BL_m = UPWARD MASS FLUX FROM BOUNDARY-LAYER MIXING, 
+    (category, name = species) 
     f_strat  = strat flux (to tropsosphere) (category, name = species) 
     """
     if debug:
@@ -903,7 +912,24 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     298.25, 307.45, 312.45, 320.3, 345.0, 412.45, 850.0],
     'FastJ_mids' :  [294,303,310,316,333,380,574],
     # ---  OH loss reactions 
-    'OH_loss_rxns' : ['LR47', 'LR48', 'LR49', 'LR50', 'LR51', 'LR52', 'LR53', 'LR54', 'LR55', 'LR56', 'LR57', 'LR58', 'LR59', 'LR60', 'LR61', 'LR62', 'LR63', 'LR64', 'LR65', 'LR66', 'LR67', 'LR68', 'LR69', 'LR70', 'LR71', 'LR72', 'LR73', 'LR74', 'LR75', 'LR76', 'LR77', 'LR78', 'LR79', 'LR80', 'LR81', 'LR82', 'LR83', 'LR84', 'LR85', 'LR86', 'LR87', 'LR88', 'LR89', 'LR90', 'LR91', 'LR92', 'LR93', 'LR94', 'LR95', 'LR96']
+    'OH_loss_rxns' : [ \
+    'LR100', 'LR101', 'LR97', 'LR98', 'LR86', 'LR96', 'LR89', 'LR87',\
+    'LR88', 'LR84', 'LR79', 'LR94', 'LR90', 'LR76', 'LR81', 'LR91', 'LR92', \
+    'LR95', 'LR93', 'LR77', 'LR82', 'LR85', 'LR78', 'LR75', 'LR62', 'LR62', \
+    'LR73', 'LR73', 'LR83', 'LR80', 'LR99'
+    ],  
+    'OH_loss_rxns4cl_comp' : [
+    
+    ], 
+    'Cl_ox_org_rxns'  : [
+    'LR63', 'LR51', 'LR54', 'LR59', 'LR52', 'LR64', 'LR58', 'LR57', 'LR50', \
+    'LR60', 'LR53', 'LR55', 'LR49', 'LR56'], 
+    'ClO_ox': [
+    'LR68', 'LR61', 'LR69', 'LR74', 'LR48', 'LR73', 'LR70', 
+     ], 
+    'ClHOx' : [ 'LR67',  'LR66','LR61',  'PO3_106' , 'LR65'], 
+    'ClNOx' : ['LR68', 'LR69', 'LR48']
+
     }  
 
     if rtn_dict:
@@ -1388,7 +1414,12 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
     # Override run names if version 3.0 used.
     if (ver == '3.0') and (not preindustrial):
 
-        l =  ['NOHAL', 'BROMINE', 'Cl-Br-I' ]
+        if just_bcase_std:
+            l =  [ 'BROMINE', 'Cl-Br-I' ]
+        if just_bcase_no_hal:
+            l =  ['NOHAL',  'Cl-Br-I' ]
+        if (not just_bcase_std) and (not just_bcase_no_hal):
+            l =  ['NOHAL', 'BROMINE', 'Cl-Br-I' ]
 
         # Add extra runs?
         if inc_iGC_ver1_6:
@@ -1461,7 +1492,8 @@ def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
     
     if isinstance( PHOTOPROCESS, type(None) ):
         PHOTOPROCESS = {
-        '1.6' : 457, '1.6.2': 452 ,'1.7' : 467, '2.0': 555, '3.0': 536
+        '1.6' : 457, '1.6.2': 452 , '1.6.3': 461 , '1.7' : 467, '2.0': 555,  \
+        '3.0': 536
         }[ver]
     
     fn =  'smv2.log'
@@ -1489,7 +1521,7 @@ def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
     
     # --- Process to Latex
     if LaTeX:
-        for rxn in sorted(rdict.keys() ):
+        for rxn in sorted( rdict.keys() ):
         
             # -- Use Latex formatting?
             if rxn > PHOTOPROCESS-1:
@@ -1791,8 +1823,8 @@ def rxns4tag( tag, rdict=None, ver='1.7', wd=None ):
         rdict =  rxn_dict_from_smvlog( wd, ver=ver )
     
     # --- Caveats -  to adapt for long line errors in fortran written output
-    errs = ['LO3_36']
-    cerrs = ['RD95'] 
+    errs = ['LO3_36'] #+ ['LO3_87']
+    cerrs = ['RD95']  #+ ['LR48'] 
     if any([ (tag == i) for i in  errs ] ):
         tag  = cerrs[  errs.index( tag) ]
     
@@ -2168,7 +2200,8 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',  \
     if verbose:
         print 'PLO3_to_PD called for wd = ', wd
 
-    versions =  '1.3' ,'1.4' ,'1.5' , '1.6', '1.7', '2.0', '3.0' 
+    versions = [ \
+    '1.3' ,'1.4' ,'1.5' , '1.6', '1.6.1','1.6.2', '1.6.3', '1.7', '2.0', '3.0' ]
     if any( [(ver ==i) for i in versions ]):
 
         if isinstance( wd, type(None) ):
@@ -2180,11 +2213,13 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',  \
              rm_multiple_tagged_rxs=True, debug=debug )
 
         # Add other (non 'PD') vars for ease of processing
-        vars += ['PIOx', 'iLOX', 'LIOx', 'iPOX', 'POX', 'LOX', 'LOx', 'L_Iy']
-        PDs += ['PIOx', 'iLOX', 'LIOx', 'iPOX', 'POX', 'LOX', 'LOx', 'L_Iy']
-
+        non_PDs = [\
+        'PIOx', 'iLOX', 'LIOx', 'iPOX', 'POX', 'LOX', 'LOx', 'L_Iy', 'LOH']
+        vars += non_PDs
+        PDs += non_PDs
+        
         if debug:
-            print PDs, vars
+            print vars, PDs
     
         return dict( zip(vars, PDs))[PL ]
     else:
@@ -2265,7 +2300,7 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
 
         # -- remove erroneous read/  Kludge on val
         # ---  Fortran write error leads to combination of species at the
-        #  end of long line 
+        #  end of long line of a chemical reaction in globchem.dat
         if debug:
             print [  i[:3] for i in nums, rxns, tags, Coe]
             print [ len(i) for i in nums, rxns, tags, Coe]
@@ -2276,11 +2311,12 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
         errs = [ \
         'LO3_36RD95', 'LO3_36RD95','LO3_36RD95', 
         'ISOPNDPO3_50', 'ISOPNDLR40', 'LO3_30LR42', 'LO3_30LR43', 
-        'LO3_39LR46', 'LO3_39LR47']
+        'LO3_39LR46', 'LO3_39LR47', 'LO3_87LR48', 'LO3_87LR48']
         cerrs = [ \
         ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], \
         ['PO3_50'], ['LR40'], ['LO3_30', 'LR42'], [ 'LO3_30','LR43'], \
-        ['LO3_39', 'LR46'], ['LO3_39', 'LR47']
+        ['LO3_39', 'LR46'], ['LO3_39', 'LR47'], ['LO3_87', 'LR48'], \
+        ['LO3_87', 'LR48'], \
         ]
 #        errs = ['LO3_36RD95' , 'ISOPNDPO3_50', 'ISOPNDLR40']
 #        cerrs = [ ['RD95'], ['PO3_50'], ['LR40'] ]
@@ -2294,7 +2330,7 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
                             [ len(i) for i in nums, rxns, tags, Coe]
                 [i.pop(ind) for i in nums, rxns, tags, Coe ]
 
-                # add the cerrs values on the end
+                # Add the cerrs values on the end
                 if debug:
                     print 4, [ i[-1] for i in nums, rxns, tags, Coe],  \
                             [ len(i) for i in nums, rxns, tags, Coe]
@@ -2303,7 +2339,8 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
                 tags    += [cerrs[n]]
                 Coe    +=  [vars[-1] ]
 
-                if debug:
+#                if debug:
+                if True:
                     print 6, [ i[-1] for i in nums, rxns, tags, Coe], \
                          [ len(i) for i in nums, rxns, tags, Coe]
                     print '->'*30,  'SUCCESS >{}<  >{}<'.format( n, e )

@@ -79,7 +79,7 @@ from math import log10, floor
 # 1.31 - PDF of annual zonal change plots for given species
 # 1.32 - Figure generation ( just provide lon, lat np array )
 # 1.33 - Zonal Figure maker ( just provide lon, lat np array )
-
+# 1.34
 
 # --------------- ------------- ------------- ------------- ------------- 
 # ---- Section 4 ----- Plotting Ancillaries 
@@ -2534,6 +2534,36 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
     if return_m or rtn_plt_vars:
         return [ fig, cmap, fixcb ]# + plt_vars + [ fixcb ] #+= [ cb_ax ]
 
+# --------
+# 1.34 - Lat plotter of average + Q1/Q3
+# --------
+def plot_arr_avg_Q1_Q3( X, Y, ax=None, color='blue', label=None, \
+        plt_mean=True, plt_median=False, pcent1=25, pcent2=75, \
+        verbose=False, debug=False ):
+    """ Takes a X and Y to plot a mean, Q1 and Q3.
+    Notes:
+        Y = 2D array (e.g. lon, lat)  
+        X = 1D araray ( e.g. lat )
+        Default fill is Q1 to Q3, but others ranges can be specified
+    """
+    if isinstance( ax, type(None) ):
+        ax= plt.gca()
+
+    # Plot up mean of Y values
+    if plt_mean:
+        ln = plt.plot( X, Y.mean(axis=0), color=color, label=label )
+
+    # Show quartiles ( 25th 57th  )    
+    Y_nan = Y.filled( np.nan )
+    low = np.nanpercentile( Y_nan, pcent1, axis=0 )
+    high = np.nanpercentile( Y_nan, pcent2, axis=0 )
+    ax.fill_between( X, low, high, alpha=0.2, color=color   )
+    if plt_median:
+        ln = plt.plot( X, np.nanpercentile( Y_nan, 50, axis=0 ), \
+            color=color, label=label )
+
+    # return plot object
+    return ln
 
 # --------------------------- Section 4 ------------------------------------
 # -------------- Plotting Ancillaries 

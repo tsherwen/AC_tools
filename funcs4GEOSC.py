@@ -3100,9 +3100,9 @@ def split_Ox_loss_by_fam( wd, arr, r_t=None, pl_dict=None, \
     # generate indicies map to split Ox loss by route.   
     spec_l =  pl_dict.keys()
     # Allow for removal of ClBrI het tracer whilst testing.
-    hack_ClBrI_rm_tacers=True
-    if hack_ClBrI_rm_tacers:
-        spec_l = rm_ClBrI_het_loss( spec_l=spec_l )[0]
+#    hack_ClBrI_rm_tacers=True
+#    if hack_ClBrI_rm_tacers:
+#        spec_l = rm_ClBrI_het_loss( spec_l=spec_l )[0]
 
     if debug:
         print len( spec_l)

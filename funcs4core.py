@@ -6,6 +6,7 @@
 
 import numpy as np
 from netCDF4 import Dataset
+from pandas import DataFrame
 import platform
 import sys
 
@@ -272,28 +273,21 @@ def iGEOSChem_ver(wd, verbose=True, debug=False):
     """ get iGEOS-Chem verson - iGEOS-Chem 
         e.g. iGeosChem 1.1 or 1.2 from dir name ( wd ) 
     """
-
-    # Get iGEOSChem version
-    vers = [
-    '1.1','1.2', '1.3', '1.4', '1.5', '1.6', '1.7', '2.0', '3.0'
-    ]
-    if verbose:
-        print wd
-    v = [ (i in wd) for i in vers ]
-
-    # Check if using sub-version
-    try:    
-        sub_vers = [ '1.6.2', '1.6.3',]
-        sub_ver = [ (i in wd) for i in sub_vers ]
-        v = sub_ver
-    except:
-        pass
-
+    # List iGEOSChem versions+ then DataFrame
+    versions = [
+    '1.1','1.2', '1.3', '1.4', '1.5', '1.6', '1.6.1', '1.6.2', \
+     '1.6.3', '1.7', '2.0', '3.0'  ]
+    df= DataFrame( versions, columns=['Versions'] )
     if debug:
-        print sub_vers, vers, v
-    return [vers[n] for n, i in enumerate(v) if i==True ][0]
+        print wd, versions, df
 
+    # Which versions are in name?
+    def element_in_str( element ): 
+       return (element in wd)
+    df['Run Version'] = df['Versions'].apply( element_in_str )
 
+    # Select last value and return as string
+    return df['Versions'][ df['Run Version'] ][-1:].values[0]
 
 
 # --------------                                                                                 
