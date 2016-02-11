@@ -214,9 +214,11 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
         '/plane_flight_logs/plane.log.2*')), location, \
         Kludge_fortan_output=Kludge_fortan_output,  \
                                                             debug=debug )
-    # Set list of surface datasets
+    # Set list of surface ( point or ship ) datasets
     surface_data =[ 
-    'MAL', 'HAL','GRO', 'CVO', 'ANT', 'M91', 'KEN', 'BTT', 'TRB'
+    'MAL', 'HAL','GRO', 'CVO', 'ANT', 'M91', 'KEN', 'BTT', 'TRB', \
+    'HOU', 'BOL', 'LAC', 'HES', 'SCH', 'TEX', 'CAL', 'PAS', \
+    'MON'
     ]
     plane_data = ['TOR', 'BAE', 'GCV', 'CGV' ]
 

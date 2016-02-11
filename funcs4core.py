@@ -56,7 +56,7 @@ def get_dir( input, loc='earth0' ):
         'rwd'  :home+'PhD/Data/MUTD_iGEOS-Chem_output/',
         'dwd'  :  home+'PhD/Data/' ,
         'npwd' : home+'PhD/Data/np_arrs/' ,
-        'tpwd' : home+'GITHub/tools_progs/' ,
+        'tpwd' : home+'GITHub/PhD_progs/' ,
         'ppwd' : home+'Pictures/'  
         }
 
@@ -66,10 +66,10 @@ def get_dir( input, loc='earth0' ):
         d = { 
         'rwd'  : home +'data/all_model_simulations/iodine_runs/',
         'dwd'  :  home +'data/',
-        'fwd' : home+ 'labbook/tools_progs/d_fast-J_JX/data/',
+        'fwd' : home+ 'labbook/PhD_progs/d_fast-J_JX/data/',
         'lwd'  :  home +'labbook/',
         'npwd' : home +'data/np_arrs/',
-        'tpwd' : home +'labbook/tools_progs/' ,
+        'tpwd' : home +'labbook/PhD_progs/' ,
         'ppwd' : home +'labbook/plots_images/'  
         }
 
@@ -81,7 +81,7 @@ def get_dir( input, loc='earth0' ):
         'dwd'  :  home +'data/',
         'lwd'  :  home +'labbook/',
         'npwd' : home +'data/np_arrs/',
-        'tpwd' : home +'labbook/tools_progs/'  
+        'tpwd' : home +'labbook/PhD_progs/'  
         }
     return d[input]
 

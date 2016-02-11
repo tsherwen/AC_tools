@@ -62,7 +62,7 @@ from math import log10, floor
 # 1.14 - plot up monthly timeseries from ...
 # 1.15 - plot up daily timeseries from ...
 # 1.16 - plot up timeseries from May through Septmeber
-# 1.17 - plot up timeseries from July 
+# 1.17 - plot up timeseries from between two given months 
 # 1.18 - North Pole plot
 # 1.19 -  South pole plot
 # 1.20 - PDF of monthly surface change plots for given species
@@ -1072,7 +1072,7 @@ def timeseries_May_Sept_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
 
 
 # --------------
-# 1.17 - plot up timeseries from July 
+# 1.17 - plot up timeseries from between two given months 
 # -------------
 def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
             title=None, legend=False, everyother=7*24,  x_nticks=12, \

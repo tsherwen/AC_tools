@@ -43,6 +43,9 @@
 # 4.12 - Return lat, lon, alt for a given resolution
 # 4.13 - Get model array dimension for a given resolution
 # 4.14 - Convert gamap category/species name to Iris/bpch name
+# 4.15 - Get scaling for a given unit
+# 4.16 - Species Class 
+# 4.17 - Observation Site Class 
 # 4.99 - Reference data, (inc. grid data) from gchem 
 
 # --------------- ------------- ------------- -------------
@@ -90,6 +93,7 @@
 #
 # -- I/O / Low level                                                                                
 import re
+import os 
 #import platform
 import pandas as pd
 from netCDF4 import Dataset
@@ -919,7 +923,6 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'LR73', 'LR73', 'LR83', 'LR80', 'LR99'
     ],  
     'OH_loss_rxns4cl_comp' : [
-    
     ], 
     'Cl_ox_org_rxns'  : [
     'LR63', 'LR51', 'LR54', 'LR59', 'LR52', 'LR64', 'LR58', 'LR57', 'LR50', \
@@ -1255,7 +1258,7 @@ def diagnosticname_gamap2iris( x  ):
     return d[x]
 
 # --------   
-# 4.14 - Get scaling for a given unit
+# 4.15 - Get scaling for a given unit
 # --------
 def get_unit_scaling( units, scaleby=1 ):
 
@@ -1273,8 +1276,82 @@ def get_unit_scaling( units, scaleby=1 ):
             print 'WARNING: This unit is not in unit lists: ', units
         return scaleby
 
+# --------   
+# 4.16 - Species class for GEOS-Chem
+# --------
+class species:
+    """
+        Class for holding infomation about chemical speices. 
 
-# ------------------------------------------- Section 5 -------------------------------------------
+        Credit: Ben Newsome 
+        ( https://github.com/tsherwen/MChem_tools/blob/master/MChem_tools.py )
+    """
+    def __init__(self, name):
+        self.name = name
+        self.help = ("""This is a class to get information on species from a local CSV folder
+   It might contain the following information:
+   self.RMM       = The Mean Mass of the species.
+   self.latex     = The latex name of the species.
+   self.smiles    = The smiles string of the species.
+   self.InChI     = The InChI string of the species.
+   """)
+        species_filename = os.path.dirname(__file__) + "/Species.csv"
+
+        try:
+            species_file = open(species_filename, 'rb')
+        except IOError:
+            print "Error: Species.csv does not appear to exist."
+        species_csv = csv.reader(species_file)
+        
+        if (name == 'OH'):
+            self.group = 'CHEM-L=$'
+        else:
+            self.group = 'IJ-AVG-$'
+
+        for row in species_csv:
+            try:
+                if (str(self.name) == row[0].strip()):
+                    self.formula   = row[1]
+                    self.InChI     = row[2]
+                    self.smiles    = row[3]
+                    self.RMM       = float(row[4])
+                    self.Latex     = row[5]
+            except NameError:
+                print "Species not found in CSV file"   
+
+
+
+# --------   
+# 4.17 -  Observational site class
+# --------
+class GEO_Site:
+    """ Class for holding infomation about observational sites """
+    def __init__(self, name ):
+        self.name = name
+        self.help = (""" This class holds infomatio on obs. sites  """)
+        wd = get_dir( 'tpwd' )+'/d_REF_dat_files/'
+        filename = "ClBrI_ClNO2_FULL.dat" 
+
+        # Check file exists
+        if not os.path.exists( wd + filename ):
+            print "ERROR. Is this file correct?: ",  wd + filename 
+        # Open File and extract info on site
+        df = pd.read_csv( wd+'/'+filename, skipinitialspace=True )
+
+        #  Select Site
+        df= df[ df['ID'] == name ]
+        if len(df.index) > 0:
+            # Select site
+            df= df[ df['ID'] == name ]
+            self.LAT = float( df['LAT'].values )
+            self.LON = float( df['LON'].values )
+            self.ALT = float( df['PRESS'].values ) # hPa
+            self.UTC = float( df['UTC'].values ) # Time zone (UTC diff )
+        else:
+            print 'ERROR whilst reading site details', name  
+
+
+# ----------------------- Section 5 -------------------------------------------
 # --------------  Misc
 #
 
@@ -2111,7 +2188,9 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'SCH': ( 114.15, 22.13, 60 ),
     'TEX': (-95.425000, 30.350278 ), 
     'CAL' : ( -114.12950, 51.07933,  1100), 
-    'PAS':  ( -118.12, 34.14, 246  )
+    'PAS':  ( -118.12, 34.14, 246  ), 
+    # O3 preindustrial
+    'MON' :  ( 2.338333, 48.822222,  75+5 )
     }
     if rtn_dict:
         return loc_dict
@@ -2147,25 +2226,147 @@ def sonde_STNs():
     """ Dictionary of WOUDC sonde location variables """
     
     sonde_dict = {
-    101: ['SYOWA', 101.0, -69.0, 39.58, 22.0, 'JPN', 'ANTARCTICA'], 104: ['BEDFORD', 104.0, 42.45, -71.267, 80.0, 'USA', 'IV'], 105: ['FAIRBANKS (COLLEGE)', 105.0, 64.817, -147.867, 138.0, 'USA', 'IV'], 107: ['WALLOPS ISLAND', 107.0, 37.898, -75.483, 13.0, 'USA', 'IV'], 108: ['CANTON ISLAND', 108.0, -2.76, -171.7, 3.0, 'USA', 'V'], 109: ['HILO', 109.0, 19.5735, -155.0485, 11.0, 'USA', 'V'], 111: ['AMUNDSEN-SCOTT (SOUTH POLE)', 111.0, -89.983, 0.0, 2820.0, 'ATA', 'ANTARCTICA'], 131: ['PUERTO MONTT', 131.0, -41.45, -72.833, 5.0, 'CHL', 'III'], 132: ['SOFIA', 132.0, 42.817, 23.383, 588.0, 'BGR', 'VI'], 137: ['TOPEKA', 137.0, 39.067, -95.633, 270.0, 'USA', 'IV'], 138: ['CHRISTCHURCH', 138.0, -43.483, 172.55, 34.0, 'NZL', 'V'], 149: ['OVEJUYO (LA PAZ)', 149.0, -16.517, -68.033, 3420.0, 'BOL', 'III'], 156: ['PAYERNE', 156.0, 46.49, 6.57, 491.0, 'CHE', 'VI'], 157: ['THALWIL', 157.0, 46.817, 8.455, 515.0, 'CHE', 'VI'], 163: ['WILKES', 163.0, -66.25, 110.517, 12.0, 'USA', 'ANTARCTICA'], 174: ['LINDENBERG', 174.0, 52.21, 14.12, 112.0, 'DEU', 'VI'], 175: ['NAIROBI', 175.0, -1.267, 36.8, 1745.0, 'KEN', 'I'], 181: ['BERLIN/TEMPLEHOF', 181.0, 52.467, 13.433, 50.0, 'DEU', 'VI'], 187: ['PUNE', 187.0, 18.553, 73.86, 559.0, 'IND', 'II'], 190: ['NAHA', 190.0, 26.2, 127.683, 27.0, 'JPN', 'II'], 191: ['SAMOA', 191.0, -14.25, -170.56, 82.0, 'ASM', 'V'], 194: ['YORKTON', 194.0, 51.263, -102.467, 504.0, 'CAN', 'IV'], 197: ['BISCARROSSE/SMS', 197.0, 44.367, -1.233, 18.0, 'FRA', 'VI'], 198: ['COLD LAKE', 198.0, 54.783, -110.05, 702.0, 'CAN', 'IV'], 199: ['BARROW', 199.0, 71.317, -156.635, 11.0, 'USA', 'IV'], 203: ['FT. SHERMAN', 203.0, 9.33, -79.983, 57.0, 'PAN', 'IV'], 205: ['THIRUVANANTHAPURAM', 205.0, 8.483, 76.97, 60.0, 'IND', 'II'], 206: ['BOMBAY', 206.0, 19.117, 72.85, 145.0, 'IND', 'II'], 210: ['PALESTINE', 210.0, 31.8, -95.717, 121.0, 'USA', 'IV'], 213: ['EL ARENOSILLO', 213.0, 37.1, -6.733, 41.0, 'ESP', 'VI'], 217: ['POKER FLAT', 217.0, 65.133, -147.45, 357.5, 'USA', 'IV'], 219: ['NATAL', 219.0, -5.71, -35.21, 30.5, 'BRA', 'III'], 221: ['LEGIONOWO', 221.0, 52.4, 20.967, 96.0, 'POL', 'VI'], 224: ['CHILCA', 224.0, -12.5, -76.8, -1.0, 'PER', 'III'], 225: ['KOUROU', 225.0, 5.333, -52.65, 4.0, 'GUF', 'III'], 227: ['MCDONALD OBSERVATORY', 227.0, 30.666, -90.933, 2081.0, 'USA', 'IV'], 228: ['GIMLI', 228.0, 50.633, -97.05, 228.0, 'CAN', 'IV'], 229: ['ALBROOK', 229.0, 8.983, -79.55, 66.0, 'PAN', 'IV'], 231: ['SPOKANE', 231.0, 47.667, -117.417, 576.0, 'USA', 'IV'], 233: ['MARAMBIO', 233.0, -64.233, -56.623, 196.0, 'ATA', 'ANTARCTICA'], 234: ['SAN JUAN', 234.0, 18.483, -66.133, 17.0, 'PRI', 'IV'], 235: ['LONG VIEW', 235.0, 32.5, -94.75, 103.0, 'USA', 'IV'], 236: ['COOLIDGE FIELD', 236.0, 17.283, -61.783, 10.0, 'ATG', 'IV'], 237: ['GREAT FALLS', 237.0, 47.483, -111.35, 1118.0, 'USA', 'IV'], 238: ['DENVER', 238.0, 39.767, -104.883, 1611.0, 'USA', 'IV'], 239: ['SAN DIEGO', 239.0, 32.76, -117.19, 72.5, 'USA', 'IV'], 242: ['PRAHA', 242.0, 50.02, 14.45, 304.0, 'CZE', 'VI'], 254: ['LAVERTON', 254.0, -37.867, 144.75, 21.0, 'AUS', 'V'], 255: ['AINSWORTH (AIRPORT)', 255.0, 42.583, -100.0, 789.0, 'USA', 'IV'], 256: ['LAUDER', 256.0, -45.03, 169.683, 370.0, 'NZL', 'V'], 257: ['VANSCOY', 257.0, 52.115, -107.165, 510.0, 'CAN', 'IV'], 260: ['TABLE MOUNTAIN (CA)', 260.0, 34.4, -117.7, 2286.0, 'USA', 'IV'], 262: ['SODANKYLA', 262.0, 67.335, 26.505, 179.0, 'FIN', 'VI'], 265: ['IRENE', 265.0, -25.91, 28.211, 1524.0, 'ZAF', 'I'], 280: ['NOVOLASAREVSKAYA / FORSTER', 280.0, -70.767, 11.867, 110.0, 'ATA', 'ANTARCTICA'], 297: ['S.PIETRO CAPOFIUME', 297.0, 44.65, 11.617, 11.0, 'ITA', 'VI'], 303: ['IQALUIT', 303.0, 63.75, -68.55, 20.0, 'CAN', 'IV'], 308: ['MADRID / BARAJAS', 308.0, 40.46, -3.65, 650.0, 'ESP', 'VI'], 315: ['EUREKA / EUREKA LAB', 315.0, 80.04, -86.175, 310.0, 'CAN', 'IV'], 316: ['DE BILT', 316.0, 52.1, 5.18, 4.0, 'NLD', 'VI'], 318: ['VALENTIA OBSERVATORY', 318.0, 51.93, -10.25, 14.0, 'IRL', 'VI'], 323: ['NEUMAYER', 323.0, -70.65, -8.25, 42.0, 'ATA', 'ANTARCTICA'], 328: ['ASCENSION ISLAND', 328.0, -7.98, -14.42, 91.0, 'SHN', 'I'], 329: ['BRAZZAVILLE', 329.0, -4.28, 15.25, 314.0, 'COG', 'I'], 330: ['HANOI', 330.0, 21.033, 105.84, 5.0, 'VNM', 'II'], 333: ['PORTO NACIONAL', 333.0, -10.8, -48.4, 240.0, 'BRA', 'III'], 334: ['CUIABA', 334.0, -15.6, -56.1, 990.0, 'BRA', 'III'], 335: ['ETOSHA PAN', 335.0, -19.2, 15.9, 1100.0, 'NAM', 'I'], 336: ['ISFAHAN', 336.0, 32.477, 51.425, 1550.0, 'IRN', 'II'], 338: ['BRATTS LAKE (REGINA)', 338.0, 50.205, -104.705, 592.0, 'CAN', 'IV'], 339: ['USHUAIA', 339.0, -54.85, -68.308, 15.0, 'ARG', 'III'], 344: ['HONG KONG OBSERVATORY', 344.0, 22.31, 114.17, 66.0, 'HKG', 'II'], 348: ['ANKARA', 348.0, 39.95, 32.883, 896.0, 'TUR', 'VI'], 360: ['PELLSTON (MI)', 360.0, 45.56, -84.67, 238.0, 'USA', 'IV'], 361: ['HOLTVILLE (CA)', 361.0, 32.81, -115.42, -18.0, 'USA', 'IV'], 394: ['BROADMEADOWS', 394.0, -37.6914, 144.9467, 108.0, 'AUS', 'V'], 400: ['MAITRI', 400.0, -70.46, 11.45, 223.5, 'ATA', 'ANTARCTICA'], 401: ['SANTA CRUZ', 401.0, 28.42, -16.26, 36.0, 'ESP', 'I'], 404: ['JOKIOINEN', 404.0, 60.81, 23.5, 103.0, 'FIN', 'VI'], 406: ['SCORESBYSUND', 406.0, 70.49, -21.98, 50.0, 'GRL', 'VI'], 418: ['HUNTSVILLE', 418.0, 34.72, -86.64, 196.0, 'USA', 'IV'], 420: ['BELTSVILLE (MD)', 420.0, 39.02, -76.74, 64.0, 'USA', 'IV'], 432: ['PAPEETE (TAHITI)', 432.0, -18.0, -149.0, 2.0, 'PYF', 'V'], 434: ['SAN CRISTOBAL', 434.0, -0.92, -89.6, 8.0, 'ECU', 'III'], 435: ['PARAMARIBO', 435.0, 5.81, -55.21, 22.5, 'SUR', 'III'], 436: ['LA REUNION ISLAND', 436.0, -20.99, 55.48, 61.5, 'REU', 'I'], 437: ['WATUKOSEK (JAVA)', 437.0, -7.57, 112.65, 50.0, 'IDN', 'V'], 438: ['SUVA (FIJI)', 438.0, -18.13, 178.315, 6.0, 'FJI', 'V'], 439: ['KAASHIDHOO', 439.0, 5.0, 73.5, 1.0, 'MDV', 'V'], 441: ['EASTER ISLAND', 441.0, -27.17, -109.42, 62.0, 'CHL', 'III'], 443: ['SEPANG AIRPORT', 443.0, 2.73, 101.7, 17.0, 'MYS', 'V'], 444: ['CHEJU', 444.0, 33.5, 126.5, 300.0, 'KOR', 'II'], 445: ['TRINIDAD HEAD', 445.0, 40.8, -124.16, 55.0, 'USA', 'IV'], 448: ['MALINDI', 448.0, -2.99, 40.19, -6.0, 'KEN', 'I'], 450: ['DAVIS', 450.0, -68.577, 77.973, 16.0, 'ATA', 'ANTARCTICA'], 456: ['EGBERT', 456.0, 44.23, -79.78, 253.0, 'CAN', 'IV'], 457: ['KELOWNA', 457.0, 49.93, -119.4, 456.0, 'CAN', 'IV'], 458: ['YARMOUTH', 458.0, 43.87, -66.1, 9.0, 'CAN', 'IV'], 459: ['TBD', 459.0, 0.0, 0.0, 0.0, '', 'VI'], 460: ['THULE', 460.0, 76.53, -68.74, 57.0, 'GRL', 'VI'], 466: ['MAXARANGUAPE (SHADOZ-NATAL)', 466.0, -5.445, -35.33, 32.0, 'BRA', 'III'], 472: ['COTONOU', 472.0, 6.21, 2.23, 10.0, 'BEN', 'I'], 477: ['HEREDIA', 477.0, 10.0, -84.11, 1176.0, 'CRI', 'IV'], 480: ['SABLE ISLAND', 480.0, 43.93, -60.02, 4.0, 'CAN', 'IV'], 482: ['WALSINGHAM', 482.0, 42.6, -80.6, 200.0, 'CAN', 'IV'], 483: ['BARBADOS', 483.0, 13.16, -59.43, 32.0, 'BRB', 'III'], 484: ['HOUSTON (TX)', 484.0, 29.72, -95.4, 19.0, 'USA', 'IV'], 485: ['TECAMEC (UNAM)', 485.0, 19.33, -99.18, 2272.0, 'MEX', 'IV'], 487: ['NARRAGANSETT', 487.0, 41.49, -71.42, 21.0, 'USA', 'IV'], 488: ['PARADOX', 488.0, 43.92, -73.64, 284.0, 'USA', 'IV'], 489: ['RICHLAND', 489.0, 46.2, -119.16, 123.0, 'USA', 'IV'], 490: ['VALPARAISO (IN)', 490.0, 41.5, -87.0, 240.0, 'USA', 'IV'], 494: ['ALAJUELA', 494.0, 9.98, -84.21, 899.0, 'CRI', 'IV']
+    101: ['SYOWA', 101.0, -69.0, 39.58, 22.0, 'JPN', 'ANTARCTICA'], \
+    104: ['BEDFORD', 104.0, 42.45, -71.267, 80.0, 'USA', 'IV'], \
+    105: ['FAIRBANKS (COLLEGE)', 105.0, 64.817, -147.867, 138.0, 'USA', 'IV'], \
+    107: ['WALLOPS ISLAND', 107.0, 37.898, -75.483, 13.0, 'USA', 'IV'], \
+    108: ['CANTON ISLAND', 108.0, -2.76, -171.7, 3.0, 'USA', 'V'], \
+    109: ['HILO', 109.0, 19.5735, -155.0485, 11.0, 'USA', 'V'], \
+    111: ['AMUNDSEN-SCOTT (SOUTH POLE)', 111.0, -89.983, 0.0, 2820.0, 'ATA', \
+    'ANTARCTICA'], 
+    131: ['PUERTO MONTT', 131.0, -41.45, -72.833, 5.0, 'CHL', 'III'], \
+    132: ['SOFIA', 132.0, 42.817, 23.383, 588.0, 'BGR', 'VI'], \
+    137: ['TOPEKA', 137.0, 39.067, -95.633, 270.0, 'USA', 'IV'], \
+    138: ['CHRISTCHURCH', 138.0, -43.483, 172.55, 34.0, 'NZL', 'V'], \
+    149: ['OVEJUYO (LA PAZ)', 149.0, -16.517, -68.033, 3420.0, 'BOL', 'III'], \
+    156: ['PAYERNE', 156.0, 46.49, 6.57, 491.0, 'CHE', 'VI'], \
+    157: ['THALWIL', 157.0, 46.817, 8.455, 515.0, 'CHE', 'VI'], \
+    163: ['WILKES', 163.0, -66.25, 110.517, 12.0, 'USA', 'ANTARCTICA'], \
+    174: ['LINDENBERG', 174.0, 52.21, 14.12, 112.0, 'DEU', 'VI'], \
+    175: ['NAIROBI', 175.0, -1.267, 36.8, 1745.0, 'KEN', 'I'], \
+    181: ['BERLIN/TEMPLEHOF', 181.0, 52.467, 13.433, 50.0, 'DEU', 'VI'], \
+    187: ['PUNE', 187.0, 18.553, 73.86, 559.0, 'IND', 'II'], \
+    190: ['NAHA', 190.0, 26.2, 127.683, 27.0, 'JPN', 'II'], \
+    191: ['SAMOA', 191.0, -14.25, -170.56, 82.0, 'ASM', 'V'], \
+    194: ['YORKTON', 194.0, 51.263, -102.467, 504.0, 'CAN', 'IV'], \
+    197: ['BISCARROSSE/SMS', 197.0, 44.367, -1.233, 18.0, 'FRA', 'VI'], \
+    198: ['COLD LAKE', 198.0, 54.783, -110.05, 702.0, 'CAN', 'IV'], \
+    199: ['BARROW', 199.0, 71.317, -156.635, 11.0, 'USA', 'IV'], \
+    203: ['FT. SHERMAN', 203.0, 9.33, -79.983, 57.0, 'PAN', 'IV'], \
+    205: ['THIRUVANANTHAPURAM', 205.0, 8.483, 76.97, 60.0, 'IND', 'II'], \
+    206: ['BOMBAY', 206.0, 19.117, 72.85, 145.0, 'IND', 'II'], \
+    210: ['PALESTINE', 210.0, 31.8, -95.717, 121.0, 'USA', 'IV'], \
+    213: ['EL ARENOSILLO', 213.0, 37.1, -6.733, 41.0, 'ESP', 'VI'], \
+    217: ['POKER FLAT', 217.0, 65.133, -147.45, 357.5, 'USA', 'IV'], \
+    219: ['NATAL', 219.0, -5.71, -35.21, 30.5, 'BRA', 'III'], \
+    221: ['LEGIONOWO', 221.0, 52.4, 20.967, 96.0, 'POL', 'VI'], \
+    224: ['CHILCA', 224.0, -12.5, -76.8, -1.0, 'PER', 'III'], \
+    225: ['KOUROU', 225.0, 5.333, -52.65, 4.0, 'GUF', 'III'], \
+    227: ['MCDONALD OBSERVATORY', 227.0, 30.666, -90.933, 2081.0, 'USA', 'IV'],\
+    228: ['GIMLI', 228.0, 50.633, -97.05, 228.0, 'CAN', 'IV'], \
+    229: ['ALBROOK', 229.0, 8.983, -79.55, 66.0, 'PAN', 'IV'], \
+    231: ['SPOKANE', 231.0, 47.667, -117.417, 576.0, 'USA', 'IV'], \
+    233: ['MARAMBIO', 233.0, -64.233, -56.623, 196.0, 'ATA', 'ANTARCTICA'], \
+    234: ['SAN JUAN', 234.0, 18.483, -66.133, 17.0, 'PRI', 'IV'], \
+    235: ['LONG VIEW', 235.0, 32.5, -94.75, 103.0, 'USA', 'IV'], \
+    236: ['COOLIDGE FIELD', 236.0, 17.283, -61.783, 10.0, 'ATG', 'IV'], \
+    237: ['GREAT FALLS', 237.0, 47.483, -111.35, 1118.0, 'USA', 'IV'], \
+    238: ['DENVER', 238.0, 39.767, -104.883, 1611.0, 'USA', 'IV'], \
+    239: ['SAN DIEGO', 239.0, 32.76, -117.19, 72.5, 'USA', 'IV'], \
+    242: ['PRAHA', 242.0, 50.02, 14.45, 304.0, 'CZE', 'VI'], \
+    254: ['LAVERTON', 254.0, -37.867, 144.75, 21.0, 'AUS', 'V'], \
+    255: ['AINSWORTH (AIRPORT)', 255.0, 42.583, -100.0, 789.0, 'USA', 'IV'], \
+    256: ['LAUDER', 256.0, -45.03, 169.683, 370.0, 'NZL', 'V'], \
+    257: ['VANSCOY', 257.0, 52.115, -107.165, 510.0, 'CAN', 'IV'], \
+    260: ['TABLE MOUNTAIN (CA)', 260.0, 34.4, -117.7, 2286.0, 'USA', 'IV'], 
+    262: ['SODANKYLA', 262.0, 67.335, 26.505, 179.0, 'FIN', 'VI'], 
+    265: ['IRENE', 265.0, -25.91, 28.211, 1524.0, 'ZAF', 'I'], 
+    280: ['NOVOLASAREVSKAYA / FORSTER', 280.0, -70.767, 11.867, 110.0, 'ATA',\
+     'ANTARCTICA'], 
+    297: ['S.PIETRO CAPOFIUME', 297.0, 44.65, 11.617, 11.0, 'ITA', 'VI'], \
+    303: ['IQALUIT', 303.0, 63.75, -68.55, 20.0, 'CAN', 'IV'], \
+    308: ['MADRID / BARAJAS', 308.0, 40.46, -3.65, 650.0, 'ESP', 'VI'], \
+    315: ['EUREKA / EUREKA LAB', 315.0, 80.04, -86.175, 310.0, 'CAN', 'IV'], \
+    316: ['DE BILT', 316.0, 52.1, 5.18, 4.0, 'NLD', 'VI'], \
+    318: ['VALENTIA OBSERVATORY', 318.0, 51.93, -10.25, 14.0, 'IRL', 'VI'], \
+    323: ['NEUMAYER', 323.0, -70.65, -8.25, 42.0, 'ATA', 'ANTARCTICA'], \
+    328: ['ASCENSION ISLAND', 328.0, -7.98, -14.42, 91.0, 'SHN', 'I'], \
+    329: ['BRAZZAVILLE', 329.0, -4.28, 15.25, 314.0, 'COG', 'I'], \
+    330: ['HANOI', 330.0, 21.033, 105.84, 5.0, 'VNM', 'II'], \
+    333: ['PORTO NACIONAL', 333.0, -10.8, -48.4, 240.0, 'BRA', 'III'], \
+    334: ['CUIABA', 334.0, -15.6, -56.1, 990.0, 'BRA', 'III'], \
+    335: ['ETOSHA PAN', 335.0, -19.2, 15.9, 1100.0, 'NAM', 'I'], \
+    336: ['ISFAHAN', 336.0, 32.477, 51.425, 1550.0, 'IRN', 'II'], \
+    338: ['BRATTS LAKE (REGINA)', 338.0, 50.205, -104.705, 592.0, 'CAN', 'IV'],\
+    339: ['USHUAIA', 339.0, -54.85, -68.308, 15.0, 'ARG', 'III'], \
+    344: ['HONG KONG OBSERVATORY', 344.0, 22.31, 114.17, 66.0, 'HKG', 'II'], \
+    348: ['ANKARA', 348.0, 39.95, 32.883, 896.0, 'TUR', 'VI'], \
+    360: ['PELLSTON (MI)', 360.0, 45.56, -84.67, 238.0, 'USA', 'IV'], \
+    361: ['HOLTVILLE (CA)', 361.0, 32.81, -115.42, -18.0, 'USA', 'IV'], \
+    394: ['BROADMEADOWS', 394.0, -37.6914, 144.9467, 108.0, 'AUS', 'V'], \
+    400: ['MAITRI', 400.0, -70.46, 11.45, 223.5, 'ATA', 'ANTARCTICA'], \
+    401: ['SANTA CRUZ', 401.0, 28.42, -16.26, 36.0, 'ESP', 'I'], \
+    404: ['JOKIOINEN', 404.0, 60.81, 23.5, 103.0, 'FIN', 'VI'], \
+    406: ['SCORESBYSUND', 406.0, 70.49, -21.98, 50.0, 'GRL', 'VI'], \
+    418: ['HUNTSVILLE', 418.0, 34.72, -86.64, 196.0, 'USA', 'IV'], \
+    420: ['BELTSVILLE (MD)', 420.0, 39.02, -76.74, 64.0, 'USA', 'IV'], \
+    432: ['PAPEETE (TAHITI)', 432.0, -18.0, -149.0, 2.0, 'PYF', 'V'], \
+    434: ['SAN CRISTOBAL', 434.0, -0.92, -89.6, 8.0, 'ECU', 'III'], \
+    435: ['PARAMARIBO', 435.0, 5.81, -55.21, 22.5, 'SUR', 'III'], \
+    436: ['LA REUNION ISLAND', 436.0, -20.99, 55.48, 61.5, 'REU', 'I'], \
+    437: ['WATUKOSEK (JAVA)', 437.0, -7.57, 112.65, 50.0, 'IDN', 'V'], \
+    438: ['SUVA (FIJI)', 438.0, -18.13, 178.315, 6.0, 'FJI', 'V'], \
+    439: ['KAASHIDHOO', 439.0, 5.0, 73.5, 1.0, 'MDV', 'V'], \
+    441: ['EASTER ISLAND', 441.0, -27.17, -109.42, 62.0, 'CHL', 'III'], \
+    443: ['SEPANG AIRPORT', 443.0, 2.73, 101.7, 17.0, 'MYS', 'V'], \
+    444: ['CHEJU', 444.0, 33.5, 126.5, 300.0, 'KOR', 'II'], \
+    445: ['TRINIDAD HEAD', 445.0, 40.8, -124.16, 55.0, 'USA', 'IV'], \
+    448: ['MALINDI', 448.0, -2.99, 40.19, -6.0, 'KEN', 'I'], \
+    450: ['DAVIS', 450.0, -68.577, 77.973, 16.0, 'ATA', 'ANTARCTICA'], \
+    456: ['EGBERT', 456.0, 44.23, -79.78, 253.0, 'CAN', 'IV'], \
+    457: ['KELOWNA', 457.0, 49.93, -119.4, 456.0, 'CAN', 'IV'], \
+    458: ['YARMOUTH', 458.0, 43.87, -66.1, 9.0, 'CAN', 'IV'], \
+    459: ['TBD', 459.0, 0.0, 0.0, 0.0, '', 'VI'], \
+    460: ['THULE', 460.0, 76.53, -68.74, 57.0, 'GRL', 'VI'], \
+    466: ['MAXARANGUAPE (SHADOZ-NATAL)', 466.0, -5.445, -35.33, 32.0, \
+    'BRA', 'III'], \
+    472: ['COTONOU', 472.0, 6.21, 2.23, 10.0, 'BEN', 'I'], \
+    477: ['HEREDIA', 477.0, 10.0, -84.11, 1176.0, 'CRI', 'IV'], \
+    480: ['SABLE ISLAND', 480.0, 43.93, -60.02, 4.0, 'CAN', 'IV'], \
+    482: ['WALSINGHAM', 482.0, 42.6, -80.6, 200.0, 'CAN', 'IV'], \
+    483: ['BARBADOS', 483.0, 13.16, -59.43, 32.0, 'BRB', 'III'], \
+    484: ['HOUSTON (TX)', 484.0, 29.72, -95.4, 19.0, 'USA', 'IV'], \
+    485: ['TECAMEC (UNAM)', 485.0, 19.33, -99.18, 2272.0, 'MEX', 'IV'], \
+    487: ['NARRAGANSETT', 487.0, 41.49, -71.42, 21.0, 'USA', 'IV'], \
+    488: ['PARADOX', 488.0, 43.92, -73.64, 284.0, 'USA', 'IV'], \
+    489: ['RICHLAND', 489.0, 46.2, -119.16, 123.0, 'USA', 'IV'], \
+    490: ['VALPARAISO (IN)', 490.0, 41.5, -87.0, 240.0, 'USA', 'IV'], \
+    494: ['ALAJUELA', 494.0, 9.98, -84.21, 899.0, 'CRI', 'IV']
     }
     return sonde_dict 
 
 # ----
 #  7.08 - returns  (lat, lon, alt (press), timezone (UTC) ) for a given site
 # ----
-def gaw_2_loc(site,  f =  'GLOBAL_SURFACE_O3_2006_2012.nc'):#, f 
+def gaw_2_loc(site,  f =  'GLOBAL_SURFACE_O3_2006_2012.nc' ):
     """ Extract GAW site locations for a given site 
      Another file is availible with just GAW sites:
           'GAW_SURFACE_O3_2006_2012.nc'  
+    NOTE:
+        - Also stores non GAW sites ( obs)
     """
     from AC_tools.funcs4generic import hPa_to_Km
 
     # Use simple dictionary if site listed
     try:
         gaw_sites= {
-        'SMO': (-14.247,  -170.565,1002.7885270480558, -11), 'MNM':(24.285, 153.981, 1011.9342452324959, 9), 'BMW':(32.27, -64.88, 1008.6109830510485, -4 ) ,'CVO': (16.848, -24.871, 1011.6679817831093, -1), 'RPB':(13.17000, -59.43000, 1007.0196960034474, -4 ), 'ogasawara': (26.38, 142.10,996.08181619552602, 9 ), 'OGA': (26.38, 142.10,996.08181619552602, 9 ) ,
-
+        'SMO': (-14.247,  -170.565,1002.7885270480558, -11), \
+        'MNM':(24.285, 153.981, 1011.9342452324959, 9), \
+        'BMW':(32.27, -64.88, 1008.6109830510485, -4 ) ,\
+        'CVO': (16.848, -24.871, 1011.6679817831093, -1), \
+        'RPB':(13.17000, -59.43000, 1007.0196960034474, -4 ), \
+        'ogasawara': (26.38, 142.10,996.08181619552602, 9 ), \
+        'OGA': (26.38, 142.10,996.08181619552602, 9 ), \
         # Add extras for ease of analysis (e.g. Roscoff ... )
         'ROS': (48.433, -3.5904, 1011.6679817831093, +1)       
         }
