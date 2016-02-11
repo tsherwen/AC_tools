@@ -1570,7 +1570,7 @@ def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
     if isinstance( PHOTOPROCESS, type(None) ):
         PHOTOPROCESS = {
         '1.6' : 457, '1.6.2': 452 , '1.6.3': 461 , '1.7' : 467, '2.0': 555,  \
-        '3.0': 536
+        '3.0': 547
         }[ver]
     
     fn =  'smv2.log'
@@ -1635,8 +1635,7 @@ def rxns_in_pl( wd, spec='LOX', debug=False ):
     """ Extract reactions tracked by p/l family in smvgear """
     fn =  'smv2.log'
     file_ =  open( wd+'/'+fn, 'rb' )
-#    if debug:
-    if True:
+    if debug:
         print file_
     readrxn  = False
     for row in file_:
@@ -1824,6 +1823,9 @@ def p_l_species_input_geos( wd, ver='1.7',
     PD = [rxn[4] for rxn in rxns ]
     vars =  [rxn[5:] for rxn in rxns ]
 
+    print rxns
+    print PD, vars, ver
+
     # remove p/l with muliple values ( start from 12th input) - Kludge?
     if rm_multiple_tagged_rxs:
         PD, vars = [ i[11:] for i in PD, vars ]
@@ -1896,20 +1898,25 @@ def PDs_from_smvlog( wd, spec='LOX' ):
 def rxns4tag( tag, rdict=None, ver='1.7', wd=None ):
     """ get a list of all reactions with a given p/l tag """
     # --- get reaction dictionary 
-    if rdict == None:
-        rdict =  rxn_dict_from_smvlog( wd, ver=ver )
+    if isinstance( rdict, type(None) ):
+        rdict = rxn_dict_from_smvlog( wd, ver=ver )
     
-    # --- Caveats -  to adapt for long line errors in fortran written output
+    # --- Caveats - 
+    # to adapt for long line errors in fortran written output
     errs = ['LO3_36'] #+ ['LO3_87']
     cerrs = ['RD95']  #+ ['LR48'] 
+    # To account for reaction where not all channels result in Ox loss
+    errs += ['RD48']
+    cerrs += ['LO3_87'] 
     if any([ (tag == i) for i in  errs ] ):
         tag  = cerrs[  errs.index( tag) ]
     
     # -- loop reactions, if tag in reaction return reaction
     rxns = []
     for n, rxn in enumerate( rdict.values() ):
-#        if any( [tag in i for i in rxn]):
-        if any( [(i.endswith(tag) ) for i in rxn]):
+        # Why endswith? Restore to use an containing tag. 
+#        if any( [(i.endswith(tag) ) for i in rxn]): 
+        if any( [tag in i for i in rxn]):
             rxns.append(  [rdict.keys()[n] ]+ rxn )
     return rxns
 
@@ -1925,11 +1932,11 @@ def get_tag_details( wd, tag=None, PDs=None,  rdict=None, \
     # what is the number of the first photolysis reaction?
     if isinstance( PHOTOPROCESS, type(None) ):
         PHOTOPROCESS = {
-        '1.6' : 457,  '1.6.2': 452, '1.7' : 467, '2.0': 555, '3.0': 536
+        '1.6' : 457,  '1.6.2': 452, '1.7' : 467, '2.0': 555, '3.0': 547
         }[ver]
 
     # ---  get all reactions tags are active in smv.log    
-    if rdict == None:
+    if isinstance( rdict, type(None) ):
         rdict =  rxn_dict_from_smvlog( wd, ver=ver )
     trxns = rxns4tag( tag, wd=wd, rdict=rdict ) 
 
@@ -1975,7 +1982,9 @@ def get_rxn_Coe(wd, num, tag, nums=None, rxns=None, tags=None, \
     if all( [ (i == None) for i in nums, rxns, tags, Coe ] ):
         nums, rxns, tags, Coe = prod_loss_4_spec( wd,  spec, all_clean=True, \
                 ver=ver )
-
+    if debug:
+        print nums, Coe
+    
     # Pull reaction coefficient  from dictionary
     Coe_dict = dict(zip(nums, Coe) )             
     Coe = float(Coe_dict[ num ])
@@ -2044,6 +2053,29 @@ def rm_ClBrI_het_loss( spec_l=None, r_=None, fam=None, debug=False):
         print [ len(i) for i in spec_l, fam ], \
 
     return rtn_list
+
+# --------------
+# 6.13 - 
+# -------------
+#def PD_to_rxn_string( tag, ver='1.6', rdict=None, wd=None, \
+#        verbose=False, debug=False ):
+#    """ 
+#        NOTE
+#            - This is a remake of the function, the last version was lost in a 
+#            reconstruction of AC_tools/PhD_progs
+#    """
+#
+#    # Get rxn/wd dictionary if not provided
+#    if isinstance( wd, type(None) ):
+#        wd =  MUTD_runs( ver=ver )[0]
+#    if isinstance( rdict, type(None) ):
+#        rdict =  rxn_dict_from_smvlog( wd, ver=ver )
+#
+#    # Extract rxn details, then only use the reaction string
+#    rxn_ = rxns4tag( tag=tag, rdict=rdict, ver=ver, wd=wd )
+#    rxn_str =  ''.join( rxn_[0][5:9])
+#    
+#    return rxn_str
 
 
 # -------------- Section 7 -------------------------------------------
@@ -2164,6 +2196,7 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
 
         Notes:
             - double up? ( with 5.02 ?? )
+            - Now use Class of GEO_site in preference to this func. 
     """
 
     loc_dict ={    
@@ -2172,8 +2205,6 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'PILAU' : ( 134.4667,7.3500, 0 ),      
     'London': ( -0.1275, 51.5072, 0 ),
     'Weyborne' : (1.1380, 52.9420,  0 ), 
-#    'Cape Verde': (16.848, -24.871, 0 ), 
-#    'CVO': (16.848, -24.871, 0 ), 
     'Cape Verde': ( -24.871, 16.848, 0 ), 
     'CVO': (-24.871,16.848,  0 ), 
     'North Ken' :  (-0.214174, 51.520718, 0),
@@ -2182,13 +2213,13 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'BTT': (-0.139055, 51.521556, 190),
     # ClNO2 sites
     'HOU' : (-95.22, 29.45, 0  ) ,
-    'BOL' : ( -105.1507, 40.0139, 1655+ 150    ) ,
-    'LAC' : ( -118.14, 34.3, 	0 ),
+    'BOL' : ( -105.27, 40.0, 1655+ 150    ) ,
+    'LAC' : ( -118.23, 34.05, 	0 ),
     'HES' : ( 8.45, 50.22, 	825 ),
-    'SCH': ( 114.15, 22.13, 60 ),
+    'SCH': ( 114.25, 22.22, 60 ),
     'TEX': (-95.425000, 30.350278 ), 
     'CAL' : ( -114.12950, 51.07933,  1100), 
-    'PAS':  ( -118.12, 34.14, 246  ), 
+    'PAS':  ( -118.20, 34.23, 246  ), 
     # O3 preindustrial
     'MON' :  ( 2.338333, 48.822222,  75+5 )
     }
@@ -2432,7 +2463,9 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',  \
 def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
     """ Get reaction IDs for each rxn. in spec (p/l, e.g. LOX) 
         This is the driver for the prod/loss programmes """
-
+    if debug:
+        print 'get_pl_dict called for ', ver, spec, wd
+        
     # Extract details on reactio in p/l family
     nums, rxns, tags, Coe = prod_loss_4_spec( wd,  spec, all_clean=True, \
         ver=ver, debug=debug )
@@ -2442,10 +2475,13 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
 
     # unpack for mulutple tags of same reactions, then get details
     unpacked_tags = [j for k in tags for j in k ]
+    if debug:
+        print unpacked_tags
+    
     details  = [  get_tag_details( wd, tag, ver=ver ) for tag in unpacked_tags ]
 
     # Kludge - 1 rxn missing from POx tracking? - 999  + "'ISOPND+OH', '+', '=1.0ISOPND'"
-    [ details.pop(n) for n, i in enumerate( details ) if i[1]==364]
+    [ details.pop(n) for n, i in enumerate( details ) if i[1]==364 ]
     ind =  [n for n, i  in enumerate( nums ) if i ==354 ]
     
     # Get Coes and overwrite where prog_mod_tms has values
@@ -2453,7 +2489,8 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
                     rxns=rxns, tags=tags, Coe=Coe, spec=spec, debug=debug ) \
                     for  n, d in enumerate( details ) ]
 
-    # Remove double ups, which are present due to Loss (LO3_??) and rate tagging (RD??) originally performed separately  
+    # Remove double ups, which are present due to Loss (LO3_??) and 
+    # rate tagging (RD??) originally performed separately  
     if rmx2:
         d = [ 
         ['RD62', 'LO3_38'], ['RD59', 'LO3_30'], ['RD65', 'LO3_34'],  \
@@ -2480,11 +2517,13 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
 # ------------- 
 def prod_loss_4_spec( wd, fam, all_clean=True, \
         ver='1.7', debug=False ):
+    """ Retrieve reaction numbers for family of tags """
+
     # ---  Get Dict of all reactions, Keys = #s
     rdict = rxn_dict_from_smvlog( wd, ver=ver )
 
     # ---  Get reaction # tracked by p/l diag for spec and coefficient.
-    rxns = rxns_in_pl(wd, fam)
+    rxns = rxns_in_pl( wd, fam )
     nums =  rxns.keys() 
     Coe = [ rxn[-1] for rxn in rxns.values() ]
 
@@ -2516,8 +2555,8 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
         cerrs = [ \
         ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], \
         ['PO3_50'], ['LR40'], ['LO3_30', 'LR42'], [ 'LO3_30','LR43'], \
-        ['LO3_39', 'LR46'], ['LO3_39', 'LR47'], ['LO3_87', 'LR48'], \
-        ['LO3_87', 'LR48'], \
+        ['LO3_39', 'LR46'], ['LO3_39', 'LR47'], ['LO3_87'], \
+        ['LO3_87'], \
         ]
 #        errs = ['LO3_36RD95' , 'ISOPNDPO3_50', 'ISOPNDLR40']
 #        cerrs = [ ['RD95'], ['PO3_50'], ['LR40'] ]
