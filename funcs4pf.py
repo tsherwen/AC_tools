@@ -217,7 +217,7 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
     # Set list of surface ( point or ship ) datasets
     surface_data =[ 
     'MAL', 'HAL','GRO', 'CVO', 'ANT', 'M91', 'KEN', 'BTT', 'TRB', \
-    'HOU', 'BOL', 'LAC', 'HES', 'SCH', 'TEX', 'CAL', 'PAS', \
+    'HOU', 'BOL', 'LAC', 'HES', 'SCH', 'TEX', 'CAL', 'PAS', 'WEY', \
     'MON'
     ]
     plane_data = ['TOR', 'BAE', 'GCV', 'CGV' ]

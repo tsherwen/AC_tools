@@ -2439,7 +2439,7 @@ def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None, \
         arr = ( arr * vol[:,:,:38,:] ) /  constants( 'AVG')* (127.) /1E9 * \
             spec_stoich( rxn, I=I, IO=IO ) 
 
-    else: # ELSE return Gg Ox yr^-s
+    else: # ELSE return Gg X yr^-s ( ASSUMING UNITY OF TAG! )
         if ( rxn ==  'CH4' ):
             RMM =  species_mass(rxn) 
         else:
@@ -2523,8 +2523,8 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
         res = get_gc_res( wd=wd )
     ocean_mask = mask_all_but( region='Ocean', res=res )[...,None]
     # Get core variables from variable dictionary <= update this
-    versions = [ '1.3' ,'1.4' ,'1.5', '1.6', '1.7' , '2.0', '3.0']
-    if any( [(ver ==i) for i in versions ] ):
+    iGC_versions = [ '1.3' ,'1.4' ,'1.5', '1.6', '1.7' , '2.0', '3.0']
+    if any( [(ver ==i) for i in iGC_versions ] ):
         vars =  [  'p_l', 'd_dep_specs', 'w_dep_specs', 'Iy','IOx', 'LIOx' ]
     else:
         print 'FAIL'
@@ -2735,8 +2735,8 @@ def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
     # get prod/loss in [molec/cm3/s]
     if pygchem.__version__ ==  '0.2.0':
         arrs = [ np.concatenate( [get_gc_data_np( ctm, spec=PLO3_to_PD(spec, \
-            ver=ver, fp=True),category="PORL-L=$", debug=debug) \
-            for ctm in ctms ],  axis=3 )  for spec in specs  ]
+            ver=ver, fp=True), category="PORL-L=$", debug=debug) \
+            for ctm in ctms ], axis=3 ) for spec in specs ]
     else:
         arrs = get_GC_output( wd=wd, vars=['PORL_L_S__'+i for i in specs] )
         arrs = [ arrs[i,...] for i in range( len(specs) ) ]
@@ -2755,12 +2755,11 @@ def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
 
     else:
         # [molec/cm3/s] => Gg Ox / yr
-        arrs = [ molec_cm3_s_2_Gg_Ox_np(arr, specs[i], vol=vol, \
+        arrs = [ molec_cm3_s_2_Gg_Ox_np(arr, specs[i], vol=vol, wd=wd, \
             debug=debug) for i, arr in enumerate(arrs) ] 
-#        arrs = [ (arr*t_p).mean(axis=3) for arr in arrs ] # get yearly mean
-#        arrs = [ (arr*t_p).mean(axis=3) for arr in arrs ] # get yearly mean#            
-        arrs = [ arr.mean(axis=3)*t_p.mean(axis=3) \
-                        for arr in arrs ] # get yearly mean
+        arrs = [ (arr*t_p).mean(axis=3) for arr in arrs ] # get yearly mean
+#        arrs = [ arr.mean(axis=3)*t_p.mean(axis=3) \
+#                        for arr in arrs ] # get yearly mean
 
         return [ int(np.sum( np.ma.masked_invalid( arrs[i] ) )/1E3)  \
             for i in range(len(specs )) ] # Tg
@@ -3054,8 +3053,9 @@ def get_trop_Ox_loss( wd, pl_dict=None,  spec_l=None, ver='1.6' ,   \
         vol = get_volume_np( wd=wd, res=res, trop_limit=trop_limit )
 
         # Get prod loss in  [molec/cm3/s]
-        ars = get_GC_output( wd, vars=[ 'PORL_L_S__'+ \
-            PLO3_to_PD(i, fp=True, wd=wd, ver=ver )  for i in spec_l ] )
+        PDs = [ PLO3_to_PD(i, wd=wd, ver=ver) for i in spec_l ]
+        ars = get_GC_output( wd, vars=[ 'PORL_L_S__'+i for i in PDs], \
+            trop_limit=trop_limit )
 
     # convert species arrays [molec/cm3/s] into Gg Ox / yr
     if units == 'Gg Ox/yr':
@@ -3065,7 +3065,9 @@ def get_trop_Ox_loss( wd, pl_dict=None,  spec_l=None, ver='1.6' ,   \
         print 'units = {}'.format(units)
                                         
     # adjust for Ox difference within prod loss tracers
-    ars = [ ar*pl_dict[spec_l[i] ][-1]  for i, ar in enumerate(ars) ]
+    Coes = get_adjustment4tags( spec_l, PDs=PDs, pl_dict=pl_dict, ver=ver )  
+#    ars = [ ar*pl_dict[spec_l[i] ][-1]  for i, ar in enumerate(ars) ]
+    ars = [ ar*Coes[i] for i, ar in enumerate(ars) ]
 
     # Only consider troposphere
     ars = [i*t_p for i in ars]

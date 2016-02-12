@@ -157,8 +157,11 @@ def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
             lon_var=u'longitude', lat_var=u'latitude', debug=False ):
     """ Return lon, lat, and alt for a given resolution. 
         This function uses an updated version of gchem's variable 
-        dictionaries """ 
+        dictionaries 
     
+    NOTE:
+        - This function replaces most use dictionaries from "gchemgrid"
+    """ 
     # Kludge. Update function to pass "wd" 
     # if model output directory ("wd") not provided use default directory
     if isinstance( wd, type(None) ):
@@ -292,10 +295,12 @@ def iGEOSChem_ver(wd, verbose=True, debug=False):
 
 # --------------                                                                                 
 # 1.99 - Reference data (lon, lat, and alt) adapted from gchem - credit: GK (Gerrit Kuhlmann )             
-# -------------                                                                                  
-"""
+# -------------                                                                                                                                      
+def gchemgrid(input=None, rtn_dict=False, debug=False):
+    d = {
+    """
  Updated to dictionary from gchemgrid (credit: Gerrit Kuhlmann ) with 
-     addition grid adds 
+     additional grid adds 
 
     This [function] contains (some) grid coordinates used within GEOS-Chem 
     as numpy arrays
@@ -318,10 +323,7 @@ def iGEOSChem_ver(wd, verbose=True, debug=False):
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""                                                                                        
-
-def gchemgrid(input=None, rtn_dict=False, debug=False):
-    d = {
+    """            
 
     # Altitude - Grid box level edges (eta coordinate):                                          
     'e_eta_geos5_r' : np.array([

@@ -79,7 +79,8 @@ from math import log10, floor
 # 1.31 - PDF of annual zonal change plots for given species
 # 1.32 - Figure generation ( just provide lon, lat np array )
 # 1.33 - Zonal Figure maker ( just provide lon, lat np array )
-# 1.34
+# 1.34 - Lat plotter of average + Q1/Q3
+# 1.35 - Timeseries plotter ( takes datetime + np.array )
 
 # --------------- ------------- ------------- ------------- ------------- 
 # ---- Section 4 ----- Plotting Ancillaries 
@@ -974,13 +975,19 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
 # --------------
 # 1.15 - plot up daily timeseries from ...
 # -------------
-def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,                  
-                bin_size=1/24.,widths=0.01, rotatecbunit = 'vertical', 
-                white_fill=True, alpha=0.1, linewidth=0.5,xlabel=True, 
-                title=None, f_size=7.5, units='ppbv', scale='linear', \
-                showmeans=False, debug=False ):
+def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,  \
+            bin_size=1/24.,widths=0.01, rotatexlabel = 'vertical', \
+            white_fill=True, alpha=0.1, linewidth=0.5,xlabel=True, \
+            title=None, alt_text=None, f_size=7.5, units='ppbv',     
+            showmeans=False, plt_median=False, boxplot=True, 
+            ylabel=True, color='blue', \
+            plot_Q1_Q3=True, pcent1=25, pcent2=75,  debug=False ):
     """ Plot up daily timeseries of values. Requires data, and dates in numpy 
-        array form. Dates must be as datetime.datetime objects. """
+        array form. Dates must be as datetime.datetime objects. 
+    
+    Notes:
+        - Boxplot is the defauly presentation of data    
+    """
 
     # get_day_fraction(i) 
     dates = np.array( [ get_day_fraction(i) for i in dates ] )
@@ -989,23 +996,50 @@ def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,
     b_all, bins_used = bin_data( data, dates, bin_size, debug=debug )
 
     # Plot
-    bp = ax.boxplot( b_all,  positions=bins_used, widths=widths, \
-        showmeans=showmeans, patch_artist=True )
+    if boxplot:
+        bp = ax.boxplot( b_all,  positions=bins_used, widths=widths, \
+            showmeans=showmeans, patch_artist=True )
+    else:
+        # remove nans to allow for percentile calc.
+#        print b_all
+        data_nan = [ np.ma.array(i).filled( np.nan ) for i in b_all ]
+        data_nan = [i.flatten() for i in data_nan ]
+
+        # Plot average
+        if plt_median:
+            ln = plt.plot( bins_used, \
+                [ np.nanpercentile( i, 50, axis=0 ) for i in data_nan ], \
+                color=color   )
+        else:
+            ln = plt.plot( bins_used, [i.mean() for i in data_nan], color=color)
+
+        # Plot quartiles as shaded area?
+        if plot_Q1_Q3:
+
+            low = [ np.nanpercentile( i, pcent1, axis=0 ) for i in data_nan ]
+            high = [ np.nanpercentile( i, pcent2, axis=0 ) for i in data_nan ]
+            ax.fill_between( bins_used, low, high, alpha=0.2, color=color   )
 
     # Beautify 
+    if not isinstance( title, type(None) ):
+        plt.title(title, fontsize=f_size )
+    if not isinstance( alt_text, type(None) ):
+#        ax.text(x=0.85,y=0.85, s=alt_text, fontsize=f_size*1.5 )
+        ax.annotate( alt_text , xy=(0.85, 0.85),  textcoords='axes fraction')
+
     ax.set_xticklabels( np.arange(0,24,1 )  )
-    plt.xticks( np.arange(0,1,1/24. ), fontsize=f_size, rotation=rotatecbunit )
+    plt.xticks( np.arange(0,1,1/24. ), fontsize=f_size, rotation=rotatexlabel )
 #    plt.xlim(-0.05, 23/24.)
     plt.xlim(-0.05, 1.0)
-
-    plt.ylabel(units, fontsize=f_size)
-    plt.yticks( fontsize=f_size)
-    if (title != None):
-        plt.title(title, fontsize=f_size )
     if xlabel:
-        plt.xlabel('Hour of day', fontsize=f_size)
-    plt.ylabel('{}'.format(units), fontsize=f_size)
-
+        ax.set_xlabel('Hour of day', labelpad=f_size)
+    else:
+        ax.tick_params( axis='x', which='both', labelbottom='off')    
+    # Setup y axis 
+    if ylabel:
+        ax.set_ylabel('{}'.format(units), labelpad=f_size)
+    else:
+        ax.tick_params( axis='y', which='both', labelleft='off')
 
     # --- Highlight bins        
     bs = np.arange(0, 24, bin_size )#[ bs[0] - bin_size ] + bs 
@@ -1016,7 +1050,7 @@ def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,
 # --------------
 # 1.16 - plot up timeseries from May through Septmeber
 # -------------
-def timeseries_May_Sept_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
+def timeseries_by_day_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
             title=None, legend=False, everyother=7,  x_nticks=12, \
             window=False, label=None, ylabel=None, loc='upper right',  \
             lw=1,ls='-', color=None, start_month=5, end_month=9, 
@@ -1100,6 +1134,7 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     days = [i.to_datetime() for i in df.index ]
     labels = [i.strftime("%-d %b") for  i in days ][::everyother]
 
+    # Color in line another provided variables
     if color_by_z:
         if debug:
             print 'Coloring line by normalised z values'
@@ -1131,9 +1166,6 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         plt.ylabel( ylabel )
     if legend:
         plt.legend( fontsize=f_size*.75, loc=loc )
-
-#    if r_plt:
-#        return plt
 
 # --------
 # 1.18 - North Pole surface plot
@@ -1323,7 +1355,6 @@ def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False,
             t.set_fontsize(f_size)
         if units != None:
             cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)                      
-
     # Set number of ticks
     if  (not no_cb):
         if set_cb_ticks:
@@ -1784,7 +1815,7 @@ def create_plot4case( fig, ax, dates, data, spec, f_size=20, lw=None, ls=None, \
             ls=ls, lw=lw, loc=loc, legend=legend, f_size=f_size)
 
     if case == 4:
-        timeseries_May_Sept_plot( ax, dates, data,  \
+        timeseries_by_day_plot( ax, dates, data,  \
             label=label, ylabel=units, color=color, \
             title=latex_spec_name(spec), boxplot=boxplot, \
             ls=ls, lw=lw, loc=loc, legend=legend, f_size=f_size)
@@ -2565,6 +2596,75 @@ def plot_arr_avg_Q1_Q3( X, Y, ax=None, color='blue', label=None, \
     # return plot object
     return ln
 
+# --------------
+# 1.35 - Timeseries plotter ( takes datetime + np.array )
+# -------------
+def timeseries_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
+            title=None, legend=False, everyother=7*24,  x_nticks=12, \
+            window=False, label=None, ylabel=None, loc='upper left',  \
+            lw=1,ls='-', color=None, start_date=None, end_date=None, \
+            boxplot=True, showmeans=False, alt_text=None, r_plt=False, \
+            unitrotation=45, color_by_z=False, fig=None,  xlabel=True, \
+            positive=None, add_Q1_Q3=False, debug=False ):
+    """ Plot up timeseries of values. Requires data, and dates in numpy 
+        array form. Dates must be as datetime.datetime objects. """
+
+    # Process data - reduce resolution to daily, and get std
+    df = DataFrame( data, index=dates )
+
+    # Take start and end dates from "dates" if not set in arguments. 
+    if isinstance( start_date, type(None) ):
+        start_date = dates[0]
+    if isinstance( end_date, type(None) ):
+        end_date = dates[-1]
+
+    # label once per week ( set by "everyother" ) 
+    days = [i.to_datetime() for i in df.index ]
+    labels = [i.strftime("%-d %b") for  i in days ][::everyother]
+
+    # Color in line another provided variables
+    if color_by_z:
+        if debug:
+            print 'Coloring line by normalised z values'
+        print df.columns
+        x = df.index
+        y, z = [ df[ df.columns[i] ] for i in range(2) ]
+        cmap = get_colormap( z.copy(), positive=positive )
+        print [ ( i.min(), i.max() ) for i in x, y, z ]
+        colorline(x, y, z, cmap=cmap, linewidth=lw, ax=ax, \
+            norm=plt.Normalize( 0, 360 ), fig=fig ) #np.min(z), 1500))
+#        colorline(x, y, linewidth=lw, ax=ax)
+
+    else:
+        plt.plot( days, df.values, label=label, color=color, ls=ls, lw=lw  )
+
+    if add_Q1_Q3:
+        pass
+        
+    # Setup X axis 
+    if xlabel:
+        plt.xticks( days[::everyother], labels, rotation=unitrotation, \
+            fontsize=f_size )
+    else:
+        plt.tick_params( axis='x', which='both', labelbottom='off')
+
+    # Beautify plot
+    if not isinstance( title, type(None) ):
+        plt.title( title + ' for {}-{}'.format( start_date.strftime( \
+            '%d/%m/%y' ), end_date.strftime( '%d/%m/%y' ) ),
+             fontsize=f_size )
+    # Alt text annotate as fig text?
+    if not isinstance( alt_text, type(None) ):
+        plt.figtext(x=0.05,y=0.85, s=alt_text, fontsize=f_size*.75 )
+    # Setup y axis 
+    plt.yticks( fontsize=f_size )
+    if not isinstance( ylabel, type(None) ):
+        plt.ylabel( ylabel, fontsize=f_size )
+    # Legend?
+    if legend:
+        plt.legend( fontsize=f_size*.75, loc=loc )
+
+
 # --------------------------- Section 4 ------------------------------------
 # -------------- Plotting Ancillaries 
 #
@@ -2712,17 +2812,15 @@ def markers_list(rm_plain_markers=False):
 # 4.08- box X-Y plot with histograms
 # -------------
 def Trendline( ax, X, Y, order =1, intervals= 700, f_size=20, 
-            color='blue', lw=1 ):
+            color='blue', lw=1, debug=False ):
         """ Add a trend line to existing plot """
         params, xp = np.polyfit( X, Y, order  ), \
             np.linspace( min(np.ma.min(X), np.ma.min(Y) ), \
             max(np.ma.max(X), np.ma.max(Y) ), intervals )
-
+        if debug:
+            print params
         yp = np.polyval( params, xp )
 
-        
-        print params
-#        sys.exit( )
 
         # Regression 
         r_sq =  [ r_squared(X, i ) for i in [Y]]
