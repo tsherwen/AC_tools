@@ -154,7 +154,7 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
     # Setup list of tracers
     if any( [(ver == i) for i in '1.6', '1.6.1', '1.6.2'] ):
         ntracers=96
-    if ver == '1.6.3':
+    if any( [(ver == i) for i in '1.6.3', '1.6.4' ] ):
         ntracers=98
     if ver == '1.7':
         ntracers=85
@@ -315,6 +315,26 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, \
         return d[input]
 
 
+# --------------
+# 1.02 - Return NO2 photolysis reaction REA_XX assignment
+# -------------
+def get_NO2_phot_REA_XXX( ver='1.6', debug=False ):
+    """ Returns the NO2 photolysis variable depending on iGC version """
+
+    if ver == '1.6':
+        num = 457
+    elif ver == '3.0':
+        num = 549
+
+    # Request value /debug        
+    else:
+        print 'PLEASE ADD NO2 photolysis reaction for iGC version'
+        sys.exit()
+    if debug:
+        print ver, num
+
+    return 'REA_' +str(num)
+
 # ------------------------------------------- Section 3 -------------------------------------------
 # --------------  GeosChem (bpch) prod loss variables
 #
@@ -398,18 +418,6 @@ def get_tag_fam( tag ):
 # ----------------- Section 4 -------------------------------------------
 # -------------- GeosChem (bpch) general variables
 #
-# 4.01 - v9-2 species in input.geos from num
-# 4.02 - Get Species Mass 
-# 4.03 - Get Species stioch
-# 4.04 -  GEOS-Chem/ctm.bpch values (current main dict )
-# 4.05 - latex species name
-# 4.06 - converts P/L tracer mulitpler to 1
-# 4.07 - Returns tracers unit and scale (if requested)
-# 4.08 - Store of dirs for earth0, atmosviz1, and tms mac
-# 4.09 - Ox in species (redundant now? should adapt species stoich )
-# 4.10 - Get GAW site info  (lat, lon, alt (press), timezone (UTC) ) 
-
-# 4.99 - Reference data, (inc. grid data) from gchem - credit: GK (Gerrit Kuhlmann )
 
 # --------------   
 # 4.01 - v9-2 species in input.geos from num
@@ -423,7 +431,7 @@ def num2spec( num=69, rtn_dict=False, invert=False, ver = '1.7' ):
     # special case for dev version?
     if any( [ (ver == i) for i in '1.6', '1.6.2', ] ): 
         d = GC_var('GCFP_d2TRA_justTRA_1.6' )
-    if ver == '1.6.3' :
+    if any( [ (ver == i) for i in'1.6.3', '1.6.4' ] ):
         d = GC_var('GCFP_d2TRA_justTRA_1.6.3' )
     # Then slice
     nums =[ int(i[4:]) for i in d.keys()]
@@ -532,7 +540,7 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
     'CH3IT': 1.0, 'IO': 1.0, 'LO3_38': 1.0, 'RD61': 1.0, 'RD68': 1.0, \
     'I2': 2.0, 'IONO': 1.0, 'LO3_36': 0.6666666666666666, 'INO': 1.0, \
     'RD88': 1.0, 'RD89': 1.0, 'LOx': 1.0, 'RD06': 1.0, 'RD07': 1.0, \
-    'RD02': 1.0, 'RD01': 1.0, 'I': 1.0, 'LO3_24': 0.5, 'AERI': 1.0, \
+    'RD02': 1.0, 'RD01': 1.0, 'I': 1.0,  'LO3_24': 0.5, 'AERI': 1.0, \
     'HOI': 1.0, 'RD64': 2.0, 'RD65': 1.0, 'RD66': 1.0, 'RD67': 1.0, \
     'RD60': 1.0, 'RD47': 1.0, 'C2H5I': 1.0, 'RD63': 1.0, 'RD20': 1.0, \
     'RD22': 1.0, 'RD24': 1.0, 'RD69': 1.0, 'RD27': 1.0, 'OIO': 1.0, \
@@ -921,8 +929,8 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'OH_loss_rxns' : [ \
     'LR100', 'LR101', 'LR97', 'LR98', 'LR86', 'LR96', 'LR89', 'LR87',\
     'LR88', 'LR84', 'LR79', 'LR94', 'LR90', 'LR76', 'LR81', 'LR91', 'LR92', \
-    'LR95', 'LR93', 'LR77', 'LR82', 'LR85', 'LR78', 'LR75', 'LR62', 'LR62', \
-    'LR73', 'LR73', 'LR83', 'LR80', 'LR99'
+    'LR95', 'LR93', 'LR77', 'LR82', 'LR85', 'LR78', 'LR75', 'LR62', \
+    'LR73',  'LR83', 'LR80', 'LR99'
     ],  
     'Br_ox_org_rxns' :  [ 'LR12', 'LR13', 'LR14', 'LR15', 'LR16' ], 
     'ClO_ox_org_rxns' : ['LO3_83'], 
@@ -1013,20 +1021,33 @@ def latex_spec_name(input_x, debug=False):
     return spec_dict[input_x]
 
 # --------------
-# 4.06 - converts P/L tracer mulitpler to 1
+# 4.06 - converts P/L rxn tag coefficient to 1 
 # --------------
 def p_l_unity(rxn, debug=False):
     """ Converts all coefficents for OX tracers to unity. 
+        (just time Coe by output )
         This allows for automatic adjust from smv2.log values.
     NOTE:
         - All values ion the dictionary are present in Ox_in_species
     """
     p_l_dict = {
-    'LR24': 1.0, 'LR25': 1.0, 'LR26': 1.0, 'LR27': 1.0, 'LR20': 1.0, \
-    'LR21': 1.0, 'LR22': 1.0, 'LR30': 1.0, 'LR31': 1.0, 'LR23': 1.0, \
-    'LR28': 1.0, 'LR29': 1.0, 'RD09': 1.0, 'PO3_46': 0.25, 'LR3': 1.0, \
-    'LR2': 1.0, 'RD02': 1.0, 'PO3_03': 0.3, 'PO3_14': 1.0, 'PO3_02': 0.15, \
-    'PO3_05': 0.15
+#    'LR24': 1.0, 'LR25': 1.0, 'LR26': 1.0, 'LR27': 1.0, 'LR20': 1.0, \
+#    'LR21': 1.0, 'LR22': 1.0, 'LR30': 1.0, 'LR31': 1.0, 'LR23': 1.0, \
+#    'LR28': 1.0, 'LR29': 1.0, 'RD09': 1.0, 'PO3_46': 0.25, 'LR3': 1.0, \
+#    'LR2': 1.0, 'RD02': 1.0, 'PO3_03': 0.3, 'PO3_14': 1.0, 'PO3_02': 0.15, \
+#    'PO3_05': 0.15
+    # LO3_?? tags ( active in 'iGEOSChem_3.0_v10/run.ClBrI.aq.Iy.RT' )
+    'LO3_35':1/2.0, 'LO3_55': 1/4.0, 'LO3_36 ': 1/3.0, 'LO3_38': 1/2.0, \
+    'LO3_30' : 1/2.0, 'LO3_28' : 1/8.0, 'LO3_27': 1/6.0, 'LO3_26': 1/7.0, \
+    'LO3_25' : 1/5.0, 'LO3_37': 1/4.0, 'LO3_24': 1/2.0, 'LO3_47': 1/0.7, \
+    'LO3_56': 1/0.3, 'LO3_41': 1/1.4, 
+    # PO3_?? tags ( active in 'iGEOSChem_3.0_v10/run.ClBrI.aq.Iy.RT' )
+    'PO3_77': 1/2.0, 'PO3_61': 1/1.15, 'PO3_60': 1/2.150, 'PO3_59': 1/0.300, \
+    'PO3_84': 1/1.6, 'PO3_58': 1/0.480, 'PO3_56' :1/1.960, 'PO3_107' : 1/2.0, \
+    'PO3_05': 1/0.250, 'PO3_03' : 1/0.3, 'PO3_02': 1/0.150, 'PO3_40': 1/2.0, \
+    'PO3_50' : 1/.3, 'PO3_48': 1/0.700, 'PO3_46':1/0.250, 'PO3_39':1/1.30, \
+    'PO3_37': 1/1.5, 'PO3_34': 1/.88, 'PO3_26': 1/.93, 'PO3_25' : 1/.96, \
+    'PO3_24': 1/2.0, 
     }
     return p_l_dict[rxn]
 
@@ -1162,11 +1183,12 @@ def Ox_in_species(in_=None, rxns=False, keys=False):
             - This is an old approach. Update approach takes online 
             coefficents from smv2.log 
             - This approach is still valid for older tag with coefficens.     
-            However, all future tags should contain no coefifcent making this     
+            However, all future tags should contain no coefficient making this     
             function redudent
-            - This functinon does the same thing as "Ox_in_species" and 
-            "p_l_unity". These three functinos should be conbined. 
+            - This functinon does a similar thing as "spec_stoich" 
+            ( non Ox species) and as "p_l_unity" ( now commented out )
      """
+    # This dictionary is still in use.
     species_Ox = {
     'HOIdf': 1.0, 'OIOdf': 2.0, 'BrNO3df': 2.0, 'HNO3df': 1.0, 'PPNdf': 1.0, \
     'IOdf': 1.0, 'N2O5df': 3.0, 'IONOdf': 1.0, 'PMNdf': 1.0, 'BrNO2df': 1.0, \
@@ -1177,7 +1199,9 @@ def Ox_in_species(in_=None, rxns=False, keys=False):
     'HOI': 1.0, 'HNO3': 1.0, 'IONO2': 2.0, 'NO2': 1.0, 'IO': 1.0, 'HNO4': 1.0, \
     'PMN': 1.0, 'O3': 1.0, 'BrNO3': 2.0, 'PAN': 1.0, 'NO3': 2.0
     }
-    rxn_Ox     = {
+    # This dictionary is redundant as Coe (from smv2.log) now should be used. 
+    # This is the Ox in a given reaction ( all tags now 
+    rxn_Ox = {
     'LO3_18': 1.0, 'LR25': 1.0, 'RD12': 2.0, 'LR21': 1.0, 'LO3_38': 1.0, \
     'LO3_10': 1.0, 'LO3_34': 1.0, 'LO3_35': 1.0, 'LO3_33': 1.0, 'LO3_30': 1.0, \
     'LR5': 2.0, 'LR6': 2.0, 'RD37': 2.0, 'LO3_05': 1.0, 'RD11': 2.0, \
@@ -1190,17 +1214,13 @@ def Ox_in_species(in_=None, rxns=False, keys=False):
     # LO3_24 set to 1 (as 0.5*CoE) even though 2 Ox equivalents are lost, 
     # this allows for contribution to bromine and iodine loss to be inclued
     # This is the same for ClO + IO ( ) and BrO + ClO ( )
+    
     # LOX included for processing ease 
     'LOX':1.0, 'POX':1.0, 'PO3_14': 1.0, 'PO3_15':1.0 , 'RD98': 1.0, \
     'LO3_39':1.0 , 'RD63': 1.0, \
-    # for prod analysis
-    'PO3_69' : 1.0/2.0, 'PO3_35': 0.85, 'PO3_03':0.15/0.3, 'PO3_70': 0.4/1.4 , \
-    'PO3_77': 1.0/2.0 , 'RD06':1.0, 'LR9':1.0, \
-    # Transfered from "p_l_unity" function
-    'LR26': 1.0, 'LR27': 1.0, 'LR20': 1.0, 'LR22': 1.0, 'LR24': 1.0, \
-    'LR31': 1.0, 'LR23': 1.0, 'LR28': 1.0, 'LR29': 1.0, 'RD09': 1.0, \
-    'PO3_46': 0.25, 'LR3': 1.0, 'LR2': 1.0, 'RD02': 1.0, 'PO3_03': 0.3, \
-    'PO3_14': 1.0, 'PO3_02': 0.15, 'PO3_05': 0.15, \
+    # for prod analysis <=redundant ( use online Coes )
+#    'PO3_69' : 1.0/2.0, 'PO3_35': 0.85, 'PO3_03':0.15/0.3, 'PO3_70': 0.4/1.4 ,\
+#    'PO3_77': 1.0/2.0 , 'RD06':1.0, 'LR9':1.0, \
     }
     if (rxns):
         return rxn_Ox[ in_ ]
@@ -1990,8 +2010,11 @@ def get_rxn_Coe(wd, num, tag, nums=None, rxns=None, tags=None, \
             Coe=None, spec='LOX', ver='1.6', debug=False):
     """ Retrieve given reaction coefficient for smvgear (from smv2.log)
 
-        If using dev. Iy scheme, then the listed values from fuction
-        Ox_in_species() will be used. """
+    NOTES:
+        - This is no longer the case. However, previously if using dev. 
+        Iy scheme, then the listed values from fuction
+        Ox_in_species() will be used. 
+    """
 
     # --- get dictionaries for reactions within
     if all( [ (i == None) for i in nums, rxns, tags, Coe ] ):
@@ -2001,7 +2024,7 @@ def get_rxn_Coe(wd, num, tag, nums=None, rxns=None, tags=None, \
         print nums, Coe
     
     # Pull reaction coefficient  from dictionary
-    Coe_dict = dict(zip(nums, Coe) )             
+    Coe_dict = dict( zip(nums, Coe) )             
     Coe = float(Coe_dict[ num ])
     # Consider all change positive - Kludge 
     # ( This is due to the assignment approach, where P=prod, L=loss )
@@ -2010,13 +2033,14 @@ def get_rxn_Coe(wd, num, tag, nums=None, rxns=None, tags=None, \
 
     # --- over write Ox in species with prod_mod_tms values
     # ( This is only used for the Ox tracers from dev. Iy simulation )
-    try:
-        Coe = Ox_in_species(tag, rxns=True)
-        if debug:
-            print 'using values from Ox_in_species'
-    except:
-        if debug:
-            print 'using values from smv.log @: {}'.format(wd), 'for ', tag, Coe
+    # This has been removed to avoid possibility of double up. 
+#    try:
+#        Coe = Ox_in_species(tag, rxns=True)
+#        if debug:
+#            print 'using values from Ox_in_species'
+#    except:
+#        if debug:
+#            print 'using values from smv.log @: {}'.format(wd), 'for ', tag, Coe
     return Coe
 
 
@@ -2096,13 +2120,19 @@ def rm_ClBrI_het_loss( spec_l=None, r_=None, fam=None, debug=False):
 # 6.14 - 
 # -------------
 def get_adjustment4tags( tags, PDs=None, pl_dict=None, ver='1.6', \
-            verbose=False, debug=False):
-    """  Get coefficent for rxn tag from either smv2.log (if tag Coe=unity)
-        or from dictionary "Ox_in_species"
-        
-        This function is similar to "get_rxn_Coe", but takes rxn tags as 
-        arguements 
+            verbose=False, wd=None, debug=False):
+    """  Get coefficent for rxn tag from smv2.log using the provided family
+    and adjusts the reaction tag to unity.
+
+    The adjust to uniuty only occurs for older LO3_??/PO3_?? tags, which 
+    included coefficents for the reactions in globchem.dat
+
+    This function is a cousin to "get_rxn_Coe", but takes rxn tags as arguements 
+    and adjusts a tag to unity. 
     """
+    
+    debug=True
+    
     # --- get dictionaries for reactions + PDs, if not provided
     if isinstance( pl_dict, type(None) ):
         pl_dict = get_pl_dict( wd, spec='LOX', rmx2=True, ver=ver, debug=debug )
@@ -2113,26 +2143,40 @@ def get_adjustment4tags( tags, PDs=None, pl_dict=None, ver='1.6', \
     # ( note: this won't include tag coefficients as these tag rxn not family )    
     Coes = [ pl_dict[i][-1] for i in tags ]
 
-    # --- If species is manually known or non zero, then divide by tag Coe
+    # --- If species is manually known or non zero, then times by tag Coe
     # ( This is only used for the Ox tracers from dev. Iy...  simulation )
     for n, tag in enumerate( tags ):
 
         # Consider all change positive - Kludge 
         # ( This is due to the assignment approach, where P=prod, L=loss )
         if ('P' not in PDs[n] ): 
-            Coes[n] =  Coes[n]*-1.0
+            if Coes[n] < 0:
+                Coes[n] =  Coes[n]*-1.0
 
-        try:
-            # divide by tag Coefficient to ensure all Coes start from unity
-            Coes[n] = Coes[n]/Ox_in_species(tag, rxns=True)
+        # Ensure all tag coefficients start from unity
+        # times by tag Coefficient (if not ==1) all -Coes start from unity
+        try:            
             if debug:
-                print 'Accounting for Coe from Ox_in_species for:' + \
-                    '{}, PD:{}, Coe:{}'.format(  tag, PDs[n], Coe )
+                print 'Accounting for (non unity) Coe in globchem.dat for:' + \
+                    '{}, PD:{}, to Coe:{} (from {})'.format(  tag, PDs[n],  \
+                    Coes[n]*p_l_unity(tag), Coes[n]  )
+            Coes[n] = Coes[n]*p_l_unity(tag)
+
         except:
             if debug:
                 print 'Just using Coe from smv.log @:'+ \
-                    '{} for {}, PD:{}, Coe:{}'.format( wd,  tag, PDs[n], Coe )
+                    '{} for {}, PD:{}, Coe:{}'.format( wd, tag, PDs[n], Coes[n])
     return Coes
+
+def adjust2half4crossover( tag='LO3_24', ):
+    """ Consider half the value for halogen cross-over reaction tags """
+    
+    d = {
+    'LO3_24' :  0.5,  # IO + BrO
+    'LO3_87' : 0.5, # IO + ClO  
+    'LO3_82' : 0.5 # BrO + ClO
+    }
+    
 
 # -------------- Section 7 -------------------------------------------
 # -------------- Observational Variables
@@ -2503,7 +2547,9 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',  \
 
         # Add other (non 'PD') vars for ease of processing
         non_PDs = [\
-        'PIOx', 'iLOX', 'LIOx', 'iPOX', 'POX', 'LOX', 'LOx', 'L_Iy', 'LOH']
+        'PIOx', 'iLOX', 'LIOx', 'iPOX', 'POX', 'LOX', 'LOx', 'L_Iy', 'LOH', \
+        'LCl', \
+        ]
         vars += non_PDs
         PDs += non_PDs
         
@@ -2527,6 +2573,9 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
     nums, rxns, tags, Coe = prod_loss_4_spec( wd,  spec, all_clean=True, \
         ver=ver, debug=debug )
 
+    print prod_loss_4_spec
+    sys.exit()
+
     # Make a dictionary of coeffiecnts of reaction
     Coe_dict = dict(zip(nums, Coe) )
 
@@ -2541,8 +2590,9 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
     [ details.pop(n) for n, i in enumerate( details ) if i[1]==364 ]
     ind =  [n for n, i  in enumerate( nums ) if i ==354 ]
     
-    # Get Coes and overwrite where funcs_vars has existing values
-    Coes = [  get_rxn_Coe( wd, d[1], unpacked_tags[n], nums=nums, \
+    # Get coefficients for change in reaction family
+    # NOTE: This does not exclude adjustment for non unity globchem.dat tags
+    Coes = [ get_rxn_Coe( wd, d[1], unpacked_tags[n], nums=nums, \
                     rxns=rxns, tags=tags, Coe=Coe, spec=spec, debug=debug ) \
                     for  n, d in enumerate( details ) ]
 
@@ -2552,10 +2602,13 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
         d = [ 
         ['RD62', 'LO3_38'], ['RD59', 'LO3_30'], ['RD65', 'LO3_34'],  \
         ['RD93', 'LO3_55'], ['RD92', 'LO3_39'], [ 'RD95', 'LO3_36'],   \
-        ['RD67', 'LO3_35'], ] 
+        ['RD67', 'LO3_35'],  
+        # Also remove ( 1 of ) double tagged Br reaction
+        ['LR25', 'LO3_84' ] 
+        ]
         # Use Justin's 'LR??'/Johan's JTO1 tags in preference to 'LO3??' tags
         # This is an Kludge that only is necessary for "NOHAL" runs
-        rm_hal_tags=False   
+        rm_hal_tags=False
         if rm_hal_tags:
             d += [ \
         ['LR6', 'LO3_73'], ['LR5',  'LO3_73'], ['LR10', 'LO3_74'], \
@@ -2564,7 +2617,7 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
         # Either one can be removed as currently two will be present and both # 
         # are  equally weighted by use of the Ox_in_species diagnostic ... 
 #        d = [i[0] for i in d ]  # Drop the 1st element in "d" list
-        d = [i[1] for i in d ]  # Drop the 2nd element in "d" list
+        d = [i[1] for i in d ]  # Drop the 2nd element in "d" list #<=Preference
         ind = [ n for n, i in enumerate(details) if any( [ i[0] == ii \
             for ii in d ] )  ]
         if debug:

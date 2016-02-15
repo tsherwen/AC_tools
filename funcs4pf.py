@@ -226,9 +226,11 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
     try:
         k=names.index( spec )
     except:
-        print '>'*30, 'ERROR: failed to find >', spec , \
-            '< in names list, trying planeflight equivilent', '<'*30
+        print '>'*30, 'ERROR: failed to find >{}<'.format(spec) + \
+            '< in names list ({}), trying planeflight equivilent'. format( \
+            ver ),  '<'*30
 #        print spec, GC_var('GCFP_d2TRA')[spec]
+        print names 
         spec = what_species_am_i( spec, ver=ver, invert=True ) 
 
         # Get index in list

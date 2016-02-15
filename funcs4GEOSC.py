@@ -3066,7 +3066,6 @@ def get_trop_Ox_loss( wd, pl_dict=None,  spec_l=None, ver='1.6' ,   \
                                         
     # adjust for Ox difference within prod loss tracers
     Coes = get_adjustment4tags( spec_l, PDs=PDs, pl_dict=pl_dict, ver=ver )  
-#    ars = [ ar*pl_dict[spec_l[i] ][-1]  for i, ar in enumerate(ars) ]
     ars = [ ar*Coes[i] for i, ar in enumerate(ars) ]
 
     # Only consider troposphere

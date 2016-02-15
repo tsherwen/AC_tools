@@ -1028,7 +1028,8 @@ def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,  \
         ax.annotate( alt_text , xy=(0.85, 0.85),  textcoords='axes fraction')
 
     ax.set_xticklabels( np.arange(0,24,1 )  )
-    plt.xticks( np.arange(0,1,1/24. ), fontsize=f_size, rotation=rotatexlabel )
+    plt.xticks( np.arange(0,1,1/24. ), fontsize=f_size*.75, \
+        rotation=rotatexlabel )
 #    plt.xlim(-0.05, 23/24.)
     plt.xlim(-0.05, 1.0)
     if xlabel:
