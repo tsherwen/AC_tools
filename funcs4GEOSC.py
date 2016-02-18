@@ -2809,12 +2809,13 @@ def get_tran_flux( ctm_f, spec='O3', years=None, months=None, \
 # -------------
 def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
             scale=1E9, s_area=None, res='4x5', wd=None, specs=None, \
-            Iodine=False, all_wdep=False, sep_rxn=False, 
+            Iodine=False, all_wdep=False, sep_rxn=False, \
+            conbine_frontal_convect_wdep=False, ver='1.6', \
             debug=False):
     """ Extract wet deposition for given species
 
         NOTE: this fucntion expects list of species
-        ( if a species list is not provided, then Iodine depsotion is returned)
+        ( if a species list is not provided, then Iodine deposition is returned)
      """
 
     if not isinstance(months, list):
@@ -2829,6 +2830,8 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
     if Iodine and isinstance( specs, type(None) ):
         if (all_wdep):
             specs = GC_var('w_dep_specs')
+            if ver =='3.0':
+                specs += ['ISALA', 'ISALC' ]
         else:
             specs = GC_var('w_dep_specs')[:-1] # skip AERI - Kludge
 
@@ -2897,6 +2900,15 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
     # Adjust to monthly values...
     m_adjust = d_adjust( months, years) # => Gg / month 
     dep_w = [m_adjust * arr for arr in dep_w ]
+
+    # Return on a per species basis ( Combine frontal + convective scavenging)
+#    print 'before: ', [ ( i.shape, i.sum() ) for i in dep_w ], len( dep_w), \
+#        np.sum( dep_w )
+    if conbine_frontal_convect_wdep: 
+        dep_w = [ i+dep_w[n+len( specs )]  \
+            for n, i in enumerate( dep_w[:len( specs )] ) ]
+#    print 'after: ', [ ( i.shape, i.sum() ) for i in dep_w ], len( dep_w), \
+#        np.sum( dep_w )
 
     # List wet dep rxns, concat. and sum of rxns
     if sep_rxn: 

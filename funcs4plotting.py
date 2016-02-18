@@ -986,7 +986,8 @@ def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,  \
         array form. Dates must be as datetime.datetime objects. 
     
     Notes:
-        - Boxplot is the defauly presentation of data    
+        - Boxplot is the default presentation of data    
+        - Otherwise a meidan is used
     """
 
     # get_day_fraction(i) 
@@ -1124,7 +1125,7 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
 
     # remove dates outside of range (start_month > < end_month )
     def get_month(x):
-         return x.month
+        return x.month
     df[ 'month'] = df.index.map( get_month ) 
     df = df[ df['month']<=end_month ]
     df = df[ df['month']>=start_month ]

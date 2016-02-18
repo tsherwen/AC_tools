@@ -248,7 +248,8 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
     if  any( [(location == i)  for i in plane_data ]):
         j =names.index( 'PRESS' )
         press = model[:,j]
-        print [ ( len(i) , min(i), max(i) )  for i in [data, press]]
+        if debug:
+            print [ ( len(i) , min(i), max(i) )  for i in [data, press]]
         press = [ np.float(i) for i in press ]
         km =  np.array( hPa_to_Km( press )  )
         if r_datetime:

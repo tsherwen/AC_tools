@@ -1314,7 +1314,7 @@ def get_unit_scaling( units, scaleby=1 ):
 
         misc = 'K', 'm/s', 'unitless', 'kg' ,'m', 'm2','kg/m2/s', \
             'molec/cm2/s', 'mol/cm3/s',  'kg/s', 'hPa', 'atoms C/cm2/s' \
-            'kg S', 'mb', 'atoms C/cm2/s', 'molec/cm3', 'v/v'
+            'kg S', 'mb', 'atoms C/cm2/s', 'molec/cm3', 'v/v', 'cm/s'
 
         if any( [ (units ==  i) for i in 'pptv', 'pptC' ]):
             scaleby = 1E12
@@ -1783,16 +1783,16 @@ def get_indicies_4_fam( tags, fam=False, IO_BrOx2=False, rtnspecs=False,
 
     # Consider Ox loss for 
     if fam:
-        # Kludge - to allow for counting Ox loss via IO +BrO 50/50, 
+        # Kludge - to allow for counting Ox loss via XO +XO 50/50 between fams, 
         # ( add extra loss tag. )
-#        if IO_BrOx2:
-        if False:
+        if IO_BrOx2:
+#        if False:
             # Add extra tag for reaction ( IO + BrO )
             ll[famsn.index('Bromine')].append(  max([max(i) for i in ll])+1 )
             fams = fams +[ 'Bromine' ] 
             tags = tags +  [ 'LO3_24'] 
-#        if Include_Chlorine:
-        if False:
+        if Include_Chlorine:
+#        if False:
             # Add extra tag for reaction ( ClO + BrO )
             ll[famsn.index('Chlorine')].append(  max([max(i) for i in ll])+1 )
             fams = fams +[ 'Chlorine' ] 
