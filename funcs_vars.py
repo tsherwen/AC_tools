@@ -496,7 +496,7 @@ def species_mass( spec ):
 # 4.03 -  return the stiochometry of Iodine in species
 # --------------
 def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
-            C=False, Br=False, Cl=False, ref_spec=None ): 
+            C=False, Br=False, Cl=False, ref_spec=None, debug=False ): 
     """ Returns unit equivelent of X ( e.g. I ) for a give species. 
         
         This can be automatically set by providing a reference species
@@ -530,6 +530,11 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
             IO=True
         if ref_spec == 'NO':
             NO=True
+
+    if debug:
+        vars = ref_spec, IO, I, NO, OH, N, C, Br, Cl
+        varsn = 'ref_spec', 'IO', 'I', 'N', 'OH', 'N', 'C', 'Br', 'Cl'        
+        print "'spec_stoich'  called for: ", zip( varsn, vars ) 
 
     # Select dictionary ( I=True is the default... )
     d = {
@@ -615,19 +620,28 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         'IBr': 1.0, 'BrSALA': 1.0, 'BrNO2': 1.0, 'BrNO3': 1.0, 'HBr': 1.0, \
         # for ease of processing also include Seasalt Br2
          'SSBr2': 2.0, 
-    }
+         # Also have reaction tracers
+        'LR73' : 1.0, 
+        }
     if Cl:
         d= {
         'ClO': 1.0, 'Cl': 1.0, 'ClOO': 1.0, 'ClNO3': 1.0, 'ClNO2': 1.0, \
         'Cl2': 2.0, 'OClO': 1.0, 'HOCl': 1.0, 'HCl': 1.0, 'Cl2O2': 2.0,
-         'BrCl': 1.0, 'ICl':1.0
+         'BrCl': 1.0, 'ICl':1.0, 
+         # Also have reaction tracers
+         'LR62': 3.0, 'LR74' : 1.0, 'LR75' : 2.0
         }
 
     # Kludge for testing. Allow values to equal 1.0 if not defined. 
     try:
+        if debug:
+            print '{} (ref_spec: {}) stiochmetry : {}'.format( spec, \
+                ref_spec,  d[spec] )
         return d[spec]
+
     except:
-        print '!'*50, 'Kludge assuming stiochmetry = 1.0, for ', spec
+        print '!'*20, 'WARNING - Kludge assumming stiochmetry = 1.0, for'+ \
+            ' {} (ref_spec given as: {})'.format( spec, ref_spec )
         return 1.0
 
 # --------------
@@ -1771,12 +1785,14 @@ def get_indicies_4_fam( tags, fam=False, IO_BrOx2=False, rtnspecs=False,
     if fam:
         # Kludge - to allow for counting Ox loss via IO +BrO 50/50, 
         # ( add extra loss tag. )
-        if IO_BrOx2:
+#        if IO_BrOx2:
+        if False:
             # Add extra tag for reaction ( IO + BrO )
             ll[famsn.index('Bromine')].append(  max([max(i) for i in ll])+1 )
             fams = fams +[ 'Bromine' ] 
             tags = tags +  [ 'LO3_24'] 
-        if Include_Chlorine:
+#        if Include_Chlorine:
+        if False:
             # Add extra tag for reaction ( ClO + BrO )
             ll[famsn.index('Chlorine')].append(  max([max(i) for i in ll])+1 )
             fams = fams +[ 'Chlorine' ] 
@@ -2130,9 +2146,7 @@ def get_adjustment4tags( tags, PDs=None, pl_dict=None, ver='1.6', \
     This function is a cousin to "get_rxn_Coe", but takes rxn tags as arguements 
     and adjusts a tag to unity. 
     """
-    
-    debug=True
-    
+        
     # --- get dictionaries for reactions + PDs, if not provided
     if isinstance( pl_dict, type(None) ):
         pl_dict = get_pl_dict( wd, spec='LOX', rmx2=True, ver=ver, debug=debug )
@@ -2573,14 +2587,11 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
     nums, rxns, tags, Coe = prod_loss_4_spec( wd,  spec, all_clean=True, \
         ver=ver, debug=debug )
 
-    print prod_loss_4_spec
-    sys.exit()
-
     # Make a dictionary of coeffiecnts of reaction
-    Coe_dict = dict(zip(nums, Coe) )
+    Coe_dict = dict( zip(nums, Coe) )
 
     # unpack for mulutple tags of same reactions, then get details
-    unpacked_tags = [j for k in tags for j in k ]
+    unpacked_tags = [ j for k in tags for j in k ]
     if debug:
         print unpacked_tags
     
@@ -2600,10 +2611,21 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
     # rate tagging (RD??) originally performed separately  
     if rmx2:
         d = [ 
-        ['RD62', 'LO3_38'], ['RD59', 'LO3_30'], ['RD65', 'LO3_34'],  \
-        ['RD93', 'LO3_55'], ['RD92', 'LO3_39'], [ 'RD95', 'LO3_36'],   \
+        # I2O2 => AERI (LOSS) ( either RD62 or LO3_38 fine. )
+        ['RD62', 'LO3_38'], 
+        # IONO2 ( use LO3_30 or RD59, LR42, and LR43 )
+        ['RD59', 'LO3_30'],  \
+        # HOI +hv =>  ( either RD65 or LO3_34 fine. )
+        ['RD65', 'LO3_34'],  \
+        # I2O4 => AERI (LOSS) ( either RD93 or LO3_55 fine. )
+        ['RD93', 'LO3_55'], 
+        # IONO => IX/AERI (LOSS) ( use LO3_39 ( RD92 is not equiv) )
+        ['RD92', 'LO3_39'], \
+        # I2O3 => AERI (LOSS) ( either RD95 or LO3_36 fine. )
+        [ 'RD95', 'LO3_36'],   \
+        # OIO +hv =>  => AERI (LOSS) ( either RD67 or LO3_35 fine. )
         ['RD67', 'LO3_35'],  
-        # Also remove ( 1 of ) double tagged Br reaction
+        # HOBr + hv=>  ( either LR25 or LO3_84 fine. )
         ['LR25', 'LO3_84' ] 
         ]
         # Use Justin's 'LR??'/Johan's JTO1 tags in preference to 'LO3??' tags
@@ -2613,11 +2635,13 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
             d += [ \
         ['LR6', 'LO3_73'], ['LR5',  'LO3_73'], ['LR10', 'LO3_74'], \
         ['LR25', 'LO3_84'], ['LO3_82', 'LO3_82'], ['LO3_76','LO3_76'], \
-         ['LO3_75','LO3_75'] ]
+        ['LO3_75','LO3_75'] \
+        ]
         # Either one can be removed as currently two will be present and both # 
         # are  equally weighted by use of the Ox_in_species diagnostic ... 
-#        d = [i[0] for i in d ]  # Drop the 1st element in "d" list
-        d = [i[1] for i in d ]  # Drop the 2nd element in "d" list #<=Preference
+        # ( However, this  only if all are equiv. )
+        d = [i[0] for i in d ]  # Drop the 1st element in "d" list # <= MUST USE 
+#        d = [i[1] for i in d ]  # Drop the 2nd element in "d" list # 
         ind = [ n for n, i in enumerate(details) if any( [ i[0] == ii \
             for ii in d ] )  ]
         if debug:
@@ -2637,14 +2661,20 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
 # ------------- 
 def prod_loss_4_spec( wd, fam, all_clean=True, \
         ver='1.7', debug=False ):
-    """ Retrieve reaction numbers for family of tags """
+    """ Retrieve reaction numbers for family of tags
+    
+    NOTES
+        - coefficecents ("Coe") returned are for the family (e.g LOX)
+        within a reaciton. ( aka not for the tag )
+        - 
+     """
 
     # ---  Get Dict of all reactions, Keys = #s
     rdict = rxn_dict_from_smvlog( wd, ver=ver )
 
     # ---  Get reaction # tracked by p/l diag for spec and coefficient.
     rxns = rxns_in_pl( wd, fam )
-    nums =  rxns.keys() 
+    nums = rxns.keys() 
     Coe = [ rxn[-1] for rxn in rxns.values() ]
 
     # --- get all details from full reaction dictionary
@@ -2670,42 +2700,53 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
         #( due split uptake in iodine to aerosol )
         errs = [ \
         'LO3_36RD95', 'LO3_36RD95','LO3_36RD95', 
-        'ISOPNDPO3_50', 'ISOPNDLR40', 'LO3_30LR42', 'LO3_30LR43', 
-        'LO3_39LR46', 'LO3_39LR47', 'LO3_87LR48', 'LO3_87LR48']
+        'ISOPNDPO3_50', 
+        'ISOPNDLR40', 
+        'LO3_30LR42', 
+        'LO3_30LR43', 
+        'LO3_39LR46', 
+        'LO3_39LR47', 
+        'LO3_87LR48', 'LO3_87LR48']
         cerrs = [ \
         ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], \
-        ['PO3_50'], ['LR40'], ['LO3_30', 'LR42'], [ 'LO3_30','LR43'], \
-        ['LO3_39', 'LR46'], ['LO3_39', 'LR47'], ['LO3_87'], \
-        ['LO3_87'], \
+        ['PO3_50'], \
+        ['LR40'], \
+        ['LO3_30', 'LR42'], \
+        [ 'LO3_30','LR43'], \
+        ['LO3_39', 'LR46'], \
+        ['LO3_39', 'LR47'], \
+        ['LO3_87'], ['LO3_87'], \
         ]
 #        errs = ['LO3_36RD95' , 'ISOPNDPO3_50', 'ISOPNDLR40']
 #        cerrs = [ ['RD95'], ['PO3_50'], ['LR40'] ]
         for n, e in enumerate( errs ):
             try:
+                # Get index of erroneous rxn tag
                 ind = [ nn  for nn, i in enumerate( tags) if \
                                 any([ ( e in ii) for ii in i ]) ] [0]
+                # Extract vars for a given index
                 vars =  [ i[ind] for i in nums, rxns, tags, Coe]
                 if debug:
                     print 3, [ i[-1] for i in nums, rxns, tags, Coe], vars,  \
                             [ len(i) for i in nums, rxns, tags, Coe]
-                [i.pop(ind) for i in nums, rxns, tags, Coe ]
+                # remove index ( "ind" ) value from nums, rxns, tags, and Coe 
+                [ i.pop(ind) for i in nums, rxns, tags, Coe ]
 
                 # Add the cerrs values on the end
                 if debug:
                     print 4, [ i[-1] for i in nums, rxns, tags, Coe],  \
                             [ len(i) for i in nums, rxns, tags, Coe]
                 nums +=  [ vars[0] ]
-                rxns   +=  [vars[1] ]
-                tags    += [cerrs[n]]
-                Coe    +=  [vars[-1] ]
+                rxns +=  [ vars[1] ]
+                tags += [ cerrs[n] ]
+                Coe  +=  [ vars[-1] ]
 
-#                if debug:
-                if True:
+                if debug:
                     print 6, [ i[-1] for i in nums, rxns, tags, Coe], \
                          [ len(i) for i in nums, rxns, tags, Coe]
                     print '->'*30,  'SUCCESS >{}<  >{}<'.format( n, e )
             except:
-                print '>'*100, 'FAIL >{}< >{}<'.format( n, e )
+                print '>'*50, 'FAIL (NOT REPLACED) >{}< >{}<'.format( n, e )
 
     # KLUDGE! - rm empty list values of ones that contain errs
 #    ind = [ n for n,i in enumerate(tags) if ( (len(i)==0) or (i[0] in errs) ) ] 

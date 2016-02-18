@@ -2078,14 +2078,16 @@ def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
 # 2.10 - Get prod/Loss (change) ( [molec/cm3/s] =>  Gg I /s => Gg/  per month )
 # -------------
 def get_pl_in_Gg( specs=None, ctm_f=None, wd=None , years=None, months=None,
-             monthly=False,\
+             monthly=False, trop_limit=False, \
             Iodine=True, IO=False, I=False, res='4x5', vol=None, spec=None, \
             ver='1.6', debug=False  ):
     """ Return prod/loss diagnostic for griven p/l species/tags
-        Note: this approach is not comparible with PyGChem >0.3.0"""
+        Note: this approach is not comparible with PyGChem >0.3.0
     
-    print '!'*20, specs, 
-    
+    NOTE: 
+        - This function was orginally writen for iodine 
+        ( set Iodine=False to use for other species )    
+    """
     if debug:
         print 'Specs',  specs
     
@@ -2103,7 +2105,7 @@ def get_pl_in_Gg( specs=None, ctm_f=None, wd=None , years=None, months=None,
         # Extract as [molec/cm3/s] for specs 
         specs_ = [ PLO3_to_PD( i, ver=ver, fp=True, wd=wd ) for i in specs ]
         ars = get_GC_output( wd, vars=['PORL_L_S__'+i for i in specs_], \
-                    r_list=True)
+                    r_list=True, trop_limit=trop_limit)
         # convert to Gg [I/Ox... ] /s 
         # ( terms of mass defined by "spec" variable )
         ars = [ molec_cm3_s_2_Gg_Ox_np( arr, specs[n], vol, ctm_f=ctm_f, \
