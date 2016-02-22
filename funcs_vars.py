@@ -629,7 +629,9 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         'Cl2': 2.0, 'OClO': 1.0, 'HOCl': 1.0, 'HCl': 1.0, 'Cl2O2': 2.0,
          'BrCl': 1.0, 'ICl':1.0, 
          # Also have reaction tracers
-         'LR62': 3.0, 'LR74' : 1.0, 'LR75' : 2.0
+         'LR62': 3.0, 'LR107': 3.0, 
+         'LR74' : 1.0, 'LR106':1.0, 'LR103': 1.0, 
+         'LR75' : 2.0, 'LR105': 2.0, 'LR104' : 2.0, 
         }
 
     # Kludge for testing. Allow values to equal 1.0 if not defined. 
@@ -941,11 +943,15 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'FastJ_mids' :  [294,303,310,316,333,380,574],
     # ---  OH loss reactions 
     'OH_loss_rxns' : [ \
-    'LR100', 'LR101', 'LR97', 'LR98', 'LR86', 'LR96', 'LR89', 'LR87',\
-    'LR88', 'LR84', 'LR79', 'LR94', 'LR90', 'LR76', 'LR81', 'LR91', 'LR92', \
-    'LR95', 'LR93', 'LR77', 'LR82', 'LR85', 'LR78', 'LR75', 'LR62', \
-    'LR73',  'LR83', 'LR80', 'LR99'
-    ],  
+    'LR100', 'LR101', 'LR97', 'LR102', 'LO3_02', 'LR86', \
+    'LR96', 'LR89', 'LR87', 'LR88', 'LR84', 'LR79', 'LR94', 'LR41', 'LR81', \
+    'LR10', 'LR76', 'LR91', 'LR93', 'LR92', 'LR40', 'LR77', 'LR85', 'LR82', \
+    'LR74', 'LR4', 'LO3_78', 'LR78', 'RD08', 'LR75', 'RD07', 'LR9', 'LR62', \
+    'LR37', 'LR73', 'LR19', 'LO3_79', 'RD15', 'RD06', 'LO3_80', 'LR83', \
+    'LR80', 'LR99', 'PO3_68', 'PO3_01', 'PO3_92', 'PO3_67', 'PO3_86', \
+    'PO3_91'], 
+    # not outputted by p/l ( but should be) : 'PO3_103', 'PO3_104', 'PO3_105', 
+    # 'PO3_10'
     'Br_ox_org_rxns' :  [ 'LR12', 'LR13', 'LR14', 'LR15', 'LR16' ], 
     'ClO_ox_org_rxns' : ['LO3_83'], 
     'OH_loss_rxns4cl_comp' : [
@@ -2706,7 +2712,8 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
         'LO3_30LR43', 
         'LO3_39LR46', 
         'LO3_39LR47', 
-        'LO3_87LR48', 'LO3_87LR48']
+        'LO3_87LR48', 'LO3_87LR48', 
+        'LISOPOLR86' ]
         cerrs = [ \
         ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], \
         ['PO3_50'], \
@@ -2716,6 +2723,7 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
         ['LO3_39', 'LR46'], \
         ['LO3_39', 'LR47'], \
         ['LO3_87'], ['LO3_87'], \
+        ['LR86' ]
         ]
 #        errs = ['LO3_36RD95' , 'ISOPNDPO3_50', 'ISOPNDLR40']
 #        cerrs = [ ['RD95'], ['PO3_50'], ['LR40'] ]

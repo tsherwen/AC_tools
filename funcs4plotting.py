@@ -81,6 +81,7 @@ from math import log10, floor
 # 1.33 - Zonal Figure maker ( just provide lon, lat np array )
 # 1.34 - Lat plotter of average + Q1/Q3
 # 1.35 - Timeseries plotter ( takes datetime + np.array )
+# 1.36 - Get monthly surface plots for (4D) array 
 
 # --------------- ------------- ------------- ------------- ------------- 
 # ---- Section 4 ----- Plotting Ancillaries 
@@ -2666,6 +2667,91 @@ def timeseries_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     if legend:
         plt.legend( fontsize=f_size*.75, loc=loc )
 
+
+
+# --------
+# 1.36 - Get monthly surface plots for (4D) array 
+# --------
+def plt_4Darray_surface_by_month( arr, res='4x5', dpi=160, \
+        no_dstr=True, f_size=10, dlist=None, fixcb=None, \
+        savetitle='', extend='neither',  wd=None, ax=None, fig=None, \
+        sigfig_rounding_on_cb=3, nticks=7, discrete_cmap=False, \
+        units=None, set_window=False, lat_0=None, lat_1=None, \
+        return_m=False, log=False, window=True, interval=3, ylabel=True,\
+        norm=None, fig_title=False, pdftitle='',
+        pdf=False, show=False, verbose=False, debug=False):   
+    """ Create a window plot of surface amp plots from a 4D array
+     """
+    # Setup local variables + figure
+    left=0.025; right=0.9; bottom=0.05; top=0.9; hspace=0.315; wspace=0.05
+    fig  = plt.figure(figsize=(14, 10), dpi=dpi, facecolor='w', edgecolor='k')
+
+    # Get datetime
+    if isinstance( dlist, type(None) ):
+        dlist = get_gc_datetime( wd=wd )
+
+    # set cb ranges for whole data period
+    if isinstance( fixcb, type(None) ):
+        fixcb  = [( i.min(), i.max() ) for i in [arr]][0]
+
+    # Create figure if not provided
+    if isinstance( fig, type(None) ):
+        fig = plt.figure(figsize=(15, 10), dpi=dpi, 
+                    facecolor='w', edgecolor='k') 
+
+    # Set readable levels for cb, then use these to dictate cmap
+    lvls = get_human_readable_gradations( vmax=fixcb[1],  \
+                    vmin=fixcb[0], nticks=nticks, 
+                    sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
+
+    # Setup Colormap
+    cmap, fixcb_buffered = get_colormap( np.array( fixcb ), \
+        nticks=nticks, fixcb=fixcb, buffer_cmap_upper=True )
+
+    if discrete_cmap:
+        cmap, norm = mk_discrete_cmap( nticks=nticks,\
+                vmin=fixcb[0], vmax=fixcb[1], cmap=cmap )
+
+    if debug:
+        print  [ (i.min(), i.max(), i.mean()) for i in [ arr[...,0] ] ]
+                
+    # Loop thorugh months
+    for m, month in enumerate(dlist):
+
+        # add axis
+        ax = fig.add_subplot(4,3,m+1)
+
+        print arr[...,0,m].T.shape, arr.shape
+
+        # Plot up
+        map_plot( arr[...,0,m].T, format=format, cmap=cmap, ax=ax, \
+                    fixcb=fixcb, return_m=return_m, log=log, window=window, \
+                    no_cb=True, norm=norm, f_size=f_size*.75,  res=res, \
+                    fixcb_buffered=fixcb_buffered, interval=interval,\
+                    ylabel=ylabel, verbose=verbose, debug=debug )
+
+        # add month
+        plt.title(month.strftime("%b"), fontsize=f_size*2)
+
+    # Add single colorbar
+    mk_cb(fig, units=units, left=0.9, cmap=cmap, vmin=fixcb[0], \
+        vmax=fixcb[1], nticks=nticks, f_size=f_size, extend=extend ) 
+
+    print nticks, fixcb, lvls
+
+
+    # sort out ascetics -  adjust plots and add title
+    fig.subplots_adjust( bottom=bottom, top=top, left=left, \
+        right=right,hspace=hspace, wspace=wspace)
+    if fig_title:
+        fig.suptitle(  '{}'.format( latex_spec_name(spec) ), fontsize=f_size*2, 
+            x=.55 , y=.95  )
+
+    #  save as pdf ?
+    if pdf:
+        plot2pdf( title=pdftitle )    
+    if show:
+        plt.show()
 
 # --------------------------- Section 4 ------------------------------------
 # -------------- Plotting Ancillaries 
