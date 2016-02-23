@@ -944,12 +944,20 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     # ---  OH loss reactions 
     'OH_loss_rxns' : [ \
     'LR100', 'LR101', 'LR97', 'LR102', 'LO3_02', 'LR86', \
-    'LR96', 'LR89', 'LR87', 'LR88', 'LR84', 'LR79', 'LR94', 'LR41', 'LR81', \
-    'LR10', 'LR76', 'LR91', 'LR93', 'LR92', 'LR40', 'LR77', 'LR85', 'LR82', \
-    'LR74', 'LR4', 'LO3_78', 'LR78', 'RD08', 'LR75', 'RD07', 'LR9', 'LR62', \
-    'LR37', 'LR73', 'LR19', 'LO3_79', 'RD15', 'RD06', 'LO3_80', 'LR83', \
-    'LR80', 'LR99', 'PO3_68', 'PO3_01', 'PO3_92', 'PO3_67', 'PO3_86', \
-    'PO3_91'], 
+    'LR96', 'LR89', 'LR87', 'LR88', 'LR84', 'LR79', 'LR94',\
+    'PO3_91', 'LR41', 'LR81', 'LR10', 'LR76', 'LR91', 'LR93', \
+    'LR92', 'LR40', 'LR77', 'LR85', 'LR82', 'PO3_86', 'LR74',\
+    'LR4', 'LO3_78', 'LR78', 'PO3_67', 'PO3_92', 'RD08', 'LR75', \
+    'PO3_01', 'RD07', 'LR9', 'LR62', 'LR37', 'LR73', 'LR19', 'LO3_79', \
+    'RD15', 'PO3_68', 'RD06', 'LO3_80', 'LR83', 'LR80', 'LR99', \
+#    'LR100', 'LR101', 'LR97', 'LR102', 'LO3_02', 'LR86', \
+#    'LR96', 'LR89', 'LR87', 'LR88', 'LR84', 'LR79', 'LR94', 'LR41', 'LR81', \
+#    'LR10', 'LR76', 'LR91', 'LR93', 'LR92', 'LR40', 'LR77', 'LR85', 'LR82', \
+#    'LR74', 'LR4', 'LO3_78', 'LR78', 'RD08', 'LR75', 'RD07', 'LR9', 'LR62', \
+#    'LR37', 'LR73', 'LR19', 'LO3_79', 'RD15', 'RD06', 'LO3_80', 'LR83', \
+  #  'LR80', 'LR99', 'PO3_68', 'PO3_01', 'PO3_92', 'PO3_67', 'PO3_86', \
+#    'PO3_91'
+    ], 
     # not outputted by p/l ( but should be) : 'PO3_103', 'PO3_104', 'PO3_105', 
     # 'PO3_10'
     'Br_ox_org_rxns' :  [ 'LR12', 'LR13', 'LR14', 'LR15', 'LR16' ], 
@@ -2169,9 +2177,9 @@ def get_adjustment4tags( tags, PDs=None, pl_dict=None, ver='1.6', \
 
         # Consider all change positive - Kludge 
         # ( This is due to the assignment approach, where P=prod, L=loss )
-        if ('P' not in PDs[n] ): 
-            if Coes[n] < 0:
-                Coes[n] =  Coes[n]*-1.0
+#        if ('P' not in PDs[n] ): 
+        if Coes[n] < 0:
+            Coes[n] =  Coes[n]*-1.0
 
         # Ensure all tag coefficients start from unity
         # times by tag Coefficient (if not ==1) all -Coes start from unity

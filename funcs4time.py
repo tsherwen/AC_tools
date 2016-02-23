@@ -522,7 +522,7 @@ def DF_YYYYMMDD_HHMM_2_dt(df, date_header='YYYYMMDD',
                                     df[time_header].astype(str) 
     if debug:
         print df['Datetime'][:10]
-    df['Datetime']  = pd.to_datetime( df['Datetime'] , format='%Y%m%d%H%M' )
+    df['Datetime']  = pd.to_datetime( df['Datetime'], format='%Y%m%d%H%M' )
             
     # remove stated variables.
 #    if not isinstance(rmvars, list ):
