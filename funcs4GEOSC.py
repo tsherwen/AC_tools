@@ -3261,16 +3261,18 @@ def split_4D_array_into_seasons( arr, annual_plus_seasons=True, \
 # 2.39 - Convert v/v to ng/m^3
 # -------------     
 def convert_v_v2ngm3(  arr, wd=None, spec='AERI', trop_limit=True,\
-            s_area=None, res='4x5',  debug=False ):
+            s_area=None, vol=None, a_m=None, res='4x5', debug=False ):
     """ Take v/v array for a species, and conver this to mass loading
         units used as standard are ng/m3"""
 
     # Get volume (m^3, adjusted (x1E6) from cm^3) 
-    vol = get_volume_np( wd=wd, trop_limit=trop_limit, s_area=s_area, \
+    if not isinstance(vol, np.ndarray):
+        vol = get_volume_np( wd=wd, trop_limit=trop_limit, s_area=s_area, \
                     res=res ) /1E6  
 
-    # Get mass
-    a_m = get_GC_output( wd, vars=['BXHGHT_S__AD'], trop_limit=trop_limit, 
+    # Get air mass ( kg )
+    if not isinstance(a_m, np.ndarray):
+        a_m = get_GC_output( wd, vars=['BXHGHT_S__AD'], trop_limit=trop_limit, 
                     dtype=np.float64)
 
     # Get moles  ( converting airmass from kg 1st)

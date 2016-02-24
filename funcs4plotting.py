@@ -2488,7 +2488,7 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
     cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160, no_cb=True, \
     region='All', lat_0=None, lat_1=None, pdftitle=None, return_m=False, \
     rtn_plt_vars=False, set_window=False, pdf=False, show=True, log=False, \
-    window=False, xlabel=True, ylabel=True, \
+    window=False, xlabel=True, ylabel=True, title=None, \
     interval=None, verbose=False, debug=False ):
 
     if verbose:
@@ -2551,6 +2551,9 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
     # Only show troposphere
     t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], trop_limit=True )
     greyoutstrat( fig, t_ps.mean(axis=0).mean(axis=-1), axn=axn, res=res )
+
+    if not isinstance( title, type( None ) ):
+        plt.title( title, fontsize=f_size*.75 )
 
     # Manually Add colorbar
     if no_cb: 
@@ -2828,7 +2831,6 @@ def plt_4Darray_zonal_by_month( arr, res='4x5', dpi=160, \
         ylabel=False
         if m in range(12)[::3]:
             ylabel=True
-
 
         # Plot zonally 
         zonal_plot( arr[...,m], fig,  ax=ax, set_window=set_window, log=log,\
