@@ -24,6 +24,7 @@
 # 1.06 - Get Species Gg
 # 1.07 - Get air mass
 # 1.08 - get OH mean (read from geos.log)
+# 1.0X - get OH mean (read from geos.log)
 # 1.09 - Read X-Calc files (in need of update)
 # 1.10 - BD file reader (from DB)
 # 1.11 - SSA I2 file extractor
@@ -41,8 +42,12 @@
 # 1.23 - Get  surface data from HDF of surface plane flight data
 # 1.24 - Get gc resolution from ctm.nc
 # 1.25 - Get surface area ( m^2 ) for any global resolution
+# 1.26 - Process species for given family arrays to (v/v)
+# 1.27 - Convert v/v array to DU array 
+# 1.28 - Get common GC diagnostic arrays 
 
-# --------------- ------------- ------------- ------------- ------------- ------------- ------------- 
+
+# --------------- ------------- ------------- 
 # ---- Section 2 ----- Data Processing tools/Extractors - GC...
 # 2.01 - Retrieve model resolution 
 # 2.02 - Get model array dimension for a given resolution - mv's to core
@@ -85,6 +90,7 @@
 # 2.39 - Convert v/v to ng/m^3
 # 2.40 - Print array weighed 
 # 2.41 - Extract data by family for a given wd
+# 2.42 - 
 
 # --------------- 
 # ---- Section 3 ----- Time processing
@@ -457,9 +463,10 @@ def get_OH_mean( wd, debug=False ):
     return np.mean(z)
 
 # --------------
-# 1.08 - Get CH4 mean value - v/v
+# 1.0X - Get CH4 mean value - v/v
 # -------------
-def get_CH4_mean( wd, rtn_global_mean=True, debug=False ):
+def get_CH4_mean( wd, rtn_global_mean=True, rtn_avg_3D_concs=False, \
+        res='4x5', debug=False ):
     """ Get mean CH4 concentrtaion from geos.log files in given directory """
 
     if debug:
@@ -481,8 +488,10 @@ def get_CH4_mean( wd, rtn_global_mean=True, debug=False ):
         print z, np.mean(z)
     if rtn_global_mean:
         rtn_value = np.mean(z)
+    if rtn_avg_3D_concs:
+        rtn_value = get_CH4_3D_concenctrations( z )
     # return value for UK latitude
-    else:
+    if (not rtn_global_mean) and (not rtn_avg_3D_concs):
         rtn_value = np.array( z )[::4].mean()
     return rtn_value
 
@@ -1770,8 +1779,6 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
 
     return A1x1
 
-
-
 # ----
 # 1.26 - Process species for given family arrays to (v/v)
 # ---
@@ -1877,6 +1884,42 @@ def get_common_GC_vars( wd=None, trop_limit=True, res='4x5', \
     s_area = get_surface_area( res=res, debug=debug )
 
     return t_ps, a_m, molecs, s_area
+
+# ----
+# 1.28 - Get 3D CH4 concentrations
+# ---   
+def get_CH4_3D_concenctrations( z, res='4x5', debug=False ):
+    """ Takes monthly ( or any equllay spaced output) CH4 
+    concentrations fromgeos.log files. 4 value are given per 
+    monthly file, split by laititude. 
+    
+    Which apears in GC output ( geos.log) as: '
+    CH4 (90N - 30N) :  X.X [ppbv]
+    CH4 (30N - 00 ) :  X.X [ppbv]
+    CH4 (00  - 30S) :  X.X [ppbv]
+    CH4 (30S - 90S) :  X.X [ppbv]   '
+    """
+    
+    # make a array of zeros
+    arr  = np.zeros( get_dims4res( res=res ) )
+
+    # Get an average of each latitude band ( 4 outputs per geos.log file )
+    z = np.array( [ z[i::4] for i in range( 4 ) ] )
+    # Also reverse list to allow for increasing indice
+    z = z.mean(axis=-1)[::-1]
+
+    # apply these values to the GC gird at given resolution
+    lats = [90, 30, 0, -30, -90][::-1] 
+    for n, lat in enumerate( lats[:-1] ):
+        lat_0 =  get_gc_lat( lats[n], res=res)
+        lat_1 =  get_gc_lat( lats[n+1], res=res)
+        arr[:,lat_0:lat_1,:] = z[n]  
+
+        # Check all values have been filled
+        if debug:
+            print arr[ arr<0 ]        
+
+    return arr
 
 # ----------------------- Section 3 -------------------------------------------
 # -------------- Data Processing tools/drivers
@@ -3218,7 +3261,7 @@ def split_4D_array_into_seasons( arr, annual_plus_seasons=True, \
 # 2.39 - Convert v/v to ng/m^3
 # -------------     
 def convert_v_v2ngm3(  arr, wd=None, spec='AERI', trop_limit=True,\
-            s_area=None, res='4x5', aerosol_mass=False, debug=False ):
+            s_area=None, res='4x5',  debug=False ):
     """ Take v/v array for a species, and conver this to mass loading
         units used as standard are ng/m3"""
 
@@ -3465,6 +3508,33 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True,  \
 
     return arr
 
+# --------------
+# 2.42 - Convert v/v to molec/cm3
+# -------------   
+def convert_v_v_2_molec_cm3( arr=None, wd=None, vol=None, a_m=None, 
+            res='4x5', trop_limit=True, debug=False):
+    """ Covnerts mixing ratio (v/v) into number density (molec/cm3).
+        required variables of volume (vol) and airmass (a_m) can be provided as 
+        arguements or are extracted online (from procvided wd )
+    """
+    # Get volume ( cm^3  )
+    if not isinstance(vol, np.ndarray):
+        vol = get_volume_np( wd=wd, res=res, trop_limit=trop_limit, debug=debug)
+    # Get air mass ( kg )
+    if not isinstance(a_m, np.ndarray):
+        a_m = get_GC_output( wd, vars=['BXHGHT_S__AD'], trop_limit=trop_limit, 
+                    dtype=np.float64)    
+
+    # Get moles
+    mols = a_m*1E3/constants( 'RMM_air')
+
+    #  Convert to molecules
+    arr = ( arr * mols )*constants('AVG')
+
+    #  convert to per unit area ( molecs / cm^3  )
+    arr = arr / vol
+    
+    return arr
 
 # ------------------ Section 6 -------------------------------------------
 # -------------- Time Processing

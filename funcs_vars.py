@@ -68,6 +68,7 @@
 # 6.11 - get reaction coeffifecent
 # 6.12 - Remove ClBrI het loss tracers during testing
 # 6.13 - PD to rxn str - remake of redundant function
+# 6.14 - Get OH reactants from reaction number dictionary
 
 
 # --------------- ------------- ------------- -------------
@@ -2145,6 +2146,27 @@ def rm_ClBrI_het_loss( spec_l=None, r_=None, fam=None, debug=False):
 #    rxn_str =  ''.join( rxn_[0][5:9])
 #    
 #    return rxn_str
+
+# --------------
+# 6.14 - Get OH reactants from reaction number dictionary
+# -------------
+def get_OH_reactants( pl_dict=None, only_rtn_tracers=True ):
+    """ Get reactant from smv2.log dictionary 
+    NOTE: 
+        - reactants that are not tracers: 
+    ['CH4', '', 'ETHLN', 'ISOPND', 'E', 'M', 'HCO', 'MVKN', 'ACTA']
+    """
+
+    # Get reaction strings
+    strs = [pl_dict[i][1] for i in pl_dict.keys() ]    
+    # remove arrows from reactions 
+    strs = [ i.replace('+M=','+=').replace('+O2=','+=') ]
+    # select reactants
+    strs = [ i.split('+=')[0] for i in  strs ]
+    # remove OH, and "+" punctuation 
+    strs = [ i.replace('OH','').replace('+','').strip() for i in strs ] 
+
+    return strs
 
 # --------------
 # 6.14 - 
