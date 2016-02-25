@@ -46,6 +46,7 @@
 # 4.15 - Get scaling for a given unit
 # 4.16 - Species Class 
 # 4.17 - Observation Site Class 
+# 4.18 -  dictionary of category + species names from diagnostic ordering
 # 4.99 - Reference data, (inc. grid data) from gchem 
 
 # --------------- ------------- ------------- -------------
@@ -608,7 +609,7 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         'R4N2': 2.0, 'BrNO3': 1.0, 'INO': 1.0, 'PAN': 1.0, 'PMN': 1.0, \
         'HNO3': 1.0, 'HNO2': 1.0, 'NH3': 1.0, 'HNO4': 1.0, 'BrNO2': 1.0, \
         'IONO': 1.0, 'PROPNN': 1.0, 'NH4': 1.0, 'MPN': 1.0, 'MMN': 1.0, \
-        'ISOPN': 1.0, 'IONO2': 1.0
+        'ISOPN': 1.0, 'IONO2': 1.0, 'ClNO2': 1.0, 'ClNO3':1.0, \
         }
     if C:
         d = {
@@ -1415,6 +1416,23 @@ class GEO_Site:
         else:
             print 'ERROR whilst reading site details', name  
 
+# --------   
+# 4.18 -  dictionary of category + species names from diagnostic ordering
+# --------
+def get_ctm_nc_var( variable ):
+    """ Get number variable for diagnostic family where NetCDF import 
+        from *.dat file has failed. This function returns a category name + a 
+        number value to refer to diagnostic ording in NetCDF.    
+    """
+    d = {
+    u'DAO_3D_S__CMFMC': u'DAO_3D_S___4',
+     u'DAO_3D_S__DTRAIN': u'DAO_3D_S___3',
+     u'DAO_3D_S__SPHU': u'DAO_3D_S___2',
+     u'DAO_3D_S__TMPU': u'DAO_3D_S___1',
+     u'DAO_3D_S__UWND': u'DAO_3D_S__',
+     u'DAO_3D_S__VWND': u'DAO_3D_S___0'
+     }
+    return d[ variable ]
 
 # ----------------------- Section 5 -------------------------------------------
 # --------------  Misc

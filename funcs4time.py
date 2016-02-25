@@ -119,10 +119,8 @@ def nonISOdate2ISO( ds ):
 # 1.04 - Find nearest timestamp
 # -------------
 def nearest(ts, s):
-
     """ Credit: Raymond Hettinger  -      http://stackoverflow.com/questions/8162379/python-locating-the-closest-timestamp              
     """
-
     # Given a presorted list of timestamps:  s = sorted(index)
     i = bisect_left(s, ts)
 
@@ -410,6 +408,9 @@ def normalise2dailymax(dates, data, debug=False ):
 #  1.25 - Adjust hr data to diurnal
 # ----  
 def hr_data_2_diurnal(time, date, data, frac=False, diurnal=True, debug=False ):
+    """
+        REDUNDENT.  Now use pandas dataframes. 
+    """
     if debug:
         print 'hr_data_2_diurnal called'
 
@@ -555,8 +556,8 @@ def unix_time(dt):
 # --------------
 # 1.30 - Process time/date to CV days equivilent - mje
 # -------------
-""" translate year to "since2006" function """
 def year_to_since_2006(model):
+    """ translate year to "since2006" function """
     year=(model[:,0]//10000)
     month=((model[:,0]-year*10000)//100)
     day=(model[:,0]-year*10000-month*100)
