@@ -486,16 +486,16 @@ def species_mass( spec ):
     # Additional 2.0 species 
     'HCl': 36.5, 'HOCl': 52.5, 'ClNO2': 81.5, 'ClNO3': 97.5 , 'ClOO': 67.5, \
     'Cl2O2': 103.0,  'CH3Cl':  50.5, 'CH2Cl2': 85.0, 'CHCl3': 119.5, \
-    'BrSALA': 80, 'BrSALC': 80, 'ISALA': 127. ,  'ISALC': 127. , \
+    'BrSALA': 80., 'BrSALC': 80., 'ISALA': 127. ,  'ISALC': 127. , \
     # Additional "species" to allow for ease of  processing
-    'AERI_AVG': ( (286.0+302.0+318.0)/3 )/2, 'SO4S': 96, 
-    'IO3': 127+(3*16) , 'SSBr2': 160.0
+    'AERI_AVG': ( (286.0+302.0+318.0)/3 )/2, 'SO4S': 96.0, 
+    'IO3': 127.+(3.*16.) , 'SSBr2': 160.0
     }
     
     return d[spec]
 
 # --------------
-# 4.03 -  return the stiochometry of Iodine in species
+# 4.03 -  return the stoichiometry of Iodine in species
 # --------------
 def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
             C=False, Br=False, Cl=False, ref_spec=None, debug=False ): 
@@ -613,7 +613,8 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         }
     if C:
         d = {
-    'ACET': 3.0, 'ALD2': 2.0, 'C2H6': 2.0, 'C3H8': 3.0, 'ISOP': 5.0, 'PRPE': 3, 
+    'ACET': 3.0, 'ALD2': 2.0, 'C2H6': 2.0, 'C3H8': 3.0, 'ISOP': 5.0, \
+    'PRPE': 3.0, 
         }
     if Br:
          d= {

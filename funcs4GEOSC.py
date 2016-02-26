@@ -2201,9 +2201,15 @@ def get_pl_in_Gg( specs=None, ctm_f=None, wd=None , years=None, months=None,
 # -------------
 def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
             molec_cm2_s=False, nmonl_m2_d=False, kg_m2_s=False, \
-            monthly=False, months=None, s_area=None, res='4x5', debug=False ):
+            monthly=False, months=None, s_area=None, res='4x5', \
+            ref_spec='I', debug=False ):
     """ Extract given species emissions from BIOGSRCE category diagnostic
-        Back compatibility maintained with PyGChem 0.2.0 """
+
+    NOTES:
+        - Back compatibility maintained with PyGChem 0.2.0 
+        - Asumption on iodine emissions 
+        ( set ref_spec to mass unit equivelnces wanted ( e.g. Br )  )
+    """
             
     if debug:
         print 'get_emiss called for >{}<'.format(spec)
@@ -2212,7 +2218,7 @@ def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
     if not isinstance(months, list):
         months = get_gc_months( ctm_f=ctm_f, wd=wd)
                                              
-    # Adjust to "I Gg / monthly" from "Kg/m2/ s"  
+    # Adjust to " Gg (X) / monthly" from "Kg/m2/ s"  
     m_adjust = d_adjust(months, years)
 
     #  get emissions in  Kg/m2/ s
@@ -2234,33 +2240,33 @@ def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
 
         # Kg/ s => "kg / monthly" 
         arr_ = arr_ * m_adjust
-        # (Gg? - no ) I / month 
-        arr_ = arr_*1E3/ species_mass(spec)* float(species_mass('I')) * \
-                    float(spec_stoich(spec)) 
+        # g ( e.g. I  ) / month 
+        arr_ = arr_*1E3/ species_mass(spec)*species_mass(ref_spec) * \
+            spec_stoich(spec)
 
     if nmonl_m2_d:
-        # convert to / m2
+        # Convert to (g) / m2
         arr_  =  arr_ / s_area 
 
-        # convert to / day
+        # Convert to (g) / m2 / day
         arr_  =  arr_ / (365./12.) 
 
-        # convert to nmol 
-        arr_  =  ( arr_ / float(species_mass('I') ) ) / float(spec_stoich(spec)) 
+        # Convert to nmol ( /m2/day ) ( reverse normalisation to X mass equiv. )
+        arr_ = arr_ / species_mass(ref_spec)  /  spec_stoich(spec) 
         arr_ = arr_*1E9
 
         if debug:
             print 'get_emiss - 2', arr_.shape
 
     if molec_cm2_s:
-        # from  "I Gg/month" to "I Gg/month/cm/2" #convert to /m2 => cm/2
+        # From  "I Gg/month" to "I Gg/month/cm/2" #convert to /m2 => cm/2
         arr_  =  arr_ / (s_area *10000.) 
 
-        # convert to / day => hour => hour => minute => sec 
+        # Convert to / day => hour => hour => minute => sec 
         arr_  =  arr_ / (365./12.) / 24. / 60. / 60. 
 
-        # convert to molecules 
-        arr_ = ( arr_ / float(species_mass('I') ) ) /float(spec_stoich(spec)) *\
+        # Convert to molecules ( reverse normalisation to X mass equiv. )
+        arr_ = ( arr_ / species_mass(ref_spec)  ) / spec_stoich(spec) *\
                         constants('AVG')  
 
         if debug:
@@ -2361,7 +2367,11 @@ def species_v_v_to_Gg(arr, spec, a_m=None, Iodine=True, All =False, \
         Ox=False, ctm_f=None, wd=None, debug=False):
     """ Convert array of species in v/v to Gg 
         NOTE:
-        the processing is not clear in this function, <= update """
+        - the processing is not clear in this function, <= update 
+        -  To output
+    """
+
+    print 'WARNING: Check settings in species_v_v_to_Gg: ',  All, Iodine, Ox
 
     if not isinstance(a_m, np.ndarray):
         a_m = get_air_mass_np( ctm_f, wd=wd, debug=debug )  # kg
@@ -2720,13 +2730,15 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
 
     # Get NOx burden
     NOx = fam_data_extractor( fam='NOx', wd=wd, trop_limit=trop_limit, \
-        title=title, t_ps=t_ps, ver=ver)
-    NOx = species_v_v_to_Gg( NOx/1E12, 'N', Iodine=False, a_m=a_m )
+        title=title, t_ps=t_ps, ver=ver, annual_mean=False)
+    NOx = species_v_v_to_Gg( NOx/1E12, spec='N', Iodine=False, a_m=a_m,\
+        All=True)
 
     # Get NOy burden
     NOy = fam_data_extractor( fam='NOy',  wd=wd, trop_limit=trop_limit, \
-        title=title, t_ps=t_ps, ver=ver)
-    NOy = species_v_v_to_Gg( NOy/1E12, 'N', Iodine=False,  a_m=a_m)
+        title=title, t_ps=t_ps, ver=ver, annual_mean=False)
+    NOy = species_v_v_to_Gg( NOy/1E12, spec='N', Iodine=False, a_m=a_m,\
+         All=True)
 
     # Setup return lists
     vars  = [ \
@@ -2739,7 +2751,7 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
     headers  = [ \
     'Mean MBL sur. IO', 'Chem Ox prod', 'Chem Ox loss','Ox prod-loss', \
     'O$_{3}$ Burden','O3 Dep.', 'O3 Column', 'OH Mean Conc', 'HO2 Mean Conc', \
-    'HO2/OH','Iy lifetime',  'IOx lifetime', 'Iy Burdens', 'CH4 lifetime' \
+    'HO2/OH','Iy lifetime',  'IOx lifetime', 'Iy Burdens', 'CH4 lifetime' , \
     'NOx bur', 'NOy bur.'
     ]
     header_units = [ \
