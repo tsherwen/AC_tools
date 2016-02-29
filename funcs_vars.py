@@ -124,13 +124,13 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
     metvars = [
     'GMAO_TEMP', 'GMAO_ABSH', 'GMAO_SURF', 'GMAO_PSFC', 'GMAO_UWND', 'GMAO_VWND'
     ]
-    species  = [
-    'O3', 'NO2', 'NO', 'NO3', 'N2O5', 'HNO4', 'HNO3', 'HNO2', 'PAN', 'PPN', 
-    'PMN', 'R4N2', 'H2O2', 'MP', 'CH2O', 'HO2', 'OH', 'RO2', 'MO2', 'ETO2', 
-    'CO', 'C2H6', 'C3H8', 'PRPE', 'ALK4', 'ACET', 'ALD2', 'MEK', 'RCHO', 'MVK', 
-    'SO2', 'DMS', 'MSA', 'SO4', 'ISOP'
-    ]
-    all_species_not_TRA = [
+#    species  = [
+#    'O3', 'NO2', 'NO', 'NO3', 'N2O5', 'HNO4', 'HNO3', 'HNO2', 'PAN', 'PPN', 
+#    'PMN', 'R4N2', 'H2O2', 'MP', 'CH2O', 'HO2', 'OH', 'RO2', 'MO2', 'ETO2', 
+#    'CO', 'C2H6', 'C3H8', 'PRPE', 'ALK4', 'ACET', 'ALD2', 'MEK', 'RCHO', 'MVK', 
+#    'SO2', 'DMS', 'MSA', 'SO4', 'ISOP'
+#    ]
+    species = [
     'A3O2', 'ATO2', 'B3O2', 'EOH', 'ETO2', 'ETP', 'GLYX', 'HO2', 'IAP', 'INO2', 'INPN', 'ISN1', 'ISNOOA', 'ISNOOB', 'ISNOHOO', 'ISNP', 'KO2', 'MAN2', 'MAO3', 'MAOP', 'MAOPO2', 'MCO3', 'MGLY', 'MO2', 'MRO2', 'MRP', 'OH', 'PO2', 'PP', 'PRN1', 'PRPN', 'R4N1', 'R4O2', 'R4P', 'RA3P', 'RB3P', 'RCO3', 'RIO2', 'ROH', 'RP', 'VRO2', 'VRP', 'LISOPOH', 'ISOPND', 'ISOPNB', 'HC5', 'DIBOO', 'HC5OO', 'DHMOB', 'MOBAOO', 'ISOPNBO2', 'ISOPNDO2', 'ETHLN', 'MACRN', 'MVKN', 'PYAC', 'IEPOXOO', 'ATOOH', 'PMNN', 'MACRNO2', 'PMNO2'
     ] 
     OH_reactivity=[
@@ -245,9 +245,9 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
     'slist_v9_2_NREA_red': species + TRAs + metvars,
     'slist_REAs_all' :   species + TRAs + REAs_all + metvars,
     'slist_REAs_all_OH' :   species + TRAs  + metvars+OH_reactivity,
-    'slist_REAs_all_OH_extras' :   all_species_not_TRA + TRAs  + metvars, 
+    'slist_REAs_all_OH_extras' :   species + TRAs  + metvars, 
     'slist_v9_2_NREA_red_NOy' : species + TRAs + metvars,
-    'slist_v10_1.7_allspecs': all_species_not_TRA +TRAs+ JREAs +metvars,
+    'slist_v10_1.7_allspecs': species +TRAs+ JREAs +metvars,
     'slist_ClearFlo': species + TRAs + metvars, 
     'slist_ClearFlo_OH_rxn': species + TRAs + metvars + OH_rxns_17_EOH + OH_rxn_tras + OH_rxn_specs
       } 
@@ -1854,10 +1854,13 @@ def get_p_l_tags( rxns, debug=False):
     """ get p/l tags for a given smvgear reaction """
 
     # (PD??, RD??, LO3_??, PO3_??, LR??)
+    prefixs = 'PD', 'RD', 'PO3','LO3' , 'LR'
+
     for rxn in rxns:
         if debug:
-            print [ i for i in rxn if  any( [x in i for x in 'PD', 'RD', 'PO3','LO3' , 'LR' ]) ]
-        tags =  [i for i in rxn if any( [x in i for x in 'PD', 'RD', 'PO3','LO3' , 'LR' ]) ]
+            print [i for i in rxn if any( [ (x in i) for x in prefixs ]) ]
+        tags = [i for i in rxn if any( [ (x in i) for x in prefixs ]) ]
+
         try:
             tagsl.append( tags)
         except:
@@ -2794,7 +2797,7 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
     if all_clean:
         tags = [ [re.sub('\+\d.\d', '',  i) for i in u ] for u in tags ]  
         tags = [ [re.sub('\=\d.\d', '',  i) for i in u ] for u in tags ]  
-
+    
         # -- remove erroneous read/  Kludge on val
         # ---  Fortran write error leads to combination of species at the
         #  end of long line of a chemical reaction in globchem.dat
@@ -2862,5 +2865,7 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
 #    [ [ l.pop(i) for i in sorted(ind)[::-1] ] for  l in nums, rxns, tags, Coe ]
     if debug:
         print tags 
+
+    print '1'*300, tags 
 
     return nums, rxns, tags, Coe
