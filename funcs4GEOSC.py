@@ -2894,9 +2894,11 @@ def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
         # [molec/cm3/s] => Gg Ox / yr
         arrs = [ molec_cm3_s_2_Gg_Ox_np(arr, specs[i], vol=vol, wd=wd, \
             debug=debug) for i, arr in enumerate(arrs) ] 
-        arrs = [ (arr*t_p).mean(axis=3) for arr in arrs ] # get yearly mean
+        # get yearly mean + remove stratosphere
+        arrs = [ (arr*t_p).mean(axis=3) for arr in arrs ] 
+#        arrs = [ arr.mean(axis=3) for arr in arrs ] 
 #        arrs = [ arr.mean(axis=3)*t_p.mean(axis=3) \
-#                        for arr in arrs ] # get yearly mean
+#                        for arr in arrs ] 
 
         return [ int(np.sum( np.ma.masked_invalid( arrs[i] ) )/1E3)  \
             for i in range(len(specs )) ] # Tg
@@ -3168,7 +3170,8 @@ def rm_data_at_locs( data, lat, lon, alt, below_km=2, indiceslocs=None, \
 # 2.35 - Get Tropospheric Ox loss routes as list of arrays, + model resolution (res)
 # -------------
 def get_trop_Ox_loss( wd, pl_dict=None,  spec_l=None, ver='1.6' ,   \
-                trop_limit=True, units='Gg Ox/yr', debug=False): 
+                trop_limit=True, units='Gg Ox/yr', \
+                Include_Chlorine=False, IO_BrOx2=False, debug=False): 
     """Get Ox loss individually for all routes and return in "Gg Ox / yr".
         Can also return in  """
 
@@ -3214,7 +3217,8 @@ def get_trop_Ox_loss( wd, pl_dict=None,  spec_l=None, ver='1.6' ,   \
         print 'units = {}'.format(units)
                                         
     # adjust for Ox difference within prod loss tracers
-    Coes = get_adjustment4tags( spec_l, PDs=PDs, pl_dict=pl_dict, ver=ver )  
+    Coes = get_adjustment4tags( spec_l, PDs=PDs, pl_dict=pl_dict, ver=ver, \
+        Include_Chlorine=Include_Chlorine, IO_BrOx2=IO_BrOx2 )  
     ars = [ ar*Coes[i] for i, ar in enumerate(ars) ]
 
     # Only consider troposphere
@@ -3226,14 +3230,16 @@ def get_trop_Ox_loss( wd, pl_dict=None,  spec_l=None, ver='1.6' ,   \
 # 2.36 - Split Tropospheric Ox loss routes 
 # -------------
 def split_Ox_loss_by_fam( wd, arr, r_t=None, pl_dict=None, \
-            NOy_as_HOx=True, as_numpy=True, ver='1.6', 
-            Include_Chlorine=False, debug=False ):
+            NOy_as_HOx=True, as_numpy=True, ver='1.6', \
+            Include_Chlorine=False, IO_BrOx2=True, \
+            rm_redundent_ClBrI_tags=False, debug=False ):
     """ Takes a n dimension array ( typically: 2D/4D) array, then splits this
     into a list of single arrays for each Ox family  """
 
     # Create Variable lists/dictionaries is not defined.
     if isinstance( pl_dict, type(None)):
-        pl_dict = get_pl_dict( wd, spec='LOX', ver=ver, rmx2=True )
+        pl_dict = get_pl_dict( wd, spec='LOX', ver=ver, rmx2=True, \
+            rm_redundent_ClBrI_tags=rm_redundent_ClBrI_tags )
     if isinstance( r_t, type(None)):
         if NOy_as_HOx:
             if Include_Chlorine:
@@ -3249,17 +3255,17 @@ def split_Ox_loss_by_fam( wd, arr, r_t=None, pl_dict=None, \
 
     # generate indicies map to split Ox loss by route.   
     spec_l =  pl_dict.keys()
-    # Allow for removal of ClBrI het tracer whilst testing.
-#    hack_ClBrI_rm_tacers=True
-#    if hack_ClBrI_rm_tacers:
-#        spec_l = rm_ClBrI_het_loss( spec_l=spec_l )[0]
+    # Allow for removal of ClBrI het tracer whilst testing/using no hal output
+    if rm_redundent_ClBrI_tags:
+        spec_l = rm_ClBrI_het_loss( spec_l=spec_l )[0]
 
     if debug:
         print len( spec_l)
-    r_, fam, spec_l = get_indicies_4_fam( spec_l, fam=True, IO_BrOx2=True,\
-        rtnspecs=True, Include_Chlorine=Include_Chlorine )
-    if debug:
-        print len( spec_l), r_t
+    r_, fam, spec_l = get_indicies_4_fam( spec_l, fam=True, rtnspecs=True, \
+        Include_Chlorine=Include_Chlorine, IO_BrOx2=IO_BrOx2  )
+
+#    print r_, fam, spec_l
+#    sys.exit()
 
     # split list of arrays and combine into Ox loss families
     ars = [ np.array( [ arr[r,...]  for r in r_[f] ] ).sum(axis=0) \

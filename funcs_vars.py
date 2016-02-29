@@ -1807,6 +1807,9 @@ def get_indicies_4_fam( tags, fam=False, IO_BrOx2=False, rtnspecs=False,
     # Create dictionary from tags and fam assignment
     fd = dict(zip(tags, fams) )
 
+#    print fams, tags
+#    sys.exit()
+
     # Select tags with assigned family in list ("famsn")
     ll =  []
     [ ll.append([]) for i in famsn ]
@@ -1817,6 +1820,7 @@ def get_indicies_4_fam( tags, fam=False, IO_BrOx2=False, rtnspecs=False,
 
     # Consider Ox loss for 
     if fam:
+#    if False: # Kludge for test. 
         # Kludge - to allow for counting Ox loss via XO +XO 50/50 between fams, 
         # ( add extra loss tag. )
         if IO_BrOx2:
@@ -1999,10 +2003,19 @@ def rxns4tag( tag, rdict=None, ver='1.7', wd=None ):
     # -- loop reactions, if tag in reaction return reaction
     rxns = []
     for n, rxn in enumerate( rdict.values() ):
-        # Why endswith? Restore to use if contains any tag
-#        if any( [(i.endswith(tag) ) for i in rxn]): 
-        if any( [tag in i for i in rxn]):
+
+        expanded_rxn_str =  [i.split('+') for i in rxn ]
+        expanded_rxn_str = [ \
+            item for sublist in expanded_rxn_str for item in sublist]
+                
+        # ( Issue) Why endswith? Restore to use if contains any tag 
+#        if any( [ (i.endswith(tag) ) for i in rxn]): 
+        # This is because otherwise 'LR10' would be read as 'LR100'
+#        if any( [tag in i for i in rxn]): # <= This will lead to false +ve
+        # However, fortran print statment err for (  LO3_87 )
+        if  any( [ i.endswith(tag) for i in expanded_rxn_str ] ):
             rxns.append(  [rdict.keys()[n] ]+ rxn )
+
     return rxns
 
 # -------------
@@ -2024,7 +2037,7 @@ def get_tag_details( wd, tag=None, PDs=None,  rdict=None, \
     if isinstance( rdict, type(None) ):
         rdict =  rxn_dict_from_smvlog( wd, ver=ver )
     trxns = rxns4tag( tag, wd=wd, rdict=rdict ) 
-
+        
     # --- get all print on a per tag basis the coe, rxn str 
     try:
         rxn_str = ''.join( trxns[0][5:9]) 
@@ -2191,7 +2204,8 @@ def get_OH_reactants( pl_dict=None, only_rtn_tracers=True ):
 # 6.14 - 
 # -------------
 def get_adjustment4tags( tags, PDs=None, pl_dict=None, ver='1.6', \
-            verbose=False, wd=None, debug=False):
+            verbose=False, wd=None, Include_Chlorine=False, IO_BrOx2=False, \
+            debug=False):
     """  Get coefficent for rxn tag from smv2.log using the provided family
     and adjusts the reaction tag to unity.
 
@@ -2235,10 +2249,32 @@ def get_adjustment4tags( tags, PDs=None, pl_dict=None, ver='1.6', \
             if debug:
                 print 'Just using Coe from smv.log @:'+ \
                     '{} for {}, PD:{}, Coe:{}'.format( wd, tag, PDs[n], Coes[n])
+
+    # Reduce route by half if considered twice (e.g. for two families )
+    for n, tag in enumerate( tags ):    
+        
+        # If Br + I
+        if ( tag == 'LO3_24' ) and IO_BrOx2:
+            if debug:
+                print 'before: ', tag, Coe[n] 
+            Coes[n] = Coes[n] * adjust2half4crossover( tag )
+            if debug:
+                print 'after: ', tag, Coe[n] 
+
+        # If  Cl+Br+I ("Include_Chlorine")
+        if any( [ (tag == i ) for i in 'LO3_87' , 'LO3_82' ] ) and \
+             Include_Chlorine:
+            if debug:
+                print 'before: ', tag, Coes[n] 
+            Coes[n] = Coes[n] * adjust2half4crossover( tag )
+            if debug:
+                print 'after: ', tag, Coes[n] 
+    
     return Coes
 
 def adjust2half4crossover( tag='LO3_24', ):
-    """ Consider half the value for halogen cross-over reaction tags """
+    """ Consider half the value for halogen cross-over reaction tags. 
+        This allows for the tags to be included once per family """
     
     d = {
     'LO3_24' :  0.5,  # IO + BrO
@@ -2246,6 +2282,7 @@ def adjust2half4crossover( tag='LO3_24', ):
     'LO3_82' : 0.5 # BrO + ClO
     }
     
+    return d[tag]
 
 # -------------- Section 7 -------------------------------------------
 # -------------- Observational Variables
@@ -2632,7 +2669,8 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',  \
 # -------------
 # 8.02 - Uses functions to build a dictionary for a given family of loss
 # ------------- 
-def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
+def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', \
+        rm_redundent_ClBrI_tags=False, debug=False):
     """ Get reaction IDs for each rxn. in spec (p/l, e.g. LOX) 
         This is the driver for the prod/loss programmes """
     if debug:
@@ -2651,7 +2689,7 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
         print unpacked_tags
     
     details  = [ get_tag_details( wd, tag, ver=ver ) for tag in unpacked_tags ]
-
+    
     # Kludge - 1 rxn missing from POx tracking? - 999  + "'ISOPND+OH', '+', '=1.0ISOPND'"
     [ details.pop(n) for n, i in enumerate( details ) if i[1]==364 ]
     ind =  [n for n, i  in enumerate( nums ) if i ==354 ]
@@ -2685,24 +2723,38 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', debug=False):
         ]
         # Use Justin's 'LR??'/Johan's JTO1 tags in preference to 'LO3??' tags
         # This is an Kludge that only is necessary for "NOHAL" runs
-        rm_hal_tags=False
-        if rm_hal_tags:
+        if rm_redundent_ClBrI_tags:
             d += [ \
         ['LR6', 'LO3_73'], ['LR5',  'LO3_73'], ['LR10', 'LO3_74'], \
         ['LR25', 'LO3_84'], ['LO3_82', 'LO3_82'], ['LO3_76','LO3_76'], \
         ['LO3_75','LO3_75'] \
-        ]
+            ]
+            # make sure 'LO3_73' is dropped regardless of index selection
+            d += [  ['LO3_73', 'LO3_73'],  ['LO3_73', 'LO3_73'], 
+             ['LO3_74', 'LO3_74'], ['LO3_84', 'LO3_84']
+             ]
+
         # Either one can be removed as currently two will be present and both # 
         # are  equally weighted by use of the Ox_in_species diagnostic ... 
         # ( However, this  only if all are equiv. )
-        d = [i[0] for i in d ]  # Drop the 1st element in "d" list # <= MUST USE 
-#        d = [i[1] for i in d ]  # Drop the 2nd element in "d" list # 
+        if rm_redundent_ClBrI_tags:
+            # Drop the 2nd element in "d" list # 
+            d = [i[1] for i in d ]  
+        else:
+            # Drop the 1st element in "d" list # <= MUST USE for Halogen sims. 
+            d = [i[0] for i in d ]  
+        
         ind = [ n for n, i in enumerate(details) if any( [ i[0] == ii \
             for ii in d ] )  ]
+        # make sure indices ('ind') are only removed once
+        ind = list( sorted( set( ind ) ) )
+
         if debug:
             print d, ind, [len(i) for i in details, Coes ],  \
                 [ [i[0] for i in details][ii] for ii in ind ][::-1]
-        [ l.pop(i) for i in ind[::-1] for l in details, Coes ]
+        # If cases have been found, remove these
+        if len( ind ) > 0:
+            [ l.pop(i) for i in ind[::-1] for l in details, Coes ]
         if debug:
             print  [len(i) for i in details, Coes ]
             

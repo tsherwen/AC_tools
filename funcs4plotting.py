@@ -2482,7 +2482,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 # --------
 def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
     norm=None, nticks=10, format=None, units=None, extend='neither', \
-    discrete_cmap=False, f_size=15, fig=None, res='4x5', wd=None, \
+    discrete_cmap=False, f_size=15, fig=None, res='4x5', wd=None, t_ps=None, \
     trop_limit=True, axn=None, cb_ax=None, orientation='vertical', \
     bottom=0.1, top=0.975, hspace=0.4, wspace=0.5, left=0.075, right=0.875, \
     cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160, no_cb=True, \
@@ -2549,7 +2549,8 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
             verbose=verbose, debug=debug )
 
     # Only show troposphere
-    t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], trop_limit=True )
+    if isinstance( t_ps, type(None) ):
+        t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], trop_limit=True )
     greyoutstrat( fig, t_ps.mean(axis=0).mean(axis=-1), axn=axn, res=res )
 
     if not isinstance( title, type( None ) ):
