@@ -1805,10 +1805,15 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
 # 1.26 - Process species for given family arrays to (v/v)
 # ---
 def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
-    trop_limit=True, N=False, I=False, Cl=False, Br=False, 
-    verbose=True, debug=False ):
+    trop_limit=True, N=False, I=False, Cl=False, Br=False, t_ps=None, \
+    verbose=True, rm_strat=False, debug=False ):
     """  Return array of family in mols of X ( e.g. Cl, Br, I, N ) equiv. in 
             mol/mol.  """
+
+    # Get species time Tropopause diagnostic
+    if isinstance( t_ps, type(None) ) and rm_strat:
+        t_ps = get_GC_output( wd=wd, vars=['TIME_TPS__TIMETROP'], \
+            trop_limit=trop_limit )
 
     # Get (fam) specs if not given
     if isinstance( specs, type(None) ):
@@ -1839,6 +1844,10 @@ def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
     # Sum over stiochmertically adjusted list of specs
     arr = np.array( arr ).sum(axis=0)
 
+    # Remove stratosphere by multiplication of time in trop. diag. 
+    if rm_strat:
+        arr = arr *t_ps
+        
     return arr, specs
 
 # ----

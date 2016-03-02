@@ -594,7 +594,9 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         }
     if OH:
         d = {
-        'LO3_18': 2.0, 'LO3_03': 1.0, 'RD95': 1.0, 'PO3_14': 1.0
+        'LO3_18': 2.0, 'LO3_03': 1.0,  'PO3_14': 1.0, 'RD65': 1.0,'LR25': 1.0, \
+        'LOH':1.0, 'POH':1.0, 'LO3_86': 1.0, 'RD98':1.0
+        # Redundent: 'RD95': 1.0,
         }
     if N:
         d= {
@@ -843,7 +845,7 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'Br2', 'BrNO3', 'Br', 'HBr', 'BrCl', 'BrNO2', 'HOBr', 'IBr', 'BrO'],
     'Cly' : [ \
     'BrCl', 'Cl2', 'Cl', 'ClO', 'HCl', 'HOCl', 'ClNO2', 'ClNO3', 'ClOO', \
-    'OClO', 'Cl2O2'],
+    'OClO', 'Cl2O2', 'ICl' ],
     'Br_specs' : ['Br2', 'BrNO3', 'Br', 'HBr', 'CH2IBr', \
     'CH3Br', 'CH2Br2', 'BrCl', 'BrNO2', 'BrSALC', 'BrSALA', \
     'HOBr', 'IBr', 'BrO', 'CHBr3'],
@@ -945,6 +947,15 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     298.25, 307.45, 312.45, 320.3, 345.0, 412.45, 850.0],
     'FastJ_mids' :  [294,303,310,316,333,380,574],
     # ---  OH loss reactions 
+    'OH_loss_rxns_1.6' : [ \
+    'LO3_02', 'LR86', \
+    'LR96', 'LR89', 'LR87', 'LR88', 'LR84', 'LR79', 'LR94',\
+    'PO3_91', 'LR41', 'LR81', 'LR10', 'LR76', 'LR91', 'LR93', \
+    'LR92', 'LR40', 'LR77', 'LR85', 'LR82', 'PO3_86', 'LR74',\
+    'LR4', 'LO3_78', 'LR78', 'PO3_67', 'PO3_92', 'RD08', 'LR75', \
+    'PO3_01', 'RD07', 'LR9', 'LR62', 'LR37', 'LR73', 'LR19', 'LO3_79', \
+    'RD15', 'PO3_68', 'RD06', 'LO3_80', 'LR83', 'LR80', 'LR99', \
+    ], 
     'OH_loss_rxns' : [ \
     'LR100', 'LR101', 'LR97', 'LR102', 'LO3_02', 'LR86', \
     'LR96', 'LR89', 'LR87', 'LR88', 'LR84', 'LR79', 'LR94',\
@@ -953,13 +964,6 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'LR4', 'LO3_78', 'LR78', 'PO3_67', 'PO3_92', 'RD08', 'LR75', \
     'PO3_01', 'RD07', 'LR9', 'LR62', 'LR37', 'LR73', 'LR19', 'LO3_79', \
     'RD15', 'PO3_68', 'RD06', 'LO3_80', 'LR83', 'LR80', 'LR99', \
-#    'LR100', 'LR101', 'LR97', 'LR102', 'LO3_02', 'LR86', \
-#    'LR96', 'LR89', 'LR87', 'LR88', 'LR84', 'LR79', 'LR94', 'LR41', 'LR81', \
-#    'LR10', 'LR76', 'LR91', 'LR93', 'LR92', 'LR40', 'LR77', 'LR85', 'LR82', \
-#    'LR74', 'LR4', 'LO3_78', 'LR78', 'RD08', 'LR75', 'RD07', 'LR9', 'LR62', \
-#    'LR37', 'LR73', 'LR19', 'LO3_79', 'RD15', 'RD06', 'LO3_80', 'LR83', \
-  #  'LR80', 'LR99', 'PO3_68', 'PO3_01', 'PO3_92', 'PO3_67', 'PO3_86', \
-#    'PO3_91'
     ], 
     # not outputted by p/l ( but should be) : 'PO3_103', 'PO3_104', 'PO3_105', 
     # 'PO3_10'
@@ -1559,9 +1563,9 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             l =  [ \
             '(I-,Br-)', '(I+,Br+)' , '(I-,Br-) - 1750',  '(I+,Br+) - 1750']
         if ver == '3.0':
-            r = [ 'no_hal', 'run.ClBrI', 'no_hal.PI', 'run.ClBrI.PI' ]
+            r = [ 'no_hal', 'run', 'no_hal.PI', 'run.PI' ]
             r = [d +i for i in r ]
-            l = [ 'NOHAL', 'Cl-Br-I', 'NH-PRE', 'Cl-Br-I-PRE' ]
+            l = [ 'NOHAL', 'Cl-Br-I', 'NOHAL (PI)', 'Cl-Br-I (PI)' ]
 
     if debug:                         
         print [rwd + i for i in r ], l
@@ -1717,14 +1721,19 @@ def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
 # ------------- 
 def rxns_in_pl( wd, spec='LOX', debug=False ):
     """ Extract reactions tracked by p/l family in smvgear """
+    
     fn =  'smv2.log'
     file_ =  open( wd+'/'+fn, 'rb' )
     if debug:
         print file_
     readrxn  = False
+    # required strings in file line
+    conditions = 'Family','coefficient' , 'rxns', spec
     for row in file_:
         row = row.split()
-        if all( [ i in row for i in 'Family','coefficient' , 'rxns', spec] ):
+        if debug:
+            print row, spec, all( [ i in row for i in conditions ] )
+        if all( [ i in row for i in conditions ] ):
             readrxn=True
         if (len(row) < 1) or ( 'REACTANTS:' in row ):
             readrxn=False
@@ -2185,21 +2194,30 @@ def rm_ClBrI_het_loss( spec_l=None, r_=None, fam=None, debug=False):
 # --------------
 # 6.14 - Get OH reactants from reaction number dictionary
 # -------------
-def get_OH_reactants( pl_dict=None, only_rtn_tracers=True ):
+def get_OH_reactants( pl_dict=None, only_rtn_tracers=True, rm_OH=True, \
+            debug=False ):
     """ Get reactant from smv2.log dictionary 
     NOTE: 
-        - reactants that are not tracers: 
-    ['CH4', '', 'ETHLN', 'ISOPND', 'E', 'M', 'HCO', 'MVKN', 'ACTA']
+        - some reactants are not tracers ( see list: non_TRAs )  
+        ( to remove these set only_rtn_tracers=True )
+        - to remove OH from reactant list set rm_OH=True
     """
+    non_TRAs = ['CH4', '', 'ETHLN', 'ISOPND', 'E', 'M', 'HCO', 'MVKN', 'ACTA']
 
     # Get reaction strings
     strs = [pl_dict[i][1] for i in pl_dict.keys() ]    
+    if debug:
+        print strs
     # remove arrows from reactions 
-    strs = [ i.replace('+M=','+=').replace('+O2=','+=') ]
+    strs = [ i.replace('+M=','+=').replace('+O2=','+=') for i in strs ]
     # select reactants
-    strs = [ i.split('+=')[0] for i in  strs ]
-    # remove OH, and "+" punctuation 
-    strs = [ i.replace('OH','').replace('+','').strip() for i in strs ] 
+    strs = [ i.split('+=')[0] for i in strs ]
+    # remove "+" punctuation 
+    strs = [ i.replace('+','').strip() for i in strs ] 
+    if debug:
+        print strs
+    if rm_OH:     # remove OH from reaction strings
+        strs = [ i.replace('OH','') for i in strs ] 
 
     return strs
 
@@ -2657,7 +2675,7 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',  \
         # Add other (non 'PD') vars for ease of processing
         non_PDs = [\
         'PIOx', 'iLOX', 'LIOx', 'iPOX', 'POX', 'LOX', 'LOx', 'L_Iy', 'LOH', \
-        'LCl', \
+        'LCl', 'POH', 'PCl'\
         ]
         vars += non_PDs
         PDs += non_PDs
