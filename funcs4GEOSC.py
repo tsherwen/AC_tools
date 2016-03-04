@@ -3612,9 +3612,27 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='1.6', \
         # Want in units of yr^-1
         arr = 1/arr
 
+    # Bry
+    if fam == 'Bry' :
+        # Select species in family
+        specs = GC_var('Bry' )
+        scale =1 
+        # Extract data
+        arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ], \
+                    trop_limit=trop_limit, r_list=True  )
+        # Adjust to stoichiometry
+        arr = [ arr[n]*spec_stoich(i, ref_spec='Br') \
+             for n,i in enumerate( specs ) ]
+                
+        if debug:
+            print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in arr  ]
+        arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
+        arr = arr.sum( axis=-1) *scale
+
+
     if debug:
         print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in [arr ] ]    
-    if not isinstance( t_ps, type(None) ):
+    if not isinstance( t_ps, type(None) ) and trop_limit:
         arr = arr *t_ps
     if debug:
         print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in [arr ] ]    
@@ -3656,24 +3674,35 @@ def convert_v_v_2_molec_cm3( arr=None, wd=None, vol=None, a_m=None,
 # --------------
 # 2.43 - mask non tropospheric boxes of 4D array
 # -------------   
-def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False ):
+def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
+        masks4stratosphere=False, res='4x5' ):
 
     # Get species time Tropopause diagnostic
     if not isinstance(t_ps, np.ndarray): 
         t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], \
             trop_limit=trop_limit ) 
 
-    # Mask area that are not exclusively tropospheric
-    t_ps = np.ma.masked_where( t_ps != 1, t_ps )
+    # Mask area that are not exclusively stratospheric
+    if masks4stratosphere:
+        # Extend to all full atmosphere ( 47 levels )
+        a = list( get_dims4res(res) )
+        a[-1] = 47-38
+        a = np.zeros(  tuple( a+[t_ps.shape[-1]] ) )
+        t_ps = np.ma.concatenate( (t_ps,a),  axis=-2 )
+        # mask troposphere
+        t_ps = np.ma.masked_where( t_ps != 0, t_ps )
+
+    else:    # Mask area that are not exclusively tropospheric
+        t_ps = np.ma.masked_where( t_ps != 1, t_ps )
     
     # Set arrayw to use tropospheric mask
     for n, arr in enumerate( ars ):
         try:
             ars[n] = np.ma.array( arr, mask=t_ps.mask )
         except:
-            print 'FAIL'*100, ars.shape    
-            sys.exit()
+            print 'FAIL>'*10, [i.shape  for i in arr, t_ps  ]
     return ars 
+
 
 
 # ------------------ Section 6 -------------------------------------------

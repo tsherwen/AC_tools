@@ -2194,7 +2194,8 @@ def rm_ClBrI_het_loss( spec_l=None, r_=None, fam=None, debug=False):
 # --------------
 # 6.14 - Get OH reactants from reaction number dictionary
 # -------------
-def get_OH_reactants( pl_dict=None, only_rtn_tracers=True, rm_OH=True, \
+def get_OH_reactants( pl_dict=None, only_rtn_tracers=True, \
+            rm_OH=True, rm_Cl=True, \
             debug=False ):
     """ Get reactant from smv2.log dictionary 
     NOTE: 
@@ -2218,6 +2219,8 @@ def get_OH_reactants( pl_dict=None, only_rtn_tracers=True, rm_OH=True, \
         print strs
     if rm_OH:     # remove OH from reaction strings
         strs = [ i.replace('OH','') for i in strs ] 
+    if rm_Cl:     # remove OH from reaction strings
+        strs = [ i.replace('Cl','') for i in strs ] 
 
     return strs
 
@@ -2706,6 +2709,11 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', \
 
     # unpack for mulutple tags of same reactions, then get details
     unpacked_tags = [ j for k in tags for j in k ]
+    
+    # Kludge - remove 'PO3_10' temporarily from dictionary as these contain
+    # partial tag names (  Fortran print statment cut off )
+    unpacked_tags = [ i for i in unpacked_tags if ( 'PO3_10' not in i) ]
+    
     if debug:
         print unpacked_tags
     

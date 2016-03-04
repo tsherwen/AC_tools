@@ -983,7 +983,7 @@ def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,  \
             white_fill=True, alpha=0.1, linewidth=0.5,xlabel=True, \
             title=None, alt_text=None, f_size=7.5, units='ppbv',     
             showmeans=False, plt_median=False, boxplot=True, 
-            ylabel=True, color='blue', \
+            ylabel=True, color='blue', label=None, \
             plot_Q1_Q3=True, pcent1=25, pcent2=75,  debug=False ):
     """ Plot up daily timeseries of values. Requires data, and dates in numpy 
         array form. Dates must be as datetime.datetime objects. 
@@ -1013,7 +1013,7 @@ def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,  \
         if plt_median:
             ln = plt.plot( bins_used, \
                 [ np.nanpercentile( i, 50, axis=0 ) for i in data_nan ], \
-                color=color   )
+                color=color, label=None   )
         else:
             ln = plt.plot( bins_used, [i.mean() for i in data_nan], color=color)
 
@@ -2630,6 +2630,7 @@ def timeseries_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         start_date = dates[0]
     if isinstance( end_date, type(None) ):
         end_date = dates[-1]
+    df = df[ start_date:end_date]
 
     # label once per week ( set by "everyother" ) 
     days = [i.to_datetime() for i in df.index ]
