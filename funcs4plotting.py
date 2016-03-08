@@ -948,7 +948,10 @@ def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
 def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
             title=None, legend=False, everyother=24,  x_nticks=12, \
             window=False, label=None, ylabel=None, loc='upper right',  \
-            lw=1,ls='-', color=None, showmeans=False, debug=False ):
+            lw=1,ls='-', color=None, showmeans=False, boxplot=True, \
+            plt_median=False, plot_Q1_Q3=False, pcent1=25, pcent2=75, \
+            ylim=None, \
+            debug=False ):
     """ Plot up timeseries of seasonal data. Requires data, and dates in numpy
         array form. Dates must be as datetime.datetime objects. """
 
@@ -965,11 +968,34 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     # Get Data by month
     monthly =[ df[df.index.month==i]  for i in months ]
     print [i.shape for i in monthly ]
-    
-    bp = ax.boxplot( monthly, months, showmeans=showmeans ) 
-    ax.set_xticklabels( labels )
 
+    if boxplot:    
+        bp = ax.boxplot( monthly, months, showmeans=showmeans ) 
+    else:
+        # remove nans to allow for percentile calc.
+        data_nan = [ np.ma.array(i).filled( np.nan ) for i in monthly ]
+        data_nan = [ i.flatten() for i in data_nan ]
+
+        if plt_median:
+            plt.plot( months, \
+                [ np.nanpercentile( i, 50, axis=0 ) for i in data_nan ], \
+                color=color, lw=lw, ls=ls, label=label  )
+            if plot_Q1_Q3: # Plot quartiles as shaded area?
+                low = [ np.nanpercentile( i, pcent1, axis=0 ) \
+                    for i in data_nan ]
+                high = [ np.nanpercentile( i, pcent2, axis=0 ) \
+                    for i in data_nan ]
+                ax.fill_between( months, low, high, alpha=0.2, \
+                    color=color   )            
+        else:
+            plt.plot( months, [i.mean() for i in monthly ], color=color, 
+            lw=lw, ls=ls, label=label ) 
+    
     # Beatify plot
+    ax.set_xticks( months )
+    ax.set_xticklabels( labels )
+    if not isinstance( ylim, type(None) ):
+        ax.set_ylim( ylim )
     if not isinstance( title, type(None) ):
         plt.title( title )
     if not isinstance( ylabel, type(None) ):
@@ -1007,7 +1033,7 @@ def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,  \
         # remove nans to allow for percentile calc.
 #        print b_all
         data_nan = [ np.ma.array(i).filled( np.nan ) for i in b_all ]
-        data_nan = [i.flatten() for i in data_nan ]
+        data_nan = [ i.flatten() for i in data_nan ]
 
         # Plot average
         if plt_median:
@@ -2618,7 +2644,9 @@ def timeseries_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
             lw=1,ls='-', color=None, start_date=None, end_date=None, \
             boxplot=True, showmeans=False, alt_text=None, r_plt=False, \
             unitrotation=45, color_by_z=False, fig=None,  xlabel=True, \
-            positive=None, add_Q1_Q3=False, debug=False ):
+            positive=None, \
+            plt_median=False, add_Q1_Q3=False, pcent1=25, pcent2=75, \
+            debug=False ):
     """ Plot up timeseries of values. Requires data, and dates in numpy 
         array form. Dates must be as datetime.datetime objects. """
 
@@ -2650,11 +2678,20 @@ def timeseries_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
 #        colorline(x, y, linewidth=lw, ax=ax)
 
     else:
-        plt.plot( days, df.values, label=label, color=color, ls=ls, lw=lw  )
+        if plt_median: # Plot average
+            pass
+#            ln = plt.plot( days, np.nanpercentile( df.values, 50, ), 
+#                color=color, ls=ls, lw=lw, label=None   )
+        else: # Plot all
+            plt.plot( days, df.values, label=label, color=color, ls=ls, lw=lw  )
 
-    if add_Q1_Q3:
+    # Plot quartiles as shaded area?
+    if plot_Q1_Q3:
         pass
-        
+#        low =np.nanpercentile( df.values, pcent1, )
+#        high = np.nanpercentile( df.values, pcent2, )
+#        ax.fill_between( bins_used, low, high, alpha=0.2, color=color   )
+            
     # Setup X axis 
     if xlabel:
         plt.xticks( days[::everyother], labels, rotation=unitrotation, \

@@ -3531,39 +3531,40 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
 # 2.41 - Extract data by family for a given wd
 # -------------   
 def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='1.6', \
-            annual_mean=True, t_ps=None, title=None, \
-            verbose=False, debug=False ):
+            annual_mean=True, t_ps=None, title=None, rtn_list=False, \
+            rtn_specs=False, verbose=False, debug=False ):
     """ Driver to extract data requested, as families have differing output
     
         ( e.g. NOy, NOx, POx, CH4 loss rate, ... )
+    NOTES:
+        - to return species as list ( not fully implimented ) set rtn_list=True
+        - to return species extract, set  rtn_species=True
     """
-    verbose=True
-    debug=True
-
     if verbose:
         print 'fam_data_extractor called for ', fam, wd, title
 
-    # NOx
+    # --- Nitrogen Oxides NOx ( NO + NO2)
     if fam == 'NOx' :
         # Select species in family
         specs = [ 'NO2', 'NO' ] 
-        scale =1E12
+        scale = 1E12
 #        units, scale = tra_unit(specs[0], IUPAC_unit=True, scale=True)
         # Extract data
         arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ], \
                     trop_limit=trop_limit )
         if debug:
             print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in [arr ] ]
-        arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
-        arr = arr.sum( axis=-1) *scale
+        if not rtn_list:
+            arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
+            arr = arr.sum( axis=-1) * scale
 
-    # OH ( in molec/cm3 )
+    # --- OH ( in molec/cm3 )
     if fam == 'OH' :
         spec = 'OH'
         arr = get_GC_output( wd=wd, vars=['CHEM_L_S__'+spec], \
             trop_limit=trop_limit )
 
-    # NOy
+    # --- NOy
     if fam == 'NOy' :
         # Select species in family
         specs = GC_var('N_specs' )
@@ -3582,10 +3583,11 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='1.6', \
                 
         if debug:
             print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in arr  ]
-        arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
-        arr = arr.sum( axis=-1) *scale
+        if not rtn_list:
+            arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
+            arr = arr.sum( axis=-1) * scale
 
-    # O3
+    # --- Ozone (O3)
     if fam == 'O3' :
         # Select species in family
         units, scale = tra_unit(fam, IUPAC_unit=True, scale=True)
@@ -3612,11 +3614,11 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='1.6', \
         # Want in units of yr^-1
         arr = 1/arr
 
-    # Bry
+    # ---  Inorganic bromine ( Bry )
     if fam == 'Bry' :
         # Select species in family
         specs = GC_var('Bry' )
-        scale =1 
+
         # Extract data
         arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ], \
                     trop_limit=trop_limit, r_list=True  )
@@ -3626,22 +3628,68 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='1.6', \
                 
         if debug:
             print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in arr  ]
-        arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
-        arr = arr.sum( axis=-1) *scale
+        if not rtn_list:
+            arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
+            arr = arr.sum( axis=-1) 
 
+    # ---  Inorganic iodine ( Iy )
+    if fam == 'Iy' :
+        # Select species in family
+        specs = GC_var('Iy' )
 
-    if debug:
+        # Extract data
+        arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ], \
+                    trop_limit=trop_limit, r_list=True  )
+        # Adjust to stoichiometry
+        arr = [ arr[n]*spec_stoich(i, ref_spec='I') \
+             for n,i in enumerate( specs ) ]
+                
+        if debug:
+            print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in arr  ]
+        if not rtn_list:
+            arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
+            arr = arr.sum( axis=-1) 
+
+    # ---  Inorganic iodine ( Cly )
+    if fam == 'Cly' :
+        # Select species in family
+        specs = GC_var('Cly' )
+
+        # Extract data
+        arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ], \
+                    trop_limit=trop_limit, r_list=True  )
+        # Adjust to stoichiometry
+        arr = [ arr[n]*spec_stoich(i, ref_spec='Cl') \
+             for n,i in enumerate( specs ) ]
+                
+        if debug:
+            print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in arr  ]
+        if not rtn_list:
+            arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
+            arr = arr.sum( axis=-1) 
+
+    if debug and (not rtn_list):
         print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in [arr ] ]    
     if not isinstance( t_ps, type(None) ) and trop_limit:
-        arr = arr *t_ps
-    if debug:
+        if rtn_list:
+            arr = mask4troposphere( arr, t_ps=t_ps )
+        else:
+            arr = mask4troposphere( [arr], t_ps=t_ps )[0]
+    if debug and (not rtn_list):
         print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in [arr ] ]    
 
     # Take annual mean?
     if annual_mean:
-        arr = arr.mean( axis=-1 )
+        if rtn_list:
+            arr = [ i.mean( axis=-1 ) for i in arr ]
+        else:
+            arr = arr.mean( axis=-1 )
 
-    return arr
+    # Return data and (optionally) specs
+    if rtn_specs:
+        return arr, specs
+    else:
+        return arr
 
 # --------------
 # 2.42 - Convert v/v to molec/cm3
@@ -3652,13 +3700,22 @@ def convert_v_v_2_molec_cm3( arr=None, wd=None, vol=None, a_m=None,
         required variables of volume (vol) and airmass (a_m) can be provided as 
         arguements or are extracted online (from procvided wd )
     """
+
+    if debug:
+        print 'convert_v_v_2_molec_cm3 called for: ',
+        print [ ( isinstance(i, np.ndarray), i.shape ) for i in arr, vol, a_m ]
+
     # Get volume ( cm^3  )
     if not isinstance(vol, np.ndarray):
         vol = get_volume_np( wd=wd, res=res, trop_limit=trop_limit, debug=debug)
+        if debug:
+            print 'WARNING: extraction volume online'
     # Get air mass ( kg )
     if not isinstance(a_m, np.ndarray):
         a_m = get_GC_output( wd, vars=['BXHGHT_S__AD'], trop_limit=trop_limit, 
                     dtype=np.float64)    
+        if debug:
+            print 'WARNING: extraction volume air mass'
 
     # Get moles
     mols = a_m*1E3/constants( 'RMM_air')

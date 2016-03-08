@@ -842,10 +842,10 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN',\
     'NO3', 'HNO2'],
     'Bry' : [\
-    'Br2', 'BrNO3', 'Br', 'HBr', 'BrCl', 'BrNO2', 'HOBr', 'IBr', 'BrO'],
+    'Br2', 'BrCl', 'IBr', 'HOBr', 'BrO', 'HBr', 'BrNO2', 'BrNO3', 'Br'  ],
     'Cly' : [ \
-    'BrCl', 'Cl2', 'Cl', 'ClO', 'HCl', 'HOCl', 'ClNO2', 'ClNO3', 'ClOO', \
-    'OClO', 'Cl2O2', 'ICl' ],
+     'Cl2','BrCl','ICl', 'HOCl', 'ClO', 'ClOO', 'OClO', 'Cl2O2', 'HCl',  \
+     'ClNO2', 'ClNO3',  'Cl'],
     'Br_specs' : ['Br2', 'BrNO3', 'Br', 'HBr', 'CH2IBr', \
     'CH3Br', 'CH2Br2', 'BrCl', 'BrNO2', 'BrSALC', 'BrSALA', \
     'HOBr', 'IBr', 'BrO', 'CHBr3'],
@@ -1031,8 +1031,7 @@ def latex_spec_name(input_x, debug=False):
     'CH2IX':'CH$_{2}$IX (X=Cl, Br, I)', 'IxOy':'I$_{2}$O$_{X}$ ($_{X}$=2,3,4)',\
     'CH3I':'CH$_{3}$I', 'OH':'OH', 'HO2':'HO$_{2}$', 'MO2':'MO$_{2}$', \
     'RO2':'RO$_{2}$' , 'ISALA': 'Iodine on SALA',  \
-    'ISALC': 'Iodine on SALC', 
-
+    'ISALC': 'Iodine on SALC', 'CH4': 'CH$_{4}$', 'MOH': 'Methanol', \
     'RD01':r'I + O$_{3}$ $\rightarrow$ IO + O$_{2}$', 
     # Adjusted names
     'ALD2':'Acetaldehyde', 
@@ -1048,10 +1047,15 @@ def latex_spec_name(input_x, debug=False):
     'U10M':'10m Meridional Wind', 'V10M': '10m Zonal Wind', \
     'CH2OO':'CH$_{2}$OO', \
     # Family Names
-    'N_specs' : 'NOy', 'NOy' :  'NO$_Y$',  'Bry':  'Br$_Y$', \
-    'N_specs_no_I' : 'NOy exc. iodine', \
+    'N_specs':'NOy', 'NOy':'NO$_Y$',  'Bry':'Br$_Y$', 'Cly':'Cl$_Y$',  \
+    'N_specs_no_I':'NOy exc. iodine', \
     # typos
-    'CH2BR2':'CH$_{2}$Br$_{2}$',
+    'CH2BR2':'CH$_{2}$Br$_{2}$',\
+    # Cly names
+    'ClOO':'ClOO', 'Cl2':'Cl$_{2}$', \
+    'BrCl': 'BrCl','ICl': 'ICl', 'HOCl': 'HOCl', 'ClO':'ClO', 'ClOO':'ClOO', \
+    'OClO':'OClO', 'Cl2O2':'Cl$_{2}$O$_{2}$', 'HCl':'HCl', \
+    'ClNO2': 'ClNO$_{2}$','ClNO3':'ClNO$_{3}$', 'Cl':'Cl',
             }
     return spec_dict[input_x]
 
@@ -1335,7 +1339,7 @@ def get_unit_scaling( units, scaleby=1 ):
 
         misc = 'K', 'm/s', 'unitless', 'kg' ,'m', 'm2','kg/m2/s', \
             'molec/cm2/s', 'mol/cm3/s',  'kg/s', 'hPa', 'atoms C/cm2/s' \
-            'kg S', 'mb', 'atoms C/cm2/s', 'molec/cm3', 'v/v', 'cm/s'
+            'kg S', 'mb', 'atoms C/cm2/s', 'molec/cm3', 'v/v', 'cm/s', 's-1'
 
         if any( [ (units ==  i) for i in 'pptv', 'pptC' ]):
             scaleby = 1E12
@@ -2194,8 +2198,8 @@ def rm_ClBrI_het_loss( spec_l=None, r_=None, fam=None, debug=False):
 # --------------
 # 6.14 - Get OH reactants from reaction number dictionary
 # -------------
-def get_OH_reactants( pl_dict=None, only_rtn_tracers=True, \
-            rm_OH=True, rm_Cl=True, \
+def get_pldict_reactants( pl_dict=None, only_rtn_tracers=True, \
+            rm_OH=True, rm_Cl=True, tags=None, \
             debug=False ):
     """ Get reactant from smv2.log dictionary 
     NOTE: 
@@ -2203,24 +2207,37 @@ def get_OH_reactants( pl_dict=None, only_rtn_tracers=True, \
         ( to remove these set only_rtn_tracers=True )
         - to remove OH from reactant list set rm_OH=True
     """
-    non_TRAs = ['CH4', '', 'ETHLN', 'ISOPND', 'E', 'M', 'HCO', 'MVKN', 'ACTA']
+#    non_TRAs = ['CH4', '', 'ETHLN', 'ISOPND', 'E', 'M', 'HCO', 'MVKN', 'ACTA']
 
     # Get reaction strings
-    strs = [pl_dict[i][1] for i in pl_dict.keys() ]    
+    if isinstance( tags, type(None) ):
+        tags = pl_dict.keys() 
+    strs = [pl_dict[i][1] for i in tags ]    
     if debug:
-        print strs
+        print strs, len(strs)
     # remove arrows from reactions 
     strs = [ i.replace('+M=','+=').replace('+O2=','+=') for i in strs ]
     # select reactants
     strs = [ i.split('+=')[0] for i in strs ]
+    print strs
+    if rm_OH:     # remove OH from reaction strings
+        strs = [ i.replace('+OH','+') for i in strs ] 
+        for n, str in enumerate( strs ):
+            if str.startswith('OH+'):
+                strs[n] = str.replace('OH','+')
+    print strs
+    if rm_Cl:     # remove OH from reaction strings
+        strs = [ i.replace('+Cl','+') for i in strs ] 
+        for n, str in enumerate( strs ):
+            if str.startswith('Cl+'):
+                strs[n] = str.replace('Cl+','+')
+
+    print strs
     # remove "+" punctuation 
     strs = [ i.replace('+','').strip() for i in strs ] 
     if debug:
-        print strs
-    if rm_OH:     # remove OH from reaction strings
-        strs = [ i.replace('OH','') for i in strs ] 
-    if rm_Cl:     # remove OH from reaction strings
-        strs = [ i.replace('Cl','') for i in strs ] 
+        print strs, len(strs)
+    print strs
 
     return strs
 

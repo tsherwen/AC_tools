@@ -27,6 +27,7 @@
 # 2.08 - in a df,  convert times to datetime from HHMM and YYYYMMDD
 # 2.10 - Extract all pf data for a given site.
 # 2.11 -  gaw site data for comp
+# 2.12 - Read pf data from 2D NetCDF table file 
 
 # --------------- ------------- ------------- ------------- ------------- 
 # --- Section 3 - Planeflight Analysis/Post formating 
@@ -564,7 +565,7 @@ def wd_pf_2_gaw_arr( wd, spec='O3', location='CVO', scale=1E9 ):
     return data, date, time
 
 # ----
-#  3.11 - Process "raw" csv files from GEOS-Chem planeflight output
+#  2.11 - Process "raw" csv files from GEOS-Chem planeflight output
 # ----
 def pro_raw_pf( wd, site='CVO', ext='', run='', frac=False, diurnal=True, \
             res='4x5', debug=False ):
@@ -596,6 +597,51 @@ def pro_raw_pf( wd, site='CVO', ext='', run='', frac=False, diurnal=True, \
     print fp
     fp[:] = months[:]
     np.memmap.flush(fp)
+
+# ----
+# 2.12 - Read pf data from 2D NetCDF table file 
+# ----
+def get_pf_data_from_NetCDF_table( ncfile=None, req_var='TRA_69', spec='IO', \
+            loc='CVO', start=None, end=None, ver='1.7', verbose=False, \
+            debug=False  ):
+    """ Extracts data from NetCDF file processed by pf2NetCDF (pandas) 
+        converter in PhD_Progs/MChem_tools 
+    """
+
+    # Convert to plane-flight (pf) variable name ('req_var') if not given
+    if isinstance( req_var, type(None) ):
+        req_var = what_species_am_i( spec, ver=ver, invert=True ) 
+
+    # --- Open NetCDF within nest, and extract data
+    with Dataset( ncfile, 'r' ) as rootgrp:
+
+        # Select only variables for site
+        LOC = rootgrp['LOC']
+        Epoch = rootgrp['Epoch']
+        data =  rootgrp[ req_var ]
+        # Convert to numpy array
+        LOC, Epoch, data = [ np.array(i) for i in LOC, Epoch, data ]
+
+    # Select just the variable requests
+    if debug:
+        print LOC
+    ind = np.where( LOC == loc  )
+    if debug:
+        print ind
+    Epoch = Epoch[ ind ]
+    data = data[ ind ]
+
+    # Covert Epoch to datetime
+    if debug:
+        print Epoch[0] 
+    dates = [ datetime_.fromtimestamp(i) for i in Epoch ]
+    if debug:
+        print dates[0] 
+
+    # Select dates ( <= add this )
+    
+
+    return dates, data
 
 # --------------------------------- Section 3  ---------------------------------
 # -------------- Planeflight Analysis/Post formating 
