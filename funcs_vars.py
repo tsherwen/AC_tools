@@ -1339,7 +1339,8 @@ def get_unit_scaling( units, scaleby=1 ):
 
         misc = 'K', 'm/s', 'unitless', 'kg' ,'m', 'm2','kg/m2/s', \
             'molec/cm2/s', 'mol/cm3/s',  'kg/s', 'hPa', 'atoms C/cm2/s' \
-            'kg S', 'mb', 'atoms C/cm2/s', 'molec/cm3', 'v/v', 'cm/s', 's-1'
+            'kg S', 'mb', 'atoms C/cm2/s', 'molec/cm3', 'v/v', 'cm/s', 's-1', \
+            'molec/m3'
 
         if any( [ (units ==  i) for i in 'pptv', 'pptC' ]):
             scaleby = 1E12
@@ -2219,25 +2220,21 @@ def get_pldict_reactants( pl_dict=None, only_rtn_tracers=True, \
     strs = [ i.replace('+M=','+=').replace('+O2=','+=') for i in strs ]
     # select reactants
     strs = [ i.split('+=')[0] for i in strs ]
-    print strs
     if rm_OH:     # remove OH from reaction strings
         strs = [ i.replace('+OH','+') for i in strs ] 
         for n, str in enumerate( strs ):
             if str.startswith('OH+'):
                 strs[n] = str.replace('OH','+')
-    print strs
     if rm_Cl:     # remove OH from reaction strings
         strs = [ i.replace('+Cl','+') for i in strs ] 
         for n, str in enumerate( strs ):
             if str.startswith('Cl+'):
                 strs[n] = str.replace('Cl+','+')
 
-    print strs
     # remove "+" punctuation 
     strs = [ i.replace('+','').strip() for i in strs ] 
     if debug:
         print strs, len(strs)
-    print strs
 
     return strs
 

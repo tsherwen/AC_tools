@@ -92,6 +92,7 @@
 # 2.41 - Extract data by family for a given wd
 # 2.42 - Convert v/v to molec/cm3
 # 2.43 - mask non tropospheric boxes of 4D array
+# 2.44 - Convert [molec/cm3/s ] to [molec/yr] 
 
 # --------------- 
 # ---- Section 3 ----- Time processing
@@ -1826,7 +1827,7 @@ def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
         Br=True
     if fam =='Iy':
         I=True
-    if fam =='Cly': # needs adding to spec_stioch
+    if fam =='Cly': 
         Cl=True        
     if any( [( fam ==i) for i in  ' NOy', 'NOx' ] ):
         N=True
@@ -1846,7 +1847,8 @@ def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
 
     # Remove stratosphere by multiplication of time in trop. diag. 
     if rm_strat:
-        arr = arr *t_ps
+#        arr = arr *t_ps
+        arr = mask4troposphere( [arr], t_ps=t_ps )[0]
         
     return arr, specs
 
@@ -2286,14 +2288,33 @@ def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
 # --------
 # 2.12 - Get CH4 Lifetime in years
 # --------
-def get_CH4_lifetime( ctm_f=None, wd=None, \
-            vol=None, a_m=None, t_ps=None, K=None,  \
+def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
+            vol=None, a_m=None, t_ps=None, K=None, t_lvl=None, n_air=None, \
             years=None, months=None, monthly=False, trop_limit=True, \
-            use_OH_from_geos_log=True, average_value=True, debug=False ):
-    """ Get CH4 lifetime using reaction rate in globchem.dat and OH/CH4
-         mean concentrations from geos.log
-         detail on rxn rate from globchem.dat = K(o)= 2.45E-12, Ea/R= -1775  """
+            use_OH_from_geos_log=True, average_value=True, 
+            use_time_in_trop=True, 
+            verbose=True, debug=False ):
+    """ Get methane (CH4) lifetime by calculating loss rate against OH. 
+    
+    NOTES:
+        - Multiple options for calculation of this value. 
+        - 1st approach ( set use_time_in_trop=True) uses reaction rate in 
+        globchem.dat (K(o)= 2.45E-12, Ea/R= -1775 ) and OH/CH4 mean
+         concentrations from geos.log. The tropospheric mask uses is defined by 
+         the time in the troposphere diagnostic. the value is weighted by **air 
+        mass** if  ( average_value=True  )
+        - Other approach: Effectively the same approach, but uses the tropopause 
+        level to define tropopause ( set use_time_in_trop=False to use this), 
+        and weights output by **molecules** if ( average_value=True  ) 
+    """
+#    use_OH_from_geos_log=False
+#    debug=True
+    if debug:
+        print 'get_CH4_lifetime called ( using time in trop diag?={})'.format(
+            use_time_in_trop ) 
 
+
+    # --- Get shared variables that are not provided
     if not isinstance(vol, np.ndarray): # cm^3 
         vol = get_volume_np( ctm_f =ctm_f, wd=wd, trop_limit=trop_limit ) 
     if not isinstance(a_m, np.ndarray): # Kg
@@ -2304,50 +2325,106 @@ def get_CH4_lifetime( ctm_f=None, wd=None, \
     if not isinstance(t_ps, np.ndarray): 
         t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], \
             trop_limit=trop_limit ) 
-
-    # Mask non tropospheric boxes
-    K, vol,  a_m = mask4troposphere( [K, vol, a_m], t_ps=t_ps )
-
-    # Get global CH4 conc  ( v/v )
-#    CH4 = get_CH4_mean( wd, rtn_avg_3D_concs=True  )
-    # Convert to [molec/cm3] from v/v
-#    CH4 = convert_v_v_2_molec_cm3( CH4, vol=vol, a_m=a_m )
-
-    # get loss rate - in kg/s - only works for CH4 sim.
-#    LCH4 = get_gc_data_np(ctm_f, spec='CH4Loss', \
-#            category='CH4-LOSS') 
-
-    # Calc from (CH4 +OH) reaction (loss) rate 
-    # rate per grid box  ( cm^3  molec.^-1  s^-1  )
-    LCH4 = 2.45E-12 * np.ma.exp( (-1775. / K)  )   
-    # Get annual mean ( assuming monthly output )
-
-    # CH4 loss rate via reaction
-#    arr = LCH4 * CH4
-
+    if not use_time_in_trop:
+        if not isinstance(t_lvl, np.ndarray): 
+            t_lvl = get_GC_output( wd, vars=['TR_PAUSE__TP_LEVEL'], \
+                trop_limit=False ) 
+        if not isinstance(n_air, np.ndarray): 
+            n_air = get_GC_output( wd, vars=['BXHGHT_S__N(AIR)'], \
+                trop_limit=trop_limit, dtype=np.float64 ) 
+    
     # Get OH conc [molec/cm3] 
     if use_OH_from_geos_log:
         OH   = get_OH_mean( wd ) * 1E5   
-    else:
+    else: #  [molec/m3] 
         OH = get_GC_output( wd=wd, vars=['CHEM_L_S__'+'OH'], \
             trop_limit=trop_limit )
+#        #  What are the units for 'CHEM_L_S__OH' ? need to convert?
+          # (NetCDF says molec/m3, and wiki says  [molec/cm3]  )
+#        OH = OH *1E6
+        if use_time_in_trop:
+            # Mask non tropospheric boxes
+            OH = mask4troposphere( [OH], t_ps=t_ps)
+
+    if use_time_in_trop:
         # Mask non tropospheric boxes
-        OH = mask4troposphere( [OH], t_ps=t_ps)
+        K, vol, a_m = mask4troposphere( [K, vol, a_m], t_ps=t_ps )
+        # Get global CH4 conc  ( v/v )
+    #    CH4 = get_CH4_mean( wd, rtn_avg_3D_concs=True  )
+        # Convert to [molec/cm3] from v/v
+    #    CH4 = convert_v_v_2_molec_cm3( CH4, vol=vol, a_m=a_m )
 
-    # Get CH4 lifetime with respect to OH
-    arr = LCH4 * OH 
+        # get loss rate - in kg/s - only works for CH4 sim.
+    #    LCH4 = get_gc_data_np(ctm_f, spec='CH4Loss', \
+    #            category='CH4-LOSS') 
 
-    if debug:
-        print (    1 / ( (arr*a_m).sum()/a_m.sum() )   ) /60/60/24/365
-        print [ (i*a_m).sum()/a_m.sum() for i in OH, LCH4, arr ]
-        print get_OH_mean( wd ) * 1E5   
+    # --- Shared processed variables
+    # CH4 loss rate per grid box  ( cm^3  molec.^-1  s^-1  )
+    KCH4 = 2.45E-12 * np.ma.exp( (-1775. / K)  )   
+        
+    # --- Now Calculate CH4 lifetimes
+    if use_time_in_trop:
 
-    if average_value:
-        # get mass weighed average
-        arr =  (arr*a_m).sum()/a_m.sum() 
-#        arr = np.ma.mean(  arr  )
+        # --- Calc from (CH4 +OH) reaction (loss) rate 
+        # CH4 loss rate via reaction
+    #    arr = LCH4 * CH4
 
-    return ( 1 / arr ) /60/60/24/365
+        # Get CH4 lifetime with respect to OH
+        LCH4 = KCH4 * OH 
+                
+        if debug:
+            print ( 1 / ( (LCH4*a_m).sum()/a_m.sum() )   ) /60/60/24/365
+            print [ (i*a_m).sum()/a_m.sum() for i in OH, LCH4, KCH4 ]
+            print get_OH_mean( wd ) * 1E5   
+
+        if average_value:
+            # get mass weighed average
+            LCH4 =  (LCH4*a_m).sum()/a_m.sum() 
+    #        arr = np.ma.mean(  arr  )
+        #
+        return ( 1 / LCH4 ) /60/60/24/365
+
+    else: # Second Approach ( as per Schmidt et al 2015)
+
+        # CH3CCl loss rate per grid box  ( cm^3  molec.^-1  s^-1  )
+#        LCH3CCl = 1.64E-12 * np.ma.exp( (-1520. / K)  )   
+
+        # Mask non tropospheric boxes ( use: tropopause level )
+        print [i.shape for i in K, vol, a_m, n_air, KCH4, OH  ]
+        K, vol, a_m, n_air, KCH4, OH = mask4troposphere( \
+            [K, vol, a_m, n_air, KCH4, OH ], t_lvl=t_lvl,  \
+            use_time_in_trop=use_time_in_trop )                
+
+        # get # molecules per grid box
+        molecs = n_air *vol
+
+        # Get loss 
+        LCH4 = KCH4 * OH
+        if debug:
+            print [ ( i.shape, i.sum(), i.min(), i.max(), i.mean() )  \
+                for i in [ LCH4, KCH4, molecs ] ]
+
+        if average_value:
+
+            # Get weighted values per time step
+            LCH4_l = []
+            for n in range( LCH4.shape[-1] ):
+    
+                # Weight by molecules
+                LCH4_l += [ ( LCH4[...,n] * molecs[...,n] ).sum()  \
+                    / molecs[...,n].sum() ]
+            if debug:
+                print LCH4_l
+
+            # take mean
+            LCH4 = np.ma.mean( LCH4_l )
+        if debug:
+            print [ ( i.shape, i.sum(), i.min(), i.max(), i.mean() )  \
+                for i in [ LCH4, KCH4, molecs ] ]
+            
+        # Convert units from /s to yrs
+        CH4_lifetime = 1/(LCH4) / (3600*24*365)
+        return CH4_lifetime
 
 # ----
 # 2.13 - get Land / Water /Ice fraction
@@ -3709,13 +3786,13 @@ def convert_v_v_2_molec_cm3( arr=None, wd=None, vol=None, a_m=None,
     if not isinstance(vol, np.ndarray):
         vol = get_volume_np( wd=wd, res=res, trop_limit=trop_limit, debug=debug)
         if debug:
-            print 'WARNING: extraction volume online'
+            print 'WARNING: extracting volume online'
     # Get air mass ( kg )
     if not isinstance(a_m, np.ndarray):
         a_m = get_GC_output( wd, vars=['BXHGHT_S__AD'], trop_limit=trop_limit, 
                     dtype=np.float64)    
         if debug:
-            print 'WARNING: extraction volume air mass'
+            print 'WARNING: extracting air mass online'
 
     # Get moles
     mols = a_m*1E3/constants( 'RMM_air')
@@ -3732,34 +3809,88 @@ def convert_v_v_2_molec_cm3( arr=None, wd=None, vol=None, a_m=None,
 # 2.43 - mask non tropospheric boxes of 4D array
 # -------------   
 def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
-        masks4stratosphere=False, res='4x5' ):
-
-    # Get species time Tropopause diagnostic
-    if not isinstance(t_ps, np.ndarray): 
-        t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], \
-            trop_limit=trop_limit ) 
-
-    # Mask area that are not exclusively stratospheric
-    if masks4stratosphere:
-        # Extend to all full atmosphere ( 47 levels )
-        a = list( get_dims4res(res) )
-        a[-1] = 47-38
-        a = np.zeros(  tuple( a+[t_ps.shape[-1]] ) )
-        t_ps = np.ma.concatenate( (t_ps,a),  axis=-2 )
-        # mask troposphere
-        t_ps = np.ma.masked_where( t_ps != 0, t_ps )
-
-    else:    # Mask area that are not exclusively tropospheric
-        t_ps = np.ma.masked_where( t_ps != 1, t_ps )
+        t_lvl=None, masks4stratosphere=False, use_time_in_trop=True, \
+        res='4x5' ):
+    """ Mask for the troposphere using either the time in troposphere 
+    diagnostic ( use_time_in_trop=True ) or troposphere level 
+    ( use_time_in_trop=False ) 
     
-    # Set arrayw to use tropospheric mask
+    NOTES:
+        - The tropospause is diagnosed mulitple ways. This fucntion can mask 
+        for the troposphere using either time in trop ( use_time_in_trop=True ) 
+        or tropopause level. Each is done on a timestep by timestep basis. 
+        - The 'chemical troposphere' in GEOS-Chem is the boxes for which 
+        differential chemical equations are solved. Only these boxes (1st 38)
+        are consdidered if trop_limit=True ( e.g. array shape is (72,46,38,12)
+        instead of (72,46,47,12)
+        
+    """
+    if use_time_in_trop:
+        # Get time tropopause diagnostic (if not given as argument)
+        if not isinstance(t_ps, np.ndarray): 
+            t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], \
+                trop_limit=trop_limit ) 
+
+        # --- Mask area that are not exclusively stratospheric
+        if masks4stratosphere:
+            # Extend to all full atmosphere ( 47 levels )
+            a = list( get_dims4res(res) )
+            a[-1] = 47-38
+            a = np.zeros(  tuple( a+[t_ps.shape[-1]] ) )
+            t_ps = np.ma.concatenate( (t_ps,a),  axis=-2 )
+            # mask troposphere
+            t_ps = np.ma.masked_where( t_ps != 0, t_ps )
+
+        # --- Mask area that are not exclusively tropospheric
+        else:    
+            t_ps = np.ma.masked_where( t_ps != 1, t_ps )
+    
+    else:
+        # Get tropopause level  (if not given as argument)
+        if not isinstance(t_lvl, np.ndarray): 
+            t_lvl = get_GC_output( wd, vars=['TR_PAUSE__TP_LEVEL'], \
+                trop_limit=False )
+        
+        # Setup dummy array with model numbers as values
+#        t_ps = np.zeros( t_lvl.shape )
+#        t_ps = np.zeros( (72, 46, 47, 12)  )
+        t_ps = np.zeros( ars[0].shape  )
+        print [ i.shape for i in t_ps, t_lvl, ars[0] ]
+        for i, n in enumerate( range(1,ars[0].shape[-2]+1) ):
+            t_ps[:,:,i,:] =n
+       
+        if masks4stratosphere:
+            # mask where the levels are greater that the tropopause level
+            t_ps = np.ma.masked_where( t_ps<t_lvl[:,:,None,:], t_ps)
+        else:
+            # mask where the levels are greater that the tropopause level
+            t_ps = np.ma.masked_where( t_ps>t_lvl[:,:,None,:], t_ps)
+        
+    # --- Set array mask to have strat mask (trop if masks4stratosphere=True)
     for n, arr in enumerate( ars ):
         try:
             ars[n] = np.ma.array( arr, mask=t_ps.mask )
         except:
             print 'FAIL>'*10, [i.shape  for i in arr, t_ps  ]
+
     return ars 
 
+# --------------
+# 2.44 - Convert [molec/cm3/s ] to [molec/yr] 
+# -------------   
+def convert_molec_cm3_s2_molec_per_yr( ars=None, vol=None ):
+    """ Takes a list of arrays (4D) and converts their units from molec/cm3/s to     
+        molec./yr
+    """
+    # Loop provided arrays
+    for n, arr in enumerate( ars ):
+        # Times by volume
+        ars[n]  = arr *vol
+        
+        # Convert /s to /yr
+        ars[n] = arr *60*60*24*365
+    
+    return ars
 
 
 # ------------------ Section 6 -------------------------------------------
