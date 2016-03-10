@@ -27,6 +27,7 @@
 # 2.08 - in a df,  convert times to datetime from HHMM and YYYYMMDD
 # 2.10 - Extract all pf data for a given site.
 # 2.11 -  gaw site data for comp
+# 2.12 - Read pf data from 2D NetCDF table file 
 
 # --------------- ------------- ------------- ------------- ------------- 
 # --- Section 3 - Planeflight Analysis/Post formating 
@@ -214,9 +215,11 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
         '/plane_flight_logs/plane.log.2*')), location, \
         Kludge_fortan_output=Kludge_fortan_output,  \
                                                             debug=debug )
-    # Set list of surface datasets
+    # Set list of surface ( point or ship ) datasets
     surface_data =[ 
-    'MAL', 'HAL','GRO', 'CVO', 'ANT', 'M91', 'KEN', 'BTT', 'TRB'
+    'MAL', 'HAL','GRO', 'CVO', 'ANT', 'M91', 'KEN', 'BTT', 'TRB', \
+    'HOU', 'BOL', 'LAC', 'HES', 'SCH', 'TEX', 'CAL', 'PAS', 'WEY', \
+    'MON'
     ]
     plane_data = ['TOR', 'BAE', 'GCV', 'CGV' ]
 
@@ -224,9 +227,11 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
     try:
         k=names.index( spec )
     except:
-        print '>'*30, 'ERROR: failed to find >', spec , \
-            '< in names list, trying planeflight equivilent', '<'*30
+        print '>'*30, 'ERROR: failed to find >{}<'.format(spec) + \
+            '< in names list ({}), trying planeflight equivilent'. format( \
+            ver ),  '<'*30
 #        print spec, GC_var('GCFP_d2TRA')[spec]
+        print names 
         spec = what_species_am_i( spec, ver=ver, invert=True ) 
 
         # Get index in list
@@ -244,7 +249,8 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
     if  any( [(location == i)  for i in plane_data ]):
         j =names.index( 'PRESS' )
         press = model[:,j]
-        print [ ( len(i) , min(i), max(i) )  for i in [data, press]]
+        if debug:
+            print [ ( len(i) , min(i), max(i) )  for i in [data, press]]
         press = [ np.float(i) for i in press ]
         km =  np.array( hPa_to_Km( press )  )
         if r_datetime:
@@ -559,7 +565,7 @@ def wd_pf_2_gaw_arr( wd, spec='O3', location='CVO', scale=1E9 ):
     return data, date, time
 
 # ----
-#  3.11 - Process "raw" csv files from GEOS-Chem planeflight output
+#  2.11 - Process "raw" csv files from GEOS-Chem planeflight output
 # ----
 def pro_raw_pf( wd, site='CVO', ext='', run='', frac=False, diurnal=True, \
             res='4x5', debug=False ):
@@ -591,6 +597,51 @@ def pro_raw_pf( wd, site='CVO', ext='', run='', frac=False, diurnal=True, \
     print fp
     fp[:] = months[:]
     np.memmap.flush(fp)
+
+# ----
+# 2.12 - Read pf data from 2D NetCDF table file 
+# ----
+def get_pf_data_from_NetCDF_table( ncfile=None, req_var='TRA_69', spec='IO', \
+            loc='CVO', start=None, end=None, ver='1.7', verbose=False, \
+            debug=False  ):
+    """ Extracts data from NetCDF file processed by pf2NetCDF (pandas) 
+        converter in PhD_Progs/MChem_tools 
+    """
+
+    # Convert to plane-flight (pf) variable name ('req_var') if not given
+    if isinstance( req_var, type(None) ):
+        req_var = what_species_am_i( spec, ver=ver, invert=True ) 
+
+    # --- Open NetCDF within nest, and extract data
+    with Dataset( ncfile, 'r' ) as rootgrp:
+
+        # Select only variables for site
+        LOC = rootgrp['LOC']
+        Epoch = rootgrp['Epoch']
+        data =  rootgrp[ req_var ]
+        # Convert to numpy array
+        LOC, Epoch, data = [ np.array(i) for i in LOC, Epoch, data ]
+
+    # Select just the variable requests
+    if debug:
+        print LOC
+    ind = np.where( LOC == loc  )
+    if debug:
+        print ind
+    Epoch = Epoch[ ind ]
+    data = data[ ind ]
+
+    # Covert Epoch to datetime
+    if debug:
+        print Epoch[0] 
+    dates = [ datetime_.fromtimestamp(i) for i in Epoch ]
+    if debug:
+        print dates[0] 
+
+    # Select dates ( <= add this )
+    
+
+    return dates, data
 
 # --------------------------------- Section 3  ---------------------------------
 # -------------- Planeflight Analysis/Post formating 

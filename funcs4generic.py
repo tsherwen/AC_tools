@@ -847,7 +847,7 @@ def NH_unmasked(  res='4x5' ):
         lats = np.arange(1, 91,1 )
     if res == '2x2.5':
         lats = np.arange(0, 89,1 )
-        print 'CHECK mask for non 4x5 resolutions'
+        print 'CHECK (NH) mask for non 4x5 resolutions'
 #        sys.exit(0)
     lats = [ get_gc_lat(i, res=res) for i in lats ]
     for i in lats:
@@ -864,7 +864,7 @@ def SH_unmasked(  res='4x5' ):
         lats = np.arange(-89, 0,1 )        
     if res == '2x2.5':
         lats = np.arange(-90, 0,1 )
-        print 'CHECK mask for non 4x5 resolutions'
+        print 'CHECK (SH) mask for non 4x5 resolutions'
 #        sys.exit(0)
     lats = [ get_gc_lat(i, res=res) for i in lats ]
     for i in lats:
@@ -1020,8 +1020,10 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
 
 
     # --- This is a simple way of using masks ( as multiplers )
-    # i.e. all (future) functions should have use_multiply_method=True 
+    # i.e. all (future) functions should have use_multiply_method=False
+    # and not use the code below 
     if use_multiply_method:  # Kludge
+        print '!'*50, 'WARNING: using mulitply method for masking. '
     
         # For case, pull mask from case list 
         if case == 0:

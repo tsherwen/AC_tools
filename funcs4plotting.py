@@ -62,7 +62,7 @@ from math import log10, floor
 # 1.14 - plot up monthly timeseries from ...
 # 1.15 - plot up daily timeseries from ...
 # 1.16 - plot up timeseries from May through Septmeber
-# 1.17 - plot up timeseries from July 
+# 1.17 - plot up timeseries from between two given months 
 # 1.18 - North Pole plot
 # 1.19 -  South pole plot
 # 1.20 - PDF of monthly surface change plots for given species
@@ -79,7 +79,11 @@ from math import log10, floor
 # 1.31 - PDF of annual zonal change plots for given species
 # 1.32 - Figure generation ( just provide lon, lat np array )
 # 1.33 - Zonal Figure maker ( just provide lon, lat np array )
-
+# 1.34 - Lat plotter of average + Q1/Q3
+# 1.35 - Timeseries plotter ( takes datetime + np.array )
+# 1.36 - Get monthly surface plots for (4D) array 
+# 1.37 - Get monthly zonal plots for (4D) array 
+# 1.38 - Stackplot for variables over X axis
 
 # --------------- ------------- ------------- ------------- ------------- 
 # ---- Section 4 ----- Plotting Ancillaries 
@@ -944,7 +948,10 @@ def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
 def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
             title=None, legend=False, everyother=24,  x_nticks=12, \
             window=False, label=None, ylabel=None, loc='upper right',  \
-            lw=1,ls='-', color=None, showmeans=False, debug=False ):
+            lw=1,ls='-', color=None, showmeans=False, boxplot=True, \
+            plt_median=False, plot_Q1_Q3=False, pcent1=25, pcent2=75, \
+            ylim=None, \
+            debug=False ):
     """ Plot up timeseries of seasonal data. Requires data, and dates in numpy
         array form. Dates must be as datetime.datetime objects. """
 
@@ -961,11 +968,34 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     # Get Data by month
     monthly =[ df[df.index.month==i]  for i in months ]
     print [i.shape for i in monthly ]
-    
-    bp = ax.boxplot( monthly, months, showmeans=showmeans ) 
-    ax.set_xticklabels( labels )
 
+    if boxplot:    
+        bp = ax.boxplot( monthly, months, showmeans=showmeans ) 
+    else:
+        # remove nans to allow for percentile calc.
+        data_nan = [ np.ma.array(i).filled( np.nan ) for i in monthly ]
+        data_nan = [ i.flatten() for i in data_nan ]
+
+        if plt_median:
+            plt.plot( months, \
+                [ np.nanpercentile( i, 50, axis=0 ) for i in data_nan ], \
+                color=color, lw=lw, ls=ls, label=label  )
+            if plot_Q1_Q3: # Plot quartiles as shaded area?
+                low = [ np.nanpercentile( i, pcent1, axis=0 ) \
+                    for i in data_nan ]
+                high = [ np.nanpercentile( i, pcent2, axis=0 ) \
+                    for i in data_nan ]
+                ax.fill_between( months, low, high, alpha=0.2, \
+                    color=color   )            
+        else:
+            plt.plot( months, [i.mean() for i in monthly ], color=color, 
+            lw=lw, ls=ls, label=label ) 
+    
     # Beatify plot
+    ax.set_xticks( months )
+    ax.set_xticklabels( labels )
+    if not isinstance( ylim, type(None) ):
+        ax.set_ylim( ylim )
     if not isinstance( title, type(None) ):
         plt.title( title )
     if not isinstance( ylabel, type(None) ):
@@ -974,13 +1004,20 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
 # --------------
 # 1.15 - plot up daily timeseries from ...
 # -------------
-def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,                  
-                bin_size=1/24.,widths=0.01, rotatecbunit = 'vertical', 
-                white_fill=True, alpha=0.1, linewidth=0.5,xlabel=True, 
-                title=None, f_size=7.5, units='ppbv', scale='linear', \
-                showmeans=False, debug=False ):
+def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,  \
+            bin_size=1/24.,widths=0.01, rotatexlabel = 'vertical', \
+            white_fill=True, alpha=0.1, linewidth=0.5,xlabel=True, \
+            title=None, alt_text=None, f_size=7.5, units='ppbv',     
+            showmeans=False, plt_median=False, boxplot=True, 
+            ylabel=True, color='blue', label=None, \
+            plot_Q1_Q3=True, pcent1=25, pcent2=75,  debug=False ):
     """ Plot up daily timeseries of values. Requires data, and dates in numpy 
-        array form. Dates must be as datetime.datetime objects. """
+        array form. Dates must be as datetime.datetime objects. 
+    
+    Notes:
+        - Boxplot is the default presentation of data    
+        - Otherwise a meidan is used
+    """
 
     # get_day_fraction(i) 
     dates = np.array( [ get_day_fraction(i) for i in dates ] )
@@ -989,23 +1026,51 @@ def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,
     b_all, bins_used = bin_data( data, dates, bin_size, debug=debug )
 
     # Plot
-    bp = ax.boxplot( b_all,  positions=bins_used, widths=widths, \
-        showmeans=showmeans, patch_artist=True )
+    if boxplot:
+        bp = ax.boxplot( b_all,  positions=bins_used, widths=widths, \
+            showmeans=showmeans, patch_artist=True )
+    else:
+        # remove nans to allow for percentile calc.
+#        print b_all
+        data_nan = [ np.ma.array(i).filled( np.nan ) for i in b_all ]
+        data_nan = [ i.flatten() for i in data_nan ]
+
+        # Plot average
+        if plt_median:
+            ln = plt.plot( bins_used, \
+                [ np.nanpercentile( i, 50, axis=0 ) for i in data_nan ], \
+                color=color, label=None   )
+        else:
+            ln = plt.plot( bins_used, [i.mean() for i in data_nan], color=color)
+
+        # Plot quartiles as shaded area?
+        if plot_Q1_Q3:
+
+            low = [ np.nanpercentile( i, pcent1, axis=0 ) for i in data_nan ]
+            high = [ np.nanpercentile( i, pcent2, axis=0 ) for i in data_nan ]
+            ax.fill_between( bins_used, low, high, alpha=0.2, color=color   )
 
     # Beautify 
+    if not isinstance( title, type(None) ):
+        plt.title(title, fontsize=f_size )
+    if not isinstance( alt_text, type(None) ):
+#        ax.text(x=0.85,y=0.85, s=alt_text, fontsize=f_size*1.5 )
+        ax.annotate( alt_text , xy=(0.85, 0.85),  textcoords='axes fraction')
+
     ax.set_xticklabels( np.arange(0,24,1 )  )
-    plt.xticks( np.arange(0,1,1/24. ), fontsize=f_size, rotation=rotatecbunit )
+    plt.xticks( np.arange(0,1,1/24. ), fontsize=f_size*.75, \
+        rotation=rotatexlabel )
 #    plt.xlim(-0.05, 23/24.)
     plt.xlim(-0.05, 1.0)
-
-    plt.ylabel(units, fontsize=f_size)
-    plt.yticks( fontsize=f_size)
-    if (title != None):
-        plt.title(title, fontsize=f_size )
     if xlabel:
-        plt.xlabel('Hour of day', fontsize=f_size)
-    plt.ylabel('{}'.format(units), fontsize=f_size)
-
+        ax.set_xlabel('Hour of day', labelpad=f_size)
+    else:
+        ax.tick_params( axis='x', which='both', labelbottom='off')    
+    # Setup y axis 
+    if ylabel:
+        ax.set_ylabel('{}'.format(units), labelpad=f_size)
+    else:
+        ax.tick_params( axis='y', which='both', labelleft='off')
 
     # --- Highlight bins        
     bs = np.arange(0, 24, bin_size )#[ bs[0] - bin_size ] + bs 
@@ -1016,7 +1081,7 @@ def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,
 # --------------
 # 1.16 - plot up timeseries from May through Septmeber
 # -------------
-def timeseries_May_Sept_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
+def timeseries_by_day_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
             title=None, legend=False, everyother=7,  x_nticks=12, \
             window=False, label=None, ylabel=None, loc='upper right',  \
             lw=1,ls='-', color=None, start_month=5, end_month=9, 
@@ -1072,7 +1137,7 @@ def timeseries_May_Sept_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
 
 
 # --------------
-# 1.17 - plot up timeseries from July 
+# 1.17 - plot up timeseries from between two given months 
 # -------------
 def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
             title=None, legend=False, everyother=7*24,  x_nticks=12, \
@@ -1089,7 +1154,7 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
 
     # remove dates outside of range (start_month > < end_month )
     def get_month(x):
-         return x.month
+        return x.month
     df[ 'month'] = df.index.map( get_month ) 
     df = df[ df['month']<=end_month ]
     df = df[ df['month']>=start_month ]
@@ -1100,6 +1165,7 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     days = [i.to_datetime() for i in df.index ]
     labels = [i.strftime("%-d %b") for  i in days ][::everyother]
 
+    # Color in line another provided variables
     if color_by_z:
         if debug:
             print 'Coloring line by normalised z values'
@@ -1131,9 +1197,6 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         plt.ylabel( ylabel )
     if legend:
         plt.legend( fontsize=f_size*.75, loc=loc )
-
-#    if r_plt:
-#        return plt
 
 # --------
 # 1.18 - North Pole surface plot
@@ -1323,7 +1386,6 @@ def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False,
             t.set_fontsize(f_size)
         if units != None:
             cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)                      
-
     # Set number of ticks
     if  (not no_cb):
         if set_cb_ticks:
@@ -1784,7 +1846,7 @@ def create_plot4case( fig, ax, dates, data, spec, f_size=20, lw=None, ls=None, \
             ls=ls, lw=lw, loc=loc, legend=legend, f_size=f_size)
 
     if case == 4:
-        timeseries_May_Sept_plot( ax, dates, data,  \
+        timeseries_by_day_plot( ax, dates, data,  \
             label=label, ylabel=units, color=color, \
             title=latex_spec_name(spec), boxplot=boxplot, \
             ls=ls, lw=lw, loc=loc, legend=legend, f_size=f_size)
@@ -2367,7 +2429,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     norm=None, nticks=10, format=None, units=None, extend='neither', ax=None, \
     discrete_cmap=False, f_size=15, fig=None, left_cb_pos=0.86, cb_ax=None, \
     bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
-    dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, \
+    dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, title=None, \
     window=False, interval=1, ylabel=True,\
     no_cb=True, return_m=False, log=False, verbose=False, debug=False ):
     """
@@ -2416,6 +2478,10 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
                     fixcb_buffered=fixcb_buffered, interval=interval,\
                     ylabel=ylabel, verbose=verbose, debug=debug )
 
+    # if 
+    if not isinstance( title, type(None) ):
+        plt.title( title, fontsize=f_size )
+
     # Manually Add colorbar
     if no_cb:
         cb_ax = mk_cb(fig, units=units, left=left_cb_pos,  cmap=cmap, \
@@ -2442,13 +2508,13 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 # --------
 def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
     norm=None, nticks=10, format=None, units=None, extend='neither', \
-    discrete_cmap=False, f_size=15, fig=None, res='4x5', wd=None, \
+    discrete_cmap=False, f_size=15, fig=None, res='4x5', wd=None, t_ps=None, \
     trop_limit=True, axn=None, cb_ax=None, orientation='vertical', \
     bottom=0.1, top=0.975, hspace=0.4, wspace=0.5, left=0.075, right=0.875, \
     cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160, no_cb=True, \
     region='All', lat_0=None, lat_1=None, pdftitle=None, return_m=False, \
     rtn_plt_vars=False, set_window=False, pdf=False, show=True, log=False, \
-    window=False, xlabel=True, ylabel=True, \
+    window=False, xlabel=True, ylabel=True, title=None, \
     interval=None, verbose=False, debug=False ):
 
     if verbose:
@@ -2509,8 +2575,12 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
             verbose=verbose, debug=debug )
 
     # Only show troposphere
-    t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], trop_limit=True )
+    if isinstance( t_ps, type(None) ):
+        t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], trop_limit=True )
     greyoutstrat( fig, t_ps.mean(axis=0).mean(axis=-1), axn=axn, res=res )
+
+    if not isinstance( title, type( None ) ):
+        plt.title( title, fontsize=f_size*.75 )
 
     # Manually Add colorbar
     if no_cb: 
@@ -2534,6 +2604,406 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
     if return_m or rtn_plt_vars:
         return [ fig, cmap, fixcb ]# + plt_vars + [ fixcb ] #+= [ cb_ax ]
 
+# --------
+# 1.34 - Lat plotter of average + Q1/Q3
+# --------
+def plot_arr_avg_Q1_Q3( X, Y, ax=None, color='blue', label=None, \
+        plt_mean=True, plt_median=False, pcent1=25, pcent2=75, \
+        verbose=False, debug=False ):
+    """ Takes a X and Y to plot a mean, Q1 and Q3.
+    Notes:
+        Y = 2D array (e.g. lon, lat)  
+        X = 1D araray ( e.g. lat )
+        Default fill is Q1 to Q3, but others ranges can be specified
+    """
+    if isinstance( ax, type(None) ):
+        ax= plt.gca()
+
+    # Plot up mean of Y values
+    if plt_mean:
+        ln = plt.plot( X, Y.mean(axis=0), color=color, label=label )
+
+    # Show quartiles ( 25th 57th  )    
+    Y_nan = Y.filled( np.nan )
+    low = np.nanpercentile( Y_nan, pcent1, axis=0 )
+    high = np.nanpercentile( Y_nan, pcent2, axis=0 )
+    ax.fill_between( X, low, high, alpha=0.2, color=color   )
+    if plt_median:
+        ln = plt.plot( X, np.nanpercentile( Y_nan, 50, axis=0 ), \
+            color=color, label=label )
+
+    # return plot object
+    return ln
+
+# --------------
+# 1.35 - Timeseries plotter ( takes datetime + np.array )
+# -------------
+def timeseries_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
+            title=None, legend=False, everyother=7*24,  x_nticks=12, \
+            window=False, label=None, ylabel=None, loc='upper left',  \
+            lw=1,ls='-', color=None, start_date=None, end_date=None, \
+            boxplot=True, showmeans=False, alt_text=None, r_plt=False, \
+            unitrotation=45, color_by_z=False, fig=None,  xlabel=True, \
+            positive=None, \
+            plt_median=False, add_Q1_Q3=False, pcent1=25, pcent2=75, \
+            debug=False ):
+    """ Plot up timeseries of values. Requires data, and dates in numpy 
+        array form. Dates must be as datetime.datetime objects. """
+
+    # Process data - reduce resolution to daily, and get std
+    df = DataFrame( data, index=dates )
+
+    # Take start and end dates from "dates" if not set in arguments. 
+    if isinstance( start_date, type(None) ):
+        start_date = dates[0]
+    if isinstance( end_date, type(None) ):
+        end_date = dates[-1]
+    df = df[ start_date:end_date]
+
+    # label once per week ( set by "everyother" ) 
+    days = [i.to_datetime() for i in df.index ]
+    labels = [i.strftime("%-d %b") for  i in days ][::everyother]
+
+    # Color in line another provided variables
+    if color_by_z:
+        if debug:
+            print 'Coloring line by normalised z values'
+        print df.columns
+        x = df.index
+        y, z = [ df[ df.columns[i] ] for i in range(2) ]
+        cmap = get_colormap( z.copy(), positive=positive )
+        print [ ( i.min(), i.max() ) for i in x, y, z ]
+        colorline(x, y, z, cmap=cmap, linewidth=lw, ax=ax, \
+            norm=plt.Normalize( 0, 360 ), fig=fig ) #np.min(z), 1500))
+#        colorline(x, y, linewidth=lw, ax=ax)
+
+    else:
+        if plt_median: # Plot average
+            pass
+#            ln = plt.plot( days, np.nanpercentile( df.values, 50, ), 
+#                color=color, ls=ls, lw=lw, label=None   )
+        else: # Plot all
+            plt.plot( days, df.values, label=label, color=color, ls=ls, lw=lw  )
+
+    # Plot quartiles as shaded area?
+    if plot_Q1_Q3:
+        pass
+#        low =np.nanpercentile( df.values, pcent1, )
+#        high = np.nanpercentile( df.values, pcent2, )
+#        ax.fill_between( bins_used, low, high, alpha=0.2, color=color   )
+            
+    # Setup X axis 
+    if xlabel:
+        plt.xticks( days[::everyother], labels, rotation=unitrotation, \
+            fontsize=f_size )
+    else:
+        plt.tick_params( axis='x', which='both', labelbottom='off')
+
+    # Beautify plot
+    if not isinstance( title, type(None) ):
+        plt.title( title + ' for {}-{}'.format( start_date.strftime( \
+            '%d/%m/%y' ), end_date.strftime( '%d/%m/%y' ) ),
+             fontsize=f_size )
+    # Alt text annotate as fig text?
+    if not isinstance( alt_text, type(None) ):
+        plt.figtext(x=0.05,y=0.85, s=alt_text, fontsize=f_size*.75 )
+    # Setup y axis 
+    plt.yticks( fontsize=f_size )
+    if not isinstance( ylabel, type(None) ):
+        plt.ylabel( ylabel, fontsize=f_size )
+    # Legend?
+    if legend:
+        plt.legend( fontsize=f_size*.75, loc=loc )
+
+
+
+# --------
+# 1.36 - Get monthly surface plots for (4D) array 
+# --------
+def plt_4Darray_surface_by_month( arr, res='4x5', dpi=160, \
+        no_dstr=True, f_size=10, dlist=None, fixcb=None, \
+        savetitle='', extend='neither',  wd=None, ax=None, fig=None, \
+        sigfig_rounding_on_cb=3, nticks=7, discrete_cmap=False, \
+        units=None, set_window=False, lat_0=None, lat_1=None, \
+        return_m=False, log=False, window=True, interval=3, ylabel=True,\
+        norm=None, fig_title=False, pdftitle='',
+        pdf=False, show=False, verbose=False, debug=False):   
+    """ Create a window plot of surface amp plots from a 4D array
+     """
+    # Setup local variables + figure
+    left=0.025; right=0.9; bottom=0.05; top=0.9; hspace=0.315; wspace=0.05
+    fig  = plt.figure(figsize=(14, 10), dpi=dpi, facecolor='w', edgecolor='k')
+
+    # Get datetime
+    if isinstance( dlist, type(None) ):
+        dlist = get_gc_datetime( wd=wd )
+
+    # set cb ranges for whole data period
+    if isinstance( fixcb, type(None) ):
+        fixcb  = [( i.min(), i.max() ) for i in [arr]][0]
+
+    # Create figure if not provided
+    if isinstance( fig, type(None) ):
+        fig = plt.figure(figsize=(15, 10), dpi=dpi, 
+                    facecolor='w', edgecolor='k') 
+
+    # Set readable levels for cb, then use these to dictate cmap
+    lvls = get_human_readable_gradations( vmax=fixcb[1],  \
+                    vmin=fixcb[0], nticks=nticks, 
+                    sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
+
+    # Setup Colormap
+    cmap, fixcb_buffered = get_colormap( np.array( fixcb ), \
+        nticks=nticks, fixcb=fixcb, buffer_cmap_upper=True )
+
+    if discrete_cmap:
+        cmap, norm = mk_discrete_cmap( nticks=nticks,\
+                vmin=fixcb[0], vmax=fixcb[1], cmap=cmap )
+
+    if debug:
+        print  [ (i.min(), i.max(), i.mean()) for i in [ arr.mean(axis=0) ] ]
+                
+    # Loop thorugh months
+    for m, month in enumerate(dlist):
+
+        # add axis
+        ax = fig.add_subplot(4,3,m+1)
+
+        print arr[...,m].mean(axis=0).shape, arr.shape
+
+        # Plot up
+        map_plot( arr[...,0,m].T, format=format, cmap=cmap, ax=ax, \
+                    fixcb=fixcb, return_m=return_m, log=log, window=window, \
+                    no_cb=True, norm=norm, f_size=f_size*.75,  res=res, \
+                    fixcb_buffered=fixcb_buffered, interval=interval,\
+                    ylabel=ylabel, verbose=verbose, debug=debug )
+
+        # add month
+        plt.title(month.strftime("%b"), fontsize=f_size*2)
+
+    # Add single colorbar
+    mk_cb(fig, units=units, left=0.9, cmap=cmap, vmin=fixcb[0], \
+        vmax=fixcb[1], nticks=nticks, f_size=f_size, extend=extend ) 
+
+    print nticks, fixcb, lvls
+
+
+    # sort out ascetics -  adjust plots and add title
+    fig.subplots_adjust( bottom=bottom, top=top, left=left, \
+        right=right,hspace=hspace, wspace=wspace)
+    if fig_title:
+        fig.suptitle(  '{}'.format( latex_spec_name(spec) ), fontsize=f_size*2, 
+            x=.55 , y=.95  )
+
+    #  save as pdf ?
+    if pdf:
+        plot2pdf( title=pdftitle )    
+    if show:
+        plt.show()
+
+# --------
+# 1.37 - Get monthly surface plots for (4D) array 
+# --------
+def plt_4Darray_zonal_by_month( arr, res='4x5', dpi=160, \
+        no_dstr=True, f_size=10, dlist=None, fixcb=None, \
+        savetitle='', extend='neither',  wd=None, ax=None, fig=None, \
+        sigfig_rounding_on_cb=3, nticks=7, discrete_cmap=False, \
+        units=None, set_window=False, lat_0=None, lat_1=None, \
+        return_m=False, log=False, window=True, interval=3, ylabel=True,\
+        norm=None, fig_title=False, pdftitle='', t_ps=None, xlabel=True, \
+        format=None, orientation='vertical', trop_limit=True, region='All', 
+        pdf=False, show=False, verbose=False, debug=False):   
+    """ Create a window plot of surface amp plots from a 4D array
+     """
+
+    # Average over lon
+    arr =  arr.mean(axis=0)
+
+    # Setup local variables + figure
+    left=0.075; right=0.875; bottom=0.085; top=0.955; hspace=0.325; wspace=0.1
+    fig  = plt.figure(figsize=(7, 7), dpi=dpi, facecolor='w', edgecolor='k')
+
+    # Get datetime
+    if isinstance( dlist, type(None) ):
+        dlist = get_gc_datetime( wd=wd )
+
+    # set cb ranges for whole data period
+    if isinstance( fixcb, type(None) ):
+        fixcb  = [( i.min(), i.max() ) for i in [arr]][0]
+
+    # Create figure if not provided
+    if isinstance( fig, type(None) ):
+        fig = plt.figure(figsize=(15, 10), dpi=dpi, 
+                    facecolor='w', edgecolor='k') 
+
+    # Set readable levels for cb, then use these to dictate cmap
+    lvls = get_human_readable_gradations( vmax=fixcb[1],  \
+                    vmin=fixcb[0], nticks=nticks, 
+                    sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
+
+    # Setup Colormap
+    cmap, fixcb_buffered = get_colormap( np.array( fixcb ), \
+        nticks=nticks, fixcb=fixcb, buffer_cmap_upper=True )
+
+    if discrete_cmap:
+        cmap, norm = mk_discrete_cmap( nticks=nticks,\
+                vmin=fixcb[0], vmax=fixcb[1], cmap=cmap )
+
+    if debug:
+        print  [ (i.min(), i.max(), i.mean()) for i in [ arr ] ]
+
+    # Get time in the troposphere diagnostic if not provide as agrument
+    if isinstance( t_ps, type(None) ):
+        t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], trop_limit=True )
+                
+    # Loop thorugh months
+    for m, month in enumerate(dlist):
+
+        # add axis
+        axn =[ 4, 3, m+1 ]
+        ax = fig.add_subplot( *axn )  
+
+        # set when to use y and x labels
+        xlabel=False
+        if m in range(12)[-3:]:
+            xlabel=True
+        ylabel=False
+        if m in range(12)[::3]:
+            ylabel=True
+
+        # Plot zonally 
+        zonal_plot( arr[...,m], fig,  ax=ax, set_window=set_window, log=log,\
+            format=format, cmap=cmap, lat_0=lat_0, lat_1=lat_1, \
+            fixcb=fixcb, f_size=f_size*.75, res=res, norm=norm, \
+            fixcb_buffered=fixcb_buffered, no_cb=True, trop_limit=True,\
+            window=window, interval=interval, xlabel=xlabel, ylabel=ylabel,\
+            verbose=verbose, debug=debug )
+
+        # Only show troposphere
+        greyoutstrat( fig, t_ps.mean(axis=0).mean(axis=-1), axn=axn, res=res )
+        
+        # add month
+        plt.title(month.strftime("%b"), fontsize=f_size*2)
+
+    # Add single colorbar
+    mk_cb(fig, units=units, left=0.905, cmap=cmap, vmin=fixcb[0], \
+        vmax=fixcb[1], nticks=nticks, f_size=f_size, extend=extend ) 
+    if debug:
+        print nticks, fixcb, lvls
+
+    # sort out ascetics -  adjust plots and add title
+    fig.subplots_adjust( bottom=bottom, top=top, left=left, \
+        right=right, hspace=hspace, wspace=wspace)
+    if fig_title:
+        fig.suptitle(  '{}'.format( latex_spec_name(spec) ), fontsize=f_size*2, 
+            x=.55 , y=.95  )
+
+    #  save as pdf ?
+    if pdf:
+        plot2pdf( title=pdftitle )    
+    if show:
+        plt.show()
+
+# --------
+# 1.38 - Stackplot for variables over X axis
+# --------
+def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
+        fig=None, ax=None, dpi=160, show=False, f_size=10, legend=False, \
+        colors=None, title=None, loc='upper right', ylim=None, xlim=None, \
+        lw=8.0, ylabel=None, log=False, verbose=False, debug=False):
+    """ Produce a stacked plot (by X axis) for values in Y array. 
+    
+    NOTE:
+        - MPL only contains a stackplot function for Y axis, this function is 
+        based on that code  (https://github.com/matplotlib/matplotlib/blob/3ae7c2a32ddd9809552315458da1dd70afec1b15/lib/matplotlib/stackplot.py )
+        - X must be a list of numpy arrays 
+        - Y must be a numpy array
+    """
+    debug=True
+    if debug:
+        print 'X_stackplot called, with X[0] shape {}'.format( X[0].shape )
+
+    # --- fig and ax provided? Otherwise create these... 
+    if isinstance( fig, type(None) ):
+        fig = plt.figure( figsize=(8,8), dpi=dpi, facecolor='w', \
+            edgecolor='k')
+        if debug:
+            print 'Creating figure'
+
+    if isinstance( ax, type(None) ):
+        ax = fig.add_subplot( 1,1,1  )
+        if debug:
+            print 'Creating ax'
+
+    print zip( labels, [ colors[:len(labels)] ] )
+    print zip( labels,  [np.sum(i) for i in X] )
+
+
+    # --- stack arrays if
+#    if len( X ) == 1:
+#        X = np.atleast_2d( X )
+#  elif len( X ) > 1:
+    if isinstance( X, np.ndarray ):
+        X = np.ma.atleast_2d( X )
+    else:
+        X = np.ma.column_stack( X )
+    # Assume data passed has not been 'stacked', so stack it here.
+    stack = np.ma.cumsum( X, axis=1)
+
+    print zip( labels,  [np.sum(stack[:,n]) for n, i in enumerate(labels) ] )    
+#    sys.exit()
+
+    # --- Setup baseline ( can expand to include other options... )
+    if baseline == 'zero':
+        first_line = np.zeros( stack[:,0].shape)
+    
+    # --- plot by label
+    # Get list of colors
+    if isinstance( colors, type(None) ):
+        colors = color_list( len(stack[0,:]) )
+
+    # Color between x = 0 and the first array.
+    print stack[:, 0]
+    r =[]
+    r += [ ax.fill_betweenx( Y, first_line, stack[:, 0],
+                               color=colors[0], 
+                                label=labels[0]) ]
+    # Color between array i-1 and array i
+    r +=  [ ax.fill_betweenx(Y, stack[:,i], stack[:,i+1],
+                                   color=colors[i+1], 
+                                   label=labels[i+1] ) 
+                                   for i in range( 0, len(stack[0,:])-1 ) ]
+
+    # plot transparent lines to get 2D line object to create lengend
+    [ plt.plot( Y, stack[:,n], alpha=0, color=colors[n], label=i) \
+        for n,i in enumerate(labels) ]
+
+    # Log scale?
+    if log:
+        ax.set_xscale('log')
+
+    # Beautify plot
+    if not isinstance( ylim, type(None) ):
+        plt.ylim( ylim )
+    if not isinstance( xlim, type(None) ):
+        plt.xlim( xlim )
+    if not isinstance( title, type(None) ):
+        plt.title( title, fontsize=f_size )
+    if legend:
+        # Add legend ( + update line sizes)
+        leg = plt.legend( loc=loc, fontsize=f_size*.75 )
+        for legobj in leg.legendHandles:
+                legobj.set_linewidth( lw)
+                legobj.set_alpha( 1 )
+    # remove tick labels on y axis 
+    if ylabel:
+        plt.ylabel( ylabel, fontsize=f_size  )
+    else:
+        ax_tmp = plt.gca()
+        ax_tmp.tick_params( axis='y', which='both', labelleft='off')
+
+    if show:
+        plt.show()
 
 # --------------------------- Section 4 ------------------------------------
 # -------------- Plotting Ancillaries 
@@ -2682,17 +3152,15 @@ def markers_list(rm_plain_markers=False):
 # 4.08- box X-Y plot with histograms
 # -------------
 def Trendline( ax, X, Y, order =1, intervals= 700, f_size=20, 
-            color='blue', lw=1 ):
+            color='blue', lw=1, debug=False ):
         """ Add a trend line to existing plot """
         params, xp = np.polyfit( X, Y, order  ), \
             np.linspace( min(np.ma.min(X), np.ma.min(Y) ), \
             max(np.ma.max(X), np.ma.max(Y) ), intervals )
-
+        if debug:
+            print params
         yp = np.polyval( params, xp )
 
-        
-        print params
-#        sys.exit( )
 
         # Regression 
         r_sq =  [ r_squared(X, i ) for i in [Y]]

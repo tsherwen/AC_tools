@@ -6,6 +6,7 @@
 
 import numpy as np
 from netCDF4 import Dataset
+from pandas import DataFrame
 import platform
 import sys
 
@@ -55,7 +56,7 @@ def get_dir( input, loc='earth0' ):
         'rwd'  :home+'PhD/Data/MUTD_iGEOS-Chem_output/',
         'dwd'  :  home+'PhD/Data/' ,
         'npwd' : home+'PhD/Data/np_arrs/' ,
-        'tpwd' : home+'GITHub/tools_progs/' ,
+        'tpwd' : home+'GITHub/PhD_progs/' ,
         'ppwd' : home+'Pictures/'  
         }
 
@@ -65,10 +66,10 @@ def get_dir( input, loc='earth0' ):
         d = { 
         'rwd'  : home +'data/all_model_simulations/iodine_runs/',
         'dwd'  :  home +'data/',
-        'fwd' : home+ 'labbook/tools_progs/d_fast-J_JX/data/',
+        'fwd' : home+ 'labbook/PhD_progs/d_fast-J_JX/data/',
         'lwd'  :  home +'labbook/',
         'npwd' : home +'data/np_arrs/',
-        'tpwd' : home +'labbook/tools_progs/' ,
+        'tpwd' : home +'labbook/PhD_progs/' ,
         'ppwd' : home +'labbook/plots_images/'  
         }
 
@@ -80,7 +81,7 @@ def get_dir( input, loc='earth0' ):
         'dwd'  :  home +'data/',
         'lwd'  :  home +'labbook/',
         'npwd' : home +'data/np_arrs/',
-        'tpwd' : home +'labbook/tools_progs/'  
+        'tpwd' : home +'labbook/PhD_progs/'  
         }
     return d[input]
 
@@ -156,8 +157,11 @@ def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
             lon_var=u'longitude', lat_var=u'latitude', debug=False ):
     """ Return lon, lat, and alt for a given resolution. 
         This function uses an updated version of gchem's variable 
-        dictionaries """ 
+        dictionaries 
     
+    NOTE:
+        - This function replaces most use dictionaries from "gchemgrid"
+    """ 
     # Kludge. Update function to pass "wd" 
     # if model output directory ("wd") not provided use default directory
     if isinstance( wd, type(None) ):
@@ -272,27 +276,31 @@ def iGEOSChem_ver(wd, verbose=True, debug=False):
     """ get iGEOS-Chem verson - iGEOS-Chem 
         e.g. iGeosChem 1.1 or 1.2 from dir name ( wd ) 
     """
-
-    vers = [
-    '1.1','1.2', '1.3', '1.4', '1.5', '1.6', '1.7', '2.0', '3.0'
-    ]
-    if verbose:
-        print wd
-    
-    v = [ (i in wd) for i in vers ]
+    # List iGEOSChem versions+ then DataFrame
+    versions = [
+    '1.1','1.2', '1.3', '1.4', '1.5', '1.6', '1.6.1', '1.6.2', \
+     '1.6.3', '1.7', '2.0', '3.0'  ]
+    df= DataFrame( versions, columns=['Versions'] )
     if debug:
-        print vers, v
-    return [vers[n] for n, i in enumerate(v) if i==True ][0]
+        print wd, versions, df
 
+    # Which versions are in name?
+    def element_in_str( element ): 
+       return (element in wd)
+    df['Run Version'] = df['Versions'].apply( element_in_str )
 
+    # Select last value and return as string
+    return df['Versions'][ df['Run Version'] ][-1:].values[0]
 
 
 # --------------                                                                                 
 # 1.99 - Reference data (lon, lat, and alt) adapted from gchem - credit: GK (Gerrit Kuhlmann )             
-# -------------                                                                                  
-"""
+# -------------                                                                                                                                      
+def gchemgrid(input=None, rtn_dict=False, debug=False):
+    d = {
+    """
  Updated to dictionary from gchemgrid (credit: Gerrit Kuhlmann ) with 
-     addition grid adds 
+     additional grid adds 
 
     This [function] contains (some) grid coordinates used within GEOS-Chem 
     as numpy arrays
@@ -315,10 +323,7 @@ def iGEOSChem_ver(wd, verbose=True, debug=False):
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""                                                                                        
-
-def gchemgrid(input=None, rtn_dict=False, debug=False):
-    d = {
+    """            
 
     # Altitude - Grid box level edges (eta coordinate):                                          
     'e_eta_geos5_r' : np.array([
