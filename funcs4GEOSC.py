@@ -93,6 +93,7 @@
 # 2.42 - Convert v/v to molec/cm3
 # 2.43 - mask non tropospheric boxes of 4D array
 # 2.44 - Convert [molec/cm3/s ] to [molec/yr] 
+# 2.44 - Get weighed average of latitude values
 
 # --------------- 
 # ---- Section 3 ----- Time processing
@@ -431,6 +432,9 @@ def get_air_mass_np( ctm_f=None, wd=None, times=None, trop_limit=True,\
             except NameError:
                 arr = scalar
 
+        if trop_limit:
+            arr = arr[...,:38,...]
+
     # Or use PyGChem 0.3.0 approach
     else:
         # Get air mass in kg
@@ -656,74 +660,94 @@ def wds2np( wds, spec='O3', res='4x5', category="IJ-AVG-$", trop_limit=False,
 # ----
 # 1.14 - Extract OH and HO2 for a given ctm.bpch file
 # ---
-def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, debug=False, \
-            wd=None, HOx_weight=False, res='4x5', scale=1E5 ):
+def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, \
+            wd=None, HOx_weight=False, res='4x5', scale=1E5, trop_limit=True, \
+             molec_weight=True, time_averaged=True, debug=False ):
     """ Get OH/HO2 concentrations from ctm.bpch file """
 
-    # Set/Get vars
-    vars = ['OH','HO2']
+    debug=True
+    if debug:
+        print 'get_OH_HO2 called for ', wd
+
+    # --- Set specs, get constants, and extract output variables
+    specs = ['OH','HO2']
     AVG= constants('AVG')
     RMM_air=constants('RMM_air')
-    # load arrays if not provided...
+    # Load arrays if not provided...
     if not isinstance(t_p, np.ndarray):
         if pygchem.__version__ == '0.2.0':
             t_p = get_gc_data_np( ctm, spec='TIMETROP', category='TIME-TPS', \
                 debug=debug)
         else:
             print 'WARNING!!! - provide time in trop diag. ' 
+            t_p = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], \
+                trop_limit=trop_limit ) 
+
     if not isinstance(a_m, np.ndarray):
         if pygchem.__version__ == '0.2.0':
             a_m = get_air_mass_np( ctm, debug=debug )
         else:
             print 'WARNING!!! - provide air mass diag. ' 
+            a_m = get_GC_output( wd, vars=['BXHGHT_S__AD'],  \
+                trop_limit=trop_limit, dtype=np.float64)
     if not isinstance(vol, np.ndarray):
         if pygchem.__version__ == '0.2.0':
             vol = get_volume_np( ctm, res=res, debug=debug)
         else:
             print 'WARNING!!! - provide vol diag. ' 
+            vol = get_volume_np( wd=wd, res=res, trop_limit=trop_limit, \
+                debug=debug)
 
-    # Extract Data 
+    # --- Extract OH and HO2 Data 
     if pygchem.__version__ == '0.2.0':
         OH, HO2 = [get_gc_data_np( ctm, \
-            i, category='CHEM-L=$')*t_p[:,:,:38,:] /scale for i in vars ] 
+            i, category='CHEM-L=$')*t_p[:,:,:38,:] /scale for i in specs ] 
     else:
         OH_HO2 = get_GC_output( wd, \
-            vars=['CHEM_L_S__'+i for i in vars] )*t_p[:,:,:38,:]/scale
-        OH, HO2 =  [OH_HO2[i,...] for i in range(len(vars )) ]
+            vars=['CHEM_L_S__'+i for i in specs] )*t_p[:,:,:38,:]/scale
 
-    # Convert data
+    OH, HO2 =  [OH_HO2[i,...] for i in range(len(specs )) ]
+
+    # --- Process data
     molecs = ( ( (a_m*1E3) / RMM_air ) * AVG )   # molecules
     moles =  a_m*1E3 / RMM_air # mols 
 
-    # only consider troposphere
+    # Only consider troposphere
     molecs, a_m, vol, moles = [i[:,:,:38,:]*t_p[:,:,:38,:]  \
                 for i in [molecs, a_m, vol, moles ]]  
     if debug:
         print [ (i.shape, np.mean(i) ) for i in [ OH, HO2, molecs, moles, a_m, \
             vol ]]
 
-    # convert HO2 to molec/cm3
-    # v/v * (mass total of air (kg)/ 1E3 (converted kg to g))  = moles of tracer => molecs.
-    HO2 = HO2 * moles * AVG 
-    HO2 =  HO2 / vol
+    # convert HO2 [v/v] to [molec/cm3]
+    HO2 = convert_v_v_2_molec_cm3( HO2, a_m=a_m, vol=vol )
 
+#    HO2 = HO2 * moles * AVG 
+#    HO2 =  HO2 / vol
+    # Remove invalid values
     HO2, OH  = [ np.ma.masked_invalid( i) for i in HO2, OH   ]
     HO2, OH  = [ np.ma.masked_where( i<0, i) for i in HO2, OH   ]
+    
+    # Average over provided timesteps ( 4th dimension )
+    if time_averaged:
+        HO2, OH, molecs, vol = [ i.mean(axis=-1) for i in HO2, OH, molecs, vol ]
 
     if debug:
         print [ ( np.ma.sum(i), np.ma.mean(i) ) for i in HO2, OH ]
         print 'volume weighted: ', [ np.ma.sum( i *vol) / np.ma.sum(vol) \
             for i in HO2, OH ] 
 
-    if HOx_weight:
+    if HOx_weight: # weigh by [HO]+[HO2] molecules
         HOx = HO2 + OH
         HO2, OH  = [ np.ma.sum( ( i* HOx )) /np.ma.sum(HOx) for i in HO2, OH   ]
         if debug:
             print [ i.shape for i in OH, HO2, moles, vol, HOx ]
             print  'HOx weighted: ',HO2, OH
 
-    # volume weight
-    else:
+    elif molec_weight: # weigh by # of molecules
+        HO2, OH  = [ ( i*molecs).sum() /molecs.sum() for i in HO2, OH   ]
+        
+    else: # Volume weight
        HO2, OH = [ np.ma.sum( i *vol) / np.ma.sum(vol)  for i in HO2, OH ] 
 
     return OH, HO2
@@ -2118,9 +2142,10 @@ def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
         REDUNDENT - use get_gc_burden instead """
 
     if not isinstance(a_m, np.ndarray):
-        a_m = get_air_mass_np( ctm_f=ctm, wd=wd, debug=debug )[...,:38,:]
+        a_m = get_air_mass_np( ctm_f=ctm, wd=wd, \
+            trop_limit=trop_limit, debug=debug )
     if not isinstance(t_p, np.ndarray):
-        # retain PyGChem 0.2.0 approach for back compatibility
+        # Retain PyGChem 0.2.0 approach for back compatibility
         if pygchem.__version__ == '0.2.0':
             t_p = get_gc_data_np( ctm=ctm, spec='TIMETROP', \
                 category='TIME-TPS', debug=debug)
@@ -2128,7 +2153,7 @@ def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
             t_p = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], \
                             trop_limit=trop_limit  ) 
 
-    # retain PyGChem 0.2.0 approach for back compatibility
+    # Retain PyGChem 0.2.0 approach for back compatibility
     if pygchem.__version__ == '0.2.0':            
         ar = get_gc_data_np( ctm, spec, debug=debug )[:,:,:38,:]
     else:
@@ -2138,7 +2163,7 @@ def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
         print [i.shape for i in ar, t_p, a_m ]
 
     # v/v * (mass total of air (kg)/ 1E3 (converted kg to g))  = moles of tracer
-    ar = ar* ( a_m[...,:38,:]*1E3 / constants( 'RMM_air')) 
+    ar = ar* ( a_m*1E3 / constants( 'RMM_air')) 
     if (Iodine):
         # convert moles to mass (* RMM) , then to Gg 
         ar = ar * float( species_mass('I') ) * spec_stoich(spec) /1E9 
@@ -2148,7 +2173,7 @@ def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
 
     # Cut off at the "chemical troposphere" ( defined by GC integrator as 38th)
     if (not total_atmos):        
-        ar = ar[...,:38,:] * t_p[...,:38,:]
+        ar = ar * t_p
     else:
         print '!'*200, 'TOTAL ATMOS'
 
@@ -2291,13 +2316,17 @@ def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
 def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
             vol=None, a_m=None, t_ps=None, K=None, t_lvl=None, n_air=None, \
             years=None, months=None, monthly=False, trop_limit=True, \
-            use_OH_from_geos_log=True, average_value=True, 
-            use_time_in_trop=True, 
+            use_OH_from_geos_log=False, average_value=True, \
+            use_time_in_trop=True, masktrop=False, \
             verbose=True, debug=False ):
-    """ Get methane (CH4) lifetime by calculating loss rate against OH. 
+    """ Get amtospheric methane (CH4) lifetime by calculating loss rate against 
+        OH.
     
     NOTES:
         - Multiple options for calculation of this value. 
+        - uses diagnostic arrays for [OH] instead of goes.log values as default.
+        - Calculates the total atmospheric lifetime of CH4 due to oxidation by 
+        tropospheric OH as default ( aka does not mask  stratosphere. )
         - 1st approach ( set use_time_in_trop=True) uses reaction rate in 
         globchem.dat (K(o)= 2.45E-12, Ea/R= -1775 ) and OH/CH4 mean
          concentrations from geos.log. The tropospheric mask uses is defined by 
@@ -2307,12 +2336,10 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
         level to define tropopause ( set use_time_in_trop=False to use this), 
         and weights output by **molecules** if ( average_value=True  ) 
     """
-#    use_OH_from_geos_log=False
 #    debug=True
     if debug:
         print 'get_CH4_lifetime called ( using time in trop diag?={})'.format(
             use_time_in_trop ) 
-
 
     # --- Get shared variables that are not provided
     if not isinstance(vol, np.ndarray): # cm^3 
@@ -2336,17 +2363,17 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
     # Get OH conc [molec/cm3] 
     if use_OH_from_geos_log:
         OH   = get_OH_mean( wd ) * 1E5   
-    else: #  [molec/m3] 
+    else: # Extract from GEOS-Chem fields
         OH = get_GC_output( wd=wd, vars=['CHEM_L_S__'+'OH'], \
             trop_limit=trop_limit )
 #        #  What are the units for 'CHEM_L_S__OH' ? need to convert?
           # (NetCDF says molec/m3, and wiki says  [molec/cm3]  )
 #        OH = OH *1E6
-        if use_time_in_trop:
+        if use_time_in_trop and masktrop:
             # Mask non tropospheric boxes
             OH = mask4troposphere( [OH], t_ps=t_ps)
 
-    if use_time_in_trop:
+    if use_time_in_trop and masktrop:
         # Mask non tropospheric boxes
         K, vol, a_m = mask4troposphere( [K, vol, a_m], t_ps=t_ps )
         # Get global CH4 conc  ( v/v )
@@ -2391,9 +2418,10 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
 
         # Mask non tropospheric boxes ( use: tropopause level )
         print [i.shape for i in K, vol, a_m, n_air, KCH4, OH  ]
-        K, vol, a_m, n_air, KCH4, OH = mask4troposphere( \
-            [K, vol, a_m, n_air, KCH4, OH ], t_lvl=t_lvl,  \
-            use_time_in_trop=use_time_in_trop )                
+        if masktrop:
+            K, vol, a_m, n_air, KCH4, OH = mask4troposphere( \
+                [K, vol, a_m, n_air, KCH4, OH ], t_lvl=t_lvl,  \
+                use_time_in_trop=use_time_in_trop )                
 
         # get # molecules per grid box
         molecs = n_air *vol
@@ -3307,7 +3335,7 @@ def get_trop_Ox_loss( wd, pl_dict=None,  spec_l=None, ver='1.6' ,   \
         Include_Chlorine=Include_Chlorine, IO_BrOx2=IO_BrOx2 )  
     ars = [ ar*Coes[i] for i, ar in enumerate(ars) ]
 
-    # Only consider troposphere
+    # Only consider troposphere (use_multiply_method=True)
     ars = [i*t_p for i in ars]
 
     return ars, res
@@ -3609,6 +3637,7 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
 # -------------   
 def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='1.6', \
             annual_mean=True, t_ps=None, title=None, rtn_list=False, \
+            use_time_in_trop=True, multiply_method=True, \
             rtn_specs=False, verbose=False, debug=False ):
     """ Driver to extract data requested, as families have differing output
     
@@ -3747,11 +3776,16 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='1.6', \
 
     if debug and (not rtn_list):
         print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in [arr ] ]    
+    # --- Mask for troposphere if t_ps provided (& trop_limit=True)
     if not isinstance( t_ps, type(None) ) and trop_limit:
         if rtn_list:
-            arr = mask4troposphere( arr, t_ps=t_ps )
+            arr = mask4troposphere( arr, t_ps=t_ps,  \
+                use_time_in_trop=use_time_in_trop, \
+                multiply_method=multiply_method, )
         else:
-            arr = mask4troposphere( [arr], t_ps=t_ps )[0]
+            arr = mask4troposphere( [arr], t_ps=t_ps, \
+                use_time_in_trop=use_time_in_trop, \
+                multiply_method=multiply_method  )[0]
     if debug and (not rtn_list):
         print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in [arr ] ]    
 
@@ -3775,7 +3809,7 @@ def convert_v_v_2_molec_cm3( arr=None, wd=None, vol=None, a_m=None,
             res='4x5', trop_limit=True, debug=False):
     """ Covnerts mixing ratio (v/v) into number density (molec/cm3).
         required variables of volume (vol) and airmass (a_m) can be provided as 
-        arguements or are extracted online (from procvided wd )
+        arguements or are extracted online (from provided wd )
     """
 
     if debug:
@@ -3806,54 +3840,66 @@ def convert_v_v_2_molec_cm3( arr=None, wd=None, vol=None, a_m=None,
     return arr
 
 # --------------
-# 2.43 - mask non tropospheric boxes of 4D array
+# 2.43 - Mask non tropospheric boxes of 4D array
 # -------------   
 def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
         t_lvl=None, masks4stratosphere=False, use_time_in_trop=True, \
-        res='4x5' ):
+        multiply_method=True, res='4x5', debug=False ):
     """ Mask for the troposphere using either the time in troposphere 
     diagnostic ( use_time_in_trop=True ) or troposphere level 
     ( use_time_in_trop=False ) 
     
     NOTES:
+        - The default option is not a mask. The time in troposphere (a fraction 
+        value 0-1) is simply multipled by the provided array.
         - The tropospause is diagnosed mulitple ways. This fucntion can mask 
         for the troposphere using either time in trop ( use_time_in_trop=True ) 
-        or tropopause level. Each is done on a timestep by timestep basis. 
+        or tropopause level. Each array is done on a timestep by timestep basis. 
         - The 'chemical troposphere' in GEOS-Chem is the boxes for which 
         differential chemical equations are solved. Only these boxes (1st 38)
         are consdidered if trop_limit=True ( e.g. array shape is (72,46,38,12)
         instead of (72,46,47,12)
         
     """
-    if use_time_in_trop:
-        # Get time tropopause diagnostic (if not given as argument)
-        if not isinstance(t_ps, np.ndarray): 
-            t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], \
-                trop_limit=trop_limit ) 
-
-        # --- Mask area that are not exclusively stratospheric
+    # --- Get time tropopause diagnostic (if not given as argument)
+    if not isinstance(t_ps, np.ndarray) and use_time_in_trop: 
+        t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], \
+            trop_limit=trop_limit ) 
         if masks4stratosphere:
             # Extend to all full atmosphere ( 47 levels )
             a = list( get_dims4res(res) )
             a[-1] = 47-38
             a = np.zeros(  tuple( a+[t_ps.shape[-1]] ) )
             t_ps = np.ma.concatenate( (t_ps,a),  axis=-2 )
+
+    # Get tropopause level (if not given as argument)
+    if not isinstance(t_lvl, np.ndarray) and ( not use_time_in_trop): 
+        t_lvl = get_GC_output( wd, vars=['TR_PAUSE__TP_LEVEL'], \
+            trop_limit=False )
+
+    # ---  Multiply by fractional time in trop. array    
+    if multiply_method and use_time_in_trop:
+
+        # Invert values if masking troposphere
+        if masks4stratosphere:
+            t_ps = 1 - t_ps
+        # Multiply fractional array by provided array            
+        ars = [i*t_ps for i in ars ]
+
+    # ---  Mask by fractional time in trop. array    
+    elif (not multiply_method) and use_time_in_trop:
+        # Mask area that are not exclusively stratospheric
+        if masks4stratosphere:
             # mask troposphere
             t_ps = np.ma.masked_where( t_ps != 0, t_ps )
 
-        # --- Mask area that are not exclusively tropospheric
+        # Mask area that are not exclusively tropospheric
         else:    
             t_ps = np.ma.masked_where( t_ps != 1, t_ps )
-    
+
+    # ---  Mask using tropopause level diagnostic values        
     else:
-        # Get tropopause level  (if not given as argument)
-        if not isinstance(t_lvl, np.ndarray): 
-            t_lvl = get_GC_output( wd, vars=['TR_PAUSE__TP_LEVEL'], \
-                trop_limit=False )
-        
         # Setup dummy array with model numbers as values
-#        t_ps = np.zeros( t_lvl.shape )
-#        t_ps = np.zeros( (72, 46, 47, 12)  )
         t_ps = np.zeros( ars[0].shape  )
         print [ i.shape for i in t_ps, t_lvl, ars[0] ]
         for i, n in enumerate( range(1,ars[0].shape[-2]+1) ):
@@ -3867,11 +3913,12 @@ def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
             t_ps = np.ma.masked_where( t_ps>t_lvl[:,:,None,:], t_ps)
         
     # --- Set array mask to have strat mask (trop if masks4stratosphere=True)
-    for n, arr in enumerate( ars ):
-        try:
-            ars[n] = np.ma.array( arr, mask=t_ps.mask )
-        except:
-            print 'FAIL>'*10, [i.shape  for i in arr, t_ps  ]
+    if not multiply_method:
+        for n, arr in enumerate( ars ):
+            try:
+                ars[n] = np.ma.array( arr, mask=t_ps.mask )
+            except:
+                print 'FAIL>'*10, [i.shape  for i in arr, t_ps  ]
 
     return ars 
 
@@ -3891,6 +3938,25 @@ def convert_molec_cm3_s2_molec_per_yr( ars=None, vol=None ):
         ars[n] = arr *60*60*24*365
     
     return ars
+
+# --------------
+# 2.45 - Get weighed average of latitude values
+# -------------   
+#def land_area_weight_LAT( ars, s_area ):
+#    """ At different latidudes the land area between E and W extents is not     
+#    constant. At the poles the area 
+#    NOTEs:
+#        - Takes list of arrays. Arrays are assumed to be 3D (lat, ALT, time )
+#    """
+#
+    # Get surface area
+#    if isinstance( s_area, type(None) ):
+#        s_area = get_surface_area( res=res, debug=debug )[:,:,0]
+#    
+    # Time Lat dimension by area, then divide to weight
+#    for arr in ars:
+#        
+#    return ars
 
 
 # ------------------ Section 6 -------------------------------------------

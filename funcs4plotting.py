@@ -83,7 +83,7 @@ from math import log10, floor
 # 1.35 - Timeseries plotter ( takes datetime + np.array )
 # 1.36 - Get monthly surface plots for (4D) array 
 # 1.37 - Get monthly zonal plots for (4D) array 
-
+# 1.38 - Stackplot for variables over X axis
 
 # --------------- ------------- ------------- ------------- ------------- 
 # ---- Section 4 ----- Plotting Ancillaries 
@@ -2901,6 +2901,107 @@ def plt_4Darray_zonal_by_month( arr, res='4x5', dpi=160, \
     #  save as pdf ?
     if pdf:
         plot2pdf( title=pdftitle )    
+    if show:
+        plt.show()
+
+# --------
+# 1.38 - Stackplot for variables over X axis
+# --------
+def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
+        fig=None, ax=None, dpi=160, show=False, f_size=10, legend=False, \
+        colors=None, title=None, loc='upper right', ylim=None, xlim=None, \
+        lw=8.0, ylabel=None, log=False, verbose=False, debug=False):
+    """ Produce a stacked plot (by X axis) for values in Y array. 
+    
+    NOTE:
+        - MPL only contains a stackplot function for Y axis, this function is 
+        based on that code  (https://github.com/matplotlib/matplotlib/blob/3ae7c2a32ddd9809552315458da1dd70afec1b15/lib/matplotlib/stackplot.py )
+        - X must be a list of numpy arrays 
+        - Y must be a numpy array
+    """
+    debug=True
+    if debug:
+        print 'X_stackplot called, with X[0] shape {}'.format( X[0].shape )
+
+    # --- fig and ax provided? Otherwise create these... 
+    if isinstance( fig, type(None) ):
+        fig = plt.figure( figsize=(8,8), dpi=dpi, facecolor='w', \
+            edgecolor='k')
+        if debug:
+            print 'Creating figure'
+
+    if isinstance( ax, type(None) ):
+        ax = fig.add_subplot( 1,1,1  )
+        if debug:
+            print 'Creating ax'
+
+    print zip( labels, [ colors[:len(labels)] ] )
+    print zip( labels,  [np.sum(i) for i in X] )
+
+
+    # --- stack arrays if
+#    if len( X ) == 1:
+#        X = np.atleast_2d( X )
+#  elif len( X ) > 1:
+    if isinstance( X, np.ndarray ):
+        X = np.ma.atleast_2d( X )
+    else:
+        X = np.ma.column_stack( X )
+    # Assume data passed has not been 'stacked', so stack it here.
+    stack = np.ma.cumsum( X, axis=1)
+
+    print zip( labels,  [np.sum(stack[:,n]) for n, i in enumerate(labels) ] )    
+#    sys.exit()
+
+    # --- Setup baseline ( can expand to include other options... )
+    if baseline == 'zero':
+        first_line = np.zeros( stack[:,0].shape)
+    
+    # --- plot by label
+    # Get list of colors
+    if isinstance( colors, type(None) ):
+        colors = color_list( len(stack[0,:]) )
+
+    # Color between x = 0 and the first array.
+    print stack[:, 0]
+    r =[]
+    r += [ ax.fill_betweenx( Y, first_line, stack[:, 0],
+                               color=colors[0], 
+                                label=labels[0]) ]
+    # Color between array i-1 and array i
+    r +=  [ ax.fill_betweenx(Y, stack[:,i], stack[:,i+1],
+                                   color=colors[i+1], 
+                                   label=labels[i+1] ) 
+                                   for i in range( 0, len(stack[0,:])-1 ) ]
+
+    # plot transparent lines to get 2D line object to create lengend
+    [ plt.plot( Y, stack[:,n], alpha=0, color=colors[n], label=i) \
+        for n,i in enumerate(labels) ]
+
+    # Log scale?
+    if log:
+        ax.set_xscale('log')
+
+    # Beautify plot
+    if not isinstance( ylim, type(None) ):
+        plt.ylim( ylim )
+    if not isinstance( xlim, type(None) ):
+        plt.xlim( xlim )
+    if not isinstance( title, type(None) ):
+        plt.title( title, fontsize=f_size )
+    if legend:
+        # Add legend ( + update line sizes)
+        leg = plt.legend( loc=loc, fontsize=f_size*.75 )
+        for legobj in leg.legendHandles:
+                legobj.set_linewidth( lw)
+                legobj.set_alpha( 1 )
+    # remove tick labels on y axis 
+    if ylabel:
+        plt.ylabel( ylabel, fontsize=f_size  )
+    else:
+        ax_tmp = plt.gca()
+        ax_tmp.tick_params( axis='y', which='both', labelleft='off')
+
     if show:
         plt.show()
 
