@@ -1570,7 +1570,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
         if ver == '3.0':
             r = [ 'no_hal', 'run', 'no_hal.PI', 'run.PI' ]
             r = [d +i for i in r ]
-            l = [ 'NOHAL', 'Cl-Br-I', 'NOHAL (PI)', 'Cl-Br-I (PI)' ]
+            l = [ 'NOHAL', 'Cl+Br+I', 'NOHAL (PI)', 'Cl+Br+I (PI)' ]
 
     if debug:                         
         print [rwd + i for i in r ], l
@@ -1601,7 +1601,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             r = r[:2]+ [extra]+r[2:]        
             l = l[:2]+ ['Br_het-Cl(v9.2)']+l[2:]  
 
-    # Mannually overide run names
+    # Mannually override run names
     if overide:
             # Version  2.0/1.7 runs
 #        r = [ 
@@ -1613,19 +1613,17 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             # Version  3.0 runs
         r = [
             'iGEOSChem_3.0_v10/no_hal',
-            'iGEOSChem_3.0_v10/no_hal.ClBrI.PI',
+            'iGEOSChem_3.0_v10/no_hal.PI',
              'iGEOSChem_3.0_v10/Just_Br',
-             'iGEOSChem_3.0_v10/run.ClBrI.noClNO2',
-             'iGEOSChem_3.0_v10/run.ClBrI',
-             'iGEOSChem_3.0_v10/run.ClBrI.PI']            
+             'iGEOSChem_3.0_v10/run',
+             'iGEOSChem_3.0_v10/run.PI']            
 
         l = [ 
         'NOHAL', 
         'NOHAL(PI)', 
         'Just_Br', 
-        'Cl-Br-I', 
-        'Cl-Br-I (ClNO2)' ,
-        'Cl-Br-I(PI)' ]
+        'Cl+Br+I', 
+        'Cl+Br+I(PI)' ]
 
 
     # return list with inc. main dir

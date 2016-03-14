@@ -129,7 +129,7 @@ from math import log10, floor
 def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             cmap=None, no_cb=False, cb=None, rotatecbunits='horizontal',  \
             fixcb=None, nbins=25, nticks=10, mask_invalids=False,  \
-            format='%.2f', adjust_window=0, f_size=20, alpha=1, \
+            format='%.2f', adjust_window=0, f_size=20, alpha=1, log=False, \
             set_window=False, res='4x5', ax=None, case='default', units=None, \
             drawcountries=True,  set_cb_ticks=True, title=None, lvls=None,  \
             interval=1, resolution='c', shrink=0.4, window=False, everyother=1,\
@@ -273,6 +273,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     # standard plot 
     if any( [ (case==i) for i in 3, 9 ] ):
 
+#        debug=True
 #        print fixcb_[0], fixcb_[1]
         if debug:
             print fixcb_, arr.shape, [ len(i) for i in lon, lat ], norm, cmap
@@ -282,7 +283,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
 #                        vmin=fixcb[0], vmax=fixcb[1], alpha=alpha )
 
     # -----------------  Log plots ---------------------------------------------
-    if (case == 4 ) : # l
+    if (case == 4 ) or log : # l
         poly = m.pcolor(lon, lat, arr, norm=LogNorm(vmin=fixcb_[0], \
             vmax=fixcb_[1]), cmap=cmap)#'PuBu_r')
 
@@ -2430,7 +2431,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     discrete_cmap=False, f_size=15, fig=None, left_cb_pos=0.86, cb_ax=None, \
     bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
     dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, title=None, \
-    window=False, interval=1, ylabel=True,\
+    window=False, interval=1, ylabel=True, cb='CMRmap_r', \
     no_cb=True, return_m=False, log=False, verbose=False, debug=False ):
     """
         Provide an array of lon, lat, time
@@ -2454,15 +2455,30 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     if isinstance( fixcb, type(None) ):
         fixcb = np.array( [ (i.min(), i.max()) for i in [arr[...,0] ] ][0] )
 
-    print '!'*100, fixcb
-    # Set readable levels for cb, then use these to dictate cmap
-    lvls = get_human_readable_gradations( vmax=fixcb[1],  \
-                    vmin=fixcb[0], nticks=nticks, 
-                    sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
+        # Set readable levels for cb, then use these to dictate cmap    
+        lvls = get_human_readable_gradations( vmax=fixcb[1],  \
+            vmin=fixcb[0], nticks=nticks, 
+            sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
+    else:
+        if log:
+            print 'WARNING: Code (to create levels for log colorbar)'+\
+                'below needs checking'
+            # Get logarithmically spaced integers
+#            lvls = np.logspace( np.log10(fixcb[0]), np.log10(fixcb[1]), \
+#                                                 num=nticks)
+            # Normalise to Log space
+#            norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
+#            if isinstance( norm, type(None) ):
+#                norm=mpl.colors.LogNorm(vmin=fixcb[0], vmax=fixcb[1])
+            sys.exit()
+        else: 
+            # Assume numbers provided as fixcb +nticks will allow for creation 
+            # of human readable levels. 
+            lvls = np.linspace( fixcb[0], fixcb[1], nticks )
 
     # Setup Colormap
     cmap, fixcb_buffered = get_colormap( np.array( fixcb ), \
-        nticks=nticks, fixcb=fixcb, buffer_cmap_upper=True )
+        nticks=nticks, fixcb=fixcb, cb=cb, buffer_cmap_upper=True )
 
     if discrete_cmap:
         cmap, norm = mk_discrete_cmap( nticks=nticks,\
@@ -2518,7 +2534,8 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
     interval=None, verbose=False, debug=False ):
 
     if verbose:
-        print 'plot_zonal_figure called ', region, arr.shape, log, units, pdf, show
+        print 'plot_zonal_figure called ', region, arr.shape, log, units, pdf, \
+            show, arr.min(), arr.max()
 
     # If lon, lat, alt array provided then take mean of lon
     if any( [arr.shape[0] ==i for i in 72, 144, 121, 177] ):
@@ -2540,7 +2557,18 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
     if isinstance( fixcb, type(None) ):
         fixcb = np.array([(i.min(), i.max()) for i in [arr] ][0])
 
-    # Set readable levels for cb, then use these to dictate cmap
+        # Set readable levels for cb, then use these to dictate cmap
+        if not log:    
+            lvls = get_human_readable_gradations( vmax=fixcb[1],  \
+                vmin=fixcb[0], nticks=nticks,\
+                sigfig_rounding_on_cb=sigfig_rounding_on_cb, \
+                verbose=verbose, debug=debug  )        
+    else:
+        # Assume numbers provided as fixcb +nticks will allow for creation 
+        # of human readable levels. 
+        lvls = np.linspace( fixcb[0], fixcb[1], nticks )
+
+    # If log plot - overwrite  lvls
     if log:
             # Get logarithmically spaced integers
             lvls = np.logspace( np.log10(fixcb[0]), np.log10(fixcb[1]), \
@@ -2549,12 +2577,6 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
 #            norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
             if isinstance( norm, type(None) ):
                 norm=mpl.colors.LogNorm(vmin=fixcb[0], vmax=fixcb[1])
-
-    else:
-        lvls = get_human_readable_gradations( vmax=fixcb[1],  \
-                vmin=fixcb[0], nticks=nticks,\
-                sigfig_rounding_on_cb=sigfig_rounding_on_cb, \
-                verbose=verbose, debug=debug  )
 
 #elephant
     # Setup Colormap
@@ -3907,8 +3929,7 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
                 print lvls, lvls[-2], lvls[-3], sigfig_rounding_on_cb_ticks
             lvls_diff = round_to_n( lvls[-2]-lvls[-3], \
                                 sigfig_rounding_on_cb_ticks)                                
-
-
+                                
     # ---  Round top of colorbar lvls, then count down from this
     # first get top numer rounded up to nearest 'lvls_diff'
     # caution, this may result in a number outside the cmap, 
@@ -3924,12 +3945,17 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
         # ( this method also fails if vmax<lvls_diff )
         vmax_rounded = vmax
 
+    print 1, lvls, vmax_rounded, lvls_diff
+
     if verbose:
         print vmax_rounded,  lvls_diff, nticks
     lvls = np.array([ vmax_rounded - lvls_diff*i \
             for i in range( nticks ) ][::-1])   
     if debug:
         print lvls, len( lvls )
+
+    print 2, lvls, vmax_rounded, lvls_diff
+
 
     # ensure returned ticks are to a maximum of 2 sig figs. 
     # ( this only works if all positive )
