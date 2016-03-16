@@ -698,23 +698,27 @@ def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, \
             vol = get_volume_np( wd=wd, res=res, trop_limit=trop_limit, \
                 debug=debug)
 
-    # --- Extract OH and HO2 Data 
+    # --- Extract OH and HO2 Data ( OH in [molec/cm3], HO2 in [v/v])
     if pygchem.__version__ == '0.2.0':
         OH, HO2 = [get_gc_data_np( ctm, \
-            i, category='CHEM-L=$')*t_p[:,:,:38,:] /scale for i in specs ] 
+            i, category='CHEM-L=$') for i in specs ] 
     else:
-        OH_HO2 = get_GC_output( wd, \
-            vars=['CHEM_L_S__'+i for i in specs] )*t_p[:,:,:38,:]/scale
+        OH, HO2 = get_GC_output( wd, \
+            vars=['CHEM_L_S__'+i for i in specs], r_list=True )
 
-    OH, HO2 =  [OH_HO2[i,...] for i in range(len(specs )) ]
-
+    # Mask for troposphere. 
+    OH, HO2  = mask4troposphere( [OH, HO2 ], t_ps=t_p,  \
+        use_time_in_trop=True,  multiply_method=True)    
+    
     # --- Process data
     molecs = ( ( (a_m*1E3) / RMM_air ) * AVG )   # molecules
     moles =  a_m*1E3 / RMM_air # mols 
 
     # Only consider troposphere
-    molecs, a_m, vol, moles = [i[:,:,:38,:]*t_p[:,:,:38,:]  \
-                for i in [molecs, a_m, vol, moles ]]  
+    molecs, a_m, vol, moles = mask4troposphere( \
+        [molecs, a_m, vol, moles ], t_ps=t_p,  \
+        use_time_in_trop=True,  multiply_method=True)    
+
     if debug:
         print [ (i.shape, np.mean(i) ) for i in [ OH, HO2, molecs, moles, a_m, \
             vol ]]
@@ -722,8 +726,6 @@ def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, \
     # convert HO2 [v/v] to [molec/cm3]
     HO2 = convert_v_v_2_molec_cm3( HO2, a_m=a_m, vol=vol )
 
-#    HO2 = HO2 * moles * AVG 
-#    HO2 =  HO2 / vol
     # Remove invalid values
     HO2, OH  = [ np.ma.masked_invalid( i) for i in HO2, OH   ]
     HO2, OH  = [ np.ma.masked_where( i<0, i) for i in HO2, OH   ]
@@ -749,6 +751,9 @@ def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, \
         
     else: # Volume weight
        HO2, OH = [ np.ma.sum( i *vol) / np.ma.sum(vol)  for i in HO2, OH ] 
+
+    # Scale to set value ( e.g. 1E6 )
+    HO2, OH = [i/scale for i in HO2, OH ]
 
     return OH, HO2
 
@@ -2482,7 +2487,7 @@ def species_v_v_to_Gg(arr, spec, a_m=None, Iodine=True, All =False, \
     """ Convert array of species in v/v to Gg 
         NOTE:
         - the processing is not clear in this function, <= update 
-        -  To output
+        - To output
     """
 
     print 'WARNING: Check settings in species_v_v_to_Gg: ',  All, Iodine, Ox
@@ -2796,7 +2801,7 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
         O3_arr=O3_arr, debug=debug)
 
     # Get OH and HO2
-    Hl = get_OH_HO2( wd=wd, t_p=t_ps, a_m=a_m, HOx_weight=HOx_weight, \
+    OH, HO2 = get_OH_HO2( wd=wd, t_p=t_ps, a_m=a_m, HOx_weight=HOx_weight, \
         vol=vol, res=res ) 
 
     # Get Loss routes for Iy and cal Iy lifetime Gg / Gg/year => days  
@@ -2857,7 +2862,7 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
     # Setup return lists
     vars  = [ \
     sur_IO, POx, LOx, POx -LOx, np.sum( O3_bud ), \
-    np.sum( O3_dep ), np.mean( DU_O3 ), Hl[0],Hl[1] , Hl[1]/Hl[0],   \
+    np.sum( O3_dep ), np.mean( DU_O3 ), OH, HO2, OH/HO2,   \
     Iy_lifetime, np.mean(IOx_lifetime), np.sum(Iy_burdens), CH4_lifetime,  \
     np.ma.sum(NOx), np.ma.sum(NOy)
     ]
@@ -2865,7 +2870,7 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
     headers  = [ \
     'Mean MBL sur. IO', 'Chem Ox prod', 'Chem Ox loss','Ox prod-loss', \
     'O$_{3}$ Burden','O3 Dep.', 'O3 Column', 'OH Mean Conc', 'HO2 Mean Conc', \
-    'HO2/OH','Iy lifetime',  'IOx lifetime', 'Iy Burdens', 'CH4 lifetime' , \
+    'OH/HO2','Iy lifetime',  'IOx lifetime', 'Iy Burdens', 'CH4 lifetime' , \
     'NOx bur', 'NOy bur.'
     ]
     header_units = [ \
@@ -3861,6 +3866,13 @@ def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
         instead of (72,46,47,12)
         
     """
+    debug=True
+    if debug:
+        print 'mask4troposphere called for arr of shape: {},'.format( \
+            ars[0].shape) + 'with multiply method?=', multiply_method, \
+            ',use_time_in_trop=', use_time_in_trop, 'type(t_lvl): ', \
+            type(t_lvl),  'type(t_ps): ', type(t_ps)
+
     # --- Get time tropopause diagnostic (if not given as argument)
     if not isinstance(t_ps, np.ndarray) and use_time_in_trop: 
         t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], \

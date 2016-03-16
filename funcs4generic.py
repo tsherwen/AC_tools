@@ -875,7 +875,8 @@ def SH_unmasked(  res='4x5' ):
 # 2.16 - Get Analysis maskes
 # --------
 def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
-        saizlopez=False, r_pstr=True, wd=None, trop_limit=True ):
+        saizlopez=False, r_pstr=True, wd=None, trop_limit=True, \
+        use_multiply_method=True, debug=False ):
     """
     Return list of mask arrays for analysis 
 
@@ -884,22 +885,27 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
     (therefore gives MBL, MFT, MUT) 
     
     """
-    # Check hPa has been provided as arg.
+    # --- Check hPa has been provided as arg.
     if isinstance( hPa, type(None) ):
         print 'ERROR: Please provide array of hPa to get_analysis_masks'
 
     if masks=='full':
+        # ---- List of masks
         mtitles = [ 
         'All', 'Ocean', 'Land','Ice', 'All Sur.',  'Ocean Sur.', 'Land Sur.'
         , 'Ice Sur.', 'NH', 'SH', 'Tropics', 'Ex. Tropics', 'Mid Lats'
         ]
         tsects3D= [  'MBL', 'BL','FT',  'UT']
-        maskes = [ 
+
+        # ---- Use non-pythonic mulitply method?
+        if use_multiply_method:
+
+            maskes = [ 
         np.logical_not( i) for i in  all_unmasked(res=res), \
         ocean_unmasked(res=res) \
-        , land_unmasked(res=res), ice_unmasked(res=res), \
-        surface_unmasked(res=res)] +  [ \
-        np.logical_not( i)*np.logical_not( surface_unmasked(res=res) )  \
+        , land_unmasked(res=res), ice_unmasked(res=res), ]\
+        + [surface_unmasked(res=res)] +  [ \
+        np.logical_not( i)*surface_unmasked(res=res)  \
         for i in ocean_unmasked(res=res), land_unmasked(res=res) \
         , ice_unmasked(res=res) ] + [  \
         np.logical_not( i) for i in \
@@ -907,13 +913,19 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
         np.logical_not( i)  \
         for i in  tropics_unmasked(res, saizlopez=saizlopez)\
         , extratropics_unmasked(res),  \
-        mid_lats_unmasked(res, saizlopez=saizlopez) ]
+        mid_lats_unmasked(res, saizlopez=saizlopez) 
+            ]
 
-        # if comparison with saiz-lopez 2014, 
-        if M_all:
-            ind = [n for n,i in enumerate( mtitles) if not ('MBL' in i) ]
-            for n in ind:
-                maskes[n] = maskes[n]*land_unmasked(res=res)
+            # if comparison with saiz-lopez 2014, 
+            if M_all:
+                ind = [n for n,i in enumerate( mtitles) if not ('MBL' in i) ]
+                for n in ind:
+                    maskes[n] = maskes[n]*land_unmasked(res=res)
+
+        # --- Use pythonic approach
+        else:
+            maskes = [ mask_all_but(i, trop_limit=trop_limit, mask3D=True, \
+                use_multiply_method=False ) for i in mtitles ]
 
         # get MBL, FT and UT maskes
         sects3D = [ 
@@ -1005,6 +1017,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     'global': 4,
     # NEED TESTING ...
     'Extratropics':5, 
+    'Ex. Tropics':5, 
     'Oceanic':6, 
     'Ocean':6,
     'NH': 7, 
@@ -1014,6 +1027,10 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     'lat40_2_40':12, 
     'Oceanic Tropics': 13, 
     'Land Tropics': 14,
+    'All Sur.': 15,
+    'Ocean Sur.': 16, 
+    'Land Sur.': 17 , 
+     'Ice Sur.' : 18
 #     'South >60': 2,
 #      'North >60': 3
     }[region]
@@ -1057,6 +1074,18 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
         if case == 14:
             mask = land_unmasked( res=res )*tropics_unmasked( res=res, \
                                         saizlopez=saizlopez )
+        if case == 15: # 'All Sur.'
+            print 'mask not defined, set use_multiply_method=True'
+            sys.exit()
+        if case == 16: # 'Ocean Sur.'
+            print 'mask not defined, set use_multiply_method=True'
+            sys.exit()
+        if case == 17: # 'Land Sur.':
+            print 'mask not defined, set use_multiply_method=True'
+            sys.exit()
+        if case == 18: # 'Ice Sur.' 
+            print 'mask not defined, set use_multiply_method=True'
+            sys.exit()
 
         # Invert mask to leave exception unmasked if used to multiply
         mask = np.logical_not(mask)
@@ -1084,9 +1113,9 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
         if case == 8:
             mask = SH_unmasked(  res=res  )
         if case == 10:
-            mask =ice_unmasked( res=res )
+            mask = ice_unmasked( res=res )
         if case == 11:
-            mask =  land_unmasked( res=res )
+            mask = land_unmasked( res=res )
         if case == 12:
             mask = mask_lat40_2_40( res=res )
         if case == 13:
@@ -1095,7 +1124,18 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
         if case == 14:
             mask = np.ma.mask_or( land_unmasked( res=res ),  \
                     tropics_unmasked( res=res, saizlopez=saizlopez ) )
-    
+        if case == 15: # 'All Sur.'
+            mask = surface_unmasked(res=res) 
+        if case == 16: # 'Ocean Sur.'
+            mask = np.ma.mask_or(  surface_unmasked(res=res) , \
+                     ocean_unmasked( res=res )  )
+        if case == 17: # 'Land Sur.':
+            mask = np.ma.mask_or( surface_unmasked(res=res) ,  \
+                     land_unmasked( res=res )  )
+        if case == 18: # 'Ice Sur.' 
+            mask = np.ma.mask_or( surface_unmasked(res=res) ,  \
+                      ice_unmasked( res=res ) )
+
     if debug:
         print 'prior to setting dimensions:', mask.shape
 
