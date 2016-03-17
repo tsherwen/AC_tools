@@ -2013,9 +2013,9 @@ def scatter_3D_cube( data, dims=None, res='2x2.5', fig=None,
     plt.yticks( parallels[::everyother], fontsize = f_size*.75 ) 
 
     # limit axis
-#    plt.xlim( lon[0], lon[-1] )
-#    plt.ylim( lat[0], lat[-1] )    
-#    plt.zlim( alt[0], alt[-1] )        
+    ax.set_xlim(  lon[0], lon[-1] )
+    ax.set_ylim(  lat[0], lat[-1] )    
+    ax.set_zlim(  alt[0], alt[-1] )
 
 # --------
 # 1.28 - Plot up seasonal output from 4D arr (lon, lat, alt, time)

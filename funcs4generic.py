@@ -732,41 +732,77 @@ def all_unmasked( res='4x5' ):
 # 2.10 - Maskes Regions by Pressure
 # --------
 def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
-    M_all=False, verbose=True, debug=False ):
-    """
-    Maskes by pressure array  (required shape: 72,46,47), with conditions,
-    set by given cases for MBL, UT, FT 
+    M_all=False, use_multiply_method=True, trop_limit=False, \
+    verbose=True, debug=False ):
+    """ Creates Maskes by pressure array  (required shape: 72,46,47), 
+        with conditions (lower and upper bounds) set by given cases for
+         MBL, UT, FT 
+    NOTES:
+        - originally written to generate masks for mulitplication 
+        (i.e. use_multiply_method = True ), but can also be use to make 
+        more pythonic masks ( if use_multiply_method=False )
     """
     if verbose:
-        print 'mask_3D called for sect {}, with debug: {}, verbose:{}'.format(\
-                    sect, debug, verbose )
+        print 'mask_3D called for sect={}, use_multiply_method={}'.format( \
+            sect, use_multiply_method ) + ', M_all={}, and '.format( M_all )+ \
+            'with debug: {}, verbose:{}'.format( sect, debug, verbose )
 
-    # Get case
+    # Get atmospheric region as case defining lower and upper bounds
     cases = { 
       'BL': [1200., 900.], 'MBL': [1200., 900.], 'FT': [ 900., 350. ]         \
      , 'UT': [ 350., 75.], 'All' : [ 1200., 75.]
     }
     l, h = cases[ sect ] 
 
-    # mask between upper and lower values
+    # --- Mask between upper and lower values
     m=np.ones( get_dims4res(res) )
     m[ (hPa >=l) ] = 0
     m[ (hPa <h) ] = 0
     if debug:
         print sect, l, h, [ [np.ma.min(i), np.ma.max(i),   \
                     np.ma.mean(i), np.ma.sum(i), i.shape ] for i in [ m  ] ]
+
+    # Mask off the 'sect' area that still equals 1
     m = np.ma.masked_equal(m, 1 )
+
+    # --- Remove above the "chemical tropopause" from GEOS-Chem (v9-2)
+    if trop_limit:
+        m = m[...,:38] 
+
     if not isinstance(extra_mask, type(None) ):
         # only consider MBL
         if ( MBL and sect == 'BL' ) or (sect == 'MBL') or M_all : 
-            return m.mask * extra_mask  * land_unmasked( res )    
+            if use_multiply_method:
+                return m.mask * extra_mask  * land_unmasked( res )    
+            else:
+                print "WARNING: needs 3D arrays, use 'mask_all_but' instead"
+                sys.exit()
         else:    
-            return m.mask * extra_mask
+            if use_multiply_method:
+                return m.mask * extra_mask            
+            else:
+                print "WARNING: needs 3D arrays, use 'mask_all_but' instead"
+                sys.exit()
 
-    # only consider MBL (or MFT/MFT for Saiz-Lopez 2014 comparison)
+    # --- Only consider MBL (or MFT/MFT for Saiz-Lopez 2014 comparison)
     if ( MBL and sect == 'BL' ) or (sect == 'MBL') or M_all: 
-        return m.mask * land_unmasked( res )
+        if use_multiply_method:    
+            return m.mask * land_unmasked( res )
+        else:
+            land_unmasked_ = mask_all_but( 'Land', mask3D=True, \
+                use_multiply_method=False, trop_limit=trop_limit )
+
+            # MBL unmasked 
+            m = np.logical_or( np.logical_not( m.mask ), \
+                np.logical_not( land_unmasked_ )  )
+
+            # Invert as function expected to return oposite
+            m = np.logical_not(  m )
+
+            return  m   # m is a mask here
+
     return m.mask
+
 
 # --------
 # 2.11 - Custom 2D (Lat) Mask
@@ -897,6 +933,12 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
         ]
         tsects3D= [  'MBL', 'BL','FT',  'UT']
 
+        # get MBL, FT and UT maskes
+        sects3D = [ 
+            mask_3D(hPa, i, MBL=False, M_all=M_all, res=res, 
+            use_multiply_method=use_multiply_method ) for i in tsects3D   
+        ]
+        
         # ---- Use non-pythonic mulitply method?
         if use_multiply_method:
 
@@ -927,10 +969,10 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
             maskes = [ mask_all_but(i, trop_limit=trop_limit, mask3D=True, \
                 use_multiply_method=False ) for i in mtitles ]
 
-        # get MBL, FT and UT maskes
-        sects3D = [ 
-        mask_3D(hPa, i, MBL=False, M_all=M_all, res=res ) for i in tsects3D   
-        ]
+            # If not 'use_multiply_method', then invert hPa masks
+            sects3D = [ np.logical_not(i) for i in sects3D ]
+
+        # Add to mask and mask title lists
         maskes = maskes + sects3D
         mtitles = mtitles + tsects3D
 
@@ -1030,7 +1072,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     'All Sur.': 15,
     'Ocean Sur.': 16, 
     'Land Sur.': 17 , 
-     'Ice Sur.' : 18
+     'Ice Sur.' : 18, 
 #     'South >60': 2,
 #      'North >60': 3
     }[region]
@@ -1155,7 +1197,6 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
             mask = mask[..., 0]
         if len( mask.shape ) == 4:
             mask = mask[..., 0, 0]
-
 
     # Create 3D array by concatenating through altitude dimension
     if mask3D:
