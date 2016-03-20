@@ -1582,7 +1582,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
 
 
     # Override run names if version 3.0 used.
-    if (ver == '3.0') and (not preindustrial):
+    if (ver == '3.0') and (not any( [preindustrial, v10v92comp, IO_obs]) ):
 
         if just_bcase_std:
             l =  [ 'BROMINE', 'Cl-Br-I' ]

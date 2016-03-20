@@ -929,7 +929,8 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
         # ---- List of masks
         mtitles = [ 
         'All', 'Ocean', 'Land','Ice', 'All Sur.',  'Ocean Sur.', 'Land Sur.'
-        , 'Ice Sur.', 'NH', 'SH', 'Tropics', 'Ex. Tropics', 'Mid Lats'
+        , 'Ice Sur.', 'NH', 'SH', 'Tropics', 'Ex. Tropics', 'Mid Lats', 
+        'Oceanic lat50_2_50',  'lat50_2_50'
         ]
         tsects3D= [  'MBL', 'BL','FT',  'UT']
 
@@ -1067,12 +1068,16 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     'Ice': 10,
     'Land' : 11, 
     'lat40_2_40':12, 
+    'Ocean Tropics': 13, 
     'Oceanic Tropics': 13, 
+    'Ocn. Trop.': 13, 
     'Land Tropics': 14,
     'All Sur.': 15,
     'Ocean Sur.': 16, 
     'Land Sur.': 17 , 
      'Ice Sur.' : 18, 
+    'lat50_2_50':19, 
+    'Oceanic lat50_2_50': 20, 
 #     'South >60': 2,
 #      'North >60': 3
     }[region]
@@ -1177,6 +1182,12 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
         if case == 18: # 'Ice Sur.' 
             mask = np.ma.mask_or( surface_unmasked(res=res) ,  \
                       ice_unmasked( res=res ) )
+        if case == 19:
+            mask = lat2lat_2D_unmasked( lowerlat=-50, higherlat=50, \
+                res=res )[...,None] 
+        if case == 20:
+            mask = np.ma.mask_or( lat2lat_2D_unmasked( lowerlat=-50, 
+                higherlat=50, res=res )[...,None], ocean_unmasked( res=res )  )
 
     if debug:
         print 'prior to setting dimensions:', mask.shape

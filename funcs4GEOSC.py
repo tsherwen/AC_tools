@@ -703,18 +703,19 @@ def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, \
         OH, HO2 = [get_gc_data_np( ctm, \
             i, category='CHEM-L=$') for i in specs ] 
     else:
-        OH, HO2 = get_GC_output( wd, \
+        OH, HO2 = get_GC_output( wd, trop_limit=trop_limit, \
             vars=['CHEM_L_S__'+i for i in specs], r_list=True )
 
     # Mask for troposphere. 
     OH, HO2  = mask4troposphere( [OH, HO2 ], t_ps=t_p,  \
-        use_time_in_trop=True,  multiply_method=True)    
+        use_time_in_trop=True, multiply_method=True)    
     
     # --- Process data
     molecs = ( ( (a_m*1E3) / RMM_air ) * AVG )   # molecules
     moles =  a_m*1E3 / RMM_air # mols 
 
     # Only consider troposphere
+    print [ i.shape for  i in molecs, a_m, vol, moles  ]
     molecs, a_m, vol, moles = mask4troposphere( \
         [molecs, a_m, vol, moles ], t_ps=t_p,  \
         use_time_in_trop=True,  multiply_method=True)    
@@ -2770,7 +2771,8 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
 
     # Get volume
     if isinstance( vol, type(None) ):
-        vol  = get_volume_np( wd=wd, s_area=s_area[:,:,None, None], res=res )
+        vol  = get_volume_np( wd=wd, s_area=s_area[:,:,None, None], \
+            trop_limit=trop_limit, res=res )
 
     # Get O3 v/v array
     O3_arr  = get_GC_output( wd, species='O3', trop_limit=trop_limit)
@@ -2823,12 +2825,13 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
         w_dep =  np.ones(  get_dims4res(res)  )
 
     # Get Iy loss ( single p/l family )
-    Iy_loss = get_pl_in_Gg( wd=wd, specs=['L_Iy'], Iodine=Iodine, res=res, 
-                            ver=ver, vol=vol, debug=debug )
+    Iy_loss = get_pl_in_Gg( wd=wd, specs=['L_Iy'], Iodine=Iodine, res=res, \
+            ver=ver, vol=vol, debug=debug )
     Iy_burdens = get_GC_output( wd, vars=['IJ_AVG_S__'+i for i in Iy], \
-                                     trop_limit=trop_limit, r_list=True ) 
+            trop_limit=trop_limit, r_list=True)
     Iy_burdens = [ species_v_v_to_Gg( i, spec=Iy[n], a_m=a_m ) \
-                                        for n, i in enumerate( Iy_burdens ) ]
+            for n, i in enumerate( Iy_burdens ) ]
+    Iy_burdens = np.ma.array( Iy_burdens ).mean(axis=-1)
 
     ars =  [np.sum(i) for i in [ Iy_burdens, Iy_loss, d_dep, w_dep ] ]
     Iy_lifetime = ( ars[0] /( np.sum(ars[1:]) ) ) *365
@@ -2840,6 +2843,7 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
                                      trop_limit=trop_limit, r_list=True )
     IOx_burdens =  [ species_v_v_to_Gg(i, spec=IOx[n], a_m=a_m)  \
                                         for n, i in enumerate( IOx_burdens ) ]
+    IOx_burdens = np.ma.array( IOx_burdens ).mean(axis=-1)
     ars = [ np.sum(i) for i in [ IOx_burdens, IOx_loss ]]
     IOx_lifetime = ( ars[0] /(np.sum(ars[1:])) ) *365*24*60
 
@@ -2852,31 +2856,33 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
         title=title, t_ps=t_ps, ver=ver, annual_mean=False)
     NOx = species_v_v_to_Gg( NOx/1E12, spec='N', Iodine=False, a_m=a_m,\
         All=True)
+    NOx = np.ma.array(NOx).mean(axis=-1)
 
     # Get NOy burden
     NOy = fam_data_extractor( fam='NOy',  wd=wd, trop_limit=trop_limit, \
         title=title, t_ps=t_ps, ver=ver, annual_mean=False)
     NOy = species_v_v_to_Gg( NOy/1E12, spec='N', Iodine=False, a_m=a_m,\
          All=True)
+    NOy = np.ma.array(NOy).mean(axis=-1)
 
     # Setup return lists
     vars  = [ \
-    sur_IO, POx, LOx, POx -LOx, np.sum( O3_bud ), \
-    np.sum( O3_dep ), np.mean( DU_O3 ), OH, HO2, OH/HO2,   \
-    Iy_lifetime, np.mean(IOx_lifetime), np.sum(Iy_burdens), CH4_lifetime,  \
-    np.ma.sum(NOx), np.ma.sum(NOy)
+    sur_IO, POx, LOx, POx -LOx, O3_bud.sum(), \
+    O3_dep.sum(), DU_O3.mean(), OH, HO2, OH/HO2,   \
+    Iy_lifetime, IOx_lifetime.mean(), Iy_burdens.sum(), CH4_lifetime,  \
+    NOx.sum(), NOy.sum(), Iy_loss.sum(), d_dep.sum(), w_dep.sum()
     ]
 
     headers  = [ \
     'Mean MBL sur. IO', 'Chem Ox prod', 'Chem Ox loss','Ox prod-loss', \
     'O$_{3}$ Burden','O3 Dep.', 'O3 Column', 'OH Mean Conc', 'HO2 Mean Conc', \
     'OH/HO2','Iy lifetime',  'IOx lifetime', 'Iy Burdens', 'CH4 lifetime' , \
-    'NOx bur', 'NOy bur.'
+    'NOx bur', 'NOy bur.', 'Iy_loss',  'd_dep', ' Iy w_dep'
     ]
     header_units = [ \
     ' / pptv', '/Tg O3', '/ Tg O3', '/ Tg O3','/ Tg O3','/ Tg O3','/ DU', \
     '/ 1E5 molec. cm^-3', 'v/v', '', '/ Days', '/ Min', 'Gg', '/ Years',  \
-    'Gg', 'Gg'
+    'Gg', 'Gg', 'Gg', 'Gg', 'Gg'
     ]
 
 
