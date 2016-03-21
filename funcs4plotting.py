@@ -1984,7 +1984,8 @@ def X_Y_scatter( x, y, z=None, fig=None, ax=None, vmin=None, vmax=None, \
 # 1.27 - Scatter 3D cube
 # --------
 def scatter_3D_cube( data, dims=None, res='2x2.5', fig=None, 
-        everyother=1, interval=1, f_size=20, debug=False ):
+        everyother=1, interval=1, f_size=20, cm='RdYlBu', \
+        debug=False ):
 
     if debug:
         print data.shape
@@ -1997,11 +1998,12 @@ def scatter_3D_cube( data, dims=None, res='2x2.5', fig=None,
             alt[0]:alt[-1]:complex( len(alt) ) ]
 
     # Setup Fig + Ax ( is not given )
+    cmap = plt.cm.get_cmap(cm)
     if isinstance( fig, type(None) ):
         fig = plt.figure(1)
     fig.clf()
     ax = Axes3D(fig)
-    ax.scatter(X,Y,Z, c=data)
+    ax.scatter(X,Y,Z, c=data, cmap=cmap)
 
     # --- Beatify
     # draw meridian lines

@@ -80,7 +80,7 @@
 # 2.29 - Get species Boundary layer (BL) mixing
 # 2.30 - Get cloud flux
 # 2.31 - Volume weigh numbers
-# 2.32 - Get GAW site info  (lat, lon, alt (press), timezone (UTC) ) 
+# 2.32 - molecule weighted array average value
 # 2.33 - Return mesh and indics for which obs are within 
 # 2.34 - takes indices or generates indices for a given set of sites, these are then substract from all arrays given
 # 2.35 - Get Ox loss by route
@@ -93,7 +93,7 @@
 # 2.42 - Convert v/v to molec/cm3
 # 2.43 - mask non tropospheric boxes of 4D array
 # 2.44 - Convert [molec/cm3/s ] to [molec/yr] 
-# 2.44 - Get weighed average of latitude values
+# 2.45 - Get weighed average of latitude values
 
 # --------------- 
 # ---- Section 3 ----- Time processing
@@ -3235,19 +3235,59 @@ def get_cld_f( ctm_f, months=None, years=None, spec='O3',  debug=False ):
     return day_adjust *  ars_cld_f /1E9 
 
 # --------
-# 2.31 - Vol weight array, sum, mean
+# 2.31 - Vol weighted array average value
 # --------
-def vol_weight( arr, vol=None, ctm_f=None ):
+def vol_weighted_avg( arr, vol=None, ctm_f=None ):
     """ Volume weight array """
     if not isinstance(vol, np.ndarray):
         vol = get_volume_np( ctm_f ) # cm^3 
-    if (sum):
-        return np.sum( arr/vol) *np.sum(vol) 
+
+    return np.sum( arr/vol) *np.sum(vol) 
 
 # ----
-#  3.32 - returns  (lat, lon, alt (press), timezone (UTC) ) for a given site
+# 2.32 - molecule weighted array average value
 # ----
-# moved to vars mod.
+def molec_weighted_avg( arr, molecs=None, wd=None, t_p=None, n_air=None,\
+            trop_limit=True, multiply_method=False, rm_strat=True ):
+    """ Takes array and retuns the average (molecular weighted) value 
+
+    NOTES:
+        - Uses mask of given array if given array is a numpy masked array
+        -
+    """
+
+    if isinstance( molecs, type(None) ): 
+        if not isinstance( n_air, np.ndarray): 
+            n_air = get_GC_output( wd, vars=['BXHGHT_S__N(AIR)'], \
+                trop_limit=trop_limit, dtype=np.float64 )  # [molec air/m3]
+        if not isinstance(vol, np.ndarray):
+            vol = get_volume_np( ctm_f ) /1E6 # [cm^3 ]
+        # Calculate molecules per grid box
+        molecs =  n_air * vol # [molec air]
+
+    # Limit for troposphere? 
+    if trop_limit:
+
+        # Get species time Tropopause diagnostic
+        if isinstance( t_p, type(None) ) and rm_strat:
+            t_p = get_GC_output( wd=wd, vars=['TIME_TPS__TIMETROP'], \
+                trop_limit=trop_limit ) 
+
+            # mask for troposphere
+            arr, molecs = mask4troposphere( [arr, molecs], t_ps=t_p,  \
+                use_time_in_trop=True,  multiply_method=multiply_method)      
+
+    # --- If masked array provided, applied same mask to molecules
+    if isinstance( arr, np.ma.core.MaskedArray ):
+        molecs  = np.ma.array( molecs, mask=arr.mask )
+        return (arr *molecs).sum()/molecs.sum()
+
+    # ---  Or apply to whole array
+    elif isinstance( arr, np.ndarray): 
+        return (arr *molecs).sum()/molecs.sum()
+
+    else:
+        print 'Please provide numpy (masked or not), arr type: ', type(arr)
 
 # --------------
 # 2.34 -  takes indices or generates indices for a given set of sites, these are then substract from all arrays given
@@ -3512,7 +3552,7 @@ def convert_v_v2ngm3(  arr, wd=None, spec='AERI', trop_limit=True,\
     return arr
     
 # --------------
-# 2.40 - Print array weighed 
+# 2.40 - Print weighted array 
 # -------------   
 def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
             region='All', monthly=False, mask3D=True, trop_limit=True, \
@@ -3958,7 +3998,7 @@ def convert_molec_cm3_s2_molec_per_yr( ars=None, vol=None ):
     return ars
 
 # --------------
-# 2.45 - Get weighed average of latitude values
+# 2.45 - Get weighted average of latitude values
 # -------------   
 #def land_area_weight_LAT( ars, s_area ):
 #    """ At different latidudes the land area between E and W extents is not     

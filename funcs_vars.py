@@ -627,6 +627,9 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
          'SSBr2': 2.0, 
          # Also have reaction tracers
         'LR73' : 1.0, 
+        # Note: stoichometry is for **GAS** phase Br (aka not SSA )
+        # ( Aka JT03s == Br2 ( ==2 ), but one is BrSALA/BrSALC therefore =1)
+        'JT03s' : 1.0, 'JT04s' :1.0, 'JT05s': 1.0
         }
     if Cl:
         d= {

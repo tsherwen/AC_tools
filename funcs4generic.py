@@ -930,7 +930,7 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
         mtitles = [ 
         'All', 'Ocean', 'Land','Ice', 'All Sur.',  'Ocean Sur.', 'Land Sur.'
         , 'Ice Sur.', 'NH', 'SH', 'Tropics', 'Ex. Tropics', 'Mid Lats', 
-        'Oceanic lat50_2_50',  'lat50_2_50'
+        'Ocn. 50S-50N',  '50S-50N' 
         ]
         tsects3D= [  'MBL', 'BL','FT',  'UT']
 
@@ -943,21 +943,23 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
         # ---- Use non-pythonic mulitply method?
         if use_multiply_method:
 
-            maskes = [ 
-        np.logical_not( i) for i in  all_unmasked(res=res), \
-        ocean_unmasked(res=res) \
-        , land_unmasked(res=res), ice_unmasked(res=res), ]\
-        + [surface_unmasked(res=res)] +  [ \
-        np.logical_not( i)*surface_unmasked(res=res)  \
-        for i in ocean_unmasked(res=res), land_unmasked(res=res) \
-        , ice_unmasked(res=res) ] + [  \
-        np.logical_not( i) for i in \
-        NH_unmasked( res=res), SH_unmasked( res=res) ]    + [   \
-        np.logical_not( i)  \
-        for i in  tropics_unmasked(res, saizlopez=saizlopez)\
-        , extratropics_unmasked(res),  \
-        mid_lats_unmasked(res, saizlopez=saizlopez) 
-            ]
+            maskes = [ mask_all_but(i, trop_limit=trop_limit, mask3D=True, \
+                use_multiply_method=True ) for i in mtitles ]    
+#            maskes = [ 
+#        np.logical_not( i) for i in  all_unmasked(res=res), \
+#        ocean_unmasked(res=res) \
+#        , land_unmasked(res=res), ice_unmasked(res=res), ]\
+#        + [surface_unmasked(res=res)] +  [ \
+#        np.logical_not( i)*surface_unmasked(res=res)  \
+#        for i in ocean_unmasked(res=res), land_unmasked(res=res) \
+#        , ice_unmasked(res=res) ] + [  \
+#        np.logical_not( i) for i in \
+#        NH_unmasked( res=res), SH_unmasked( res=res) ]    + [   \
+#        np.logical_not( i)  \
+#        for i in  tropics_unmasked(res, saizlopez=saizlopez)\
+#        , extratropics_unmasked(res),  \
+#        mid_lats_unmasked(res, saizlopez=saizlopez) 
+#            ]
 
             # if comparison with saiz-lopez 2014, 
             if M_all:
@@ -1077,7 +1079,9 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     'Land Sur.': 17 , 
      'Ice Sur.' : 18, 
     'lat50_2_50':19, 
+    '50S-50N':19, 
     'Oceanic lat50_2_50': 20, 
+    'Ocn. 50S-50N' : 20, 
 #     'South >60': 2,
 #      'North >60': 3
     }[region]
@@ -1122,17 +1126,34 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
             mask = land_unmasked( res=res )*tropics_unmasked( res=res, \
                                         saizlopez=saizlopez )
         if case == 15: # 'All Sur.'
-            print 'mask not defined, set use_multiply_method=True'
-            sys.exit()
+            mask = surface_unmasked(res=res) 
+            # kludge invert unmasked array, as values as masked array expected 
+            mask = np.logical_not(mask)
         if case == 16: # 'Ocean Sur.'
-            print 'mask not defined, set use_multiply_method=True'
-            sys.exit()
+            mask = np.ma.mask_or(  surface_unmasked(res=res) , \
+                     ocean_unmasked( res=res )  )
+            # kludge invert unmasked array, as values as masked array expected 
+            mask = np.logical_not(mask)
         if case == 17: # 'Land Sur.':
-            print 'mask not defined, set use_multiply_method=True'
-            sys.exit()
+            mask = np.ma.mask_or( surface_unmasked(res=res) ,  \
+                     land_unmasked( res=res )  )
+            # kludge invert unmasked array, as values as masked array expected 
+            mask = np.logical_not(mask)
         if case == 18: # 'Ice Sur.' 
-            print 'mask not defined, set use_multiply_method=True'
-            sys.exit()
+            mask = np.ma.mask_or( surface_unmasked(res=res) ,  \
+                      ice_unmasked( res=res ) )
+            # kludge invert unmasked array, as values as masked array expected 
+            mask = np.logical_not(mask)
+        if case == 19:
+            mask = lat2lat_2D_unmasked( lowerlat=-50, higherlat=50, \
+                res=res )[...,None] 
+            # kludge invert unmasked array, as values as masked array expected 
+            mask = np.logical_not(mask)
+        if case == 20:
+            mask = np.ma.mask_or( lat2lat_2D_unmasked( lowerlat=-50, 
+                higherlat=50, res=res )[...,None], ocean_unmasked( res=res )  )
+            # kludge invert unmasked array, as values as masked array expected 
+            mask = np.logical_not(mask)
 
         # Invert mask to leave exception unmasked if used to multiply
         mask = np.logical_not(mask)
