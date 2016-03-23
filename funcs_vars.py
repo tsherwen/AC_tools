@@ -627,6 +627,9 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
          'SSBr2': 2.0, 
          # Also have reaction tracers
         'LR73' : 1.0, 
+        # Note: stoichometry is for **GAS** phase Br (aka not SSA )
+        # ( Aka JT03s == Br2 ( ==2 ), but one is BrSALA/BrSALC therefore =1)
+        'JT03s' : 1.0, 'JT04s' :1.0, 'JT05s': 1.0
         }
     if Cl:
         d= {
@@ -1570,7 +1573,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
         if ver == '3.0':
             r = [ 'no_hal', 'run', 'no_hal.PI', 'run.PI' ]
             r = [d +i for i in r ]
-            l = [ 'NOHAL', 'Cl-Br-I', 'NOHAL (PI)', 'Cl-Br-I (PI)' ]
+            l = [ 'NOHAL', 'Cl+Br+I', 'NOHAL (PI)', 'Cl+Br+I (PI)' ]
 
     if debug:                         
         print [rwd + i for i in r ], l
@@ -1582,7 +1585,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
 
 
     # Override run names if version 3.0 used.
-    if (ver == '3.0') and (not preindustrial):
+    if (ver == '3.0') and (not any( [preindustrial, v10v92comp, IO_obs]) ):
 
         if just_bcase_std:
             l =  [ 'BROMINE', 'Cl-Br-I' ]
@@ -1601,9 +1604,10 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             r = r[:2]+ [extra]+r[2:]        
             l = l[:2]+ ['Br_het-Cl(v9.2)']+l[2:]  
 
-    # Mannually overide run names
+    # Mannually override run names
+#    overide=True
     if overide:
-            # Version  2.0/1.7 runs
+        # --- Version  2.0/1.7 runs
 #        r = [ 
 #        'iGEOSChem_1.7_v10/run', 'iGEOSChem_2.0_v10/run' 
 #            'iGEOSChem_1.7_v10/run' , 'johan/bpch_v10'
@@ -1611,22 +1615,24 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
 #        l = '1.6', '1.7'
 #        l = 'v10, I+Br Parella', 'v10, I+Br+Cl johan'
             # Version  3.0 runs
+        # --- All 3.0 runs + Parella et al (2012)
         r = [
             'iGEOSChem_3.0_v10/no_hal',
-            'iGEOSChem_3.0_v10/no_hal.ClBrI.PI',
+            'iGEOSChem_3.0_v10/no_hal.PI',
              'iGEOSChem_3.0_v10/Just_Br',
-             'iGEOSChem_3.0_v10/run.ClBrI.noClNO2',
-             'iGEOSChem_3.0_v10/run.ClBrI',
-             'iGEOSChem_3.0_v10/run.ClBrI.PI']            
+             'iGEOSChem_3.0_v10/run',
+             'iGEOSChem_3.0_v10/run.PI']            
 
         l = [ 
         'NOHAL', 
         'NOHAL(PI)', 
         'Just_Br', 
-        'Cl-Br-I', 
-        'Cl-Br-I (ClNO2)' ,
-        'Cl-Br-I(PI)' ]
+        'Cl+Br+I', 
+        'Cl+Br+I(PI)' ]
 
+        # Just run and run.PI
+        l =l[-2:]
+        r=r[-2:]
 
     # return list with inc. main dir
     rtn_list = [rwd + i for i in r ] 

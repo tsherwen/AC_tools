@@ -603,7 +603,7 @@ def pro_raw_pf( wd, site='CVO', ext='', run='', frac=False, diurnal=True, \
 # ----
 def get_pf_data_from_NetCDF_table( ncfile=None, req_var='TRA_69', spec='IO', \
             loc='CVO', start=None, end=None, ver='1.7', verbose=False, \
-            debug=False  ):
+            sdate=None, edate=None, debug=False  ):
     """ Extracts data from NetCDF file processed by pf2NetCDF (pandas) 
         converter in PhD_Progs/MChem_tools 
     """
@@ -634,12 +634,14 @@ def get_pf_data_from_NetCDF_table( ncfile=None, req_var='TRA_69', spec='IO', \
     # Covert Epoch to datetime
     if debug:
         print Epoch[0] 
-    dates = [ datetime_.fromtimestamp(i) for i in Epoch ]
+    dates = np.array( [ datetime_.fromtimestamp(i) for i in Epoch ] )
     if debug:
         print dates[0] 
 
     # Select dates ( <= add this )
-    
+    if not isinstance( sdate, type(None) ):
+        data =  data[ np.where( (dates < edate ) & (dates >= sdate  )  ) ]
+        dates = dates[ np.where( (dates < edate ) & ( dates >= sdate  )  ) ]
 
     return dates, data
 
