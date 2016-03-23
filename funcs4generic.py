@@ -619,7 +619,12 @@ def land_unmasked(res='4x5', debug=False):
 # 2.03 - Ice mask
 # --------
 def ice_unmasked(res='4x5', debug=False):
-    """ Get ice mask from GEOS-Chem LWI ( at given resolution) """
+    """ Get mask for all areas but ice surface. Ice mask is from GEOS-Chem
+    LWI ( at given resolution) 
+
+    NOTES:
+        - returns 3D array as default ( to return 2D set mask2D=True )
+    """
     # Create a np.ma mask 
     m= np.logical_not( (land_unmasked(res)*ocean_unmasked(res)) )
     if debug:
@@ -629,9 +634,12 @@ def ice_unmasked(res='4x5', debug=False):
 # --------
 # 2.04 - Surface mask
 # --------
-def surface_unmasked( res='4x5', trop_limit=False, debug=False ):
-    """ Get surface mask  """
-
+def surface_unmasked( res='4x5', trop_limit=False, mask2D=False, \
+            debug=False ):
+    """ Get mask for all areas but surface
+    NOTES:
+        - returns 3D array as default ( to return 2D set mask2D=True )
+    """
     # Create a np.ma mask 
     m=np.ma.array( np.zeros( get_dims4res(res) ), mask=False)
     m[...,0] = 1
@@ -641,13 +649,21 @@ def surface_unmasked( res='4x5', trop_limit=False, debug=False ):
         m = m[...,:38]
     if debug:
         print mask, mask.shape
-    return m.mask
- 
+
+    # Return 2D or 3D?
+    if mask2D:
+        return m[...,0].mask
+    else:
+        return m.mask 
  # --------
 # 2.05 - Tropical Mask
 # --------
-def tropics_unmasked(res='4x5', saizlopez=False, pradosroman=False):
-    """ Get tropics mask  """
+def tropics_unmasked(res='4x5', saizlopez=False, pradosroman=False, \
+        mask2D=False ):
+    """ Get mask for all areas but tropics
+    NOTES:
+        - returns 3D array as default ( to return 2D set mask2D=True )
+    """
 
     # Create a mask of 1s for chosen area and or 0s elsewhere
     m=np.zeros( get_dims4res( res ) )
@@ -661,13 +677,22 @@ def tropics_unmasked(res='4x5', saizlopez=False, pradosroman=False):
 
     # Create a np.ma mask and return solely mask
     m = np.ma.masked_not_equal(m, 1)
-    return m.mask
+    
+    # Return 2D or 3D?
+    if mask2D:
+        return m[...,0].mask
+    else:
+        return m.mask
 
 # --------
 # 2.06 - Mid Lats Mask
 # --------
-def mid_lats_unmasked( res='4x5', saizlopez=False, pradosroman=False ):
-    """ Get mask of mid latitudes """
+def mid_lats_unmasked( res='4x5', saizlopez=False, pradosroman=False, \
+            mask2D=False ):
+    """ Get mask for all areas but mid latitudes
+    NOTES:
+        - returns 3D array as default ( to return 2D set mask2D=True )    
+     """
 
     # Create a mask of 1s for chosen area and or 0s elsewhere
     m=np.zeros(get_dims4res(res))
@@ -686,13 +711,20 @@ def mid_lats_unmasked( res='4x5', saizlopez=False, pradosroman=False ):
 
     # Create a np.ma mask and return solely mask
     m = np.ma.masked_not_equal(m, 1)
-    return m.mask
 
+    # Return 2D or 3D?
+    if mask2D:
+        return m[...,0].mask
+    else:
+        return m.mask
 # --------
 # 2.07 - 40N to 40S Mask
 # --------
-def mask_lat40_2_40( res='4x5' ):
-    """ Get mask of latitudes (40 to 40 deg latitude) """
+def mask_lat40_2_40( res='4x5', mask2D=False ):
+    """ Get mask for all areas but 40S-40N latitudes (40 to 40 deg latitude) 
+    NOTES:
+        - returns 3D array as default ( to return 2D set mask2D=True )    
+    """    
 
     # Create a mask of 1s for chosen area and or 0s elsewhere
     m=np.zeros(get_dims4res(res))
@@ -703,13 +735,20 @@ def mask_lat40_2_40( res='4x5' ):
 
     # Create a np.ma mask and return solely mask
     m = np.ma.masked_not_equal(m, 1)
-    return m.mask
-    
+
+    # Return 2D or 3D?
+    if mask2D:
+        return m[...,0].mask
+    else:
+        return m.mask    
 # --------
 # 2.08 - Extra Tropics Mask
 # --------
-def extratropics_unmasked( res='4x5'):
-    """ Get mask of extratropics  """
+def extratropics_unmasked( res='4x5', mask2D=False):
+    """ Get mask for all areas but extratropics
+    NOTES:
+        - returns 3D array as default ( to return 2D set mask2D=True )    
+    """    
 
     # Create a mask of 1s for chosen area and or 0s elsewhere
     m=np.zeros(get_dims4res(res))
@@ -719,14 +758,28 @@ def extratropics_unmasked( res='4x5'):
         m[:,i,:] =  1
     # Create a np.ma mask 
     m = np.ma.masked_not_equal(m, 1)
-    return m.mask
 
+    # Return 2D or 3D?
+    if mask2D:
+        return m[...,0].mask
+    else:
+        return m.mask
 # --------
 # 2.09 - Create unmask array ( for ease of dataprocessing )
 # --------
-def all_unmasked( res='4x5' ):
-    """ Get un-masked mask of size GEOS-Chem dimensions  """
-    return np.ma.array( np.ones(get_dims4res(res) ), mask=False).mask
+def all_unmasked( res='4x5', mask2D=False ):
+    """ Get un-masked mask of size GEOS-Chem dimensions 
+    NOTES:
+        - returns 3D array as default ( to return 2D set mask2D=True )    
+     """
+
+    m = np.ma.array( np.ones(get_dims4res(res) ), mask=False)
+
+    # Return 2D or 3D?
+    if mask2D:
+        return m[...,0].mask
+    else:
+        return m.mask
 
 # --------
 # 2.10 - Maskes Regions by Pressure
@@ -808,10 +861,9 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
 # 2.11 - Custom 2D (Lat) Mask
 # --------
 def lat2lat_2D_unmasked( lowerlat=None, higherlat=None, res='2x2.5', \
-                                                debug=False ):
-    """
-    Takes a lower and higher latitude value and then creates 
-    mask to given given limits.
+            debug=False ):
+    """ Takes a lower and higher latitude value and then creates 
+    mask of area boxes outside given laitidue limits.
     """
 
     # Get vars
@@ -832,8 +884,11 @@ def lat2lat_2D_unmasked( lowerlat=None, higherlat=None, res='2x2.5', \
 # --------
 # 2.12 - South Pole mask
 # --------
-def southpole_unmasked(  res='4x5' ):
-    """ Return global np.ma with southpole masked """
+def southpole_unmasked(  res='4x5', mask2D=False ):
+    """ Return global np.ma with southpole masked
+    NOTES:
+        - returns 3D array as default ( to return 2D set mask2D=True )    
+     """
 
     # Create a mask of 1s for chosen area and or 0s elsewhere
     m = np.zeros(get_dims4res(res))
@@ -849,13 +904,21 @@ def southpole_unmasked(  res='4x5' ):
 
     # Create a np.ma mask 
     m = np.ma.masked_not_equal(m, 1)
-    return m.mask
+
+    # Return 2D or 3D?
+    if mask2D:
+        return m[...,0].mask
+    else:
+        return m.mask
 
 # --------
 # 2.13 - North Pole mask
 # --------
-def northpole_unmasked(  res='4x5' ):
-    """ Return global np.ma with northpole masked """
+def northpole_unmasked(  res='4x5', mask2D=False ):
+    """ Return global np.ma with northpole masked 
+    NOTES:
+        - returns 3D array as default ( to return 2D set mask2D=True )        
+    """
 
     # Create a mask of 1s for chosen area and or 0s elsewhere
     m = np.zeros(get_dims4res(res))
@@ -871,13 +934,21 @@ def northpole_unmasked(  res='4x5' ):
 
     # Create a np.ma mask 
     m = np.ma.masked_not_equal(m, 1)
-    return m.mask
+
+    # Return 2D or 3D?
+    if mask2D:
+        return m[...,0].mask
+    else:
+        return m.mask
 
 # --------
 # 2.14 - North Hemisphere mask
 # --------
-def NH_unmasked(  res='4x5' ):
-    """ Return global np.ma with north hemisphere masked """
+def NH_unmasked(  res='4x5', mask2D=False ):
+    """ Return global np.ma with north hemisphere masked 
+    NOTES:
+        - returns 3D array as default ( to return 2D set mask2D=True )    
+    """
     m=np.ma.array( np.ones( get_dims4res(res) ), mask=True)
     if res=='4x5':
         lats = np.arange(1, 91,1 )
@@ -888,13 +959,21 @@ def NH_unmasked(  res='4x5' ):
     lats = [ get_gc_lat(i, res=res) for i in lats ]
     for i in lats:
         m[:,i,:].mask =  False
-    return m.mask
+
+    # Return 2D or 3D?
+    if mask2D:
+        return m[...,0].mask
+    else:
+        return m.mask
 
 # --------
 # 2.15 - South Hemisphere mask
 # --------
-def SH_unmasked(  res='4x5' ):
-    """ Return global np.ma with south hemisphere masked """
+def SH_unmasked(  res='4x5', mask2D=False ):
+    """ Return global np.ma with south hemisphere masked 
+    NOTES:
+        - returns 3D array as default ( to return 2D set mask2D=True )    
+    """
     m=np.ma.array( np.ones( get_dims4res(res) ), mask=True)
     if res=='4x5':
         lats = np.arange(-89, 0,1 )        
@@ -905,8 +984,13 @@ def SH_unmasked(  res='4x5' ):
     lats = [ get_gc_lat(i, res=res) for i in lats ]
     for i in lats:
         m[:,i,:].mask =  False
-    return m.mask
 
+    # Return 2D or 3D?
+    if mask2D:
+        return m[...,0].mask
+    else:
+        return m.mask
+        
 # --------
 # 2.16 - Get Analysis maskes
 # --------
@@ -932,6 +1016,7 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
         , 'Ice Sur.', 'NH', 'SH', 'Tropics', 'Ex. Tropics', 'Mid Lats', 
         'Ocn. 50S-50N',  '50S-50N' 
         ]
+        
         tsects3D= [  'MBL', 'BL','FT',  'UT']
 
         # get MBL, FT and UT maskes
@@ -945,21 +1030,6 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
 
             maskes = [ mask_all_but(i, trop_limit=trop_limit, mask3D=True, \
                 use_multiply_method=True ) for i in mtitles ]    
-#            maskes = [ 
-#        np.logical_not( i) for i in  all_unmasked(res=res), \
-#        ocean_unmasked(res=res) \
-#        , land_unmasked(res=res), ice_unmasked(res=res), ]\
-#        + [surface_unmasked(res=res)] +  [ \
-#        np.logical_not( i)*surface_unmasked(res=res)  \
-#        for i in ocean_unmasked(res=res), land_unmasked(res=res) \
-#        , ice_unmasked(res=res) ] + [  \
-#        np.logical_not( i) for i in \
-#        NH_unmasked( res=res), SH_unmasked( res=res) ]    + [   \
-#        np.logical_not( i)  \
-#        for i in  tropics_unmasked(res, saizlopez=saizlopez)\
-#        , extratropics_unmasked(res),  \
-#        mid_lats_unmasked(res, saizlopez=saizlopez) 
-#            ]
 
             # if comparison with saiz-lopez 2014, 
             if M_all:
@@ -991,8 +1061,9 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
 
         # standard maskes none, tropics, mid-lats (3)
         maskes = [ 
-            np.logical_not( i)  for i in all_unmasked(res=res), tropics_unmasked(res,\
-            saizlopez=saizlopez), mid_lats_unmasked(res) ]
+            np.logical_not( i)  for i in all_unmasked(res=res), \
+            tropics_unmasked(res,saizlopez=saizlopez), \
+            mid_lats_unmasked(res) ]
 
         # additional masks - tsects3D (4+1) * standard maskes (3)
         dmaskes = [ 
@@ -1108,7 +1179,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
         if case == 5:
             mask = extratropics_unmasked(res=res)
         if case == 6:
-            mask = ocean_unmasked( res=res )
+            mask = ocean_unmasked( res=res)
         if case == 7:
             mask = NH_unmasked(  res=res )
         if case == 8:
@@ -1119,41 +1190,29 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
             mask =  land_unmasked( res=res )
         if case == 12:
             mask = mask_lat40_2_40( res=res )
-        if case == 13:
-             mask = ocean_unmasked( res=res)*tropics_unmasked(res=res, \
-                            saizlopez=saizlopez )
-        if case == 14:
-            mask = land_unmasked( res=res )*tropics_unmasked( res=res, \
-                                        saizlopez=saizlopez )
+        if case == 13:  #  'Oceanic Tropics'
+             mask = np.ma.mask_or( ocean_unmasked( res=res),  \
+                    tropics_unmasked(res=res, saizlopez=saizlopez ) )
+        if case == 14: # 'Land Tropics'
+            mask = np.ma.mask_or( land_unmasked( res=res ),  \
+                    tropics_unmasked( res=res, saizlopez=saizlopez ) )
         if case == 15: # 'All Sur.'
             mask = surface_unmasked(res=res) 
-            # kludge invert unmasked array, as values as masked array expected 
-            mask = np.logical_not(mask)
         if case == 16: # 'Ocean Sur.'
             mask = np.ma.mask_or(  surface_unmasked(res=res) , \
                      ocean_unmasked( res=res )  )
-            # kludge invert unmasked array, as values as masked array expected 
-            mask = np.logical_not(mask)
         if case == 17: # 'Land Sur.':
             mask = np.ma.mask_or( surface_unmasked(res=res) ,  \
                      land_unmasked( res=res )  )
-            # kludge invert unmasked array, as values as masked array expected 
-            mask = np.logical_not(mask)
         if case == 18: # 'Ice Sur.' 
             mask = np.ma.mask_or( surface_unmasked(res=res) ,  \
                       ice_unmasked( res=res ) )
-            # kludge invert unmasked array, as values as masked array expected 
-            mask = np.logical_not(mask)
-        if case == 19:
+        if case == 19:  # '50S-50N' 
             mask = lat2lat_2D_unmasked( lowerlat=-50, higherlat=50, \
-                res=res )[...,None] 
-            # kludge invert unmasked array, as values as masked array expected 
-            mask = np.logical_not(mask)
-        if case == 20:
+                res=res )
+        if case == 20: # 'Ocn. 50S-50N' 
             mask = np.ma.mask_or( lat2lat_2D_unmasked( lowerlat=-50, 
-                higherlat=50, res=res )[...,None], ocean_unmasked( res=res )  )
-            # kludge invert unmasked array, as values as masked array expected 
-            mask = np.logical_not(mask)
+                higherlat=50, res=res ), ocean_unmasked( res=res )[...,0]  )
 
         # Invert mask to leave exception unmasked if used to multiply
         mask = np.logical_not(mask)
@@ -1205,10 +1264,10 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
                       ice_unmasked( res=res ) )
         if case == 19:
             mask = lat2lat_2D_unmasked( lowerlat=-50, higherlat=50, \
-                res=res )[...,None] 
+                res=res )
         if case == 20:
             mask = np.ma.mask_or( lat2lat_2D_unmasked( lowerlat=-50, 
-                higherlat=50, res=res )[...,None], ocean_unmasked( res=res )  )
+                higherlat=50, res=res ), ocean_unmasked( res=res )[...,0]  )
 
     if debug:
         print 'prior to setting dimensions:', mask.shape
@@ -1225,9 +1284,9 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     if mask2D:
         if len( mask.shape ) == 2:
             pass
-        if len( mask.shape ) == 3:
+        elif len( mask.shape ) == 3:
             mask = mask[..., 0]
-        if len( mask.shape ) == 4:
+        elif len( mask.shape ) == 4:
             mask = mask[..., 0, 0]
 
     # Create 3D array by concatenating through altitude dimension
@@ -1235,7 +1294,11 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
         if any( [ (mask.shape[-1] == i) for i in 38, 47 ] ):
             pass
         else: # concatenate dimensions
-            mask = np.concatenate( [mask]*47, axis=2 )
+            if len( mask.shape ) == 3:
+                mask = np.concatenate( [ mask ]*47, axis=2 )
+            elif len( mask.shape ) == 2:
+                mask = np.concatenate( [ mask[...,None] ]*47, axis=2 )
+
 
     # Remove above the "chemical tropopause" from GEOS-Chem (v9-2)
     if trop_limit:

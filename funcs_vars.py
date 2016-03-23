@@ -1607,7 +1607,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
     # Mannually override run names
 #    overide=True
     if overide:
-            # Version  2.0/1.7 runs
+        # --- Version  2.0/1.7 runs
 #        r = [ 
 #        'iGEOSChem_1.7_v10/run', 'iGEOSChem_2.0_v10/run' 
 #            'iGEOSChem_1.7_v10/run' , 'johan/bpch_v10'
@@ -1615,6 +1615,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
 #        l = '1.6', '1.7'
 #        l = 'v10, I+Br Parella', 'v10, I+Br+Cl johan'
             # Version  3.0 runs
+        # --- All 3.0 runs + Parella et al (2012)
         r = [
             'iGEOSChem_3.0_v10/no_hal',
             'iGEOSChem_3.0_v10/no_hal.PI',
@@ -1629,6 +1630,9 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
         'Cl+Br+I', 
         'Cl+Br+I(PI)' ]
 
+        # Just run and run.PI
+        l =l[-2:]
+        r=r[-2:]
 
     # return list with inc. main dir
     rtn_list = [rwd + i for i in r ] 
