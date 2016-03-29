@@ -1,54 +1,4 @@
-# ------------------- Section 0 -------------------------------------------
-# -------------- Required modules:
-#
-
-# -- Plotting                                                                                       
-from mpl_toolkits.basemap import Basemap
-from matplotlib.colors import LogNorm
-from matplotlib.ticker import LogFormatter
-from matplotlib.ticker import NullFormatter
-from matplotlib.ticker import FuncFormatter
-import matplotlib.font_manager as font_manager
-import matplotlib.collections as mcoll
-import matplotlib.path as mpath
-import matplotlib.ticker
-from matplotlib import ticker
-from matplotlib.ticker import MultipleLocator, FormatStrFormatter
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-from matplotlib import cm
-from matplotlib.collections import LineCollection
-from pylab import setp
-import functools
-import matplotlib
-from mpl_toolkits.axes_grid1 import AxesGrid
-from mpl_toolkits.mplot3d import Axes3D
-
-
-# -- Time                                                                                           
-import time
-import calendar
-import datetime as datetime
-from datetime import datetime as datetime_
-
-# -- I/O/Admin... 
-import gc
-
-# tms
-from AC_tools.funcs_vars import *
-from AC_tools.funcs4generic import *
-from AC_tools.funcs4time import *
-#from funcs4obs import * #( need: get_CVO_DOAS_obs ... )
-from AC_tools.funcs4pf import *
-from AC_tools.funcs4GEOSC import * # wd2ctms
-
-# math
-from math import log10, floor
-
-# colormaps
-#from option_c import test_cm as cmc
-#from option_d import test_cm as cmd
-
+#!/usr/bin/python
 # --------------- ------------- ------------- ------------- ------------- 
 # ---- Section 1 ----- Common Plot Types
 # 1.01 - Global/nested region surface plotter ***
@@ -117,6 +67,59 @@ from math import log10, floor
 # 4.42 - Get human readable gradations for plot
 # 4.43 - mk colourmap discrete 
 # 4.99 - Get input variables for  plotting
+
+# ------------------- Section 0 -------------------------------------------
+# -------------- Required modules:
+#
+
+# -- Plotting                                                                                       
+from mpl_toolkits.basemap import Basemap
+from matplotlib.colors import LogNorm
+from matplotlib.ticker import LogFormatter
+from matplotlib.ticker import NullFormatter
+from matplotlib.ticker import FuncFormatter
+import matplotlib.font_manager as font_manager
+import matplotlib.collections as mcoll
+import matplotlib.path as mpath
+import matplotlib.ticker
+from matplotlib import ticker
+from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+from matplotlib import cm
+from matplotlib.collections import LineCollection
+from pylab import setp
+import functools
+import matplotlib
+from mpl_toolkits.axes_grid1 import AxesGrid
+from mpl_toolkits.mplot3d import Axes3D
+
+
+# -- Time                                                                                           
+import time
+import calendar
+import datetime as datetime
+from datetime import datetime as datetime_
+
+# -- I/O/Admin... 
+import gc
+
+# tms
+from AC_tools.funcs_vars import *
+from AC_tools.funcs4generic import *
+from AC_tools.funcs4time import *
+#from funcs4obs import * #( need: get_CVO_DOAS_obs ... )
+from AC_tools.funcs4pf import *
+from AC_tools.funcs4GEOSC import * # wd2ctms
+
+# math
+from math import log10, floor
+
+# colormaps
+#from option_c import test_cm as cmc
+#from option_d import test_cm as cmd
+
+
 
 
 # ----------------------------- Section 1 ------------------------------------
@@ -3905,7 +3908,8 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     # in both min and max have absolute values less than 0, then sig figs +1
     if ( ( abs( int( vmin)) == 0) and (abs( int( vmax)) == 0) ):
         if verbose:
-            print 'both vmin ({}), and vmax ({}) are <0'.format( vmin, vmax )
+            print 'both vmin ({:.2E}), and vmax ({:.2E}) are <0'.format( vmin, \
+                vmax )
         sigfig_rounding_on_cb += 1
 
     # significant figure ( sig. fig. ) rounding func.
@@ -3931,6 +3935,8 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
                 print lvls, lvls[-2], lvls[-3], sigfig_rounding_on_cb_ticks
             lvls_diff = round_to_n( lvls[-2]-lvls[-3], \
                                 sigfig_rounding_on_cb_ticks)                                
+                   
+                   
                                 
     # ---  Round top of colorbar lvls, then count down from this
     # first get top numer rounded up to nearest 'lvls_diff'

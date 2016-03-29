@@ -1,4 +1,5 @@
-# =========================================================================================================
+#!/usr/bin/python
+# ============================================================================
 # ------------------------------ tms - module of programs/code for re-use ----------------------------------
 # -------------- 
 # Section 1 - Plotters funcs
@@ -104,7 +105,6 @@
 # ------------------------------------------- Section 0 -------------------------------------------
 # -------------- Required modules:
 #
-#!/usr/bin/python
 # -- I/O / Low level                                                                                
 import os
 import sys
@@ -1141,7 +1141,7 @@ def get_spec_pf_hdf_surface_procesor( run_name='run', spec='O3', \
 # ----
 # 1.21 - Process species for given arrays to (v/v) in respective scale + DU
 # ---
-def process_data4specs( specs=None, just_bcase_std=True, \
+def process_data4specs( specs=None, just_bcase_std=True, preindustrial=False, \
             just_bcase_no_hal=False, res='4x5', ver='1.6', diff=True, \
             pcent=True, tight_constraints=True, trop_limit=True, \
             NOy_family=False, Bry_family=False, Iy_family=False, \
@@ -1151,7 +1151,8 @@ def process_data4specs( specs=None, just_bcase_std=True, \
 
     # Get runs data and descriptors
     wds, titles = MUTD_runs( titles=True, just_bcase_std=just_bcase_std, \
-        res=res, ver=ver, just_bcase_no_hal=just_bcase_no_hal )
+        res=res, ver=ver, just_bcase_no_hal=just_bcase_no_hal, \
+        preindustrial=preindustrial )
     if debug:
         print wds, titles
 
@@ -2485,12 +2486,11 @@ def get_gc_alt(alt):
 # ------------- 
 def species_v_v_to_Gg(arr, spec, a_m=None, Iodine=True, All =False, \
         Ox=False, ctm_f=None, wd=None, debug=False):
-    """ Convert array of species in v/v to Gg 
+    """ Convert array of species in v/v to Gg (of spec)
         NOTE:
-        - the processing is not clear in this function, <= update 
+        - The processing is not clear in this function, <= update 
         - To output
     """
-
     print 'WARNING: Check settings in species_v_v_to_Gg: ',  All, Iodine, Ox
 
     if not isinstance(a_m, np.ndarray):
@@ -2508,7 +2508,7 @@ def species_v_v_to_Gg(arr, spec, a_m=None, Iodine=True, All =False, \
     if ( (Iodine) and (Ox) ):      
         arr = ( ( arr * moles )  * (16.*3.) ) /1E9 
 
-    #  in "species" mass terms ( moles => mass (g) => Gg (in units of O3 ) )
+    #  In "species" mass terms ( moles => mass (g) => Gg (in units of spec ) )
     if ( ( not Iodine ) and ( All) ):      
         arr = ( ( arr * moles )  * (species_mass( spec  )) ) /1E9 
     return arr
@@ -2587,6 +2587,7 @@ def loc_is_water_grid_box( lat, lon, res='4x5' ):
 # -------------   
 def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
                 years=None, res='4x5', vol=None, debug=False, \
+                rtn_induvidual_species=True, \
                 trop_limit=True, Iodine=False):
     """ Get array of dry deposition values for a given species """
 
@@ -2624,7 +2625,10 @@ def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
     day_adjust = d_adjust( months, years)
     df = np.multiply(df, day_adjust)
 
-    return df
+    if rtn_induvidual_species:
+        return df
+    else:
+        return df.sum( axis=0 )
 
 # --------------  
 # 2.19 - Land map - REDUNDENT
@@ -2735,9 +2739,10 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
             verbose=False, debug=False ):
     """ This is version of get_GC_run_stats is setup to work with monthly 
         outputted data 
-        
-        """
-
+    NOTES:
+        - Writen to work iwth PyGChem 2.0, then updated to 3.0 with limited 
+        back compatiblity retained.
+    """
     # --- Get vars need for calcs
     # get general variables 
     if isinstance( ver, type(None) ):
@@ -2774,39 +2779,39 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
         vol  = get_volume_np( wd=wd, s_area=s_area[:,:,None, None], \
             trop_limit=trop_limit, res=res )
 
-    # Get O3 v/v array
+    # --- Get O3 mixing ratio (v/v) array
     O3_arr  = get_GC_output( wd, species='O3', trop_limit=trop_limit)
 
-    # Get Months and years in model output
+    # --- Get Months and years in model output
     months = get_gc_months( wd=wd ) 
     years = get_gc_years( wd=wd )
     if debug:
         print [i.shape for i in  t_ps, a_m, vol, O3_arr, molecs  ]
 
-    # Get surface IO conc
+    # --- Get surface IO conc
     sur_IO =  get_GC_output( wd, vars=['IJ_AVG_S__IO'] ) *1E12 * ocean_mask
     sur_IO = sur_IO.mean( axis=-1)[...,0].mean()
 
-    # get POx and LOx
+    # --- Get total Ox production (POx) and loss (LOx)
     POx, LOx = get_POxLOx( wd=wd, vol=vol, t_p=t_ps, ver=ver, debug=debug)
 
-    # get O3 burden
+    # --- Get O3 burden
     O3_bud = get_O3_burden( a_m=a_m[:,:,:38,:], t_p=t_ps, O3_arr=O3_arr, \
         debug=debug ) /1E3
 
-    # Get O3 dep
+    # --- Get O3 dep
     O3_dep = spec_dep( spec='O3', wd=wd, s_area=s_area, months=months, \
         years=years, vol=vol, Iodine=False )/1E3 
 
-    # get DU column
+    # --- Get DU column
     DU_O3  = get_DU_mean( s_area=s_area, a_m=a_m[:,:,:38,:], t_p=t_ps, \
         O3_arr=O3_arr, debug=debug)
 
-    # Get OH and HO2
+    # --- Get OH and HO2
     OH, HO2 = get_OH_HO2( wd=wd, t_p=t_ps, a_m=a_m, HOx_weight=HOx_weight, \
         vol=vol, res=res ) 
 
-    # Get Loss routes for Iy and cal Iy lifetime Gg / Gg/year => days  
+    # --- Get Loss routes for Iy and cal Iy lifetime Gg / Gg/year => days  
     # (inc. wet & dry dep)
     # Iodine dry deposition
     try:
@@ -2824,19 +2829,19 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
     except:
         w_dep =  np.ones(  get_dims4res(res)  )
 
-    # Get Iy loss ( single p/l family )
+    # --- Get Iy loss ( single p/l family )
     Iy_loss = get_pl_in_Gg( wd=wd, specs=['L_Iy'], Iodine=Iodine, res=res, \
             ver=ver, vol=vol, debug=debug )
-    Iy_burdens = get_GC_output( wd, vars=['IJ_AVG_S__'+i for i in Iy], \
-            trop_limit=trop_limit, r_list=True)
-    Iy_burdens = [ species_v_v_to_Gg( i, spec=Iy[n], a_m=a_m ) \
-            for n, i in enumerate( Iy_burdens ) ]
-    Iy_burdens = np.ma.array( Iy_burdens ).mean(axis=-1)
+    Iy_burdens = fam_data_extractor( fam='Iy', wd=wd, trop_limit=trop_limit, \
+            t_ps=t_ps, ver=ver, annual_mean=False)      
+    Iy_burdens = species_v_v_to_Gg( Iy_burdens, spec='I', a_m=a_m,
+         All=True, Iodine=False ).mean(axis=-1)
 
     ars =  [np.sum(i) for i in [ Iy_burdens, Iy_loss, d_dep, w_dep ] ]
     Iy_lifetime = ( ars[0] /( np.sum(ars[1:]) ) ) *365
 
-    # Get Loss routes for IOx and cal IOx lifetime Gg / Gg/year => *365*24 => ms 
+    # --- Get Loss routes for IOx and cal IOx lifetime 
+    # ( Gg / Gg/year => *365*24 => mins  )
     IOx_loss = get_pl_in_Gg( wd=wd, specs=LIOx, Iodine=Iodine, res=res, 
                             ver=ver, vol=vol, debug=debug )
     IOx_burdens = get_GC_output( wd, vars=['IJ_AVG_S__'+i for i in IOx], \
@@ -2847,23 +2852,23 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
     ars = [ np.sum(i) for i in [ IOx_burdens, IOx_loss ]]
     IOx_lifetime = ( ars[0] /(np.sum(ars[1:])) ) *365*24*60
 
-    # Get CH4 Lifetime
+    # --- Get CH4 Lifetime
     CH4_lifetime = get_CH4_lifetime( wd=wd, vol=vol[...,:38,:], 
         t_ps=t_ps, a_m=a_m ) 
 
-    # Get NOx burden
+    # --- Get NOx burden (Annual mean)
     NOx = fam_data_extractor( fam='NOx', wd=wd, trop_limit=trop_limit, \
         title=title, t_ps=t_ps, ver=ver, annual_mean=False)
     NOx = species_v_v_to_Gg( NOx/1E12, spec='N', Iodine=False, a_m=a_m,\
         All=True)
-    NOx = np.ma.array(NOx).mean(axis=-1)
+    NOx = np.ma.array(NOx).mean(axis=-1) # Annual mean
 
-    # Get NOy burden
+    # --- Get NOy burden (Annual mean)
     NOy = fam_data_extractor( fam='NOy',  wd=wd, trop_limit=trop_limit, \
         title=title, t_ps=t_ps, ver=ver, annual_mean=False)
     NOy = species_v_v_to_Gg( NOy/1E12, spec='N', Iodine=False, a_m=a_m,\
          All=True)
-    NOy = np.ma.array(NOy).mean(axis=-1)
+    NOy = np.ma.array(NOy).mean(axis=-1) # Annual mean
 
     # Setup return lists
     vars  = [ \
@@ -2884,7 +2889,6 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
     '/ 1E5 molec. cm^-3', 'v/v', '', '/ Days', '/ Min', 'Gg', '/ Years',  \
     'Gg', 'Gg', 'Gg', 'Gg', 'Gg'
     ]
-
 
     return vars, headers, header_units
 

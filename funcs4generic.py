@@ -1,3 +1,4 @@
+#!/usr/bin/python
 """ Generic functions for use with GEOS-Chem/Data Analysis.
     
     These functions were written whilst learning python, vestigial 
@@ -7,7 +8,6 @@
 # ------------------------- Section 0 -----------------------------------------
 # -------------- Required modules:
 #
-#!/usr/bin/python
 # -- I/O / Low level                                                                                
 import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
