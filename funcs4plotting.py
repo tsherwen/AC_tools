@@ -2946,7 +2946,6 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
         - X must be a list of numpy arrays 
         - Y must be a numpy array
     """
-    debug=True
     if debug:
         print 'X_stackplot called, with X[0] shape {}'.format( X[0].shape )
 
@@ -2961,36 +2960,33 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
         ax = fig.add_subplot( 1,1,1  )
         if debug:
             print 'Creating ax'
+    if debug:
+        print zip( labels, [ colors[:len(labels)] ] )
+        print zip( labels,  [np.sum(i) for i in X] )
 
-    print zip( labels, [ colors[:len(labels)] ] )
-    print zip( labels,  [np.sum(i) for i in X] )
-
-
-    # --- stack arrays if
-#    if len( X ) == 1:
-#        X = np.atleast_2d( X )
-#  elif len( X ) > 1:
+    # --- stack arrays if not stacked... 
     if isinstance( X, np.ndarray ):
         X = np.ma.atleast_2d( X )
     else:
         X = np.ma.column_stack( X )
     # Assume data passed has not been 'stacked', so stack it here.
     stack = np.ma.cumsum( X, axis=1)
-
-    print zip( labels,  [np.sum(stack[:,n]) for n, i in enumerate(labels) ] )    
-#    sys.exit()
+    if debug:
+        print zip( labels, [np.sum(stack[:,n]) for n, i in enumerate(labels) ] )    
+        print zip( labels, [np.max(stack[:,n]) for n, i in enumerate(labels) ] )    
 
     # --- Setup baseline ( can expand to include other options... )
     if baseline == 'zero':
         first_line = np.zeros( stack[:,0].shape)
     
-    # --- plot by label
+    # --- Plot by label
     # Get list of colors
     if isinstance( colors, type(None) ):
         colors = color_list( len(stack[0,:]) )
 
     # Color between x = 0 and the first array.
-    print stack[:, 0]
+    if debug:
+        print stack[:, 0]
     r =[]
     r += [ ax.fill_betweenx( Y, first_line, stack[:, 0],
                                color=colors[0], 
@@ -3001,7 +2997,7 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
                                    label=labels[i+1] ) 
                                    for i in range( 0, len(stack[0,:])-1 ) ]
 
-    # plot transparent lines to get 2D line object to create lengend
+    # Plot transparent lines to get 2D line object to create lengend
     [ plt.plot( Y, stack[:,n], alpha=0, color=colors[n], label=i) \
         for n,i in enumerate(labels) ]
 
@@ -3009,7 +3005,7 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
     if log:
         ax.set_xscale('log')
 
-    # Beautify plot
+    # --- Beautify plot
     if not isinstance( ylim, type(None) ):
         plt.ylim( ylim )
     if not isinstance( xlim, type(None) ):
@@ -3906,12 +3902,17 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
 
     # --- Adjust graduations in colourbar to be human readable
     # in both min and max have absolute values less than 0, then sig figs +1
-    if ( ( abs( int( vmin)) == 0) and (abs( int( vmax)) == 0) ):
-        if verbose:
-            print 'both vmin ({:.2E}), and vmax ({:.2E}) are <0'.format( vmin, \
-                vmax )
-        sigfig_rounding_on_cb += 1
-
+    try:
+        if ( ( abs( int( vmin)) == 0) and (abs( int( vmax)) == 0) ):
+            if verbose:
+                print 'both vmin ({:.2E}), and vmax ({:.2E}) are <0'.format( \
+                    vmin, vmax )
+            sigfig_rounding_on_cb += 1
+    except np.ma.core.MaskError:
+        print 'Gotcha: numpy.ma.core.MaskError'
+        print lvls, vmin, vmax
+        
+    
     # significant figure ( sig. fig. ) rounding func.
     round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
     
@@ -3935,8 +3936,6 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
                 print lvls, lvls[-2], lvls[-3], sigfig_rounding_on_cb_ticks
             lvls_diff = round_to_n( lvls[-2]-lvls[-3], \
                                 sigfig_rounding_on_cb_ticks)                                
-                   
-                   
                                 
     # ---  Round top of colorbar lvls, then count down from this
     # first get top numer rounded up to nearest 'lvls_diff'
@@ -3953,7 +3952,8 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
         # ( this method also fails if vmax<lvls_diff )
         vmax_rounded = vmax
 
-    print 1, lvls, vmax_rounded, lvls_diff
+    if debug:
+        print 1, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
 
     if verbose:
         print vmax_rounded,  lvls_diff, nticks
@@ -3961,17 +3961,28 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
             for i in range( nticks ) ][::-1])   
     if debug:
         print lvls, len( lvls )
+        print 2, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
 
-    print 2, lvls, vmax_rounded, lvls_diff
-
-
-    # ensure returned ticks are to a maximum of 2 sig figs. 
-    # ( this only works if all positive )
+    # ensure returned ticks are to a maximum of 2 sig figs  
+    # ( this only works if all positive ) and are unique
     try:
-        lvls = [ round_to_n( i, sigfig_rounding_on_cb_lvls) for i in lvls ]
+        # Make sure the colorbar labels are not repeated
+        invalid = True
+        while invalid:
+            new_lvls = [ round_to_n( i, sigfig_rounding_on_cb_lvls) \
+                for i in lvls ]
+            if len( set(new_lvls) ) == len(lvls):
+                lvls = new_lvls
+                invalid=False
+            else: # Try with one more sig fig
+                sigfig_rounding_on_cb_lvls += 1
+
     except:
         print 'WARNING: unable to round level values to {} sig figs'.format(\
                    sigfig_rounding_on_cb_lvls  )
+    if debug:
+        print 3, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
+
     if rtn_lvls_diff:
         return lvls, lvls_diff
     else:

@@ -857,8 +857,8 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'Bry' : [\
     'Br2', 'BrCl', 'IBr', 'HOBr', 'BrO', 'HBr', 'BrNO2', 'BrNO3', 'Br'  ],
     'Cly' : [ \
-     'Cl2','BrCl','ICl', 'HOCl', 'ClO', 'ClOO', 'OClO', 'Cl2O2', 'HCl',  \
-     'ClNO2', 'ClNO3',  'Cl'],
+     'ClOO', 'OClO', 'ClO', 'Cl2O2', 'ICl', 'Cl2', 'Cl', 'BrCl', 'ClNO3', 
+     'ClNO2', 'HOCl', 'HCl'],
     'Cl_specs' : [ \
      'Cl2','BrCl','ICl', 'HOCl', 'ClO', 'ClOO', 'OClO', 'Cl2O2', 'HCl',  \
      'ClNO2', 'ClNO3', 'Cl', 'CH2Cl2', 'CHCl3', 'CH2ICl', 'CH3Cl' ],
@@ -1074,6 +1074,8 @@ def latex_spec_name(input_x, debug=False):
     'ClNO2': 'ClNO$_{2}$','ClNO3':'ClNO$_{3}$', 'Cl':'Cl',\
     'CH3Cl': 'CH$_{3}$Cl',  'CH2Cl2': 'CH$_{2}$Cl$_{2}$', \
     'CHCl3': 'CHCl$_{3}$', 
+    # Bry names 
+    'BrSALC': 'Br- on SALC', 'BrSALA': 'Br- on SALA',
             }
     return spec_dict[input_x]
 
@@ -2695,6 +2697,8 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',  \
         (A) 'fp' option is now obselete. 
     
     """
+#    debug=True
+
     if verbose:
         print 'PLO3_to_PD called for wd = ', wd
 

@@ -665,7 +665,7 @@ def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, \
              molec_weight=True, time_averaged=True, debug=False ):
     """ Get OH/HO2 concentrations from ctm.bpch file """
 
-    debug=True
+#    debug=True
     if debug:
         print 'get_OH_HO2 called for ', wd
 
@@ -1153,6 +1153,13 @@ def process_data4specs( specs=None, just_bcase_std=True, preindustrial=False, \
     wds, titles = MUTD_runs( titles=True, just_bcase_std=just_bcase_std, \
         res=res, ver=ver, just_bcase_no_hal=just_bcase_no_hal, \
         preindustrial=preindustrial )
+    if debug:
+        print wds, titles
+
+    if preindustrial:
+        # Force 'Cl+Br+I (PI)' to be base case and 'Cl+Br+I' to be second entry
+        wds = [wds[3],  wds[1] ]
+        titles = [ titles[3], titles[1] ]
     if debug:
         print wds, titles
 
@@ -2133,7 +2140,11 @@ def iGEOSChem_ver(wd, verbose=True, debug=False):
     v = [ (i in wd) for i in vers ]
     if debug:
         print vers, v
-    return [vers[n] for n, i in enumerate(v) if i==True ][0]
+    try:
+        ver = [vers[n] for n, i in enumerate(v) if i==True ][0]
+    except IndexError:
+        print 'Version not in list. :', wd
+    return  ver
 
 
 # --------------
@@ -3916,7 +3927,7 @@ def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
         instead of (72,46,47,12)
         
     """
-    debug=True
+#    debug=True
     if debug:
         print 'mask4troposphere called for arr of shape: {},'.format( \
             ars[0].shape) + 'with multiply method?=', multiply_method, \
