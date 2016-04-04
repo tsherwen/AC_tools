@@ -954,7 +954,7 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
             window=False, label=None, ylabel=None, loc='upper right',  \
             lw=1,ls='-', color=None, showmeans=False, boxplot=True, \
             plt_median=False, plot_Q1_Q3=False, pcent1=25, pcent2=75, \
-            ylim=None, \
+            ylim=None, xtickrotation=45, \
             debug=False ):
     """ Plot up timeseries of seasonal data. Requires data, and dates in numpy
         array form. Dates must be as datetime.datetime objects. """
@@ -997,7 +997,7 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     
     # Beatify plot
     ax.set_xticks( months )
-    ax.set_xticklabels( labels )
+    ax.set_xticklabels( labels, rotation=xtickrotation )
     if not isinstance( ylim, type(None) ):
         ax.set_ylim( ylim )
     if not isinstance( title, type(None) ):

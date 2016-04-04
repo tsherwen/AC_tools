@@ -380,8 +380,10 @@ def get_tag_fam( tag ):
     'LO3_64': 'NOy', 'LO3_36': 'Iodine', 'LO3_57': 'NOy', 'LO3_72': 'NOy', \
     'RD98': 'Photolysis', 'LO3_71': 'NOy', 'LO3_58': 'NOy', \
     'LO3_54': 'Photolysis', 'LO3_55': 'Iodine', 'LO3_56': 'HOx', \
-    'LO3_08': 'HOx', 'LO3_50': 'NOy', 'LO3_51': 'NOy', 'LO3_52': 'NOy', \
+    'LO3_08': 'HOx', 'LO3_51': 'NOy', 'LO3_52': 'NOy', \
     'LO3_53': 'HOx', \
+    # tags for N2O5 hydrolysis ( => ClNO3/HNO3 )
+     'LO3_50': 'NOy', 'LR114' :'NOy', 'LR113' :'NOy', \
     # added
     'RD63': 'Iodine', 'RD62':'Iodine',  'LO3_38': 'Iodine', 'RD59': 'Iodine', \
     'LO3_30' : 'Iodine', 'RD65': 'Iodine', 'LO3_34': 'Iodine',  \
@@ -646,12 +648,12 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
     # Kludge for testing. Allow values to equal 1.0 if not defined. 
     try:
         if debug:
-            print '{} (ref_spec: {}) stiochmetry : {}'.format( spec, \
+            print '{} (ref_spec: {}) stoichiometry : {}'.format( spec, \
                 ref_spec,  d[spec] )
         return d[spec]
 
     except:
-        print '!'*20, 'WARNING - Kludge assumming stiochmetry = 1.0, for'+ \
+        print '!'*20, 'WARNING - Kludge assumming stoichiometry = 1.0, for'+ \
             ' {} (ref_spec given as: {})'.format( spec, ref_spec )
         return 1.0
 
@@ -1605,11 +1607,11 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
     if (ver == '3.0') and (not any( [preindustrial, v10v92comp, IO_obs]) ):
 
         if just_bcase_std:
-            l =  [ 'BROMINE', 'Cl-Br-I' ]
+            l =  [ 'BROMINE', 'Cl+Br+I' ]
         if just_bcase_no_hal:
-            l =  ['NOHAL',  'Cl-Br-I' ]
+            l =  ['NOHAL',  'Cl+Br+I' ]
         if (not just_bcase_std) and (not just_bcase_no_hal):
-            l =  ['NOHAL', 'BROMINE', 'Cl-Br-I' ]
+            l =  ['NOHAL', 'BROMINE', 'Cl+Br+I' ]
 
         # Add extra runs?
         if inc_iGC_ver1_6:
@@ -2718,6 +2720,7 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',  \
         non_PDs = [\
         'PIOx', 'iLOX', 'LIOx', 'iPOX', 'POX', 'LOX', 'LOx', 'L_Iy', 'LOH', \
         'LCl', 'POH', 'PCl', 'P_Iy', 'L_Bry', 'P_Bry','L_Cly','P_Cly',\
+        'LSBrA', 'LSBrC', 'PSBrA', 'PSBrC'
         ]
         vars += non_PDs
         PDs += non_PDs
@@ -2882,7 +2885,10 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
         'LO3_39LR46', 
         'LO3_39LR47', 
         'LO3_87LR48', 'LO3_87LR48', 
-        'LISOPOLR86' ]
+        'LISOPOLR86',  
+        'LO3_50LR113', 
+        'LO3_50LR114'
+        ]
         cerrs = [ \
         ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], \
         ['PO3_50'], \
@@ -2892,7 +2898,14 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
         ['LO3_39', 'LR46'], \
         ['LO3_39', 'LR47'], \
         ['LO3_87'], ['LO3_87'], \
-        ['LR86' ]
+        ['LR86' ], \
+#        ['LO3_50', 'LR113' ], \
+#        ['LO3_50', 'LR114' ]
+        # revserse LR tags also ( LO3_50 now redundant )
+        ['LR113', 'LO3_50' ], \
+        ['LR114', 'LO3_50' ]
+#        ['LR113'], 
+#        ['LR114'], 
         ]
 #        errs = ['LO3_36RD95' , 'ISOPNDPO3_50', 'ISOPNDLR40']
 #        cerrs = [ ['RD95'], ['PO3_50'], ['LR40'] ]
