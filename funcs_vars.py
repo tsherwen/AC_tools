@@ -1164,7 +1164,9 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, \
     u'n-butane': 'pptv', u'n-pentane': 'pptv', u'Undecane': 'pptv', \
     u'Decane': 'pptv', u'Octane': 'pptv', u'n-octane': 'pptv',\
     # Extra Cly species 
-    'ClNO2': 'ppbv'
+    'ClNO2': 'ppbv', 
+    # extra tag "species" for  easy of processing 
+    'PD421' : 'molec cm$^{-3}$ s$^{-1}$'
     } 
     units = tra_unit[x]
 
@@ -2899,11 +2901,11 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
         ['LO3_39', 'LR47'], \
         ['LO3_87'], ['LO3_87'], \
         ['LR86' ], \
-#        ['LO3_50', 'LR113' ], \
-#        ['LO3_50', 'LR114' ]
-        # revserse LR tags also ( LO3_50 now redundant )
-        ['LR113', 'LO3_50' ], \
-        ['LR114', 'LO3_50' ]
+        ['LO3_50', 'LR113' ], \
+        ['LO3_50', 'LR114' ]
+        # revserse LR tags also ( LO3_50 now redundant ) - INCORRECT
+#        ['LR113', 'LO3_50' ], \
+#        ['LR114', 'LO3_50' ]
 #        ['LR113'], 
 #        ['LR114'], 
         ]

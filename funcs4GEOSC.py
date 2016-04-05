@@ -2234,7 +2234,7 @@ def get_pl_in_Gg( specs=None, ctm_f=None, wd=None , years=None, months=None,
         specs_ = [ PLO3_to_PD( i, ver=ver, fp=True, wd=wd ) for i in specs ]
         ars = get_GC_output( wd, vars=['PORL_L_S__'+i for i in specs_], \
                     r_list=True, trop_limit=trop_limit)
-        # convert to Gg [I/Ox... ] /s 
+        # convert  [molec/cm3/s]  to Gg [I/Ox... ] /s 
         # ( terms of mass defined by "spec" variable )
         ars = [ molec_cm3_s_2_Gg_Ox_np( arr, specs[n], vol, ctm_f=ctm_f, \
             spec=spec, Iodine=Iodine, IO=IO, I=I, year_eq=False,debug=debug)   \
@@ -4031,6 +4031,59 @@ def convert_molec_cm3_s2_molec_per_yr( ars=None, vol=None ):
 #        
 #    return ars
 
+# --------------
+# 2.46 - Convert molec/cm3/s to g/s
+# -------------
+def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
+         months=None, years=None, vol=None, t_ps=None, trop_limit=True, \
+        s_area=None, rm_strat=True, ctm_f=None, wd=None, res='4x5', \
+        multiply_method=True, use_time_in_trop=True, conbine_ars=True, \
+        verbose=False, debug=False ):
+    """ Convert molec/cm3/s to g/grid box. This is used for converting prod/loss 
+        output units.
+
+    NOTES:
+        - re-write of molec_cm3_s_2_Gg_Ox_np for clarity/split functionaltity
+    """
+    # --- Extract core model variables not provide
+    if not isinstance(months, list):
+        months = get_gc_months( ctm_f, wd=wd )
+    if not isinstance(years, list):
+        years  = get_gc_years( ctm_f=ctm_f, wd=wd, set_=False )
+    if isinstance( s_area, np.ndarray):
+        s_area = get_surface_area( res=res, debug=debug )
+    if not isinstance(vol, np.ndarray):
+        vol = get_volume_np( ctm_f=ctm_f, s_area=s_area, wd=wd, res=res,\
+             debug=debug )
+        print 'WARNING: extracting volume online - inefficent'
+
+    print [ (i.sum(), i.shape) for i in ars ]
+
+    # --- loop spec ars
+    for n, arr in enumerate( ars ):
+        # convert from molec/cm3/s to  molec/s
+        arr  = arr *vol[...,:38,:]
+        # conver to to molec/s = > Gg/s
+        arr =  arr / constants( 'AVG') * species_mass(ref_spec)
+        # to / yr
+        day_adjust = d_adjust( months, years)
+        ars[n] = arr * day_adjust
+
+    print [ (i.sum(), i.shape) for i in ars ]
+
+    # only consider troposphere ( update this to use mask4troposphere )
+    if rm_strat:
+        ars = mask4troposphere( ars,  t_ps=t_ps, \
+            use_time_in_trop=use_time_in_trop, multiply_method=multiply_method )
+
+    print [ (i.sum(), i.shape) for i in ars ]
+    print [ (i.sum(), i.shape) for i in [ i[...,None] for i in ars ] ]
+    print np.concatenate( [ i[...,None] for i in ars ], axis=-1 ).shape
+    
+    if conbine_ars:
+        return np.concatenate( [ i[...,None] for i in ars ], axis=-1 ) 
+    else:
+        return ars    
 
 # ------------------ Section 6 -------------------------------------------
 # -------------- Time Processing
