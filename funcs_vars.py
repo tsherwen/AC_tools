@@ -492,7 +492,7 @@ def species_mass( spec ):
     'BrSALA': 80., 'BrSALC': 80., 'ISALA': 127. ,  'ISALC': 127. , \
     # Additional "species" to allow for ease of  processing
     'AERI_AVG': ( (286.0+302.0+318.0)/3 )/2, 'SO4S': 96.0, 
-    'IO3': 127.+(3.*16.) , 'SSBr2': 160.0
+    'IO3': 127.+(3.*16.) , 'SSBr2': 160.0, 'C': 12.0
     }
     
     return d[spec]
@@ -852,6 +852,10 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4',\
     'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN',\
     'NO3', 'HNO2', 'IONO', 'IONO2', 'INO'],
+    'NOy' : [
+    'NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4',\
+    'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN',\
+    'NO3', 'HNO2', 'IONO', 'IONO2', 'INO', 'ClNO2', 'ClNO3'],
     'N_specs_no_I'  :  [
     'NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4', \
     'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN',\
@@ -2901,11 +2905,11 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
         ['LO3_39', 'LR47'], \
         ['LO3_87'], ['LO3_87'], \
         ['LR86' ], \
-        ['LO3_50', 'LR113' ], \
-        ['LO3_50', 'LR114' ]
-        # revserse LR tags also ( LO3_50 now redundant ) - INCORRECT
-#        ['LR113', 'LO3_50' ], \
-#        ['LR114', 'LO3_50' ]
+#        ['LO3_50', 'LR113' ], \
+#        ['LO3_50', 'LR114' ]
+        # revserse LR tags also ( LO3_50 now redundant? ) - NO
+        ['LR113', 'LO3_50' ], \
+        ['LR114', 'LO3_50' ]
 #        ['LR113'], 
 #        ['LR114'], 
         ]
@@ -2946,6 +2950,6 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
     if debug:
         print tags 
 
-    print '1'*300, tags 
+#    print '1'*300, tags 
 
     return nums, rxns, tags, Coe

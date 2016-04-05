@@ -4046,6 +4046,7 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
         - re-write of molec_cm3_s_2_Gg_Ox_np for clarity/split functionaltity
     """
     # --- Extract core model variables not provide
+    print '1'*100, [ type(i) for i in months, years ]
     if not isinstance(months, list):
         months = get_gc_months( ctm_f, wd=wd )
     if not isinstance(years, list):
