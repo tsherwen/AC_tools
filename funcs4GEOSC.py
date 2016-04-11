@@ -747,11 +747,13 @@ def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, \
             print [ i.shape for i in OH, HO2, moles, vol, HOx ]
             print  'HOx weighted: ',HO2, OH
 
-    elif molec_weight: # weigh by # of molecules
+    elif molec_weight: # weight by # of molecules
         HO2, OH  = [ ( i*molecs).sum() /molecs.sum() for i in HO2, OH   ]
         
     else: # Volume weight
-       HO2, OH = [ np.ma.sum( i *vol) / np.ma.sum(vol)  for i in HO2, OH ] 
+#       HO2, OH = [ np.ma.sum( i *vol) / np.ma.sum(vol)  for i in HO2, OH ] 
+        print 'Specify weighting in get_OH_HO2() '
+        sys.exit()
 
     # Scale to set value ( e.g. 1E6 )
     HO2, OH = [i/scale for i in HO2, OH ]
@@ -3262,7 +3264,8 @@ def vol_weighted_avg( arr, vol=None, ctm_f=None ):
 # ----
 # 2.32 - molecule weighted array average value
 # ----
-def molec_weighted_avg( arr, molecs=None, wd=None, t_p=None, n_air=None,\
+def molec_weighted_avg( arr, wd=None, ctm_f=None, \
+            vol=None, t_p=None, n_air=None, molecs=None,\
             trop_limit=True, multiply_method=False, rm_strat=True ):
     """ Takes array and retuns the average (molecular weighted) value 
 
@@ -3276,7 +3279,8 @@ def molec_weighted_avg( arr, molecs=None, wd=None, t_p=None, n_air=None,\
             n_air = get_GC_output( wd, vars=['BXHGHT_S__N(AIR)'], \
                 trop_limit=trop_limit, dtype=np.float64 )  # [molec air/m3]
         if not isinstance(vol, np.ndarray):
-            vol = get_volume_np( ctm_f ) /1E6 # [cm^3 ]
+            vol = get_volume_np( ctm_f=ctm_f, wd=wd, trop_limit=trop_limit ) 
+            vol = vol /1E6 # [cm^3 ]
         # Calculate molecules per grid box
         molecs =  n_air * vol # [molec air]
 
