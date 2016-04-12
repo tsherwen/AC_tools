@@ -1,4 +1,5 @@
-# =========================================================================================================
+#!/usr/bin/python
+# ============================================================================
 # ------------------------------ tms - module of programs/code for re-use ----------------------------------
 # -------------- 
 # Section 1 - Plotters funcs
@@ -104,7 +105,6 @@
 # ------------------------------------------- Section 0 -------------------------------------------
 # -------------- Required modules:
 #
-#!/usr/bin/python
 # -- I/O / Low level                                                                                
 import os
 import sys
@@ -665,7 +665,7 @@ def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, \
              molec_weight=True, time_averaged=True, debug=False ):
     """ Get OH/HO2 concentrations from ctm.bpch file """
 
-    debug=True
+#    debug=True
     if debug:
         print 'get_OH_HO2 called for ', wd
 
@@ -747,11 +747,13 @@ def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, \
             print [ i.shape for i in OH, HO2, moles, vol, HOx ]
             print  'HOx weighted: ',HO2, OH
 
-    elif molec_weight: # weigh by # of molecules
+    elif molec_weight: # weight by # of molecules
         HO2, OH  = [ ( i*molecs).sum() /molecs.sum() for i in HO2, OH   ]
         
     else: # Volume weight
-       HO2, OH = [ np.ma.sum( i *vol) / np.ma.sum(vol)  for i in HO2, OH ] 
+#       HO2, OH = [ np.ma.sum( i *vol) / np.ma.sum(vol)  for i in HO2, OH ] 
+        print 'Specify weighting in get_OH_HO2() '
+        sys.exit()
 
     # Scale to set value ( e.g. 1E6 )
     HO2, OH = [i/scale for i in HO2, OH ]
@@ -1141,7 +1143,7 @@ def get_spec_pf_hdf_surface_procesor( run_name='run', spec='O3', \
 # ----
 # 1.21 - Process species for given arrays to (v/v) in respective scale + DU
 # ---
-def process_data4specs( specs=None, just_bcase_std=True, \
+def process_data4specs( specs=None, just_bcase_std=True, preindustrial=False, \
             just_bcase_no_hal=False, res='4x5', ver='1.6', diff=True, \
             pcent=True, tight_constraints=True, trop_limit=True, \
             NOy_family=False, Bry_family=False, Iy_family=False, \
@@ -1151,7 +1153,15 @@ def process_data4specs( specs=None, just_bcase_std=True, \
 
     # Get runs data and descriptors
     wds, titles = MUTD_runs( titles=True, just_bcase_std=just_bcase_std, \
-        res=res, ver=ver, just_bcase_no_hal=just_bcase_no_hal )
+        res=res, ver=ver, just_bcase_no_hal=just_bcase_no_hal, \
+        preindustrial=preindustrial )
+    if debug:
+        print wds, titles
+
+    if preindustrial:
+        # Force 'Cl+Br+I (PI)' to be base case and 'Cl+Br+I' to be second entry
+        wds = [wds[3],  wds[1] ]
+        titles = [ titles[3], titles[1] ]
     if debug:
         print wds, titles
 
@@ -2132,7 +2142,11 @@ def iGEOSChem_ver(wd, verbose=True, debug=False):
     v = [ (i in wd) for i in vers ]
     if debug:
         print vers, v
-    return [vers[n] for n, i in enumerate(v) if i==True ][0]
+    try:
+        ver = [vers[n] for n, i in enumerate(v) if i==True ][0]
+    except IndexError:
+        print 'Version not in list. :', wd
+    return  ver
 
 
 # --------------
@@ -2222,7 +2236,7 @@ def get_pl_in_Gg( specs=None, ctm_f=None, wd=None , years=None, months=None,
         specs_ = [ PLO3_to_PD( i, ver=ver, fp=True, wd=wd ) for i in specs ]
         ars = get_GC_output( wd, vars=['PORL_L_S__'+i for i in specs_], \
                     r_list=True, trop_limit=trop_limit)
-        # convert to Gg [I/Ox... ] /s 
+        # convert  [molec/cm3/s]  to Gg [I/Ox... ] /s 
         # ( terms of mass defined by "spec" variable )
         ars = [ molec_cm3_s_2_Gg_Ox_np( arr, specs[n], vol, ctm_f=ctm_f, \
             spec=spec, Iodine=Iodine, IO=IO, I=I, year_eq=False,debug=debug)   \
@@ -2485,12 +2499,11 @@ def get_gc_alt(alt):
 # ------------- 
 def species_v_v_to_Gg(arr, spec, a_m=None, Iodine=True, All =False, \
         Ox=False, ctm_f=None, wd=None, debug=False):
-    """ Convert array of species in v/v to Gg 
+    """ Convert array of species in v/v to Gg (of spec)
         NOTE:
-        - the processing is not clear in this function, <= update 
+        - The processing is not clear in this function, <= update 
         - To output
     """
-
     print 'WARNING: Check settings in species_v_v_to_Gg: ',  All, Iodine, Ox
 
     if not isinstance(a_m, np.ndarray):
@@ -2508,7 +2521,7 @@ def species_v_v_to_Gg(arr, spec, a_m=None, Iodine=True, All =False, \
     if ( (Iodine) and (Ox) ):      
         arr = ( ( arr * moles )  * (16.*3.) ) /1E9 
 
-    #  in "species" mass terms ( moles => mass (g) => Gg (in units of O3 ) )
+    #  In "species" mass terms ( moles => mass (g) => Gg (in units of spec ) )
     if ( ( not Iodine ) and ( All) ):      
         arr = ( ( arr * moles )  * (species_mass( spec  )) ) /1E9 
     return arr
@@ -2587,6 +2600,7 @@ def loc_is_water_grid_box( lat, lon, res='4x5' ):
 # -------------   
 def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
                 years=None, res='4x5', vol=None, debug=False, \
+                rtn_induvidual_species=True, \
                 trop_limit=True, Iodine=False):
     """ Get array of dry deposition values for a given species """
 
@@ -2624,7 +2638,10 @@ def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
     day_adjust = d_adjust( months, years)
     df = np.multiply(df, day_adjust)
 
-    return df
+    if rtn_induvidual_species:
+        return df
+    else:
+        return df.sum( axis=0 )
 
 # --------------  
 # 2.19 - Land map - REDUNDENT
@@ -2735,9 +2752,10 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
             verbose=False, debug=False ):
     """ This is version of get_GC_run_stats is setup to work with monthly 
         outputted data 
-        
-        """
-
+    NOTES:
+        - Writen to work iwth PyGChem 2.0, then updated to 3.0 with limited 
+        back compatiblity retained.
+    """
     # --- Get vars need for calcs
     # get general variables 
     if isinstance( ver, type(None) ):
@@ -2774,39 +2792,39 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
         vol  = get_volume_np( wd=wd, s_area=s_area[:,:,None, None], \
             trop_limit=trop_limit, res=res )
 
-    # Get O3 v/v array
+    # --- Get O3 mixing ratio (v/v) array
     O3_arr  = get_GC_output( wd, species='O3', trop_limit=trop_limit)
 
-    # Get Months and years in model output
+    # --- Get Months and years in model output
     months = get_gc_months( wd=wd ) 
     years = get_gc_years( wd=wd )
     if debug:
         print [i.shape for i in  t_ps, a_m, vol, O3_arr, molecs  ]
 
-    # Get surface IO conc
+    # --- Get surface IO conc
     sur_IO =  get_GC_output( wd, vars=['IJ_AVG_S__IO'] ) *1E12 * ocean_mask
     sur_IO = sur_IO.mean( axis=-1)[...,0].mean()
 
-    # get POx and LOx
+    # --- Get total Ox production (POx) and loss (LOx)
     POx, LOx = get_POxLOx( wd=wd, vol=vol, t_p=t_ps, ver=ver, debug=debug)
 
-    # get O3 burden
+    # --- Get O3 burden
     O3_bud = get_O3_burden( a_m=a_m[:,:,:38,:], t_p=t_ps, O3_arr=O3_arr, \
         debug=debug ) /1E3
 
-    # Get O3 dep
+    # --- Get O3 dep
     O3_dep = spec_dep( spec='O3', wd=wd, s_area=s_area, months=months, \
         years=years, vol=vol, Iodine=False )/1E3 
 
-    # get DU column
+    # --- Get DU column
     DU_O3  = get_DU_mean( s_area=s_area, a_m=a_m[:,:,:38,:], t_p=t_ps, \
         O3_arr=O3_arr, debug=debug)
 
-    # Get OH and HO2
+    # --- Get OH and HO2
     OH, HO2 = get_OH_HO2( wd=wd, t_p=t_ps, a_m=a_m, HOx_weight=HOx_weight, \
         vol=vol, res=res ) 
 
-    # Get Loss routes for Iy and cal Iy lifetime Gg / Gg/year => days  
+    # --- Get Loss routes for Iy and cal Iy lifetime Gg / Gg/year => days  
     # (inc. wet & dry dep)
     # Iodine dry deposition
     try:
@@ -2824,19 +2842,19 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
     except:
         w_dep =  np.ones(  get_dims4res(res)  )
 
-    # Get Iy loss ( single p/l family )
+    # --- Get Iy loss ( single p/l family )
     Iy_loss = get_pl_in_Gg( wd=wd, specs=['L_Iy'], Iodine=Iodine, res=res, \
             ver=ver, vol=vol, debug=debug )
-    Iy_burdens = get_GC_output( wd, vars=['IJ_AVG_S__'+i for i in Iy], \
-            trop_limit=trop_limit, r_list=True)
-    Iy_burdens = [ species_v_v_to_Gg( i, spec=Iy[n], a_m=a_m ) \
-            for n, i in enumerate( Iy_burdens ) ]
-    Iy_burdens = np.ma.array( Iy_burdens ).mean(axis=-1)
+    Iy_burdens = fam_data_extractor( fam='Iy', wd=wd, trop_limit=trop_limit, \
+            t_ps=t_ps, ver=ver, annual_mean=False)      
+    Iy_burdens = species_v_v_to_Gg( Iy_burdens, spec='I', a_m=a_m,
+         All=True, Iodine=False ).mean(axis=-1)
 
     ars =  [np.sum(i) for i in [ Iy_burdens, Iy_loss, d_dep, w_dep ] ]
     Iy_lifetime = ( ars[0] /( np.sum(ars[1:]) ) ) *365
 
-    # Get Loss routes for IOx and cal IOx lifetime Gg / Gg/year => *365*24 => ms 
+    # --- Get Loss routes for IOx and cal IOx lifetime 
+    # ( Gg / Gg/year => *365*24 => mins  )
     IOx_loss = get_pl_in_Gg( wd=wd, specs=LIOx, Iodine=Iodine, res=res, 
                             ver=ver, vol=vol, debug=debug )
     IOx_burdens = get_GC_output( wd, vars=['IJ_AVG_S__'+i for i in IOx], \
@@ -2847,23 +2865,23 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
     ars = [ np.sum(i) for i in [ IOx_burdens, IOx_loss ]]
     IOx_lifetime = ( ars[0] /(np.sum(ars[1:])) ) *365*24*60
 
-    # Get CH4 Lifetime
+    # --- Get CH4 Lifetime
     CH4_lifetime = get_CH4_lifetime( wd=wd, vol=vol[...,:38,:], 
         t_ps=t_ps, a_m=a_m ) 
 
-    # Get NOx burden
+    # --- Get NOx burden (Annual mean)
     NOx = fam_data_extractor( fam='NOx', wd=wd, trop_limit=trop_limit, \
         title=title, t_ps=t_ps, ver=ver, annual_mean=False)
     NOx = species_v_v_to_Gg( NOx/1E12, spec='N', Iodine=False, a_m=a_m,\
         All=True)
-    NOx = np.ma.array(NOx).mean(axis=-1)
+    NOx = np.ma.array(NOx).mean(axis=-1) # Annual mean
 
-    # Get NOy burden
+    # --- Get NOy burden (Annual mean)
     NOy = fam_data_extractor( fam='NOy',  wd=wd, trop_limit=trop_limit, \
         title=title, t_ps=t_ps, ver=ver, annual_mean=False)
     NOy = species_v_v_to_Gg( NOy/1E12, spec='N', Iodine=False, a_m=a_m,\
          All=True)
-    NOy = np.ma.array(NOy).mean(axis=-1)
+    NOy = np.ma.array(NOy).mean(axis=-1) # Annual mean
 
     # Setup return lists
     vars  = [ \
@@ -2884,7 +2902,6 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
     '/ 1E5 molec. cm^-3', 'v/v', '', '/ Days', '/ Min', 'Gg', '/ Years',  \
     'Gg', 'Gg', 'Gg', 'Gg', 'Gg'
     ]
-
 
     return vars, headers, header_units
 
@@ -3238,7 +3255,10 @@ def get_cld_f( ctm_f, months=None, years=None, spec='O3',  debug=False ):
 # 2.31 - Vol weighted array average value
 # --------
 def vol_weighted_avg( arr, vol=None, ctm_f=None ):
-    """ Volume weight array """
+    """ Volume weight array  <=Redundent!
+    NOTES:
+        - Where is this used? What is this used for?
+    """
     if not isinstance(vol, np.ndarray):
         vol = get_volume_np( ctm_f ) # cm^3 
 
@@ -3247,13 +3267,22 @@ def vol_weighted_avg( arr, vol=None, ctm_f=None ):
 # ----
 # 2.32 - molecule weighted array average value
 # ----
-def molec_weighted_avg( arr, molecs=None, wd=None, t_p=None, n_air=None,\
-            trop_limit=True, multiply_method=False, rm_strat=True ):
+def molec_weighted_avg( arr, wd=None, ctm_f=None, \
+            vol=None, t_p=None, n_air=None, molecs=None,\
+            trop_limit=True, multiply_method=False, rm_strat=True, \
+            weight_lon=False, weight_lat=False, 
+            LON_axis=0, LAT_axis=1, \
+            annual_mean=True, debug=False ):
     """ Takes array and retuns the average (molecular weighted) value 
 
     NOTES:
         - Uses mask of given array if given array is a numpy masked array
-        -
+        - Assume axis dimensions are  (LON, LAT, ALT ), aka the array does not 
+        have a TIME dimension. Any shape can be handled as long as given molecs 
+        and arr have the same shape
+        - Molecs is the same as n_air ( [molec air/m3] * [m3]  vs.   
+       air mass [kg] / RMM [kg mol^-1] * Avogadros [mol^-1] )
+        
     """
 
     if isinstance( molecs, type(None) ): 
@@ -3261,9 +3290,12 @@ def molec_weighted_avg( arr, molecs=None, wd=None, t_p=None, n_air=None,\
             n_air = get_GC_output( wd, vars=['BXHGHT_S__N(AIR)'], \
                 trop_limit=trop_limit, dtype=np.float64 )  # [molec air/m3]
         if not isinstance(vol, np.ndarray):
-            vol = get_volume_np( ctm_f ) /1E6 # [cm^3 ]
+            vol = get_volume_np( ctm_f=ctm_f, wd=wd, trop_limit=trop_limit ) 
+            vol = vol /1E6 # [cm^3 ]
         # Calculate molecules per grid box
         molecs =  n_air * vol # [molec air]
+        if annual_mean:
+            molecs = molecs.mean(axis=-1)
 
     # Limit for troposphere? 
     if trop_limit:
@@ -3280,14 +3312,20 @@ def molec_weighted_avg( arr, molecs=None, wd=None, t_p=None, n_air=None,\
     # --- If masked array provided, applied same mask to molecules
     if isinstance( arr, np.ma.core.MaskedArray ):
         molecs  = np.ma.array( molecs, mask=arr.mask )
-        return (arr *molecs).sum()/molecs.sum()
 
-    # ---  Or apply to whole array
-    elif isinstance( arr, np.ndarray): 
-        return (arr *molecs).sum()/molecs.sum()
+    if weight_lon and (not weight_lat):  # 1st axis  
+        return (arr *molecs).sum(axis=LON_axis)/molecs.sum(axis=LON_axis)
 
-    else:
-        print 'Please provide numpy (masked or not), arr type: ', type(arr)
+    elif weight_lat and (not weight_lon):  # 2nd axis (LON, LAT, ALT, TIME )
+        return (arr *molecs).sum(axis=LAT_axis)/molecs.sum(axis=LAT_axis)
+    
+    elif weight_lat and weight_lon:  # 1st+2nd axis (LON, LAT, ALT, TIME )
+        return (arr *molecs).sum(axis=LAT_axis).sum(axis=LON_axis)/  \
+            molecs.sum(axis=LAT_axis).sum(axis=LON_axis)
+  
+    else: # weight whole array to give single number
+            return (arr *molecs).sum()/molecs.sum()
+
 
 # --------------
 # 2.34 -  takes indices or generates indices for a given set of sites, these are then substract from all arrays given
@@ -3912,7 +3950,7 @@ def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
         instead of (72,46,47,12)
         
     """
-    debug=True
+#    debug=True
     if debug:
         print 'mask4troposphere called for arr of shape: {},'.format( \
             ars[0].shape) + 'with multiply method?=', multiply_method, \
@@ -4016,6 +4054,60 @@ def convert_molec_cm3_s2_molec_per_yr( ars=None, vol=None ):
 #        
 #    return ars
 
+# --------------
+# 2.46 - Convert molec/cm3/s to g/s
+# -------------
+def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
+         months=None, years=None, vol=None, t_ps=None, trop_limit=True, \
+        s_area=None, rm_strat=True, ctm_f=None, wd=None, res='4x5', \
+        multiply_method=True, use_time_in_trop=True, conbine_ars=True, \
+        verbose=False, debug=False ):
+    """ Convert molec/cm3/s to g/grid box. This is used for converting prod/loss 
+        output units.
+
+    NOTES:
+        - re-write of molec_cm3_s_2_Gg_Ox_np for clarity/split functionaltity
+    """
+    # --- Extract core model variables not provide
+    print '1'*100, [ type(i) for i in months, years ]
+    if not isinstance(months, list):
+        months = get_gc_months( ctm_f, wd=wd )
+    if not isinstance(years, list):
+        years  = get_gc_years( ctm_f=ctm_f, wd=wd, set_=False )
+    if isinstance( s_area, np.ndarray):
+        s_area = get_surface_area( res=res, debug=debug )
+    if not isinstance(vol, np.ndarray):
+        vol = get_volume_np( ctm_f=ctm_f, s_area=s_area, wd=wd, res=res,\
+             debug=debug )
+        print 'WARNING: extracting volume online - inefficent'
+
+    print [ (i.sum(), i.shape) for i in ars ]
+
+    # --- loop spec ars
+    for n, arr in enumerate( ars ):
+        # convert from molec/cm3/s to  molec/s
+        arr  = arr *vol[...,:38,:]
+        # conver to to molec/s = > Gg/s
+        arr =  arr / constants( 'AVG') * species_mass(ref_spec)
+        # to / yr
+        day_adjust = d_adjust( months, years)
+        ars[n] = arr * day_adjust
+
+    print [ (i.sum(), i.shape) for i in ars ]
+
+    # only consider troposphere ( update this to use mask4troposphere )
+    if rm_strat:
+        ars = mask4troposphere( ars,  t_ps=t_ps, \
+            use_time_in_trop=use_time_in_trop, multiply_method=multiply_method )
+
+    print [ (i.sum(), i.shape) for i in ars ]
+    print [ (i.sum(), i.shape) for i in [ i[...,None] for i in ars ] ]
+    print np.concatenate( [ i[...,None] for i in ars ], axis=-1 ).shape
+    
+    if conbine_ars:
+        return np.concatenate( [ i[...,None] for i in ars ], axis=-1 ) 
+    else:
+        return ars    
 
 # ------------------ Section 6 -------------------------------------------
 # -------------- Time Processing

@@ -1,54 +1,4 @@
-# ------------------- Section 0 -------------------------------------------
-# -------------- Required modules:
-#
-
-# -- Plotting                                                                                       
-from mpl_toolkits.basemap import Basemap
-from matplotlib.colors import LogNorm
-from matplotlib.ticker import LogFormatter
-from matplotlib.ticker import NullFormatter
-from matplotlib.ticker import FuncFormatter
-import matplotlib.font_manager as font_manager
-import matplotlib.collections as mcoll
-import matplotlib.path as mpath
-import matplotlib.ticker
-from matplotlib import ticker
-from matplotlib.ticker import MultipleLocator, FormatStrFormatter
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-from matplotlib import cm
-from matplotlib.collections import LineCollection
-from pylab import setp
-import functools
-import matplotlib
-from mpl_toolkits.axes_grid1 import AxesGrid
-from mpl_toolkits.mplot3d import Axes3D
-
-
-# -- Time                                                                                           
-import time
-import calendar
-import datetime as datetime
-from datetime import datetime as datetime_
-
-# -- I/O/Admin... 
-import gc
-
-# tms
-from AC_tools.funcs_vars import *
-from AC_tools.funcs4generic import *
-from AC_tools.funcs4time import *
-#from funcs4obs import * #( need: get_CVO_DOAS_obs ... )
-from AC_tools.funcs4pf import *
-from AC_tools.funcs4GEOSC import * # wd2ctms
-
-# math
-from math import log10, floor
-
-# colormaps
-#from option_c import test_cm as cmc
-#from option_d import test_cm as cmd
-
+#!/usr/bin/python
 # --------------- ------------- ------------- ------------- ------------- 
 # ---- Section 1 ----- Common Plot Types
 # 1.01 - Global/nested region surface plotter ***
@@ -117,6 +67,59 @@ from math import log10, floor
 # 4.42 - Get human readable gradations for plot
 # 4.43 - mk colourmap discrete 
 # 4.99 - Get input variables for  plotting
+
+# ------------------- Section 0 -------------------------------------------
+# -------------- Required modules:
+#
+
+# -- Plotting                                                                                       
+from mpl_toolkits.basemap import Basemap
+from matplotlib.colors import LogNorm
+from matplotlib.ticker import LogFormatter
+from matplotlib.ticker import NullFormatter
+from matplotlib.ticker import FuncFormatter
+import matplotlib.font_manager as font_manager
+import matplotlib.collections as mcoll
+import matplotlib.path as mpath
+import matplotlib.ticker
+from matplotlib import ticker
+from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+from matplotlib import cm
+from matplotlib.collections import LineCollection
+from pylab import setp
+import functools
+import matplotlib
+from mpl_toolkits.axes_grid1 import AxesGrid
+from mpl_toolkits.mplot3d import Axes3D
+
+
+# -- Time                                                                                           
+import time
+import calendar
+import datetime as datetime
+from datetime import datetime as datetime_
+
+# -- I/O/Admin... 
+import gc
+
+# tms
+from AC_tools.funcs_vars import *
+from AC_tools.funcs4generic import *
+from AC_tools.funcs4time import *
+#from funcs4obs import * #( need: get_CVO_DOAS_obs ... )
+from AC_tools.funcs4pf import *
+from AC_tools.funcs4GEOSC import * # wd2ctms
+
+# math
+from math import log10, floor
+
+# colormaps
+#from option_c import test_cm as cmc
+#from option_d import test_cm as cmd
+
+
 
 
 # ----------------------------- Section 1 ------------------------------------
@@ -951,7 +954,7 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
             window=False, label=None, ylabel=None, loc='upper right',  \
             lw=1,ls='-', color=None, showmeans=False, boxplot=True, \
             plt_median=False, plot_Q1_Q3=False, pcent1=25, pcent2=75, \
-            ylim=None, \
+            ylim=None, xtickrotation=45, \
             debug=False ):
     """ Plot up timeseries of seasonal data. Requires data, and dates in numpy
         array form. Dates must be as datetime.datetime objects. """
@@ -994,7 +997,7 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     
     # Beatify plot
     ax.set_xticks( months )
-    ax.set_xticklabels( labels )
+    ax.set_xticklabels( labels, rotation=xtickrotation )
     if not isinstance( ylim, type(None) ):
         ax.set_ylim( ylim )
     if not isinstance( title, type(None) ):
@@ -2434,6 +2437,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
     dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, title=None, \
     window=False, interval=1, ylabel=True, cb='CMRmap_r', \
+    orientation='vertical', \
     no_cb=True, return_m=False, log=False, verbose=False, debug=False ):
     """
         Provide an array of lon, lat, time
@@ -2505,7 +2509,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         cb_ax = mk_cb(fig, units=units, left=left_cb_pos,  cmap=cmap, \
                 vmin=fixcb_buffered[0], cb_ax=cb_ax, \
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
-                extend=extend, lvls=lvls, log=log, \
+                extend=extend, lvls=lvls, log=log, orientation=orientation, \
                 sigfig_rounding_on_cb=sigfig_rounding_on_cb, nticks=nticks, \
                 norm=norm, discrete_cmap=discrete_cmap, debug=debug )    
 
@@ -2541,7 +2545,9 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
 
     # If lon, lat, alt array provided then take mean of lon
     if any( [arr.shape[0] ==i for i in 72, 144, 121, 177] ):
-        arr = arr.mean(axis=0)
+#        arr = arr.mean(axis=0)
+        arr = molec_weighted_avg( arr, weight_lon=True, \
+            trop_limit=trop_limit, rm_strat=False, wd=wd) 
 
     # Create figure if not provided
     if isinstance( fig, type(None) ):
@@ -2934,7 +2940,9 @@ def plt_4Darray_zonal_by_month( arr, res='4x5', dpi=160, \
 def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
         fig=None, ax=None, dpi=160, show=False, f_size=10, legend=False, \
         colors=None, title=None, loc='upper right', ylim=None, xlim=None, \
-        lw=8.0, ylabel=None, log=False, verbose=False, debug=False):
+        lw=8.0, ylabel=None, xlabel=False, log=False, rm_ticks=False, \
+        alt_text_x=.15, alt_text_y=0.75, alt_text=None, ncol=1, \
+        verbose=False, debug=False):
     """ Produce a stacked plot (by X axis) for values in Y array. 
     
     NOTE:
@@ -2943,7 +2951,6 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
         - X must be a list of numpy arrays 
         - Y must be a numpy array
     """
-    debug=True
     if debug:
         print 'X_stackplot called, with X[0] shape {}'.format( X[0].shape )
 
@@ -2958,36 +2965,33 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
         ax = fig.add_subplot( 1,1,1  )
         if debug:
             print 'Creating ax'
+    if debug:
+        print zip( labels, [ colors[:len(labels)] ] )
+        print zip( labels,  [np.sum(i) for i in X] )
 
-    print zip( labels, [ colors[:len(labels)] ] )
-    print zip( labels,  [np.sum(i) for i in X] )
-
-
-    # --- stack arrays if
-#    if len( X ) == 1:
-#        X = np.atleast_2d( X )
-#  elif len( X ) > 1:
+    # --- stack arrays if not stacked... 
     if isinstance( X, np.ndarray ):
         X = np.ma.atleast_2d( X )
     else:
         X = np.ma.column_stack( X )
     # Assume data passed has not been 'stacked', so stack it here.
     stack = np.ma.cumsum( X, axis=1)
-
-    print zip( labels,  [np.sum(stack[:,n]) for n, i in enumerate(labels) ] )    
-#    sys.exit()
+    if debug:
+        print zip( labels, [np.sum(stack[:,n]) for n, i in enumerate(labels) ] )    
+        print zip( labels, [np.max(stack[:,n]) for n, i in enumerate(labels) ] )    
 
     # --- Setup baseline ( can expand to include other options... )
     if baseline == 'zero':
         first_line = np.zeros( stack[:,0].shape)
     
-    # --- plot by label
+    # --- Plot by label
     # Get list of colors
     if isinstance( colors, type(None) ):
         colors = color_list( len(stack[0,:]) )
 
     # Color between x = 0 and the first array.
-    print stack[:, 0]
+    if debug:
+        print stack[:, 0]
     r =[]
     r += [ ax.fill_betweenx( Y, first_line, stack[:, 0],
                                color=colors[0], 
@@ -2998,7 +3002,7 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
                                    label=labels[i+1] ) 
                                    for i in range( 0, len(stack[0,:])-1 ) ]
 
-    # plot transparent lines to get 2D line object to create lengend
+    # Plot transparent lines to get 2D line object to create lengend
     [ plt.plot( Y, stack[:,n], alpha=0, color=colors[n], label=i) \
         for n,i in enumerate(labels) ]
 
@@ -3006,25 +3010,51 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
     if log:
         ax.set_xscale('log')
 
-    # Beautify plot
+    # --- Beautify plot
     if not isinstance( ylim, type(None) ):
         plt.ylim( ylim )
     if not isinstance( xlim, type(None) ):
         plt.xlim( xlim )
     if not isinstance( title, type(None) ):
         plt.title( title, fontsize=f_size )
+    # Add alt text?
+    if not isinstance( alt_text, type(None) ):
+        ax.annotate( alt_text , xy=(alt_text_x, alt_text_y), \
+            textcoords='axes fraction', fontsize=f_size*1.5 )
     if legend:
-        # Add legend ( + update line sizes)
-        leg = plt.legend( loc=loc, fontsize=f_size*.75 )
+        # Add legend 
+        if ncol == 0:
+            leg = plt.legend( loc=loc, fontsize=f_size*.75,  )
+        else:
+            import itertools
+            def flip(items, ncol):
+                return itertools.chain(*[items[i::ncol] for i in range(ncol)])
+            handles, labels = ax.get_legend_handles_labels()
+            leg = plt.legend( flip(handles, ncol), flip(labels, ncol), loc=loc, 
+                ncol=ncol, fontsize=f_size*0.75)
+        
+        # ( + update line sizes)
         for legobj in leg.legendHandles:
                 legobj.set_linewidth( lw)
                 legobj.set_alpha( 1 )
-    # remove tick labels on y axis 
+
+    # Remove tick labels on y axis?
     if ylabel:
-        plt.ylabel( ylabel, fontsize=f_size  )
+        plt.ylabel( ylabel, fontsize=f_size*.75  )
+        ax.tick_params( labelsize= f_size*.75 )
     else:
-        ax_tmp = plt.gca()
-        ax_tmp.tick_params( axis='y', which='both', labelleft='off')
+        ax.tick_params( axis='y', which='both', labelleft='off', \
+            labelsize= f_size*.75)
+    # Remove tick labels on x axis?
+    if xlabel: 
+        ax.set_xlabel(xlabel, fontsize=f_size*.75)
+        ax.tick_params(  axis='x', which='both', labelsize= f_size*.75 )
+    else:
+        if rm_ticks:
+            ax.tick_params( axis='x', which='both', labelbottom='off', \
+                labelsize= f_size*.75 )
+        else:
+            ax.tick_params( axis='x', which='both', labelsize= f_size*.75 )            
 
     if show:
         plt.show()
@@ -3903,11 +3933,17 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
 
     # --- Adjust graduations in colourbar to be human readable
     # in both min and max have absolute values less than 0, then sig figs +1
-    if ( ( abs( int( vmin)) == 0) and (abs( int( vmax)) == 0) ):
-        if verbose:
-            print 'both vmin ({}), and vmax ({}) are <0'.format( vmin, vmax )
-        sigfig_rounding_on_cb += 1
-
+    try:
+        if ( ( abs( int( vmin)) == 0) and (abs( int( vmax)) == 0) ):
+            if verbose:
+                print 'both vmin ({:.2E}), and vmax ({:.2E}) are <0'.format( \
+                    vmin, vmax )
+            sigfig_rounding_on_cb += 1
+    except np.ma.core.MaskError:
+        print 'Gotcha: numpy.ma.core.MaskError'
+        print lvls, vmin, vmax
+        
+    
     # significant figure ( sig. fig. ) rounding func.
     round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
     
@@ -3947,7 +3983,8 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
         # ( this method also fails if vmax<lvls_diff )
         vmax_rounded = vmax
 
-    print 1, lvls, vmax_rounded, lvls_diff
+    if debug:
+        print 1, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
 
     if verbose:
         print vmax_rounded,  lvls_diff, nticks
@@ -3955,17 +3992,28 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
             for i in range( nticks ) ][::-1])   
     if debug:
         print lvls, len( lvls )
+        print 2, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
 
-    print 2, lvls, vmax_rounded, lvls_diff
-
-
-    # ensure returned ticks are to a maximum of 2 sig figs. 
-    # ( this only works if all positive )
+    # ensure returned ticks are to a maximum of 2 sig figs  
+    # ( this only works if all positive ) and are unique
     try:
-        lvls = [ round_to_n( i, sigfig_rounding_on_cb_lvls) for i in lvls ]
+        # Make sure the colorbar labels are not repeated
+        invalid = True
+        while invalid:
+            new_lvls = [ round_to_n( i, sigfig_rounding_on_cb_lvls) \
+                for i in lvls ]
+            if len( set(new_lvls) ) == len(lvls):
+                lvls = new_lvls
+                invalid=False
+            else: # Try with one more sig fig
+                sigfig_rounding_on_cb_lvls += 1
+
     except:
         print 'WARNING: unable to round level values to {} sig figs'.format(\
                    sigfig_rounding_on_cb_lvls  )
+    if debug:
+        print 3, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
+
     if rtn_lvls_diff:
         return lvls, lvls_diff
     else:

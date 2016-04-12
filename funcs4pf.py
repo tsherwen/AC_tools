@@ -1,5 +1,6 @@
-# ===========================================================================
-# ------------------------------ tms - module of programs/code for re-use ----------------------------------
+#!/usr/bin/python
+# ============================================
+# ------------ tms - module of programs/code for re-use -------------------
 # -------------- 
 # Section 0 - required modules
 # Section 1 - Planeflight Setup tools
@@ -41,8 +42,6 @@
 
 # ----------------------------- Section 0 -----------------------------------
 # -------------- Required modules:
-#
-#!/usr/bin/python
 #
 # I/O functions / Low level          
 import sys

@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 """
     Time processing functions for use with GEOS-Chem/Data analysis
 """

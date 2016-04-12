@@ -1,3 +1,4 @@
+#!/usr/bin/python
 """ Core functions used to be used by all function levels of 
     GEOS-Chem/Data analysis in AC_Tools """
 

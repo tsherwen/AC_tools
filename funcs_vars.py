@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 # =================================================
 # --------- tms - module of Variables for re-use----------------
 # -------------- 
@@ -93,7 +95,6 @@
 # ------------------ Section 0 -----------------------------------
 # -------------- Required modules:
 #
-#!/usr/bin/python
 #
 # -- I/O / Low level                                                                                
 import re
@@ -379,8 +380,10 @@ def get_tag_fam( tag ):
     'LO3_64': 'NOy', 'LO3_36': 'Iodine', 'LO3_57': 'NOy', 'LO3_72': 'NOy', \
     'RD98': 'Photolysis', 'LO3_71': 'NOy', 'LO3_58': 'NOy', \
     'LO3_54': 'Photolysis', 'LO3_55': 'Iodine', 'LO3_56': 'HOx', \
-    'LO3_08': 'HOx', 'LO3_50': 'NOy', 'LO3_51': 'NOy', 'LO3_52': 'NOy', \
+    'LO3_08': 'HOx', 'LO3_51': 'NOy', 'LO3_52': 'NOy', \
     'LO3_53': 'HOx', \
+    # tags for N2O5 hydrolysis ( => ClNO3/HNO3 )
+     'LO3_50': 'NOy', 'LR114' :'NOy', 'LR113' :'NOy', \
     # added
     'RD63': 'Iodine', 'RD62':'Iodine',  'LO3_38': 'Iodine', 'RD59': 'Iodine', \
     'LO3_30' : 'Iodine', 'RD65': 'Iodine', 'LO3_34': 'Iodine',  \
@@ -489,7 +492,7 @@ def species_mass( spec ):
     'BrSALA': 80., 'BrSALC': 80., 'ISALA': 127. ,  'ISALC': 127. , \
     # Additional "species" to allow for ease of  processing
     'AERI_AVG': ( (286.0+302.0+318.0)/3 )/2, 'SO4S': 96.0, 
-    'IO3': 127.+(3.*16.) , 'SSBr2': 160.0
+    'IO3': 127.+(3.*16.) , 'SSBr2': 160.0, 'C': 12.0
     }
     
     return d[spec]
@@ -645,12 +648,12 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
     # Kludge for testing. Allow values to equal 1.0 if not defined. 
     try:
         if debug:
-            print '{} (ref_spec: {}) stiochmetry : {}'.format( spec, \
+            print '{} (ref_spec: {}) stoichiometry : {}'.format( spec, \
                 ref_spec,  d[spec] )
         return d[spec]
 
     except:
-        print '!'*20, 'WARNING - Kludge assumming stiochmetry = 1.0, for'+ \
+        print '!'*20, 'WARNING - Kludge assumming stoichiometry = 1.0, for'+ \
             ' {} (ref_spec given as: {})'.format( spec, ref_spec )
         return 1.0
 
@@ -821,6 +824,15 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'd_dep_specs': [ \
     'I2df', 'HIdf', 'HOIdf', 'IONOdf', 'IONO2df',  'I2O2df', 'I2O4df', \
     'I2O3df', 'AERIdf',], #, 'IOdf', 'OIOdf'], #
+    'd_dep_specs_3.0': [ 
+    'I2df', 'HIdf', 'HOIdf', 'IONOdf', 'IONO2df',  'I2O2df', 'I2O4df', \
+    'I2O3df', 'ICldf','IBrdf', 'AERIdf',], #, 'IOdf', 'OIOdf'], #
+    'Bry_d_dep_specs' : [ \
+    'HBr', 'HOBr',  'BrCl', 'Br2', 'IBr' , 'BrNO3',  ], \
+    'Bry_w_dep_specs' : [ \
+    'HBr', 'HOBr',  'BrCl', 'Br2', 'IBr'  ], \
+    'Cly_d_dep_specs' : [ \
+    'HCl', 'HOCl', 'ClNO3', 'BrCl' , 'ICl' ], \
     'I2_het_cyc'  : ['RD59','RD92','RD63'],  
         # HI, I2O2, I2O4, I2O3 uptake (prev: 2OIO excuded as I2Ox formaed, IO+OIO included as I2O3 not treated )
     'I_het_loss'  : [ 'RD58', 'RD62', 'RD93' ,'RD95'], 
@@ -840,6 +852,10 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4',\
     'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN',\
     'NO3', 'HNO2', 'IONO', 'IONO2', 'INO'],
+    'NOy' : [
+    'NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4',\
+    'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN',\
+    'NO3', 'HNO2', 'IONO', 'IONO2', 'INO', 'ClNO2', 'ClNO3'],
     'N_specs_no_I'  :  [
     'NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4', \
     'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN',\
@@ -847,8 +863,11 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'Bry' : [\
     'Br2', 'BrCl', 'IBr', 'HOBr', 'BrO', 'HBr', 'BrNO2', 'BrNO3', 'Br'  ],
     'Cly' : [ \
+     'ClOO', 'OClO', 'ClO', 'Cl2O2', 'ICl', 'Cl2', 'Cl', 'BrCl', 'ClNO3', 
+     'ClNO2', 'HOCl', 'HCl'],
+    'Cl_specs' : [ \
      'Cl2','BrCl','ICl', 'HOCl', 'ClO', 'ClOO', 'OClO', 'Cl2O2', 'HCl',  \
-     'ClNO2', 'ClNO3',  'Cl'],
+     'ClNO2', 'ClNO3', 'Cl', 'CH2Cl2', 'CHCl3', 'CH2ICl', 'CH3Cl' ],
     'Br_specs' : ['Br2', 'BrNO3', 'Br', 'HBr', 'CH2IBr', \
     'CH3Br', 'CH2Br2', 'BrCl', 'BrNO2', 'BrSALC', 'BrSALA', \
     'HOBr', 'IBr', 'BrO', 'CHBr3'],
@@ -1058,7 +1077,11 @@ def latex_spec_name(input_x, debug=False):
     'ClOO':'ClOO', 'Cl2':'Cl$_{2}$', \
     'BrCl': 'BrCl','ICl': 'ICl', 'HOCl': 'HOCl', 'ClO':'ClO', 'ClOO':'ClOO', \
     'OClO':'OClO', 'Cl2O2':'Cl$_{2}$O$_{2}$', 'HCl':'HCl', \
-    'ClNO2': 'ClNO$_{2}$','ClNO3':'ClNO$_{3}$', 'Cl':'Cl',
+    'ClNO2': 'ClNO$_{2}$','ClNO3':'ClNO$_{3}$', 'Cl':'Cl',\
+    'CH3Cl': 'CH$_{3}$Cl',  'CH2Cl2': 'CH$_{2}$Cl$_{2}$', \
+    'CHCl3': 'CHCl$_{3}$', 
+    # Bry names 
+    'BrSALC': 'Br- on SALC', 'BrSALA': 'Br- on SALA',
             }
     return spec_dict[input_x]
 
@@ -1145,7 +1168,9 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, \
     u'n-butane': 'pptv', u'n-pentane': 'pptv', u'Undecane': 'pptv', \
     u'Decane': 'pptv', u'Octane': 'pptv', u'n-octane': 'pptv',\
     # Extra Cly species 
-    'ClNO2': 'ppbv'
+    'ClNO2': 'ppbv', 
+    # extra tag "species" for  easy of processing 
+    'PD421' : 'molec cm$^{-3}$ s$^{-1}$'
     } 
     units = tra_unit[x]
 
@@ -1458,7 +1483,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
         IO_obs=False,no_I2Ox=False, respun=True,            \
         preindustrial=False, skip3=False, v10v92comp=False,              \
         nested_EU=False, just_bcase_no_hal=False, just_std=False, \
-        just_bcase_std=False, ver='1.6', res='4x5', overide=False,    \
+        just_bcase_std=False, ver='1.6', res='4x5', override=False,    \
         inc_schmidt_2015=False, inc_iGC_ver1_6=False, \
         debug=False): 
     """ Dictionary of storage of model runs.
@@ -1588,11 +1613,11 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
     if (ver == '3.0') and (not any( [preindustrial, v10v92comp, IO_obs]) ):
 
         if just_bcase_std:
-            l =  [ 'BROMINE', 'Cl-Br-I' ]
+            l =  [ 'BROMINE', 'Cl+Br+I' ]
         if just_bcase_no_hal:
-            l =  ['NOHAL',  'Cl-Br-I' ]
+            l =  ['NOHAL',  'Cl+Br+I' ]
         if (not just_bcase_std) and (not just_bcase_no_hal):
-            l =  ['NOHAL', 'BROMINE', 'Cl-Br-I' ]
+            l =  ['NOHAL', 'BROMINE', 'Cl+Br+I' ]
 
         # Add extra runs?
         if inc_iGC_ver1_6:
@@ -1605,8 +1630,8 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             l = l[:2]+ ['Br_het-Cl(v9.2)']+l[2:]  
 
     # Mannually override run names
-#    overide=True
-    if overide:
+#    override=True
+    if override:
         # --- Version  2.0/1.7 runs
 #        r = [ 
 #        'iGEOSChem_1.7_v10/run', 'iGEOSChem_2.0_v10/run' 
@@ -1631,8 +1656,8 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
         'Cl+Br+I(PI)' ]
 
         # Just run and run.PI
-        l =l[-2:]
-        r=r[-2:]
+#        l =l[-2:]
+#        r=r[-2:]
 
     # return list with inc. main dir
     rtn_list = [rwd + i for i in r ] 
@@ -2680,6 +2705,8 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',  \
         (A) 'fp' option is now obselete. 
     
     """
+#    debug=True
+
     if verbose:
         print 'PLO3_to_PD called for wd = ', wd
 
@@ -2698,7 +2725,8 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',  \
         # Add other (non 'PD') vars for ease of processing
         non_PDs = [\
         'PIOx', 'iLOX', 'LIOx', 'iPOX', 'POX', 'LOX', 'LOx', 'L_Iy', 'LOH', \
-        'LCl', 'POH', 'PCl'\
+        'LCl', 'POH', 'PCl', 'P_Iy', 'L_Bry', 'P_Bry','L_Cly','P_Cly',\
+        'LSBrA', 'LSBrC', 'PSBrA', 'PSBrC'
         ]
         vars += non_PDs
         PDs += non_PDs
@@ -2863,7 +2891,10 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
         'LO3_39LR46', 
         'LO3_39LR47', 
         'LO3_87LR48', 'LO3_87LR48', 
-        'LISOPOLR86' ]
+        'LISOPOLR86',  
+        'LO3_50LR113', 
+        'LO3_50LR114'
+        ]
         cerrs = [ \
         ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], \
         ['PO3_50'], \
@@ -2873,7 +2904,14 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
         ['LO3_39', 'LR46'], \
         ['LO3_39', 'LR47'], \
         ['LO3_87'], ['LO3_87'], \
-        ['LR86' ]
+        ['LR86' ], \
+#        ['LO3_50', 'LR113' ], \
+#        ['LO3_50', 'LR114' ]
+        # revserse LR tags also ( LO3_50 now redundant? ) - NO
+        ['LR113', 'LO3_50' ], \
+        ['LR114', 'LO3_50' ]
+#        ['LR113'], 
+#        ['LR114'], 
         ]
 #        errs = ['LO3_36RD95' , 'ISOPNDPO3_50', 'ISOPNDLR40']
 #        cerrs = [ ['RD95'], ['PO3_50'], ['LR40'] ]
@@ -2912,6 +2950,6 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
     if debug:
         print tags 
 
-    print '1'*300, tags 
+#    print '1'*300, tags 
 
     return nums, rxns, tags, Coe
