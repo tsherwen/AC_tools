@@ -3255,7 +3255,10 @@ def get_cld_f( ctm_f, months=None, years=None, spec='O3',  debug=False ):
 # 2.31 - Vol weighted array average value
 # --------
 def vol_weighted_avg( arr, vol=None, ctm_f=None ):
-    """ Volume weight array """
+    """ Volume weight array  <=Redundent!
+    NOTES:
+        - Where is this used? What is this used for?
+    """
     if not isinstance(vol, np.ndarray):
         vol = get_volume_np( ctm_f ) # cm^3 
 
@@ -3266,12 +3269,20 @@ def vol_weighted_avg( arr, vol=None, ctm_f=None ):
 # ----
 def molec_weighted_avg( arr, wd=None, ctm_f=None, \
             vol=None, t_p=None, n_air=None, molecs=None,\
-            trop_limit=True, multiply_method=False, rm_strat=True ):
+            trop_limit=True, multiply_method=False, rm_strat=True, \
+            weight_lon=False, weight_lat=False, 
+            LON_axis=0, LAT_axis=1, \
+            annual_mean=True, debug=False ):
     """ Takes array and retuns the average (molecular weighted) value 
 
     NOTES:
         - Uses mask of given array if given array is a numpy masked array
-        -
+        - Assume axis dimensions are  (LON, LAT, ALT ), aka the array does not 
+        have a TIME dimension. Any shape can be handled as long as given molecs 
+        and arr have the same shape
+        - Molecs is the same as n_air ( [molec air/m3] * [m3]  vs.   
+       air mass [kg] / RMM [kg mol^-1] * Avogadros [mol^-1] )
+        
     """
 
     if isinstance( molecs, type(None) ): 
@@ -3283,6 +3294,8 @@ def molec_weighted_avg( arr, wd=None, ctm_f=None, \
             vol = vol /1E6 # [cm^3 ]
         # Calculate molecules per grid box
         molecs =  n_air * vol # [molec air]
+        if annual_mean:
+            molecs = molecs.mean(axis=-1)
 
     # Limit for troposphere? 
     if trop_limit:
@@ -3299,14 +3312,20 @@ def molec_weighted_avg( arr, wd=None, ctm_f=None, \
     # --- If masked array provided, applied same mask to molecules
     if isinstance( arr, np.ma.core.MaskedArray ):
         molecs  = np.ma.array( molecs, mask=arr.mask )
-        return (arr *molecs).sum()/molecs.sum()
 
-    # ---  Or apply to whole array
-    elif isinstance( arr, np.ndarray): 
-        return (arr *molecs).sum()/molecs.sum()
+    if weight_lon and (not weight_lat):  # 1st axis  
+        return (arr *molecs).sum(axis=LON_axis)/molecs.sum(axis=LON_axis)
 
-    else:
-        print 'Please provide numpy (masked or not), arr type: ', type(arr)
+    elif weight_lat and (not weight_lon):  # 2nd axis (LON, LAT, ALT, TIME )
+        return (arr *molecs).sum(axis=LAT_axis)/molecs.sum(axis=LAT_axis)
+    
+    elif weight_lat and weight_lon:  # 1st+2nd axis (LON, LAT, ALT, TIME )
+        return (arr *molecs).sum(axis=LAT_axis).sum(axis=LON_axis)/  \
+            molecs.sum(axis=LAT_axis).sum(axis=LON_axis)
+  
+    else: # weight whole array to give single number
+            return (arr *molecs).sum()/molecs.sum()
+
 
 # --------------
 # 2.34 -  takes indices or generates indices for a given set of sites, these are then substract from all arrays given

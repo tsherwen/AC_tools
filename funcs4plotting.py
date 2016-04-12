@@ -2545,7 +2545,9 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
 
     # If lon, lat, alt array provided then take mean of lon
     if any( [arr.shape[0] ==i for i in 72, 144, 121, 177] ):
-        arr = arr.mean(axis=0)
+#        arr = arr.mean(axis=0)
+        arr = molec_weighted_avg( arr, weight_lon=True, \
+            trop_limit=trop_limit, rm_strat=False, wd=wd) 
 
     # Create figure if not provided
     if isinstance( fig, type(None) ):
@@ -2938,7 +2940,9 @@ def plt_4Darray_zonal_by_month( arr, res='4x5', dpi=160, \
 def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
         fig=None, ax=None, dpi=160, show=False, f_size=10, legend=False, \
         colors=None, title=None, loc='upper right', ylim=None, xlim=None, \
-        lw=8.0, ylabel=None, log=False, verbose=False, debug=False):
+        lw=8.0, ylabel=None, xlabel=False, log=False, rm_ticks=False, \
+        alt_text_x=.15, alt_text_y=0.75, alt_text=None, ncol=1, \
+        verbose=False, debug=False):
     """ Produce a stacked plot (by X axis) for values in Y array. 
     
     NOTE:
@@ -3013,18 +3017,44 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
         plt.xlim( xlim )
     if not isinstance( title, type(None) ):
         plt.title( title, fontsize=f_size )
+    # Add alt text?
+    if not isinstance( alt_text, type(None) ):
+        ax.annotate( alt_text , xy=(alt_text_x, alt_text_y), \
+            textcoords='axes fraction', fontsize=f_size*1.5 )
     if legend:
-        # Add legend ( + update line sizes)
-        leg = plt.legend( loc=loc, fontsize=f_size*.75 )
+        # Add legend 
+        if ncol == 0:
+            leg = plt.legend( loc=loc, fontsize=f_size*.75,  )
+        else:
+            import itertools
+            def flip(items, ncol):
+                return itertools.chain(*[items[i::ncol] for i in range(ncol)])
+            handles, labels = ax.get_legend_handles_labels()
+            leg = plt.legend( flip(handles, ncol), flip(labels, ncol), loc=loc, 
+                ncol=ncol, fontsize=f_size*0.75)
+        
+        # ( + update line sizes)
         for legobj in leg.legendHandles:
                 legobj.set_linewidth( lw)
                 legobj.set_alpha( 1 )
-    # remove tick labels on y axis 
+
+    # Remove tick labels on y axis?
     if ylabel:
-        plt.ylabel( ylabel, fontsize=f_size  )
+        plt.ylabel( ylabel, fontsize=f_size*.75  )
+        ax.tick_params( labelsize= f_size*.75 )
     else:
-        ax_tmp = plt.gca()
-        ax_tmp.tick_params( axis='y', which='both', labelleft='off')
+        ax.tick_params( axis='y', which='both', labelleft='off', \
+            labelsize= f_size*.75)
+    # Remove tick labels on x axis?
+    if xlabel: 
+        ax.set_xlabel(xlabel, fontsize=f_size*.75)
+        ax.tick_params(  axis='x', which='both', labelsize= f_size*.75 )
+    else:
+        if rm_ticks:
+            ax.tick_params( axis='x', which='both', labelbottom='off', \
+                labelsize= f_size*.75 )
+        else:
+            ax.tick_params( axis='x', which='both', labelsize= f_size*.75 )            
 
     if show:
         plt.show()
