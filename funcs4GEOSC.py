@@ -2337,7 +2337,7 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
             vol=None, a_m=None, t_ps=None, K=None, t_lvl=None, n_air=None, \
             years=None, months=None, monthly=False, trop_limit=True, \
             use_OH_from_geos_log=False, average_value=True, \
-            use_time_in_trop=True, masktrop=False, \
+            use_time_in_trop=True, masktrop=False, include_Cl_ox=False, \
             verbose=True, debug=False ):
     """ Get amtospheric methane (CH4) lifetime by calculating loss rate against 
         OH.
@@ -2389,9 +2389,15 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
 #        #  What are the units for 'CHEM_L_S__OH' ? need to convert?
           # (NetCDF says molec/m3, and wiki says  [molec/cm3]  )
 #        OH = OH *1E6
+        if include_Cl_ox:
+            Cl = get_GC_output( wd, vars=['IJ_AVG_S__'+'Cl'], \
+                trop_limit=trop_limit) 
+
         if use_time_in_trop and masktrop:
             # Mask non tropospheric boxes
             OH = mask4troposphere( [OH], t_ps=t_ps)
+            if include_Cl_ox:
+                Cl = mask4troposphere( [Cl], t_ps=t_ps)
 
     if use_time_in_trop and masktrop:
         # Mask non tropospheric boxes
@@ -2406,8 +2412,12 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
     #            category='CH4-LOSS') 
 
     # --- Shared processed variables
-    # CH4 loss rate per grid box  ( cm^3  molec.^-1  s^-1  )
+    # CH4 loss rate (OH) per grid box  ( cm^3  molec.^-1  s^-1  )
     KCH4 = 2.45E-12 * np.ma.exp( (-1775. / K)  )   
+    # Fixing PD from smvgear tag (LR63) as PD354
+    if include_Cl_ox:
+        KCH4_Cl = get_GC_output( wd, vars=['PORL_L_S__'+'PD354'], \
+                trop_limit=trop_limit) 
         
     # --- Now Calculate CH4 lifetimes
     if use_time_in_trop:
@@ -2418,7 +2428,11 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
 
         # Get CH4 lifetime with respect to OH
         LCH4 = KCH4 * OH 
-                
+
+        # Get CH4 lifetime with respect to Cl        
+        if include_Cl_ox:
+            LCH4_Cl = KCH4_Cl * Cl 
+
         if debug:
             print ( 1 / ( (LCH4*a_m).sum()/a_m.sum() )   ) /60/60/24/365
             print [ (i*a_m).sum()/a_m.sum() for i in OH, LCH4, KCH4 ]
@@ -2428,8 +2442,15 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
             # get mass weighed average
             LCH4 =  (LCH4*a_m).sum()/a_m.sum() 
     #        arr = np.ma.mean(  arr  )
-        #
-        return ( 1 / LCH4 ) /60/60/24/365
+            if include_Cl_ox:
+                LCH4_Cl =  (LCH4_Cl*a_m).sum()/a_m.sum() 
+
+        # return CH4 lifetime 
+        CH4_tau =  LCH4
+        if include_Cl_ox:
+            CH4_tau += LCH4_Cl  
+        else:
+            return 1/CH4_tau /60/60/24/365 
 
     else: # Second Approach ( as per Schmidt et al 2015)
 
@@ -2442,12 +2463,18 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
             K, vol, a_m, n_air, KCH4, OH = mask4troposphere( \
                 [K, vol, a_m, n_air, KCH4, OH ], t_lvl=t_lvl,  \
                 use_time_in_trop=use_time_in_trop )                
+            if include_Cl_ox:
+                KCH4_Cl = mask4troposphere( [KCH4_Cl], t_lvl=t_lvl,  \
+                    use_time_in_trop=use_time_in_trop )             
 
         # get # molecules per grid box
         molecs = n_air *vol
 
-        # Get loss 
+        # Get loss with respect to OH
         LCH4 = KCH4 * OH
+        if include_Cl_ox: # Get loss with respect to Cl ? 
+            LCH4_Cl = KCH4_Cl * Cl 
+            
         if debug:
             print [ ( i.shape, i.sum(), i.min(), i.max(), i.mean() )  \
                 for i in [ LCH4, KCH4, molecs ] ]
@@ -2455,24 +2482,35 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
         if average_value:
 
             # Get weighted values per time step
-            LCH4_l = []
+            LCH4_l, LCH4_Cl_l = [], []
             for n in range( LCH4.shape[-1] ):
     
                 # Weight by molecules
                 LCH4_l += [ ( LCH4[...,n] * molecs[...,n] ).sum()  \
                     / molecs[...,n].sum() ]
+                if include_Cl_ox: # Get loss with respect to Cl ? 
+                    LCH4_Cl_l += [ ( LCH4_Cl[...,n] * molecs[...,n] ).sum()  \
+                    / molecs[...,n].sum() ]
+
             if debug:
                 print LCH4_l
 
             # take mean
             LCH4 = np.ma.mean( LCH4_l )
+            if include_Cl_ox: 
+                LCH4_Cl = np.ma.mean( LCH4_Cl_l )
+
         if debug:
             print [ ( i.shape, i.sum(), i.min(), i.max(), i.mean() )  \
                 for i in [ LCH4, KCH4, molecs ] ]
             
         # Convert units from /s to yrs
-        CH4_lifetime = 1/(LCH4) / (3600*24*365)
-        return CH4_lifetime
+        CH4_tau = LCH4 
+
+        if include_Cl_ox:
+            CH4_tau += LCH4_Cl 
+
+        return 1/ CH4_tau / (3600*24*365)
 
 # ----
 # 2.13 - get Land / Water /Ice fraction
