@@ -954,8 +954,8 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
             window=False, label=None, ylabel=None, loc='upper right',  \
             lw=1,ls='-', color=None, showmeans=False, boxplot=True, \
             plt_median=False, plot_Q1_Q3=False, pcent1=25, pcent2=75, \
-            ylim=None, xtickrotation=45, \
-            debug=False ):
+            ylim=None, xtickrotation=45, alt_text=None, alt_text_x=.5, 
+            alt_text_y=.5, xlabel=None, rm_yticks=False, debug=False ):
     """ Plot up timeseries of seasonal data. Requires data, and dates in numpy
         array form. Dates must be as datetime.datetime objects. """
 
@@ -997,13 +997,25 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     
     # Beatify plot
     ax.set_xticks( months )
-    ax.set_xticklabels( labels, rotation=xtickrotation )
+    if xlabel:
+        ax.set_xticklabels( labels, rotation=xtickrotation )
+    else:
+        ax.tick_params( axis='x', which='both', labelbottom='off')    
     if not isinstance( ylim, type(None) ):
         ax.set_ylim( ylim )
+
+    print '!'*200, alt_text, alt_text_x, alt_text_y
+    if not isinstance( alt_text, type(None) ):
+        print '!'*200, alt_text, alt_text_x, alt_text_y
+        ax.annotate( alt_text , xy=(alt_text_x, alt_text_y), \
+            textcoords='axes fraction', fontsize=f_size*1.5 )
     if not isinstance( title, type(None) ):
         plt.title( title )
     if not isinstance( ylabel, type(None) ):
-        plt.ylabel( ylabel )
+        plt.ylabel( ylabel, fontsize=f_size*.75 )
+    else:
+        if rm_yticks:
+            ax.tick_params( axis='y', which='both', labelleft='off')   
 
 # --------------
 # 1.15 - plot up daily timeseries from ...

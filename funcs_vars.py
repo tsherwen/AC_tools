@@ -185,7 +185,8 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
 #        PHOT_1st, PHOT_last = 413, 614 # dev
         PHOT_1st, PHOT_last = 519, 607 
     if ver == '3.0':    
-        PHOT_1st, PHOT_last = 537, 627
+#        PHOT_1st, PHOT_last = 537, 627 # coupled sim.
+        PHOT_1st, PHOT_last = 554, 644 # With IX split rxns
 
     JREAs = ['REA_'+ str(i) for i in range(PHOT_1st, PHOT_last) ] 
     REAs_all = ['REA_'+ str(i) for i in range(0, 533) ] 
@@ -995,7 +996,7 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     ], 
     'Cl_ox_org_rxns'  : [
     'LR63', 'LR51', 'LR54', 'LR59', 'LR52', 'LR64', 'LR58', 'LR57', 'LR50', \
-    'LR60', 'LR53', 'LR55', 'LR49', 'LR56'], 
+    'LR60', 'LR53', 'LR55', 'LR49', 'LR56', 'LR123', 'LR122'], 
     'ClO_ox': [
     'LR68', 'LR61', 'LR69', 'LR74', 'LR48', 'LR73', 'LR70', 
      ], 
@@ -1026,16 +1027,15 @@ def latex_spec_name(input_x, debug=False):
     'BrO':'BrO', 'Br':'Br', 'HOBr':'HOBr', 'Br2':'Br$_{2}$', \
     'CH3Br':'CH$_{3}$Br', 'CH2Br2':'CH$_{2}$Br$_{2}$', \
     'CHBr3':'CHBr$_{3}$','O3':'O$_{3}$', 'CO':'CO' , 'DMS':'DMS', \
-    'NOx':'NOx', 'NO':'NO', 'NO2':'NO$_{2}$',\
+    'NO':'NO', 'NO2':'NO$_{2}$',\
     'NO3':'NO$_{3}$','HNO3':'HNO$_{3}$', 'HNO4':'HNO$_{4}$',\
     'PAN':'PAN', 'HNO2':'HNO$_{2}$', 'N2O5':'N$_{2}$O$_{5}$',\
-    'ALK4':'>= C4 alkanes','ISOP':'Isoprene', 'H2O2':'H$_{2}$O$_{2}$', \
+    'ALK4':'$\geq$C4 alkanes','ISOP':'Isoprene', 'H2O2':'H$_{2}$O$_{2}$', \
     'ACET':'CH$_{3}$C(O)CH$_{3}$', 'MEK':'>C3 ketones', \
     'RCHO': 'CH$_{3}$CH$_{2}$CHO', \
     'MVK':'CH$_{2}$=CHC(O)CH$_{3}$', 'MACR':'Methacrolein', \
-    'PMN':'CH$_{2}$=C(CH$_{3}$)C(O)OONO$_{2}$', \
-    'PPN':'CH$_{3}$CH$_{2}$C(O)OONO$_{2}$', \
-    'R4N2':'>= C4 alkylnitrates','PRPE':'>= C3 alkenes', \
+    'PMN':'PMN', 'PPN':'PPN', \
+    'R4N2':'$\geq$C4 alkylnitrates','PRPE':'$\geq$C3 alkenes', \
     'C3H8':'C$_{3}$H$_{8}$','CH2O':'CH$_{2}$O', \
     'C2H6':'C$_{2}$H$_{6}$', 'MP':'CH$_{3}$OOH', 'SO2':'SO$_{2}$',\
     'SO4':'SO$_{4}$','SO4s':'SO$_{4}$ on SSA', \
@@ -1067,10 +1067,10 @@ def latex_spec_name(input_x, debug=False):
     'GMAO_TEMP' : 'Temperature', 'TSKIN' : 'Temperature at 2m', \
     'GMAO_UWND':'Zonal Wind', 'GMAO_VWND':'Meridional Wind', \
     'U10M':'10m Meridional Wind', 'V10M': '10m Zonal Wind', \
-    'CH2OO':'CH$_{2}$OO', \
+    'CH2OO':'CH$_{2}$OO', 'Sulfate': 'Sulfate', 'VOCs': 'VOCs', \
     # Family Names
-    'N_specs':'NOy', 'NOy':'NO$_Y$',  'Bry':'Br$_Y$', 'Cly':'Cl$_Y$',  \
-    'N_specs_no_I':'NOy exc. iodine', \
+    'N_specs':'NO$_Y$', 'NOy':'NO$_Y$',  'Bry':'Br$_Y$', 'Cly':'Cl$_Y$',  \
+    'N_specs_no_I':'NO$_Y$ exc. iodine', 'NOx':'NO$_X$',
     # typos
     'CH2BR2':'CH$_{2}$Br$_{2}$',\
     # Cly names
@@ -1922,7 +1922,11 @@ def p_l_species_input_geos( wd, ver='1.7',
     Extract prod/loss species (input.geos) and reaction tags (globchem.dat) 
     """
     # find and open input.geos file
-    fn = glob.glob(wd+'/*input.geos*')[0]
+    fn = glob.glob(wd+'/*input.geos*')[0] 
+    if  any( [ (i in fn) for i in '~', '#' ] ):
+        print 'Trying next "input.geos" file - as FAIL for :', fn, 
+        fn = glob.glob(wd+'/*input.geos*')[1] 
+
     if debug:
         print 'p_l_species_input_geos called using : ', wd, fn
     file_ =  open( fn, 'rb' )
@@ -2241,22 +2245,29 @@ def get_pldict_reactants( pl_dict=None, only_rtn_tracers=True, \
     """
 #    non_TRAs = ['CH4', '', 'ETHLN', 'ISOPND', 'E', 'M', 'HCO', 'MVKN', 'ACTA']
 
+#    debug=True
+
     # Get reaction strings
     if isinstance( tags, type(None) ):
         tags = pl_dict.keys() 
     strs = [pl_dict[i][1] for i in tags ]    
     if debug:
-        print strs, len(strs)
+        print 'rxn strs: ',  strs, len(strs)
     # remove arrows from reactions 
-    strs = [ i.replace('+M=','+=').replace('+O2=','+=') for i in strs ]
+    strs = [ i.replace('+M=','+=').replace('+O2=','+=').replace('+N2=','+=') \
+        for i in strs ]
+    if debug:
+        print strs, len(strs)
     # select reactants
     strs = [ i.split('+=')[0] for i in strs ]
+    if debug:
+        print strs, len(strs)
     if rm_OH:     # remove OH from reaction strings
         strs = [ i.replace('+OH','+') for i in strs ] 
         for n, str in enumerate( strs ):
             if str.startswith('OH+'):
                 strs[n] = str.replace('OH','+')
-    if rm_Cl:     # remove OH from reaction strings
+    if rm_Cl:     # remove Cl from reaction strings
         strs = [ i.replace('+Cl','+') for i in strs ] 
         for n, str in enumerate( strs ):
             if str.startswith('Cl+'):
@@ -2475,6 +2486,7 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     """
 
     loc_dict ={    
+    # --- CAST/CONTRAST
     'GUAM' :  ( 144.800, 13.500, 0  ),
     'CHUUK' : ( 151.7833, 7.4167, 0 ),
     'PILAU' : ( 134.4667,7.3500, 0 ),      
@@ -2483,11 +2495,12 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'WEY' : (1.1380, 52.9420,  0 ),  # Weyboure ID 
     'Cape Verde': ( -24.871, 16.848, 0 ), 
     'CVO': (-24.871,16.848,  0 ),  # Cape Verde ID
+    # --- ClearFlo
     'North Ken' :  (-0.214174, 51.520718, 0),
     'KEN' :  (-0.214174, 51.520718, 0),
     'BT tower': (-0.139055, 51.521556, 190),
     'BTT': (-0.139055, 51.521556, 190),
-    # ClNO2 sites
+    # --- ClNO2 sites
     'HOU' : (-95.22, 29.45, 0  ) ,
     'BOL' : ( -105.27, 40.0, 1655+ 150    ) ,
     'LAC' : ( -118.23, 34.05, 	0 ),
@@ -2496,8 +2509,25 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'TEX': (-95.425000, 30.350278,  60 ), 
     'CAL' : ( -114.12950, 51.07933,  1100), 
     'PAS':  ( -118.20, 34.23, 246  ), 
-    # O3 preindustrial
-    'MON' :  ( 2.338333, 48.822222,  75+5 )
+    # --- O3 preindustrial
+    'MON' :  ( 2.338333, 48.822222,  75+5 ), 
+#    'MON' : (2.3, 48.8, 80), # Monsoursis 
+    # Pavelin  et al. (1999) / Mickely  et al. (2001)
+    # 0 m. a. l. assumed following ( "<500m") in Mickely  et al. (2001)
+    'ADE' : (138.0, -35.0, 0), # Adelaide 
+    'COI' : (-8.0, 40.0, 0), # Coimbra 
+    'HIR' : (132.0, 34.0, 0), # Hiroshima 
+    'HOB' : (147.0, -43.0, 0), # Hobart 
+    'HOK' : (114.0, 22.0, 0), # Hong Kong 
+    'LUA' : (14.0, -9.0, 0), # Luanda 
+    'MAU' : (57.0, -20.0, 0), # Mauritius 
+    'MOV' : (-56.0, -35.0, 0), # Montevideo 
+    'MVT' : (4.0, 44.0, 1900), # Mont-Ventoux 
+    'NEM' : (145.0, 43.0, 0), # Nemuro 
+    'TOK' : (139.0, 35.0, 0), # Tokyo 
+    'VIE' : (16.0, 48.0, 0), # Vienna 
+    'PDM' : (0.0, 43.0, 1000), # Pic du midi 
+    #
     }
     if rtn_dict:
         return loc_dict
