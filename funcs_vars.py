@@ -493,7 +493,11 @@ def species_mass( spec ):
     'BrSALA': 80., 'BrSALC': 80., 'ISALA': 127. ,  'ISALC': 127. , \
     # Additional "species" to allow for ease of  processing
     'AERI_AVG': ( (286.0+302.0+318.0)/3 )/2, 'SO4S': 96.0, 
-    'IO3': 127.+(3.*16.) , 'SSBr2': 160.0, 'C': 12.0
+    'IO3': 127.+(3.*16.) , 'SSBr2': 160.0, 'C': 12.0, 
+    # Add families for ease of processing
+    'Iodine': 127.0, 'Iy': 127., 'Bromine': 80.0, 'Bry': 80.0,'Chlorine':35.0,
+    'Cly':35.0, 'NOy': 14.0, 'NOx': 14.0, 'SOx': 32.0,\
+     'Sulfate': 32.0, 'sulfur': 32.0, 'VOCs':12.0, 
     }
     
     return d[spec]
@@ -502,7 +506,7 @@ def species_mass( spec ):
 # 4.03 -  return the stoichiometry of Iodine in species
 # --------------
 def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
-            C=False, Br=False, Cl=False, ref_spec=None, debug=False ): 
+            C=False, Br=False, Cl=False, S=False, ref_spec=None, debug=False ): 
     """ Returns unit equivelent of X ( e.g. I ) for a give species. 
         
         This can be automatically set by providing a reference species
@@ -520,22 +524,24 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
     """
     # If reference species provided automatically select family
     if not isinstance( ref_spec, type(None) ):
-        if any( [(ref_spec==i)  for i in 'I', 'Iy' ] ):
+        if any( [(ref_spec==i)  for i in 'I', 'Iy', 'Iodine' ] ):
             I=True
-        if any( [(ref_spec==i) for i in 'Br', 'Bry' ] ):
+        if any( [(ref_spec==i) for i in 'Br', 'Bry', 'Bromine' ] ):
             Br=True
-        if any( [(ref_spec==i)  for i in 'Cl', 'Cly' ] ):
+        if any( [(ref_spec==i)  for i in 'Cl', 'Cly', 'Chlorine' ] ):
             Cl=True
-        if ref_spec == 'C':
+        if any( [(ref_spec==i) for i in  'C', 'VOC' ] ):
             C=True
         if any( [(ref_spec==i) for i in  'N', 'NOy', 'NOx' ] ):
             N=True
-        if ref_spec == 'OH':
+        if any( [(ref_spec==i) for i in  'OH', 'HO2' ] ):
             OH=True
         if ref_spec == 'IO':
             IO=True
         if ref_spec == 'NO':
             NO=True
+        if any( [(ref_spec==i) for i in  'S', 'SOx' ] ):
+            S=True
 
     if debug:
         vars = ref_spec, IO, I, NO, OH, N, C, Br, Cl
@@ -543,7 +549,89 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         print "'spec_stoich'  called for: ", zip( varsn, vars ) 
 
     # Select dictionary ( I=True is the default... )
-    d = {
+    if IO:
+        d = {
+        'RD11': 2.0, 'RD10': 1.0, 'RD12': 2.0, 'LO3_36': 1./3., 'RD09': 1.0, \
+        'RD66': 1.0, 'RD23': 1.0, 'RD37': 1.0, 'LO3_24': 1.0/2.0, 'RD56': 1.0, \
+        'RD01': 1.0, 'RD08': 1.0, 'RD46': 2.0, 'RD30': 1.0, 'RD25': 1.0, \
+        'RD27': 1.0, 'RD97':1.0
+        }
+    elif NO:
+        d ={
+        'NO2': 1.0, 'NO3': 1.0, 'N2O5': 2.0, 'NO': 1.0, 'PPN': 1.0, 'R4N2': 1.0, 
+        'BrNO3': 1.0, 'INO': 1.0, 'PAN': 1.0, 'PMN': 1.0, 'HNO3': 1.0, \
+        'HNO2': 1.0, 'NH3': 1.0, 'HNO4': 1.0, 'BrNO2': 1.0, \
+        'IONO': 1.0, 'PROPNN': 1.0, 'NH4': 1.0, 'MPN': 1.0, 'MMN': 1.0, \
+        'ISOPN': 1.0, 'IONO2': 1.0 \
+        }
+    elif OH:
+        d = {
+        'LO3_18': 2.0, 'LO3_03': 1.0,  'PO3_14': 1.0, 'RD65': 1.0,'LR25': 1.0, \
+        'LOH':1.0, 'POH':1.0, 'LO3_86': 1.0, 'RD98':1.0, \
+        # Redundent: 'RD95': 1.0,
+        # also include HO2 and OH for HOx calculations
+        'OH' :1.0, 'HO2': 1.0
+        }
+    elif S:
+        d = {
+        'S' :1.0, 'SO4': 1.0, 'SO4s': 1.0, 'SO2': 1.0
+        }
+    elif N:
+        d= {
+        'RD10': 1.0, 'LR26': 1.0, 'LR27': 1.0, 'LR20': 1.0, 'RD17': 1.0, \
+        'RD16': 1.0, 'RD19': 1.0, 'RD18': 2.0, 'LR28': 1.0, 'LO3_30': 1.0, \
+        'RD75': 1.0, 'LR7': 1.0, 'LR8': 1.0, 'RD56': 1.0, 'RD24': 1.0, \
+        'LO3_39': 1.0, 'RD25': 1.0, 'RD81': 1.0, 'LR35': 1.0, 'LR18': 1.0, \
+        'LR17': 1.0, 'LR11': 1.0, 'LR39': 1.0, 'RD20': 1.0, 'RD21': 2.0, \
+        'RD22': 1.0, 'RD23': 1.0, 'RD68': 1.0, 'RD69': 1.0, \
+    # NOy ( N in 'NOy')
+        'NO2': 1.0, 'NO3': 1.0, 'N2O5': 2.0, 'NO': 1.0, 'PPN': 1.0, \
+        'R4N2': 2.0, 'BrNO3': 1.0, 'INO': 1.0, 'PAN': 1.0, 'PMN': 1.0, \
+        'HNO3': 1.0, 'HNO2': 1.0, 'NH3': 1.0, 'HNO4': 1.0, 'BrNO2': 1.0, \
+        'IONO': 1.0, 'PROPNN': 1.0, 'NH4': 1.0, 'MPN': 1.0, 'MMN': 1.0, \
+        'ISOPN': 1.0, 'IONO2': 1.0, 'ClNO2': 1.0, 'ClNO3':1.0, \
+        }
+    elif C:
+        d = {
+    'ACET': 3.0, 'ALD2': 2.0, 'C2H6': 2.0, 'C3H8': 3.0, 'ISOP': 5.0, \
+    'PRPE': 3.0, 
+        }
+    elif Br:
+         d= {
+        'CH3Br': 1.0, 'HOBr': 1.0, 'BrO': 1.0, 'CHBr3': 3.0, 'Br2': 2.0, \
+        'BrSALC': 1.0, 'CH2IBr': 1.0, 'BrCl': 1.0, 'Br': 1.0, 'CH2Br2': 2.0, \
+        'IBr': 1.0, 'BrSALA': 1.0, 'BrNO2': 1.0, 'BrNO3': 1.0, 'HBr': 1.0, \
+        # for ease of processing also include Seasalt Br2
+         'SSBr2': 2.0, 
+         # Also have reaction tracers
+        'LR73' : 1.0, 
+        # Note: stoichometry is for **GAS** phase Br (aka not SSA )
+        # ( Aka JT03s == Br2 ( ==2 ), but one is BrSALA/BrSALC therefore =1)
+        'JT03s' : 1.0, 'JT04s' :1.0, 'JT05s': 1.0
+        }
+    elif Cl:
+        d= {
+        'ClO': 1.0, 'Cl': 1.0, 'ClOO': 1.0, 'ClNO3': 1.0, 'ClNO2': 1.0, \
+        'Cl2': 2.0, 'OClO': 1.0, 'HOCl': 1.0, 'HCl': 1.0, 'Cl2O2': 2.0,\
+        'BrCl': 1.0, 'ICl':1.0, 'CH2Cl2':2.0, 'CHCl3': 3.0, 'CH2ICl': 1.0, \
+        'CH3Cl': 1.0, 
+         # Also have reaction tracers
+         'LR62': 3.0, 'LR107': 3.0, 
+         'LR74' : 1.0, 'LR106':1.0, 'LR103': 1.0, 
+         'LR75' : 2.0, 'LR105': 2.0, 'LR104' : 2.0, 
+        }
+    elif Cl:
+        d= {
+        'ClO': 1.0, 'Cl': 1.0, 'ClOO': 1.0, 'ClNO3': 1.0, 'ClNO2': 1.0, \
+        'Cl2': 2.0, 'OClO': 1.0, 'HOCl': 1.0, 'HCl': 1.0, 'Cl2O2': 2.0,
+         'BrCl': 1.0, 'ICl':1.0, 
+         # Also have reaction tracers
+         'LR62': 3.0, 'LR107': 3.0, 
+         'LR74' : 1.0, 'LR106':1.0, 'LR103': 1.0, 
+         'LR75' : 2.0, 'LR105': 2.0, 'LR104' : 2.0, 
+        }
+    else:  # ( I=True is the default... )
+        d = {
     'RD11': 1.0, 'RD10': 1.0, 'HIO3': 1.0, 'RD15': 1.0, 'RD62': 2.0, \
     'RD17': 1.0, 'RD16': 1.0, 'RD19': 1.0, 'LO3_37': 0.5, 'CH2I2': 2.0, \
     'AERII': 1.0, 'CH2ICl': 1.0, 'PIOx': 1.0, 'C3H7I': 1.0, 'RD73': 1.0, \
@@ -579,72 +667,8 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
     'LR42': 1.0, 'LR43':1.0, 'LR35': 1.0, \
     # IONO    
     'LR46': 1.0, 'LR47': 1.0, 'LR39': 1.0
-    }
+        }
 
-    if IO:
-        d = {
-        'RD11': 2.0, 'RD10': 1.0, 'RD12': 2.0, 'LO3_36': 1./3., 'RD09': 1.0, \
-        'RD66': 1.0, 'RD23': 1.0, 'RD37': 1.0, 'LO3_24': 1.0/2.0, 'RD56': 1.0, \
-        'RD01': 1.0, 'RD08': 1.0, 'RD46': 2.0, 'RD30': 1.0, 'RD25': 1.0, \
-        'RD27': 1.0, 'RD97':1.0
-        }
-    if NO:
-        d ={
-        'NO2': 1.0, 'NO3': 1.0, 'N2O5': 2.0, 'NO': 1.0, 'PPN': 1.0, 'R4N2': 1.0, 
-        'BrNO3': 1.0, 'INO': 1.0, 'PAN': 1.0, 'PMN': 1.0, 'HNO3': 1.0, \
-        'HNO2': 1.0, 'NH3': 1.0, 'HNO4': 1.0, 'BrNO2': 1.0, \
-        'IONO': 1.0, 'PROPNN': 1.0, 'NH4': 1.0, 'MPN': 1.0, 'MMN': 1.0, \
-        'ISOPN': 1.0, 'IONO2': 1.0 \
-        }
-    if OH:
-        d = {
-        'LO3_18': 2.0, 'LO3_03': 1.0,  'PO3_14': 1.0, 'RD65': 1.0,'LR25': 1.0, \
-        'LOH':1.0, 'POH':1.0, 'LO3_86': 1.0, 'RD98':1.0
-        # Redundent: 'RD95': 1.0,
-        }
-    if N:
-        d= {
-        'RD10': 1.0, 'LR26': 1.0, 'LR27': 1.0, 'LR20': 1.0, 'RD17': 1.0, \
-        'RD16': 1.0, 'RD19': 1.0, 'RD18': 2.0, 'LR28': 1.0, 'LO3_30': 1.0, \
-        'RD75': 1.0, 'LR7': 1.0, 'LR8': 1.0, 'RD56': 1.0, 'RD24': 1.0, \
-        'LO3_39': 1.0, 'RD25': 1.0, 'RD81': 1.0, 'LR35': 1.0, 'LR18': 1.0, \
-        'LR17': 1.0, 'LR11': 1.0, 'LR39': 1.0, 'RD20': 1.0, 'RD21': 2.0, \
-        'RD22': 1.0, 'RD23': 1.0, 'RD68': 1.0, 'RD69': 1.0, \
-    # NOy ( N in 'NOy')
-        'NO2': 1.0, 'NO3': 1.0, 'N2O5': 2.0, 'NO': 1.0, 'PPN': 1.0, \
-        'R4N2': 2.0, 'BrNO3': 1.0, 'INO': 1.0, 'PAN': 1.0, 'PMN': 1.0, \
-        'HNO3': 1.0, 'HNO2': 1.0, 'NH3': 1.0, 'HNO4': 1.0, 'BrNO2': 1.0, \
-        'IONO': 1.0, 'PROPNN': 1.0, 'NH4': 1.0, 'MPN': 1.0, 'MMN': 1.0, \
-        'ISOPN': 1.0, 'IONO2': 1.0, 'ClNO2': 1.0, 'ClNO3':1.0, \
-        }
-    if C:
-        d = {
-    'ACET': 3.0, 'ALD2': 2.0, 'C2H6': 2.0, 'C3H8': 3.0, 'ISOP': 5.0, \
-    'PRPE': 3.0, 
-        }
-    if Br:
-         d= {
-        'CH3Br': 1.0, 'HOBr': 1.0, 'BrO': 1.0, 'CHBr3': 3.0, 'Br2': 2.0, \
-        'BrSALC': 1.0, 'CH2IBr': 1.0, 'BrCl': 1.0, 'Br': 1.0, 'CH2Br2': 2.0, \
-        'IBr': 1.0, 'BrSALA': 1.0, 'BrNO2': 1.0, 'BrNO3': 1.0, 'HBr': 1.0, \
-        # for ease of processing also include Seasalt Br2
-         'SSBr2': 2.0, 
-         # Also have reaction tracers
-        'LR73' : 1.0, 
-        # Note: stoichometry is for **GAS** phase Br (aka not SSA )
-        # ( Aka JT03s == Br2 ( ==2 ), but one is BrSALA/BrSALC therefore =1)
-        'JT03s' : 1.0, 'JT04s' :1.0, 'JT05s': 1.0
-        }
-    if Cl:
-        d= {
-        'ClO': 1.0, 'Cl': 1.0, 'ClOO': 1.0, 'ClNO3': 1.0, 'ClNO2': 1.0, \
-        'Cl2': 2.0, 'OClO': 1.0, 'HOCl': 1.0, 'HCl': 1.0, 'Cl2O2': 2.0,
-         'BrCl': 1.0, 'ICl':1.0, 
-         # Also have reaction tracers
-         'LR62': 3.0, 'LR107': 3.0, 
-         'LR74' : 1.0, 'LR106':1.0, 'LR103': 1.0, 
-         'LR75' : 2.0, 'LR105': 2.0, 'LR104' : 2.0, 
-        }
 
     # Kludge for testing. Allow values to equal 1.0 if not defined. 
     try:
@@ -849,6 +873,8 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'LR42', 'LR43' , 'LR35', # IONO2
     'LR46', 'LR47', 'LR39'],  # IONO
     'NOx' : ['NO', 'NO2' ],
+    'HOx' : ['OH', 'HO2' ],
+    'SOx' : ['SO2', 'SO4', 'SO4s' ],
     'N_specs' : [
     'NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4',\
     'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN',\
@@ -1070,7 +1096,8 @@ def latex_spec_name(input_x, debug=False):
     'CH2OO':'CH$_{2}$OO', 'Sulfate': 'Sulfate', 'VOCs': 'VOCs', \
     # Family Names
     'N_specs':'NO$_Y$', 'NOy':'NO$_Y$',  'Bry':'Br$_Y$', 'Cly':'Cl$_Y$',  \
-    'N_specs_no_I':'NO$_Y$ exc. iodine', 'NOx':'NO$_X$',
+    'N_specs_no_I':'NO$_Y$ exc. iodine', 'NOx':'NO$_X$', 'HOx':'HO$_X$',\
+    'SOx':'SO$_X$', \
     # typos
     'CH2BR2':'CH$_{2}$Br$_{2}$',\
     # Cly names

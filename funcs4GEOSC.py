@@ -1846,8 +1846,8 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
 # 1.26 - Process species for given family arrays to (v/v)
 # ---
 def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
-    trop_limit=True, N=False, I=False, Cl=False, Br=False, t_ps=None, \
-    verbose=True, rm_strat=False, debug=False ):
+    trop_limit=True, N=False, I=False, Cl=False, Br=False, t_ps=None, a_m=None,\
+    vol=None, verbose=True, rm_strat=False, debug=False ):
     """  Return array of family in mols of X ( e.g. Cl, Br, I, N ) equiv. in 
             mol/mol.  """
 
@@ -1859,11 +1859,15 @@ def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
     # Get (fam) specs if not given
     if isinstance( specs, type(None) ):
         # get species in family
-        d = { 'NOy':'N_specs', 'Iy':'Iy',  'Bry':'Bry', 'Cly':'Cly' }
+        d = { 
+        'NOy':'N_specs', 'Iy':'Iy',  'Bry':'Bry', 'Cly':'Cly', 'HOx':'HOx',  \
+        'SOx':'SOx', 'NOx':'NOx'
+                }
         specs = GC_var( d[fam] )
 
-    # Use correct stiochmetry  <= improve this
-    if fam =='Bry':
+    # Use correct stiochmetry 
+    # ( This is no longer required as ref_spec is passed, however it is retained
+    # for back compatibility )    if fam =='Bry':
         Br=True
     if fam =='Iy':
         I=True
@@ -1873,14 +1877,25 @@ def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
         N=True
 
     # Get mixing ratio 
-    arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ],
+    if fam == 'HOx':
+        # OH ( in molec/cm3 )
+        arr = get_GC_output( wd=wd, vars=['CHEM_L_S__'+'OH'], \
+                trop_limit=trop_limit )    
+        # Convert to  v/v 
+        arr = convert_v_v_2_molec_cm3( [arr], a_m=a_m, vol=vol, wd=wd )[0] 
+        # HO2 ( in v/v )
+        arr = [ arr, get_GC_output( wd=wd, vars=['CHEM_L_S__'+'HO2'], \
+                trop_limit=trop_limit ) ]
+
+    else: # Just extract v/v 
+        arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ],
             trop_limit=trop_limit, r_list=True ) 
-    print [ i.shape for i in arr], np.sum( arr )
+    print [ i.shape for i in arr], len( arr), np.sum( arr ), specs
 
     # Adjust to stiochmetry  ( Vars )
     arr = [ arr[n]*spec_stoich(i, ref_spec=fam) \
         for n,i in enumerate( specs) ]
-    print [ i.shape for i in arr], np.sum( arr )
+    print [ i.shape for i in arr], len( arr), np.sum( arr ), specs
 
     # Sum over stiochmertically adjusted list of specs
     arr = np.array( arr ).sum(axis=0)
@@ -3784,7 +3799,8 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
 # 2.41 - Extract data by family for a given wd
 # -------------   
 def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='1.6', \
-            annual_mean=True, t_ps=None, title=None, rtn_list=False, \
+            annual_mean=True, t_ps=None, a_m=None, vol=None, \
+            title=None, rtn_list=False, \
             use_time_in_trop=True, multiply_method=True, \
             rtn_specs=False, verbose=False, debug=False ):
     """ Driver to extract data requested, as families have differing output
@@ -3817,6 +3833,19 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='1.6', \
         spec = 'OH'
         arr = get_GC_output( wd=wd, vars=['CHEM_L_S__'+spec], \
             trop_limit=trop_limit )
+
+    # --- HOX 
+    if fam == 'HOx' :
+        # OH ( in molec/cm3 )
+        arr = get_GC_output( wd=wd, vars=['CHEM_L_S__'+'OH'], \
+            trop_limit=trop_limit )
+        # Convert OH to  v/v 
+        arr = convert_v_v_2_molec_cm3( arr, a_m=a_m, vol=vol )
+        # Get HO2 
+        arr2 = get_GC_output( wd=wd, vars=['CHEM_L_S__'+'HO2'], \
+            trop_limit=trop_limit )
+        # HOx ( HO + HO2)
+        arr = arr + arr2
 
     # --- NOy
     if fam == 'NOy' :
