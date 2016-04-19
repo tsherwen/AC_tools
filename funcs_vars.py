@@ -540,7 +540,7 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
             IO=True
         if ref_spec == 'NO':
             NO=True
-        if any( [(ref_spec==i) for i in  'S', 'SOx' ] ):
+        if any( [(ref_spec==i) for i in  'S', 'SOx', 'Sulfate' ] ):
             S=True
 
     if debug:

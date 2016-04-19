@@ -46,7 +46,8 @@
 # 1.26 - Process species for given family arrays to (v/v)
 # 1.27 - Convert v/v array to DU array 
 # 1.28 - Get common GC diagnostic arrays 
-
+# 1.29 - Get 3D CH4 concentrations
+# 1.30 - Get Strat-Trop exchange (from geos.log files )
 
 # --------------- ------------- ------------- 
 # ---- Section 2 ----- Data Processing tools/Extractors - GC...
@@ -95,6 +96,7 @@
 # 2.43 - mask non tropospheric boxes of 4D array
 # 2.44 - Convert [molec/cm3/s ] to [molec/yr] 
 # 2.45 - Get weighed average of latitude values
+
 
 # --------------- 
 # ---- Section 3 ----- Time processing
@@ -1974,7 +1976,7 @@ def get_common_GC_vars( wd=None, trop_limit=True, res='4x5', \
     return t_ps, a_m, molecs, s_area
 
 # ----
-# 1.28 - Get 3D CH4 concentrations
+# 1.29 - Get 3D CH4 concentrations
 # ---   
 def get_CH4_3D_concenctrations( z, res='4x5', trop_limit=True, debug=False ):
     """ Takes monthly ( or any equllay spaced output) CH4 
@@ -2017,6 +2019,73 @@ def get_CH4_3D_concenctrations( z, res='4x5', trop_limit=True, debug=False ):
             print z.shape, arr.shape, arr[ arr<0 ]        
 
     return arr
+# ----
+# 1.30 - Get Strat-Trop exchange (from geos.log files )
+# ---  
+def get_STRAT_TROP_exchange_from_geos_log( fn=None, ver='3.0', \
+        rtn_date=False, rtn_Tg_per_yr=True, verbose=False, debug=False ):
+    """ Extract all tracer Stat-trop exchange values for a given geos.log file. 
+    These are then retruned as a Pandas Dataframe
+    
+    NOTEs:
+        - Works by extracting all lines between start ("Strat-Trop Exchange")
+         and end ("================") of section. 
+        - file name (fn) is assumed to include directory as well as name
+    """
+    # --- Open the file
+    file_ =  open( fn, 'rb' )    
+
+    # Read in just the TROP-STRAT exchange section 
+    start_line =  'Strat-Trop Exchange'
+    end_line = '================'
+
+    # --- Loop and extract lines of file with data on exchange
+    readline = False
+    lines = []
+    for row in file_:
+
+        # once at prod/loss section, start added to list
+        if start_line in row:
+            readline=True
+
+        # if not at end of prod/loss section, add to list
+        if end_line in row:
+            readline=False
+        if readline:
+            try:
+                lines.append( row )
+            except:
+                lines = [ row ]  
+
+    # --- Process extracted lines
+    # remove starting lines
+    headers = [ i.strip() for i in lines[5].split('    ') ]
+    # remove end line
+    lines.pop()
+    # What data range is this?
+    date_range = lines[3]
+    # split into columns
+    lines = [ i.split() for i in lines[6:] ]
+    # remove colon
+    TRAs = [ i[0].split(':')[0] for i in lines  ]
+    # loop columns and extract data
+    vars = []
+    if debug:
+        print headers, date_range, lines
+    # Extract data as floats by header 
+    vars = [ [ float( i[n+1]) for i in lines ] for n in range( len(headers)-1) ]
+    # make a DataFrame of the output
+    if debug:
+        print [ len(i) for i in vars ]
+    d = dict( zip(headers[1:], vars) )
+    df = pd.DataFrame(  d, index=TRAs )
+    if rtn_Tg_per_yr:
+        df = df['= [Tg a-1]' ]
+
+    if rtn_date:
+        return df, date_range
+    else:
+        return df
 
 # ----------------------- Section 3 -------------------------------------------
 # -------------- Data Processing tools/drivers
