@@ -96,6 +96,8 @@
 # 2.43 - mask non tropospheric boxes of 4D array
 # 2.44 - Convert [molec/cm3/s ] to [molec/yr] 
 # 2.45 - Get weighed average of latitude values
+# 2.46 - Convert molec/cm3/s to g/s
+# 2.47 - Print out stats on a list of 2D arrays in terms of masked areas
 
 
 # --------------- 
@@ -4265,6 +4267,58 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
         return np.concatenate( [ i[...,None] for i in ars ], axis=-1 ) 
     else:
         return ars    
+# --------------
+# 2.47 - Print out stats on a list of 2D arrays in terms of masked areas
+# -------------
+def prt_2D_vals_by_region( specs=None, res='4x5', arrs=None, prt_pcent=False, \
+    add_total=False, months=range(12), summate=True, debug=False ):
+    """ Print values of a 2D (lon, lat) arry masked for regions """
+
+    # Which regions?
+    m_titles = [ 'Tropics', 'Mid lats', 'Extratropics', 'Oceanic', 'NH', 'SH' ]
+
+    # Get maskes
+    masks = [ mask_all_but( i, mask2D=True, trop_limit=True, res=res)  \
+        for i in m_titles ]
+#    o_mask = masks[ m_titles.index( 'Oceanic' ) ]
+
+    if debug:
+        print [( m_titles[n] , i.shape ) for n, i in enumerate( masks ) ]
+
+    # --- Average or total ?
+    if add_total:
+        arrs += [ np.ma.concatenate( [ i[...,None] for i in arrs ], \
+            axis=-1 ).sum(axis=-1) ]
+        specs += ['Total']
+
+    # --- Print out actual values 
+    pstr  = '{:<25}'+'{:<15}'*( len(m_titles)-1 )
+    pstrn = '{:<25}' +'{:<15,.3f}'*( len(m_titles)-1 )
+    arrsn = [ 'Species', 'Total'] + m_titles
+    print pstr.format( *arrsn )    
+#    print  arrsn 
+    for n, s in enumerate( specs ):
+
+        if summate:
+            vars = [ s, np.ma.sum(arrs[n]) ]
+            vars += [ np.ma.sum(arrs[n]*m) for m in masks ]        
+        else:
+            vars = [ s, np.ma.mean(arrs[n]) ]
+            vars += [ np.ma.mean(arrs[n]*m) for m in masks ]        
+#        print vars 
+        print pstrn.format( *vars )
+
+    # --- Print out percent values 
+    if prt_pcent :
+#        s_arrs = [ np.ma.mean(arrs[n]*m) for m in masks ]         # TEST!!!
+        s_arrs = [ (i/len(months)*12).sum(axis=2) for i in arrs ]
+        arrsn = [ 'Species', 'Run Total / Tg ','Yr. Equiv. / Tg'] + \
+        [ '% '+i for i in m_titles ]
+        for n, s in enumerate( specs ):
+            vars = [ s, np.ma.sum(arrs[n]), np.ma.sum(s_arrs[n]) ]
+            vars += [ np.ma.sum(s_arrs[n]*m)/np.ma.sum(s_arrs[n])*100 \
+                for m in masks ]
+            print pstrn.format( *vars )
 
 # ------------------ Section 6 -------------------------------------------
 # -------------- Time Processing
