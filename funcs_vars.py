@@ -1577,11 +1577,14 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
 #                l = ['no_hal', 'run.Cl.Br.I.aerosol' ]
             # Couple halogen runs 
             elif ver == '3.0':
-                l = ['no_hal', 'Just_Br', 'run' ]
+#                l = ['no_hal', 'Just_Br', 'run' ]
+                l = ['no_hal', 'run' ] # Don't consider just_Br run
             # Main 2 ACPD runs + 2 extra runs 
             else:
                 l = ['no_hal', 'Just_Br', 'just_I', 'run' ]
 #        if any( [ (ver ==i) for i in  '1.5', '1.6' ] ) :
+
+
         r = [ d + i for i in  l ]
 
     if nested_EU:
