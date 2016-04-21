@@ -2449,7 +2449,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
     dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, title=None, \
     window=False, interval=1, ylabel=True, cb='CMRmap_r', \
-    orientation='vertical', \
+    orientation='vertical', rotatecbunits='vertical',\
     no_cb=True, return_m=False, log=False, verbose=False, debug=False ):
     """
         Provide an array of lon, lat, time
@@ -2517,9 +2517,11 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         plt.title( title, fontsize=f_size )
 
     # Manually Add colorbar
+    print '1'*300, orientation
     if no_cb:
         cb_ax = mk_cb(fig, units=units, left=left_cb_pos,  cmap=cmap, \
                 vmin=fixcb_buffered[0], cb_ax=cb_ax, \
+                rotatecbunits=rotatecbunits, \
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
                 extend=extend, lvls=lvls, log=log, orientation=orientation, \
                 sigfig_rounding_on_cb=sigfig_rounding_on_cb, nticks=nticks, \

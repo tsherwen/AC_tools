@@ -328,7 +328,8 @@ def get_NO2_phot_REA_XXX( ver='1.6', debug=False ):
     if ver == '1.6':
         num = 457
     elif ver == '3.0':
-        num = 549
+#        num = 549 # ( inc. run.ClBrI.R.t22 )
+        num = 556 # run.ClBrI.R.t22.Br1.H1.NOSSABr2
 
     # Request value /debug        
     else:
@@ -409,8 +410,10 @@ def get_tag_fam( tag ):
     'LR42': 'Iodine', 'LR43': 'Iodine', 'LR44': 'Iodine', 'LR45': 'Iodine', \
     'LR46': 'Iodine', 'LR47': 'Iodine', 
     # Tags for iodine heterogenous Iy (loss to AERI) reactions
-    'LR33':'Iodine', 'LR32':'Iodine',  'LR35':'Iodine',  'LR39':'Iodine'
-
+    'LR33':'Iodine', 'LR32':'Iodine',  'LR35':'Iodine',  'LR39':'Iodine', \
+    # Tags for IX split
+    'LR119': 'Iodine', 'LR118': 'Iodine', 'LR115': 'Iodine', 'LR117': 'Iodine',\
+    'LR116': 'Iodine', 'LR120': 'Iodine'
     # Extra tags not in list?  - obsolete. 
     #  (these reactions are appearing due to lack of inclusion of iodine 
     # species in Ox family... )  - obsolete. 
