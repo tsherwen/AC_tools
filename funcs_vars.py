@@ -186,7 +186,8 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
         PHOT_1st, PHOT_last = 519, 607 
     if ver == '3.0':    
 #        PHOT_1st, PHOT_last = 537, 627 # coupled sim.
-        PHOT_1st, PHOT_last = 554, 644 # With IX split rxns
+#        PHOT_1st, PHOT_last = 554, 644 # With IX split rxns
+        PHOT_1st, PHOT_last = 548, 638 # With 0.25 IBr split rxns
 
     JREAs = ['REA_'+ str(i) for i in range(PHOT_1st, PHOT_last) ] 
     REAs_all = ['REA_'+ str(i) for i in range(0, 533) ] 

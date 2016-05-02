@@ -1410,6 +1410,7 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
         Examples and use of pygchem is discussed on Ben Bovy's GITHib 
         https://github.com/benbovy/PyGChem_examples/blob/master/Tutorials/Datasets.ipynb        
     """
+#    debug=True
     
     if debug:
         if not isinstance( vars, type(None) ):
@@ -1596,6 +1597,7 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
 
     # Get res by comparing 1st 2 dims. against dict of GC dims.
     if r_res:
+        print arr.shape
         res=get_dims4res( r_dims=True, trop_limit=trop_limit, \
                     just2D=True )[arr.shape[:2]]
 
