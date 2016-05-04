@@ -3459,7 +3459,11 @@ def molec_weighted_avg( arr, wd=None, ctm_f=None, \
 
     # --- If masked array provided, applied same mask to molecules
     if isinstance( arr, np.ma.core.MaskedArray ):
-        molecs  = np.ma.array( molecs, mask=arr.mask )
+        try:
+            molecs  = np.ma.array( molecs, mask=arr.mask )
+        except:# MaskError:
+            print "MaskError for array shapes in 'molec_weighted_avg': ", \
+                [ i.shape for i in molecs, arr ]
 
     if weight_lon and (not weight_lat):  # 1st axis  
         return (arr *molecs).sum(axis=LON_axis)/molecs.sum(axis=LON_axis)
