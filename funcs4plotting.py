@@ -2449,7 +2449,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
     dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, title=None, \
     window=False, interval=1, ylabel=True, cb='CMRmap_r', \
-    orientation='vertical', rotatecbunits='vertical',\
+    orientation='vertical', rotatecbunits='vertical', title_y=1, \
     no_cb=True, return_m=False, log=False, verbose=False, debug=False ):
     """
         Provide an array of lon, lat, time
@@ -2512,9 +2512,11 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
                     fixcb_buffered=fixcb_buffered, interval=interval,\
                     ylabel=ylabel, verbose=verbose, debug=debug )
 
-    # if 
+    # if title != None, add to plot
     if not isinstance( title, type(None) ):
-        plt.title( title, fontsize=f_size )
+#        plt.title( title, fontsize=f_size, y=title_y )
+        plt.text(0.5, title_y, title, fontsize=f_size )
+
 
     # Manually Add colorbar
     print '1'*300, orientation
@@ -2546,6 +2548,7 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
     norm=None, nticks=10, format=None, units=None, extend='neither', \
     discrete_cmap=False, f_size=15, fig=None, res='4x5', wd=None, t_ps=None, \
     trop_limit=True, axn=None, cb_ax=None, orientation='vertical', \
+    rotatecbunits='vertical',\
     bottom=0.1, top=0.975, hspace=0.4, wspace=0.5, left=0.075, right=0.875, \
     cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160, no_cb=True, \
     region='All', lat_0=None, lat_1=None, pdftitle=None, return_m=False, \
@@ -2625,11 +2628,13 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
 
     if not isinstance( title, type( None ) ):
         plt.title( title, fontsize=f_size*.75 )
+#        plt.text(0.5, y_title, title, fontsize=f_size*.75 )
 
     # Manually Add colorbar
     if no_cb: 
         mk_cb(fig, units=units, left=cb_left,  height=cb_height, \
                 bottom=cb_bottom, log=log, orientation=orientation, \
+                rotatecbunits=rotatecbunits, \
                 cmap=cmap, vmin=fixcb_buffered[0],\
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
                 extend=extend, lvls=lvls, cb_ax=cb_ax, \
@@ -3681,6 +3686,8 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         this function also will can adjust colormaps to fit a given set of
         ticks
     """
+
+#    cb='Blues'
 
     # Make sure cmap includes range of all readable levels (lvls)
     # i.e head of colormap often rounded for ascetic/readability reasons
