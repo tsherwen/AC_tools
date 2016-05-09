@@ -951,11 +951,12 @@ def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
 # -------------
 def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
             title=None, legend=False, everyother=24,  x_nticks=12, \
-            window=False, label=None, ylabel=None, loc='upper right',  \
+            window=False, label=None, ylabel=None, loc='upper left',  \
             lw=1,ls='-', color=None, showmeans=False, boxplot=True, \
             plt_median=False, plot_Q1_Q3=False, pcent1=25, pcent2=75, \
             ylim=None, xtickrotation=45, alt_text=None, alt_text_x=.5, 
-            alt_text_y=.5, xlabel=None, rm_yticks=False, debug=False ):
+            alt_text_y=.5, xlabel=None, rm_yticks=False, log=False, \
+            debug=False ):
     """ Plot up timeseries of seasonal data. Requires data, and dates in numpy
         array form. Dates must be as datetime.datetime objects. """
 
@@ -1009,14 +1010,21 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         print '!'*200, alt_text, alt_text_x, alt_text_y
         ax.annotate( alt_text , xy=(alt_text_x, alt_text_y), \
             textcoords='axes fraction', fontsize=f_size*1.5 )
+    if legend:
+        plt.legend( fontsize=f_size*.75, loc=loc )
     if not isinstance( title, type(None) ):
         plt.title( title )
     if not isinstance( ylabel, type(None) ):
-        plt.ylabel( ylabel, fontsize=f_size*.75 )
+        plt.ylabel( ylabel, fontsize=f_size )
     else:
         if rm_yticks:
             ax.tick_params( axis='y', which='both', labelleft='off')   
-
+    # Log scale?
+    if log:
+        ax.set_yscale('log')
+    else:
+        ax.set_yscale('linear')
+    
 # --------------
 # 1.15 - plot up daily timeseries from ...
 # -------------
@@ -3021,7 +3029,7 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
                                    label=labels[i+1] ) 
                                    for i in range( 0, len(stack[0,:])-1 ) ]
 
-    # Plot transparent lines to get 2D line object to create lengend
+    # Plot transparent lines to get 2D line object to create legend
     [ plt.plot( Y, stack[:,n], alpha=0, color=colors[n], label=i) \
         for n,i in enumerate(labels) ]
 
