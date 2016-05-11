@@ -1678,14 +1678,18 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
         r = [
             'iGEOSChem_3.0_v10/no_hal',
             'iGEOSChem_3.0_v10/no_hal.PI',
-             'iGEOSChem_3.0_v10/Just_Br',
+#             'iGEOSChem_3.0_v10/Just_Br',
+            'iGEOSChem_3.0_v10/run_25IBr', 
+            'iGEOSChem_3.0_v10/run.SSBr', 
              'iGEOSChem_3.0_v10/run',
              'iGEOSChem_3.0_v10/run.PI']            
 
         l = [ 
         'NOHAL', 
         'NOHAL(PI)', 
-        'Just_Br', 
+#        'Just_Br', 
+        '0.25IBr', 
+        'SSBr', 
         'Cl+Br+I', 
         'Cl+Br+I(PI)' ]
 

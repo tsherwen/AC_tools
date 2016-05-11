@@ -786,6 +786,7 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
             legend=False, units='nmol mol$^{-1}$', stddev=True, \
             c_l=[ 'k', 'red','green', 'blue' , 'purple'], xlimit=None, \
             loc='upper left', c_off = 37, label=None, ancillary=True, \
+            plt_txt_x=0.5, plt_txt_y=0.94, \
             ylabel=True, xlabel=True, hPa_labels=True, debug=False ):
     """ Create plot of vertical data for sonde observations/model """
 
@@ -828,13 +829,12 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
 
     # Beautify plot ( e.g. add hPa, units,  etc... )
     if ancillary:
-        if (title != None):
-            t = plt.title(title, fontsize = f_size*1)
-            t.set_y(1.09)
-            if not isinstance(subtitle, type(None)):
-                plt.text(0.5, 1.05, subtitle, ha='center', va='center', \
-                          transform=ax.transAxes, fontsize=f_size*.65)
-            plt.subplots_adjust(top=0.86) 
+        if not isinstance( title, type(None) ):
+            plt.title( title, fontsize = f_size, y=1.0)
+            if not isinstance( subtitle, type(None) ):
+                plt.text(  plt_txt_x, plt_txt_y, \
+                    subtitle, ha='center', va='center', \
+                    transform=ax.transAxes, fontsize=f_size*.65)
         
         if ylabel:
             plt.ylabel('Altitude (km)', fontsize=f_size*.75)
@@ -863,8 +863,7 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
                 pass
             else:
                 ax.tick_params( axis='y', which='both', labelleft='off')
-                ax2.tick_params( axis='y', which='both', labelleft='off')
-
+                ax2.tick_params( axis='y', which='both', labelleft='off')      
 
 # --------------
 # 1.12 - plot up monthly from data provided from DB netCDF
@@ -907,7 +906,8 @@ def obs_month_plot(data, color=None, title=None, rtn_data=False, \
 # -------------
 def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
                   title=None, subtitle=None, legend=False, xrotation=90, \
-                  window=False, label=None, ylabel=None, xlabel=True, 
+                  window=False, label=None, ylabel=None, xlabel=True, \
+                  title_loc_y=1.09, plt_txt_x=0.5, plt_txt_y=1.05, \
                   loc='upper right' ):
     """ Plot up seaonal (monthly ) data. Requires data, and dates in numpy 
         array form. Dates must be as datetime.datetime objects. """
@@ -930,6 +930,7 @@ def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
     if not xlabel:
         plt.tick_params( axis='x', which='both', bottom='on', top='off',        
                                     labelbottom='off')
+
     plt.xlim(0.5,12.5)
     if ylabel != None:
         plt.ylabel(  ylabel, fontsize=f_size  )
@@ -937,10 +938,10 @@ def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
     print pos, posn-1
     if not isinstance(title, type(None)):
         t = plt.title(title, fontsize = f_size)
-        t.set_y(1.09)
+        t.set_y( title_loc_y )
         if not isinstance(subtitle, type(None)):
-             plt.text(0.5, 1.05, subtitle, ha='center', va='center', \
-                          transform=ax.transAxes, fontsize=f_size*.65)
+             plt.text( plt_txt_x, plt_txt_y, subtitle, ha='center', \
+                va='center', transform=ax.transAxes, fontsize=f_size*.65)
 #    if pos==posn-1:
     if legend:
         plt.legend( loc=loc,  fontsize=int(f_size/1.5) )
@@ -3614,9 +3615,10 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     if log:    
         round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
 
-        cb.set_ticks( [ float('{:.2g}'.format( t )) for t in lvls ] )
+        cb.set_ticks( [ float('{:.2g}'.format( t )) for t in lvls ],  \
+            fontsize=f_size )
         labels = [ round_to_n( i, sigfig_rounding_on_cb) for i in lvls ]
-        cb.set_ticklabels( [ format % i for i in labels] )
+        cb.set_ticklabels( [ format % i for i in labels], fontsize=f_size )
     
     # Set cb label sizes
     if units != None:
@@ -3627,7 +3629,8 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
                 fontsize=f_size)                      
         else:
             cb.set_label( units, fontsize=f_size )
-        cb.ax.tick_params(labelsize=f_size) 
+    # set tick sizes regardless whether units (labels are provided) 
+    cb.ax.tick_params( labelsize=f_size ) #, size=f_size )  
 
     return cb_ax
 
