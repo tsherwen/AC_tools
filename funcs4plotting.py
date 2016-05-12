@@ -1006,17 +1006,23 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     if not isinstance( ylim, type(None) ):
         ax.set_ylim( ylim )
 
-    print '!'*200, alt_text, alt_text_x, alt_text_y
+    print '!'*50, alt_text, alt_text_x, alt_text_y
     if not isinstance( alt_text, type(None) ):
-        print '!'*200, alt_text, alt_text_x, alt_text_y
-        ax.annotate( alt_text , xy=(alt_text_x, alt_text_y), \
-            textcoords='axes fraction', fontsize=f_size*1.5 )
+        print '!'*50, alt_text, alt_text_x, alt_text_y, f_size
+#        alt_text_x=0.5; alt_text_y=0.5; f_size=20
+#        ax.annotate( alt_text , xy=(alt_text_x, alt_text_y), \
+#            textcoords='axes fraction', fontsize=f_size*1.5, color='k' )
+        plt.text(  alt_text_x, alt_text_y, \
+            alt_text, ha='center', va='center', \
+                    transform=ax.transAxes, fontsize=f_size*.5)
+
     if legend:
+        print '>'*500, 'Adding legend', '<'*50, loc
         plt.legend( fontsize=f_size*.75, loc=loc )
     if not isinstance( title, type(None) ):
         plt.title( title )
     if not isinstance( ylabel, type(None) ):
-        plt.ylabel( ylabel, fontsize=f_size )
+        plt.ylabel( ylabel, fontsize=f_size*0.75 ) # Why is this x0.75?
     else:
         if rm_yticks:
             ax.tick_params( axis='y', which='both', labelleft='off')   
