@@ -1128,6 +1128,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     'south pole' : 2, 
     'north_pole' : 3,     
     'north pole' : 3,     
+    None : 4, 
     'unmask_all': 4, 
     'All' : 4,
     'global': 4,

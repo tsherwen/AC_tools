@@ -786,6 +786,7 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
             legend=False, units='nmol mol$^{-1}$', stddev=True, \
             c_l=[ 'k', 'red','green', 'blue' , 'purple'], xlimit=None, \
             loc='upper left', c_off = 37, label=None, ancillary=True, \
+            plt_txt_x=0.5, plt_txt_y=0.94, \
             ylabel=True, xlabel=True, hPa_labels=True, debug=False ):
     """ Create plot of vertical data for sonde observations/model """
 
@@ -828,13 +829,12 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
 
     # Beautify plot ( e.g. add hPa, units,  etc... )
     if ancillary:
-        if (title != None):
-            t = plt.title(title, fontsize = f_size*1)
-            t.set_y(1.09)
-            if not isinstance(subtitle, type(None)):
-                plt.text(0.5, 1.05, subtitle, ha='center', va='center', \
-                          transform=ax.transAxes, fontsize=f_size*.65)
-            plt.subplots_adjust(top=0.86) 
+        if not isinstance( title, type(None) ):
+            plt.title( title, fontsize = f_size, y=1.0)
+            if not isinstance( subtitle, type(None) ):
+                plt.text(  plt_txt_x, plt_txt_y, \
+                    subtitle, ha='center', va='center', \
+                    transform=ax.transAxes, fontsize=f_size*.65)
         
         if ylabel:
             plt.ylabel('Altitude (km)', fontsize=f_size*.75)
@@ -863,8 +863,7 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
                 pass
             else:
                 ax.tick_params( axis='y', which='both', labelleft='off')
-                ax2.tick_params( axis='y', which='both', labelleft='off')
-
+                ax2.tick_params( axis='y', which='both', labelleft='off')      
 
 # --------------
 # 1.12 - plot up monthly from data provided from DB netCDF
@@ -907,7 +906,8 @@ def obs_month_plot(data, color=None, title=None, rtn_data=False, \
 # -------------
 def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
                   title=None, subtitle=None, legend=False, xrotation=90, \
-                  window=False, label=None, ylabel=None, xlabel=True, 
+                  window=False, label=None, ylabel=None, xlabel=True, \
+                  title_loc_y=1.09, plt_txt_x=0.5, plt_txt_y=1.05, \
                   loc='upper right' ):
     """ Plot up seaonal (monthly ) data. Requires data, and dates in numpy 
         array form. Dates must be as datetime.datetime objects. """
@@ -930,6 +930,7 @@ def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
     if not xlabel:
         plt.tick_params( axis='x', which='both', bottom='on', top='off',        
                                     labelbottom='off')
+
     plt.xlim(0.5,12.5)
     if ylabel != None:
         plt.ylabel(  ylabel, fontsize=f_size  )
@@ -937,10 +938,10 @@ def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
     print pos, posn-1
     if not isinstance(title, type(None)):
         t = plt.title(title, fontsize = f_size)
-        t.set_y(1.09)
+        t.set_y( title_loc_y )
         if not isinstance(subtitle, type(None)):
-             plt.text(0.5, 1.05, subtitle, ha='center', va='center', \
-                          transform=ax.transAxes, fontsize=f_size*.65)
+             plt.text( plt_txt_x, plt_txt_y, subtitle, ha='center', \
+                va='center', transform=ax.transAxes, fontsize=f_size*.65)
 #    if pos==posn-1:
     if legend:
         plt.legend( loc=loc,  fontsize=int(f_size/1.5) )
@@ -951,10 +952,11 @@ def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
 # -------------
 def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
             title=None, legend=False, everyother=24,  x_nticks=12, \
-            window=False, label=None, ylabel=None, loc='upper right',  \
+            window=False, label=None, ylabel=None, loc='upper left',  \
             lw=1,ls='-', color=None, showmeans=False, boxplot=True, \
             plt_median=False, plot_Q1_Q3=False, pcent1=25, pcent2=75, \
-            ylim=None, xtickrotation=45, \
+            ylim=None, xtickrotation=45, alt_text=None, alt_text_x=.5, 
+            alt_text_y=.5, xlabel=None, rm_yticks=False, log=False, \
             debug=False ):
     """ Plot up timeseries of seasonal data. Requires data, and dates in numpy
         array form. Dates must be as datetime.datetime objects. """
@@ -997,14 +999,39 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     
     # Beatify plot
     ax.set_xticks( months )
-    ax.set_xticklabels( labels, rotation=xtickrotation )
+    if xlabel:
+        ax.set_xticklabels( labels, rotation=xtickrotation )
+    else:
+        ax.tick_params( axis='x', which='both', labelbottom='off')    
     if not isinstance( ylim, type(None) ):
         ax.set_ylim( ylim )
+
+    print '!'*50, alt_text, alt_text_x, alt_text_y
+    if not isinstance( alt_text, type(None) ):
+        print '!'*50, alt_text, alt_text_x, alt_text_y, f_size
+#        alt_text_x=0.5; alt_text_y=0.5; f_size=20
+#        ax.annotate( alt_text , xy=(alt_text_x, alt_text_y), \
+#            textcoords='axes fraction', fontsize=f_size*1.5, color='k' )
+        plt.text(  alt_text_x, alt_text_y, \
+            alt_text, ha='center', va='center', \
+                    transform=ax.transAxes, fontsize=f_size*.5)
+
+    if legend:
+        print '>'*500, 'Adding legend', '<'*50, loc
+        plt.legend( fontsize=f_size*.75, loc=loc )
     if not isinstance( title, type(None) ):
         plt.title( title )
     if not isinstance( ylabel, type(None) ):
-        plt.ylabel( ylabel )
-
+        plt.ylabel( ylabel, fontsize=f_size*0.75 ) # Why is this x0.75?
+    else:
+        if rm_yticks:
+            ax.tick_params( axis='y', which='both', labelleft='off')   
+    # Log scale?
+    if log:
+        ax.set_yscale('log')
+    else:
+        ax.set_yscale('linear')
+    
 # --------------
 # 1.15 - plot up daily timeseries from ...
 # -------------
@@ -2437,7 +2464,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
     dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, title=None, \
     window=False, interval=1, ylabel=True, cb='CMRmap_r', \
-    orientation='vertical', \
+    orientation='vertical', rotatecbunits='vertical', title_y=1, \
     no_cb=True, return_m=False, log=False, verbose=False, debug=False ):
     """
         Provide an array of lon, lat, time
@@ -2500,14 +2527,18 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
                     fixcb_buffered=fixcb_buffered, interval=interval,\
                     ylabel=ylabel, verbose=verbose, debug=debug )
 
-    # if 
+    # if title != None, add to plot
     if not isinstance( title, type(None) ):
-        plt.title( title, fontsize=f_size )
+#        plt.title( title, fontsize=f_size, y=title_y )
+        plt.text(0.5, title_y, title, fontsize=f_size )
+
 
     # Manually Add colorbar
+    print '1'*300, orientation
     if no_cb:
         cb_ax = mk_cb(fig, units=units, left=left_cb_pos,  cmap=cmap, \
                 vmin=fixcb_buffered[0], cb_ax=cb_ax, \
+                rotatecbunits=rotatecbunits, \
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
                 extend=extend, lvls=lvls, log=log, orientation=orientation, \
                 sigfig_rounding_on_cb=sigfig_rounding_on_cb, nticks=nticks, \
@@ -2532,6 +2563,7 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
     norm=None, nticks=10, format=None, units=None, extend='neither', \
     discrete_cmap=False, f_size=15, fig=None, res='4x5', wd=None, t_ps=None, \
     trop_limit=True, axn=None, cb_ax=None, orientation='vertical', \
+    rotatecbunits='vertical',\
     bottom=0.1, top=0.975, hspace=0.4, wspace=0.5, left=0.075, right=0.875, \
     cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160, no_cb=True, \
     region='All', lat_0=None, lat_1=None, pdftitle=None, return_m=False, \
@@ -2611,11 +2643,13 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
 
     if not isinstance( title, type( None ) ):
         plt.title( title, fontsize=f_size*.75 )
+#        plt.text(0.5, y_title, title, fontsize=f_size*.75 )
 
     # Manually Add colorbar
     if no_cb: 
         mk_cb(fig, units=units, left=cb_left,  height=cb_height, \
                 bottom=cb_bottom, log=log, orientation=orientation, \
+                rotatecbunits=rotatecbunits, \
                 cmap=cmap, vmin=fixcb_buffered[0],\
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
                 extend=extend, lvls=lvls, cb_ax=cb_ax, \
@@ -3002,7 +3036,7 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
                                    label=labels[i+1] ) 
                                    for i in range( 0, len(stack[0,:])-1 ) ]
 
-    # Plot transparent lines to get 2D line object to create lengend
+    # Plot transparent lines to get 2D line object to create legend
     [ plt.plot( Y, stack[:,n], alpha=0, color=colors[n], label=i) \
         for n,i in enumerate(labels) ]
 
@@ -3587,9 +3621,10 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     if log:    
         round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
 
-        cb.set_ticks( [ float('{:.2g}'.format( t )) for t in lvls ] )
+        cb.set_ticks( [ float('{:.2g}'.format( t )) for t in lvls ],  \
+            fontsize=f_size )
         labels = [ round_to_n( i, sigfig_rounding_on_cb) for i in lvls ]
-        cb.set_ticklabels( [ format % i for i in labels] )
+        cb.set_ticklabels( [ format % i for i in labels], fontsize=f_size )
     
     # Set cb label sizes
     if units != None:
@@ -3600,7 +3635,8 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
                 fontsize=f_size)                      
         else:
             cb.set_label( units, fontsize=f_size )
-        cb.ax.tick_params(labelsize=f_size) 
+    # set tick sizes regardless whether units (labels are provided) 
+    cb.ax.tick_params( labelsize=f_size ) #, size=f_size )  
 
     return cb_ax
 
@@ -3667,6 +3703,8 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         this function also will can adjust colormaps to fit a given set of
         ticks
     """
+
+#    cb='Blues'
 
     # Make sure cmap includes range of all readable levels (lvls)
     # i.e head of colormap often rounded for ascetic/readability reasons
