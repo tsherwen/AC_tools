@@ -2530,7 +2530,9 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     # if title != None, add to plot
     if not isinstance( title, type(None) ):
 #        plt.title( title, fontsize=f_size, y=title_y )
-        plt.text(0.5, title_y, title, fontsize=f_size )
+#        plt.text(0.5, title_y, title, fontsize=f_size )
+        ax.annotate( title , xy=(0.5, title_y),  textcoords='axes fraction', \
+            fontsize=f_size)
 
 
     # Manually Add colorbar
@@ -2985,6 +2987,8 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
         - X must be a list of numpy arrays 
         - Y must be a numpy array
     """
+    debug=True
+
     if debug:
         print 'X_stackplot called, with X[0] shape {}'.format( X[0].shape )
 
@@ -3043,6 +3047,11 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
     # Log scale?
     if log:
         ax.set_xscale('log')
+
+    # Print maxima
+    if debug:
+        print title, [ [ (i.min(), i.max(), i.mean() ) for i in [stack[:,n] ] ]
+            for n, label in enumerate(labels) ]
 
     # --- Beautify plot
     if not isinstance( ylim, type(None) ):
@@ -3704,7 +3713,7 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         ticks
     """
 
-#    cb='Blues'
+#    cb='Blues' # Kludge. Force blues for colorbar... 
 
     # Make sure cmap includes range of all readable levels (lvls)
     # i.e head of colormap often rounded for ascetic/readability reasons

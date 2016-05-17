@@ -729,7 +729,7 @@ def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, \
             vol ]]
 
     # convert HO2 [v/v] to [molec/cm3]
-    HO2 = convert_v_v_2_molec_cm3( HO2, a_m=a_m, vol=vol )
+    HO2 = convert_v_v_2_molec_cm3( HO2, a_m=a_m, vol=vol, mols=moles )
 
     # Remove invalid values
     HO2, OH  = [ np.ma.masked_invalid( i) for i in HO2, OH   ]
@@ -756,7 +756,7 @@ def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, \
         
     else: # Volume weight
 #       HO2, OH = [ np.ma.sum( i *vol) / np.ma.sum(vol)  for i in HO2, OH ] 
-        print 'Specify weighting in get_OH_HO2() '
+        print 'Please specify weighting in get_OH_HO2() '
         sys.exit()
 
     # Scale to set value ( e.g. 1E6 )
@@ -3011,6 +3011,42 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
     ars = [ np.sum(i) for i in [ IOx_burdens, IOx_loss ]]
     IOx_lifetime = ( ars[0] /(np.sum(ars[1:])) ) *365*24*60
 
+    # --- Get ClOx  lifetimes
+    # ( Gg / Gg/year => *365*24 => mins  )
+    ClOx = ['ClO','Cl'] 
+    ClOx_loss = get_GC_output( wd, vars=['PORL_L_S__'+'LClOx'], \
+                trop_limit=trop_limit)
+    # Convert to mass (g/month) units from molec/cm3/s 
+    ClOx_loss = convert_molec_cm3_s_2_g_X_s( ars=[ClOx_loss], ref_spec='Cl', \
+            t_ps=t_ps, res=res, months=months, years=years, vol=vol, \
+            s_area=s_area, rm_strat=True, month_eq=True  ) / 1E9
+
+    ClOx_burdens = get_GC_output( wd, trop_limit=trop_limit, r_list=True, \
+        vars=['IJ_AVG_S__'+i for i in ClOx ] )
+
+    ClOx_burdens =  [ species_v_v_to_Gg(i, spec=ClOx[n], a_m=a_m)  \
+                                        for n, i in enumerate( ClOx_burdens ) ]
+    ClOx_burdens = np.ma.array( ClOx_burdens ).mean(axis=-1)
+    ars = [ np.sum(i) for i in [ ClOx_burdens, ClOx_loss ]]
+    ClOx_lifetime = ( ars[0] /(np.sum(ars[1:])) ) *365*24*60
+
+    # --- Get BrOx  lifetimes
+    BrOx = ['BrO','Br'] 
+    BrOx_loss = get_GC_output( wd, vars=['PORL_L_S__'+'LBrOx'], \
+                trop_limit=trop_limit)
+    # Convert to mass (g/month) units from molec/cm3/s 
+    BrOx_loss = convert_molec_cm3_s_2_g_X_s( ars=[BrOx_loss], ref_spec='Br', \
+            t_ps=t_ps, res=res, months=months, years=years, vol=vol, \
+            s_area=s_area, rm_strat=True, month_eq=True  ) / 1E9
+    BrOx_burdens = get_GC_output( wd, trop_limit=trop_limit, r_list=True, \
+        vars=['IJ_AVG_S__'+i for i in BrOx ] )
+
+    BrOx_burdens =  [ species_v_v_to_Gg(i, spec=BrOx[n], a_m=a_m)  \
+                                        for n, i in enumerate( BrOx_burdens ) ]
+    BrOx_burdens = np.ma.array( BrOx_burdens ).mean(axis=-1)
+    ars = [ np.sum(i) for i in [ BrOx_burdens, BrOx_loss ]]
+    BrOx_lifetime = ( ars[0] /(np.sum(ars[1:])) ) *365*24*60
+
     # --- Get CH4 Lifetime
     CH4_lifetime = get_CH4_lifetime( wd=wd, vol=vol[...,:38,:], 
         t_ps=t_ps, a_m=a_m ) 
@@ -3034,19 +3070,29 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
     sur_IO, POx, LOx, POx -LOx, O3_bud.sum(), \
     O3_dep.sum(), DU_O3.mean(), OH, HO2, OH/HO2,   \
     Iy_lifetime, IOx_lifetime.mean(), Iy_burdens.sum(), CH4_lifetime,  \
-    NOx.sum(), NOy.sum(), Iy_loss.sum(), d_dep.sum(), w_dep.sum()
+    NOx.sum(), NOy.sum(), Iy_loss.sum(), d_dep.sum(), w_dep.sum(), \
+    IOx_loss.sum(), IOx_burdens.sum(), \
+    BrOx_burdens.sum(), BrOx_loss.sum(), BrOx_lifetime.mean(), \
+    ClOx_burdens.sum(), ClOx_loss.sum(), ClOx_lifetime.mean(),
     ]
 
     headers  = [ \
     'Mean MBL sur. IO', 'Chem Ox prod', 'Chem Ox loss','Ox prod-loss', \
     'O$_{3}$ Burden','O3 Dep.', 'O3 Column', 'OH Mean Conc', 'HO2 Mean Conc', \
     'OH/HO2','Iy lifetime',  'IOx lifetime', 'Iy Burdens', 'CH4 lifetime' , \
-    'NOx bur', 'NOy bur.', 'Iy_loss',  'd_dep', ' Iy w_dep'
+    'NOx bur', 'NOy bur.', 'Iy_loss',  'd_dep', ' Iy w_dep', \
+     'IOx loss','IOx burden',
+     'BrOx burden', 'BrOx loss','BrOx lifetime',
+     'ClOx burden', 'ClOx loss','ClOx lifetime',
+
     ]
     header_units = [ \
     ' / pptv', '/Tg O3', '/ Tg O3', '/ Tg O3','/ Tg O3','/ Tg O3','/ DU', \
     '/ 1E5 molec. cm^-3', 'v/v', '', '/ Days', '/ Min', 'Gg', '/ Years',  \
-    'Gg', 'Gg', 'Gg', 'Gg', 'Gg'
+    'Gg', 'Gg', 'Gg', 'Gg', 'Gg' , 
+    'Gg', 'Gg', 
+    'Days', 'Gg', 'Gg' , 
+    'Days', 'Gg', 'Gg' , 
     ]
 
     return vars, headers, header_units
@@ -3056,7 +3102,7 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
 # -------------
 def get_DU_mean(s_area=None, a_m=None, t_p=None, O3_arr=None, \
             ctm_f=False, area_weight=True, res='4x5', debug=False ):
-    """ Get mean DU value weighed by grid box array """
+    """ Get mean DU value weighed by grid box area """
 
     if not isinstance(s_area, np.ndarray):
         print "Extracting s_area in 'get_DU_mean'" 
@@ -4060,8 +4106,8 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='1.6', \
 # --------------
 # 2.42 - Convert v/v to molec/cm3
 # -------------   
-def convert_v_v_2_molec_cm3( arr=None, wd=None, vol=None, a_m=None, 
-            res='4x5', trop_limit=True, debug=False):
+def convert_v_v_2_molec_cm3( arr=None, wd=None, vol=None, a_m=None, \
+            mols=None, res='4x5', trop_limit=True, debug=False):
     """ Covnerts mixing ratio (v/v) into number density (molec/cm3).
         required variables of volume (vol) and airmass (a_m) can be provided as 
         arguements or are extracted online (from provided wd )
@@ -4084,7 +4130,8 @@ def convert_v_v_2_molec_cm3( arr=None, wd=None, vol=None, a_m=None,
             print 'WARNING: extracting air mass online'
 
     # Get moles
-    mols = a_m*1E3/constants( 'RMM_air')
+    if not isinstance(mols, np.ndarray):
+        mols = a_m*1E3/constants( 'RMM_air')
 
     #  Convert to molecules
     arr = ( arr * mols )*constants('AVG')

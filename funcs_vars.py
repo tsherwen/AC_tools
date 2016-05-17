@@ -1017,6 +1017,7 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'LR4', 'LO3_78', 'LR78', 'PO3_67', 'PO3_92', 'RD08', 'LR75', \
     'PO3_01', 'RD07', 'LR9', 'LR62', 'LR37', 'LR73', 'LR19', 'LO3_79', \
     'RD15', 'PO3_68', 'RD06', 'LO3_80', 'LR83', 'LR80', 'LR99', \
+    'LR125'
     ], 
     # not outputted by p/l ( but should be) : 'PO3_103', 'PO3_104', 'PO3_105', 
     # 'PO3_10'
@@ -1680,7 +1681,12 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             'iGEOSChem_3.0_v10/no_hal.PI',
 #             'iGEOSChem_3.0_v10/Just_Br',
             'iGEOSChem_3.0_v10/run_25IBr', 
+            'iGEOSChem_3.0_v10/run_25IBr.PI', 
+            'iGEOSChem_3.0_v10/run_5IBr', 
+            'iGEOSChem_3.0_v10/run_5IBr.PI', 
             'iGEOSChem_3.0_v10/run.SSBr', 
+            'iGEOSChem_3.0_v10/run_PI_PD',
+            'iGEOSChem_3.0_v10/run_PD_PI',
              'iGEOSChem_3.0_v10/run',
              'iGEOSChem_3.0_v10/run.PI']            
 
@@ -1689,13 +1695,21 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
         'NOHAL(PI)', 
 #        'Just_Br', 
         '0.25IBr', 
+        '0.25IBr(PI)', 
+        '0.5IBr', 
+        '0.5IBr(PI)', 
         'SSBr', 
+        'PI w PD hal ', 
+        'PD w PI hal ', 
         'Cl+Br+I', 
         'Cl+Br+I(PI)' ]
 
         # Just run and run.PI
 #        l =l[-2:]
 #        r=r[-2:]
+        # Just use the XO run
+#        r = ['iGEOSChem_3.0_v10/run.ClBrI.R.t22.Br1.H1_15IBr_XO']
+#        l = [ 'run.XO' ] 
 
     # return list with inc. main dir
     rtn_list = [rwd + i for i in r ] 
@@ -1706,14 +1720,17 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
 # --------------
 # 5.02 - Store of  constants for use by funcs/progs
 # --------------
-def constants(input_x, debug=False):
+def constants(input_x, rtn_dict=False, debug=False):
     """ Dictionary storing commonly used constants """
     con_dict ={
     'RMM_air' : ( .78*(2.*14.)+.22*(2.*16.) )  ,
     'AVG' : 6.0221413E23, 
     'mol2DU': 2.69E20
     }
-    return con_dict[input_x]
+    if rtn_dict:
+        return con_dict
+    else:
+        return con_dict[input_x]
 
 
 # ---------------- Section 6 -------------------------------------------
