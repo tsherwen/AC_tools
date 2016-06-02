@@ -2978,7 +2978,7 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
         colors=None, title=None, loc='upper right', ylim=None, xlim=None, \
         lw=8.0, ylabel=None, xlabel=False, log=False, rm_ticks=False, \
         alt_text_x=.15, alt_text_y=0.75, alt_text=None, ncol=1, \
-        verbose=False, debug=False):
+        stacked=False, verbose=False, debug=False):
     """ Produce a stacked plot (by X axis) for values in Y array. 
     
     NOTE:
@@ -3013,7 +3013,19 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
     else:
         X = np.ma.column_stack( X )
     # Assume data passed has not been 'stacked', so stack it here.
+#    if stacked:
+#        stack =  X
+#    else:
     stack = np.ma.cumsum( X, axis=1)
+    # convert to %?
+    pcent = True
+    if pcent:
+        max =  np.ma.max( stack, axis=1 ) # get accumulated maximum
+        print [ (i.min(), i.max(), i.mean(), i.shape) for i in stack, max ]
+        stack = np.ma.divide( stack,  max[:,None] ) *100
+        print [ (i.min(), i.max(), i.mean(), i.shape) for i in stack, max ]
+        xlim = [ 0, 100 ]
+
     if debug:
         print zip( labels, [np.sum(stack[:,n]) for n, i in enumerate(labels) ] )    
         print zip( labels, [np.max(stack[:,n]) for n, i in enumerate(labels) ] )    

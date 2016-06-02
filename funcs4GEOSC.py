@@ -3145,9 +3145,14 @@ def get_DU_mean(s_area=None, a_m=None, t_p=None, O3_arr=None, \
 # 2.25 - Get O3 Burden
 # -------------
 def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None, \
-                ctm_f=False, trop_limit=True,all_data=False,  debug=False ):
+            ctm_f=False, trop_limit=True, all_data=False, annual_mean=True, \
+            debug=False ):
     """ Get O3 burden in CTM output 
-        REDUNDENT? - this function is replicated in the get_burden function """
+        REDUNDENT? - this functionality is replicated in the get_burden function 
+    NOTES:
+        - all_data and annual_mean give the same result
+
+    """
 
     if not isinstance(a_m, np.ndarray):
         print 'Getting a_m in get_O3_burden'
@@ -3186,7 +3191,7 @@ def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None, \
     # convert moles to mass (* RMM) , then to Gg 
     ar = ar * species_mass(spec) /1E9             
     ar = ar[:,:,:38,:] * t_p[:,:,:38,:]
-    if (all_data):
+    if all_data or (not annual_mean):
         return ar
     else:
         return ar.mean(axis=3 )
