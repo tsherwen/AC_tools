@@ -3013,39 +3013,51 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
 
     # --- Get ClOx  lifetimes
     # ( Gg / Gg/year => *365*24 => mins  )
-    ClOx = ['ClO','Cl'] 
-    ClOx_loss = get_GC_output( wd, vars=['PORL_L_S__'+'LClOx'], \
+    try:
+        ClOx = ['ClO','Cl'] 
+        ClOx_loss = get_GC_output( wd, vars=['PORL_L_S__'+'LClOx'], \
                 trop_limit=trop_limit)
-    # Convert to mass (g/month) units from molec/cm3/s 
-    ClOx_loss = convert_molec_cm3_s_2_g_X_s( ars=[ClOx_loss], ref_spec='Cl', \
+        # Convert to mass (g/month) units from molec/cm3/s 
+        ClOx_loss = convert_molec_cm3_s_2_g_X_s( ars=[ClOx_loss], \
+            ref_spec='Cl', \
             t_ps=t_ps, res=res, months=months, years=years, vol=vol, \
             s_area=s_area, rm_strat=True, month_eq=True  ) / 1E9
 
-    ClOx_burdens = get_GC_output( wd, trop_limit=trop_limit, r_list=True, \
-        vars=['IJ_AVG_S__'+i for i in ClOx ] )
+        ClOx_burdens = get_GC_output( wd, trop_limit=trop_limit, r_list=True, \
+            vars=['IJ_AVG_S__'+i for i in ClOx ] )
 
-    ClOx_burdens =  [ species_v_v_to_Gg(i, spec=ClOx[n], a_m=a_m)  \
+        ClOx_burdens =  [ species_v_v_to_Gg(i, spec=ClOx[n], a_m=a_m)  \
                                         for n, i in enumerate( ClOx_burdens ) ]
-    ClOx_burdens = np.ma.array( ClOx_burdens ).mean(axis=-1)
-    ars = [ np.sum(i) for i in [ ClOx_burdens, ClOx_loss ]]
-    ClOx_lifetime = ( ars[0] /(np.sum(ars[1:])) ) *365*24*60
+        ClOx_burdens = np.ma.array( ClOx_burdens ).mean(axis=-1)
+        ars = [ np.sum(i) for i in [ ClOx_burdens, ClOx_loss ]]
+        ClOx_lifetime = ( ars[0] /(np.sum(ars[1:])) ) *365*24*60
+    except:
+        ClOx_lifetime = np.ones(  get_dims4res(res)  )
+        ClOx_burdens = np.ones(  get_dims4res(res)  )
+        ClOx_loss = np.ones(  get_dims4res(res)  )
 
     # --- Get BrOx  lifetimes
-    BrOx = ['BrO','Br'] 
-    BrOx_loss = get_GC_output( wd, vars=['PORL_L_S__'+'LBrOx'], \
+    try:
+        BrOx = ['BrO','Br'] 
+        BrOx_loss = get_GC_output( wd, vars=['PORL_L_S__'+'LBrOx'], \
                 trop_limit=trop_limit)
-    # Convert to mass (g/month) units from molec/cm3/s 
-    BrOx_loss = convert_molec_cm3_s_2_g_X_s( ars=[BrOx_loss], ref_spec='Br', \
+        # Convert to mass (g/month) units from molec/cm3/s 
+        BrOx_loss = convert_molec_cm3_s_2_g_X_s( ars=[BrOx_loss], \
+            ref_spec='Br', \
             t_ps=t_ps, res=res, months=months, years=years, vol=vol, \
             s_area=s_area, rm_strat=True, month_eq=True  ) / 1E9
-    BrOx_burdens = get_GC_output( wd, trop_limit=trop_limit, r_list=True, \
-        vars=['IJ_AVG_S__'+i for i in BrOx ] )
+        BrOx_burdens = get_GC_output( wd, trop_limit=trop_limit, r_list=True, \
+            vars=['IJ_AVG_S__'+i for i in BrOx ] )
 
-    BrOx_burdens =  [ species_v_v_to_Gg(i, spec=BrOx[n], a_m=a_m)  \
+        BrOx_burdens =  [ species_v_v_to_Gg(i, spec=BrOx[n], a_m=a_m)  \
                                         for n, i in enumerate( BrOx_burdens ) ]
-    BrOx_burdens = np.ma.array( BrOx_burdens ).mean(axis=-1)
-    ars = [ np.sum(i) for i in [ BrOx_burdens, BrOx_loss ]]
-    BrOx_lifetime = ( ars[0] /(np.sum(ars[1:])) ) *365*24*60
+        BrOx_burdens = np.ma.array( BrOx_burdens ).mean(axis=-1)
+        ars = [ np.sum(i) for i in [ BrOx_burdens, BrOx_loss ]]
+        BrOx_lifetime = ( ars[0] /(np.sum(ars[1:])) ) *365*24*60
+    except:
+        BrOx_lifetime = np.ones(  get_dims4res(res)  )
+        BrOx_burdens = np.ones(  get_dims4res(res)  )
+        BrOx_loss = np.ones(  get_dims4res(res)  )
 
     # --- Get CH4 Lifetime
     CH4_lifetime = get_CH4_lifetime( wd=wd, vol=vol[...,:38,:], 
