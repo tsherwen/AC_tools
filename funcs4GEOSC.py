@@ -1602,7 +1602,11 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
                     just2D=True )[arr.shape[:2]]
 
     if r_list:
-        arr = [ arr[i,...] for i in range( len(vars) ) ]
+        # Make sure returned type is list of arrays
+        if len( vars ) > 1:
+            arr = [ arr[i,...] for i in range( len(vars) ) ]
+        else:
+            arr = [ arr ]
 
     # Sort output - return Cubes?
     if r_cubes:
