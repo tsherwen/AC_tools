@@ -995,7 +995,7 @@ def SH_unmasked(  res='4x5', mask2D=False ):
 # 2.16 - Get Analysis maskes
 # --------
 def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
-        saizlopez=False, r_pstr=True, wd=None, trop_limit=True, \
+        saizlopez=False, r_pstr=True, wd=None, trop_limit=True, mask4D=False, \
         use_multiply_method=True, debug=False ):
     """
     Return list of mask arrays for analysis 
@@ -1097,6 +1097,15 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
     if trop_limit:
         maskes = [i[:,:,:38] for i in maskes]
 
+    # Create 4D array by concatenating through time dimension
+    # ( assuming year long array of 1 months )
+    if mask4D:
+        for n, mask in enumerate( maskes ):
+            if any( [ (mask.shape[-1] == i) for i in [12] ] ):
+                pass
+            else: # concatenate dimensions
+                maskes[n] = np.concatenate( [ mask[...,None] ]*12, axis=3 )
+
     if r_pstr:
         return maskes, mtitles, npstr, pstr
     else:
@@ -1147,6 +1156,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     'Ocn. Trop.': 13, 
     'Land Tropics': 14,
     'All Sur.': 15,
+    'surface': 15,
     'Ocean Sur.': 16, 
     'Land Sur.': 17 , 
      'Ice Sur.' : 18, 
