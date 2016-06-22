@@ -1081,7 +1081,8 @@ def latex_spec_name(input_x, debug=False):
     'IEPOX':'IEPOX','MAP':'MAP', 'AERI':'Aerosol Iodine', 'Cl2':'Cl$_{2}$', \
     'Cl':'Cl','HOCl':'HOCl','ClO':'ClO','OClO':'OClO','BrCl':'BrCl', \
     'HI+OIO+IONO+INO':'HI+OIO+INO$_{2}$+INO', \
-    'CH2IX':'CH$_{2}$IX (X=Cl, Br, I)', 'IxOy':'I$_{2}$O$_{X}$ ($_{X}$=2,3,4)',\
+    'CH2IX':'CH$_{2}$IX (X=Cl, Br, I)', \
+    'IxOy':u'I$_{2}$O$_{X}$ ($_{X}$=2,3,4)',\
     'CH3I':'CH$_{3}$I', 'OH':'OH', 'HO2':'HO$_{2}$', 'MO2':'MO$_{2}$', \
     'RO2':'RO$_{2}$' , 'ISALA': 'Iodine on SALA',  \
     'ISALC': 'Iodine on SALC', 'CH4': 'CH$_{4}$', 'MOH': 'Methanol', \
@@ -1089,20 +1090,24 @@ def latex_spec_name(input_x, debug=False):
     # Adjusted names
     'ALD2':'Acetaldehyde', 
     # Analysis names 
-    'iodine_all':'All Iodine', 'Iy': 'I$_{Y}$', 'IOy': 'IO$_{Y}$', \
-    'IyOx': 'I$_{Y}$O$_{X}$', 'IOx': 'IO$_{X}$', \
+    'iodine_all':'All Iodine', 'Iy': u'I$_{y}$',\
+    'IOy': u'IO$_{y}$', \
+    'IyOx': u'I$_{y}$O$_{x}$', 
+    'IOx': 'uIO$_{x}$', \
     'iodine_all_A':'All Iodine (Inc. AERI)',  \
-    'I2Ox': 'I$_{2}$O$_{X}$' , 'AERI/SO4': 'AERI/SO4', \
-    'EOH':'Ethanol','OH reactivity / s-1': 'OH reactivity / s$^{-1}$', \
+    'I2Ox': u'I$_{2}$O$_{X}$' , 'AERI/SO4': 'AERI/SO4', \
+    'EOH':'Ethanol','OH reactivity / s-1': u'OH reactivity / s$^{-1}$', \
     'PSURF': 'Pressure at the bottom of level', \
     'GMAO_TEMP' : 'Temperature', 'TSKIN' : 'Temperature at 2m', \
     'GMAO_UWND':'Zonal Wind', 'GMAO_VWND':'Meridional Wind', \
     'U10M':'10m Meridional Wind', 'V10M': '10m Zonal Wind', \
     'CH2OO':'CH$_{2}$OO', 'Sulfate': 'Sulfate', 'VOCs': 'VOCs', \
     # Family Names
-    'N_specs':'NO$_Y$', 'NOy':'NO$_Y$',  'Bry':'Br$_Y$', 'Cly':'Cl$_Y$',  \
-    'N_specs_no_I':'NO$_Y$ exc. iodine', 'NOx':'NO$_X$', 'HOx':'HO$_X$',\
-    'SOx':'SO$_X$', \
+    'N_specs':u'NO$_{y}$', 'NOy':u'NO$_{y}$', 
+     'Bry':u'Br$_{y}$', 'Cly':u'Cl$_{y}$',  \
+    'N_specs_no_I': u'NO$_{y}$ exc. iodine', 
+    'NOx':u'NO$_{X}$', 'HOx':u'HO$_{X}$',\
+    'SOx':u'SO$_{X}$', \
     # typos
     'CH2BR2':'CH$_{2}$Br$_{2}$',\
     # Cly names
@@ -1687,7 +1692,10 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             'iGEOSChem_3.0_v10/run.SSBr', 
             'iGEOSChem_3.0_v10/run_PI_PD',
             'iGEOSChem_3.0_v10/run_PD_PI',
+            'iGEOSChem_3.0_v10/run_PD_PI.PD_STRAT',
             'iGEOSChem_3.0_v10/run.PI_PD_STRAT',
+            'iGEOSChem_3.0_v10/run.PI_PD_STRAT.25',
+            'iGEOSChem_3.0_v10/run.PI_PD_STRAT.5',
              'iGEOSChem_3.0_v10/run',
              'iGEOSChem_3.0_v10/run.PI']            
 
@@ -1702,7 +1710,10 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             'SSBr', 
             'PI w PD hal ', 
            'PD w PI hal ', 
+           'PD w PI hal (no strat)', 
             'PI w PD STRAT', 
+            'PI w PD STRAT 0.25', 
+            'PI w PD STRAT 0.5', 
             'Cl+Br+I', 
             'Cl+Br+I(PI)' ]
 
