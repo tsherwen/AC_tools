@@ -2653,20 +2653,23 @@ def species_v_v_to_Gg(arr, spec, a_m=None, Iodine=True, All =False, \
     """ Convert array of species in v/v to Gg (of spec)
         NOTE:
         - The processing is not clear in this function, <= update 
-        - To output
+        - To output in terms of provide spec (e.g. Bry ) set All=True and 
+        Iodine=False. This should be default bevahiour, but is not for reasons 
+        of back compatibility.
     """
-    print 'WARNING: Check settings in species_v_v_to_Gg: ',  All, Iodine, Ox
+    var_list = All, Iodine, Ox, spec
+    print 'WARNING: Check settings in species_v_v_to_Gg: ',  var_list
 
     if not isinstance(a_m, np.ndarray):
         a_m = get_air_mass_np( ctm_f, wd=wd, debug=debug )  # kg
-     #  number of moles in box ( g / g mol-1 (air) )
+    #  number of moles in box ( g / g mol-1 (air) )
     moles = ( a_m *1E3 ) / constants( 'RMM_air')   
     if debug:
         print [ i.shape for i in moles, arr ]
 
     # I mass ( moles => mass (g) => Gg (in units of I ) )
     if ( (Iodine) and ( (not Ox) and (not All) ) ):  
-        arr = ( ( arr * moles )  * 127. ) /1E9 * spec_stoich(spec)
+        arr = ( ( arr * moles )  * 127. ) /1E9 * spec_stoich( spec )
 
     # O3 mass ( moles => mass (g) => Gg (in units of O3 ) )
     if ( (Iodine) and (Ox) ):      
@@ -4046,6 +4049,8 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='1.6', \
     if fam == 'Bry' :
         # Select species in family
         specs = GC_var('Bry' )
+        # Also consider Br- on SS
+#        specs += [ 'BrSALA', 'BrSALC', ]
 
         # Extract data
         arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ], \

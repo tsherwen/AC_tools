@@ -1696,6 +1696,9 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             'iGEOSChem_3.0_v10/run.PI_PD_STRAT',
             'iGEOSChem_3.0_v10/run.PI_PD_STRAT.25',
             'iGEOSChem_3.0_v10/run.PI_PD_STRAT.5',
+            'iGEOSChem_3.0_v10/run.PD_trop.PI_strat', 
+             'iGEOSChem_3.0_v10/run.PI.no_org_hal', 
+             'iGEOSChem_3.0_v10/run.no_org_hal', 
              'iGEOSChem_3.0_v10/run',
              'iGEOSChem_3.0_v10/run.PI']            
 
@@ -1714,6 +1717,9 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             'PI w PD STRAT', 
             'PI w PD STRAT 0.25', 
             'PI w PD STRAT 0.5', 
+            'PD trop, PI strat',
+            'no org hal (PI)',
+            'no org hal',
             'Cl+Br+I', 
             'Cl+Br+I(PI)' ]
 
