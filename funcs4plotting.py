@@ -2987,7 +2987,7 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
         fig=None, ax=None, dpi=160, show=False, f_size=10, legend=False, \
         colors=None, title=None, loc='upper right', ylim=None, xlim=None, \
         lw=8.0, ylabel=None, xlabel=False, log=False, rm_ticks=False, \
-        alt_text_x=.15, alt_text_y=0.75, alt_text=None, ncol=1, \
+        alt_text_x=.15, alt_text_y=0.75, alt_text=None, ncol=1, pcent=False,  \
         stacked=False, verbose=False, debug=False):
     """ Produce a stacked plot (by X axis) for values in Y array. 
     
@@ -3028,7 +3028,7 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
 #    else:
     stack = np.ma.cumsum( X, axis=1)
     # convert to %?
-    pcent = True
+#    pcent = True
     if pcent:
         max =  np.ma.max( stack, axis=1 ) # get accumulated maximum
         print [ (i.min(), i.max(), i.mean(), i.shape) for i in stack, max ]
@@ -3736,6 +3736,7 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
     """
 
 #    cb='Blues' # Kludge. Force blues for colorbar... 
+#    cb='Reds' # Kludge. Force Reds for colorbar... 
 
     # Make sure cmap includes range of all readable levels (lvls)
     # i.e head of colormap often rounded for ascetic/readability reasons
