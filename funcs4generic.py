@@ -1410,3 +1410,14 @@ def get_cruise_track_mask(  max_lon=None, min_lon=None, max_lat=None, \
     m = np.logical_not( m )
     
     return m
+    
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# ---------------- Section X -------------------------------------------
+# -------------- Redundant Functions
+# --------------------------------------------------------------------------
+# 
+# NOTE(s): 
+# (1) These are retained even though they are redundant for back compatibility
+# (2) It is not advised to use these. 

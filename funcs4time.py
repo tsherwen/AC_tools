@@ -1,7 +1,5 @@
 #!/usr/bin/python
-
-"""
-    Time processing functions for use with GEOS-Chem/Data analysis
+""" Time processing functions for use with GEOS-Chem/Data analysis
 """
 
 # --------------- 
@@ -66,6 +64,11 @@ from AC_tools.funcs4generic import *
 # 1.01 - Datetime to fractional day 
 # --------------
 def get_day_fraction(date):
+    """ Get day fraction.
+    NOTES:
+        - for working with numpy arrays of datetimes, instead of pandas 
+        dataframes
+    """
     secs = (date.hour *60.*60.)+(date.minute*60.)+(date.second)
     dsecs = 24.*60.*60.
     return  secs/dsecs
@@ -74,8 +77,11 @@ def get_day_fraction(date):
 # 1.02 - numpy.datetime64 to datetime.datetime (assuming UTC )
 # ------------- 
 def dt64_2_dt( dt64 ):
-    """  ACTION NEEDED: Convert this to work as a lamdba function for 
-            scalability"""
+    """  convert numpy.datetime64 to datetime.datetime (assuming UTC )
+    NOTES:
+        - ACTION NEEDED: Convert this to work as a lamdba function for 
+            scalability
+    """
     ns = 1e-9 # number of seconds in a nanosecond
     return  [ datetime_.utcfromtimestamp(i.astype(int) * ns) for i in dt64 ]
 
@@ -83,6 +89,8 @@ def dt64_2_dt( dt64 ):
 # 1.03 - numpy.datetime64 to datetime.datetime (assuming UTC )
 # ------------- 
 def nonISOdate2ISO( ds ):
+    """ Convert a non ISO date string to a ISO date string
+    """
     print 'nonISOdate2ISO'
     regex = re.compile( '(\d\d\d\d-\d-\d\d)')
     regexII = re.compile( '(.*\s\d:.*)')    
@@ -118,10 +126,12 @@ def nonISOdate2ISO( ds ):
     return ds
 
 # --------------
-# 1.04 - Find nearest timestamp
+# 1.04 - Find nearest timestamp - Credit: Raymond Hettinger 
 # -------------
 def nearest(ts, s):
-    """ Credit: Raymond Hettinger  -      http://stackoverflow.com/questions/8162379/python-locating-the-closest-timestamp              
+    """ Find nearest timestamp
+    NOTES:
+        (1) Credit: Raymond Hettinger  -      http://stackoverflow.com/questions/8162379/python-locating-the-closest-timestamp              
     """
     # Given a presorted list of timestamps:  s = sorted(index)
     i = bisect_left(s, ts)
@@ -133,7 +143,8 @@ def nearest(ts, s):
 # -------------
 def YYYYMMDD_HHMM_2_datetime( str1=None, str2=None,  conbined=False,  \
             verbose=False, debug=False ):    
-
+    """ Mappable converter of strings to datetime. 
+    """
     # combined as one string
     if conbined : 
         dtime = str1
@@ -161,6 +172,8 @@ def YYYYMMDD_HHMM_2_datetime( str1=None, str2=None,  conbined=False,  \
 # 1.06 - Incremental increase datetime by given months - credit: Dave Webb
 # -------------
 def add_months(sourcedate,months):
+    """ Incremental increase of datetime by given months 
+    """ 
     month = sourcedate.month - 1 + months
     year = sourcedate.year + month / 12
     month = month % 12 + 1
@@ -172,6 +185,8 @@ def add_months(sourcedate,months):
 # 1.07 - Incremental increase datetime by given days 
 # -------------
 def add_days(sourcedate,days_):
+    """ Incremental increase of  datetime by given days 
+    """ 
     sourcedate += datetime.timedelta(days=days_)
     return sourcedate
 
@@ -179,6 +194,8 @@ def add_days(sourcedate,days_):
 # 1.08 - Incremental increase datetime by given hours
 # -------------
 def add_hrs(sourcedate,hrs_, debug=False):
+    """ Incremental increase of datetime by given hours 
+    """ 
     if debug:
         print sourcedate, hrs_
     sourcedate += datetime.timedelta(hours=hrs_)    
@@ -188,6 +205,8 @@ def add_hrs(sourcedate,hrs_, debug=False):
 # 1.09 - Incremental increase datetime by given minutes
 # -------------
 def add_minutes(sourcedate,min_, debug=False):
+    """ Incremental increase of datetime by given minutes 
+    """ 
     sourcedate += datetime.timedelta(minutes=min_)
     return sourcedate
 
@@ -195,6 +214,8 @@ def add_minutes(sourcedate,min_, debug=False):
 # 1.10 - Incremental increase datetime by given seconds
 # -------------
 def add_secs(sourcedate,secs_, debug=False):
+    """ Incremental increase of datetime by given seconds 
+    """ 
     sourcedate += datetime.timedelta(seconds=secs_)
     return sourcedate
 
@@ -229,7 +250,8 @@ def add_secs(sourcedate,secs_, debug=False):
 # 1.12 - day adjust -  seconds to months
 # -------------
 def d_adjust( months=None, years=None ):
-
+    """ Get adjustment values to convert an array of per second to per month
+    """
     # Get months and years if not given
     if not isinstance(months, list):
         months = range(1,13)
@@ -244,6 +266,10 @@ def d_adjust( months=None, years=None ):
 # 1.13 - adjust non UT times to UT
 # ------------- 
 def gaw_lc_2_UT(time_s, site, half_hour=None, debug=False):
+    """ Adjust list of local times to UTC for a given GAW site
+    NOTEs:
+        - This function is redundent. 
+    """
     if debug:
         print 'gaw_lc_2_UT called'
     UT_diff={'CVO':-1.}                    #  UT diff library for sites ....
@@ -261,6 +287,10 @@ def gaw_lc_2_UT(time_s, site, half_hour=None, debug=False):
 # 1.14 - Adjust to lt from UT 
 # ----  
 def adjust_UT_2_lt( time, date, data, site='CVO', dUTC=None, debug=False ):
+    """ Adjust list of UTC times to local time a given GAW site
+    NOTEs:
+        - This function is redundent. It is reverse of function "gaw_lc_2_UT"
+    """
     if (dUTC ==  None ):
         dUTC   = gaw_2_loc(site)[-1]
     if debug:
@@ -285,6 +315,10 @@ def adjust_UT_2_lt( time, date, data, site='CVO', dUTC=None, debug=False ):
 # 1.16 - returns data as a mean monthly value
 # -------------
 def data2monthly( data, dates ):
+    """ resample list of numpy data by month (taken from given list of dates )
+    NOTES:
+        - Why is this a seperate function?
+    """
     df = DataFrame(data,index=dates )
     df['Month'] =  [ i.month for i in dates ]
     grouped = df.groupby('Month')
@@ -296,7 +330,9 @@ def data2monthly( data, dates ):
 # -------------
 def get_dt4run(time_span='year', period=1, startyear=2005,endyear=2005, 
                 endhour=23, a=None, b=None  ): 
-
+    """ Get list of datetimes for a given range or between two provided 
+    datetimes  ( "a" and "b" )
+    """
     # Set dates
     if isinstance(a, type(None) ):
         a = datetime.datetime(startyear,2,1, 0, 0)
@@ -320,6 +356,10 @@ def get_dt4run(time_span='year', period=1, startyear=2005,endyear=2005,
 # 1.19 - returns data as a mean monthly value
 # -------------
 def data2daily( data, dates ):
+    """ resample list of numpy data by day (taken from given list of dates )
+    NOTES:
+        - Why is this a seperate function?
+    """
     df = DataFrame(data,index=dates )
     totals = df.resample('D', how='mean')
     return  totals.values, totals.index
@@ -328,6 +368,8 @@ def data2daily( data, dates ):
 # 1.20 - Datetime hours between datetime a and datetime b
 # -------------
 def dt_hrs_a2b( a, b, period=1, debug=False ) :
+    """ Returns list of hour spaced datetimes between two given datetimes
+    """
     dates = [a]
     if debug:
         print dates, a, b, period
@@ -357,36 +399,6 @@ def get_int_btwn(start, end, months=False, years=False ):
 #        print 'State whether years or months are required as boolean arg (e.g. months=True)'
 
 # --------------
-# 1.22 - Normalise data to daily mean.  - mv'd to funcs4time
-# --------------
-def normalise2dailymean(dates, data, debug=False ):
-    if debug:
-        print [( type(i), i.shape ) for i in data, dates ]#,  [(i.shape, np.ma.max(i), np.ma.min(i)) for i in [ data ] ]
-
-    # Get list of unique dates & remove mean from dates
-    dates = np.ma.array([datetime.datetime(*i.timetuple()[:3]) for i in dates ])
-    idates =np.ma.array((sorted(set( dates ) ) ))
-    for s in idates:
-        data[np.ma.where( dates == s) ]  = data[np.ma.where( dates == s) ] - np.ma.mean(data[np.ma.where( dates == s )] )
-    return data
-    
-# --------------
-# 1.23 - Normalise data to daily minimum.   - mv'd to funcs4time
-# --------------
-def normalise2dailymin(dates, data, debug=False ):
-    if debug:
-        print [( type(i), i.shape ) for i in data, dates ]#,  [(i.shape, np.ma.max(i), np.ma.min(i)) for i in [ data ] ]
-
-    # Get list of unique dates & remove mean from dates
-    dates = np.ma.array(
-    [ datetime.datetime(*i.timetuple()[:3]) for i in dates ] 
-    )                                    
-    idates =np.ma.array((sorted(set( dates ) ) )) 
-    for s in idates:
-        data[np.ma.where( dates == s) ]  = data[np.ma.where( dates == s) ] - np.ma.min(data[np.ma.where( dates == s )] )
-    return data
-
-# --------------
 #  1.24 - Normalise data to daily maximiun.   - mv'd to funcs4time
 # --------------
 def normalise2dailymax(dates, data, debug=False ):
@@ -407,66 +419,19 @@ def normalise2dailymax(dates, data, debug=False ):
     return data
 
 # ----  
-#  1.25 - Adjust hr data to diurnal
-# ----  
-def hr_data_2_diurnal(time, date, data, frac=False, diurnal=True, debug=False ):
-    """
-        REDUNDENT.  Now use pandas dataframes. 
-    """
-    if debug:
-        print 'hr_data_2_diurnal called'
-
-    # get O3 max (09:00 local time) (9+UTadjust::24) & min (17:00 local time) (9+UTadjust::24
-#    O3_max = data[np.where( time==np.int64(900)  )]
-#    O3_min = data[np.where( time==np.int64(1700) )
-    O3_max = data[np.where( time==np.int64(800)  )]
-    O3_min = data[np.where( time==np.int64(1600) )]
-    O3_d   = O3_max - O3_min
-    print [ i[5000:5010] for i in  [ O3_d, O3_max, O3_min ]]
-
-    # Adjust to diurnal
-    print [ ( type(i), i.shape, np.min(i), np.max(i) ) for i in [data] ]
-    if (diurnal):    
-        if (frac):
-            data = np.array( [ ( (data[np.where(date==day)]-O3_max[ii] )/data[np.where(date==day)] )*100
-                               for ii, day in enumerate( sorted( set(date) )) ] ).flatten()
-        else:
-            data = np.array( [ data[ np.where(date==day) ] -O3_max[ii] for ii, day in enumerate( sorted( set(date) )) ] ).flatten()
-    print [ ( type(i), i.shape, np.min(i), np.max(i) ) for i in [data]]
-
-    # split by month for all years and provide daily data and diurnal value
-    months = []
-
-    # Remove data with a delta greater than 30 ppbv, as this is not chemical destruction but meteorology 
-    cap    = 30
-    for m_ in range(1,13,1):
-        print m_, '{:0>2}'.format(m_ ) 
-        m_all = data[ [ int(ii) for ii, i in enumerate(date) if ( str(i)[4:6] == '{:0>2}'.format(m_) )  ] ]
-        print [ ( len(i),len(i)/24. ) for i in [m_all ]]
-        z = np.array( chunks(m_all, 24) )
-        print [ ( type(i), i.shape, np.min(i), np.max(i) ) for i in [z]]
-        z = np.ma.masked_where( (z <= -cap), z )
-        print [ ( type(i), i.shape, np.min(i), np.max(i) ) for i in [z]]
-        z = np.ma.masked_where( (z >= cap), z )
-        print [ ( type(i), i.shape, np.min(i), np.max(i) ) for i in [z]]
-        z = np.mean( z, axis=0 )
-        print [ ( type(i), i.shape, np.min(i), np.max(i) ) for i in [z]]
-        months.append( z ) 
-    months = np.array( months )
-    return months, O3_max,O3_min,O3_d 
-
-
-# ----  
 #  1.26 - Translate from time to datetime
 # ----  
 def time2datetime( dates ):
+    """ Convert time object to datetime object
+    """
     return [ datetime_.fromtimestamp(mktime(i)) for i in dates ]
     
 # ----  
 #  1.27 - return abbreviated month for a given month number or vice versa
 # ----  
 def num2month(input=None, reverse=False, rtn_dict=False):
-
+    """ Convert number (1-12) to month in year (or reverse if reverse==True). 
+    """
     d={
         1: 'Jan',
          2: 'Feb',
@@ -554,7 +519,111 @@ def unix_time(dt):
 #    return delta.total_seconds()
     return delta.days*86400+delta.seconds+delta.microseconds/1e6
     
+# --------------
+# 1.31 - Datetime hours between datetime a and datetime b
+# -------------
+def dt_days_a2b( a, b, period=1, debug=False ) :
+    dates = [a]
+    if debug:
+        print dates, a, b, period
+    while dates[-1] < b:
+        dates += [ add_days(dates[-1], period) ]
+    if debug:
+        print dates[0], dates[-1]
+    return dates
+
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# ---------------- Section X -------------------------------------------
+# -------------- Redundant Functions
+# --------------------------------------------------------------------------
+# 
+# NOTE(s): 
+# (1) These are retained even though they are redundant for back compatibility
+# (2) It is not advised to use these. 
+
+# --------------
+# 1.22 - Normalise data to daily mean.  - mv'd to funcs4time
+# --------------
+def normalise2dailymean(dates, data, debug=False ):
+    if debug:
+        print [( type(i), i.shape ) for i in data, dates ]#,  [(i.shape, np.ma.max(i), np.ma.min(i)) for i in [ data ] ]
+
+    # Get list of unique dates & remove mean from dates
+    dates = np.ma.array([datetime.datetime(*i.timetuple()[:3]) for i in dates ])
+    idates =np.ma.array((sorted(set( dates ) ) ))
+    for s in idates:
+        data[np.ma.where( dates == s) ]  = data[np.ma.where( dates == s) ] - np.ma.mean(data[np.ma.where( dates == s )] )
+    return data
     
+# --------------
+# 1.23 - Normalise data to daily minimum.   - mv'd to funcs4time
+# --------------
+def normalise2dailymin(dates, data, debug=False ):
+    if debug:
+        print [( type(i), i.shape ) for i in data, dates ]#,  [(i.shape, np.ma.max(i), np.ma.min(i)) for i in [ data ] ]
+
+    # Get list of unique dates & remove mean from dates
+    dates = np.ma.array(
+    [ datetime.datetime(*i.timetuple()[:3]) for i in dates ] 
+    )                                    
+    idates =np.ma.array((sorted(set( dates ) ) )) 
+    for s in idates:
+        data[np.ma.where( dates == s) ]  = data[np.ma.where( dates == s) ] - np.ma.min(data[np.ma.where( dates == s )] )
+    return data
+
+
+# ----  
+#  1.25 - Adjust hr data to diurnal
+# ----  
+def hr_data_2_diurnal(time, date, data, frac=False, diurnal=True, debug=False ):
+    """
+        REDUNDENT.  Now use pandas dataframes. 
+    """
+    if debug:
+        print 'hr_data_2_diurnal called'
+
+    # get O3 max (09:00 local time) (9+UTadjust::24) & min (17:00 local time) (9+UTadjust::24
+#    O3_max = data[np.where( time==np.int64(900)  )]
+#    O3_min = data[np.where( time==np.int64(1700) )
+    O3_max = data[np.where( time==np.int64(800)  )]
+    O3_min = data[np.where( time==np.int64(1600) )]
+    O3_d   = O3_max - O3_min
+    print [ i[5000:5010] for i in  [ O3_d, O3_max, O3_min ]]
+
+    # Adjust to diurnal
+    print [ ( type(i), i.shape, np.min(i), np.max(i) ) for i in [data] ]
+    if (diurnal):    
+        if (frac):
+            data = np.array( [ ( (data[np.where(date==day)]-O3_max[ii] )/data[np.where(date==day)] )*100
+                               for ii, day in enumerate( sorted( set(date) )) ] ).flatten()
+        else:
+            data = np.array( [ data[ np.where(date==day) ] -O3_max[ii] for ii, day in enumerate( sorted( set(date) )) ] ).flatten()
+    print [ ( type(i), i.shape, np.min(i), np.max(i) ) for i in [data]]
+
+    # split by month for all years and provide daily data and diurnal value
+    months = []
+
+    # Remove data with a delta greater than 30 ppbv, as this is not chemical destruction but meteorology 
+    cap    = 30
+    for m_ in range(1,13,1):
+        print m_, '{:0>2}'.format(m_ ) 
+        m_all = data[ [ int(ii) for ii, i in enumerate(date) if ( str(i)[4:6] == '{:0>2}'.format(m_) )  ] ]
+        print [ ( len(i),len(i)/24. ) for i in [m_all ]]
+        z = np.array( chunks(m_all, 24) )
+        print [ ( type(i), i.shape, np.min(i), np.max(i) ) for i in [z]]
+        z = np.ma.masked_where( (z <= -cap), z )
+        print [ ( type(i), i.shape, np.min(i), np.max(i) ) for i in [z]]
+        z = np.ma.masked_where( (z >= cap), z )
+        print [ ( type(i), i.shape, np.min(i), np.max(i) ) for i in [z]]
+        z = np.mean( z, axis=0 )
+        print [ ( type(i), i.shape, np.min(i), np.max(i) ) for i in [z]]
+        months.append( z ) 
+    months = np.array( months )
+    return months, O3_max,O3_min,O3_d 
+
+
 # --------------
 # 1.30 - Process time/date to CV days equivilent - mje
 # -------------
@@ -571,16 +640,3 @@ def year_to_since_2006(model):
               for i in range(len(year))]
     since2006=[doy[i].days+doy[i].seconds/(24.*60.*60.) for i in range(len(doy))]
     return since2006
-    
-# --------------
-# 1.31 - Datetime hours between datetime a and datetime b
-# -------------
-def dt_days_a2b( a, b, period=1, debug=False ) :
-    dates = [a]
-    if debug:
-        print dates, a, b, period
-    while dates[-1] < b:
-        dates += [ add_days(dates[-1], period) ]
-    if debug:
-        print dates[0], dates[-1]
-    return dates

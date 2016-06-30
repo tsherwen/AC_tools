@@ -4506,3 +4506,13 @@ def np2chronological_fromctm( ctms, arr, debug=False ):
 
     return np.concatenate( [arr[...,i][...,None] for i in ind ], axis =3)
 
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# ---------------- Section X -------------------------------------------
+# -------------- Redundant Functions
+# --------------------------------------------------------------------------
+# 
+# NOTE(s): 
+# (1) These are retained even though they are redundant for back compatibility
+# (2) It is not advised to use these. 
