@@ -1360,20 +1360,20 @@ def diagnosticname_gamap2iris( x  ):
 def get_unit_scaling( units, scaleby=1 ):
     """ Get scaling for a given unit string 
     """
-        misc = 'K', 'm/s', 'unitless', 'kg' ,'m', 'm2','kg/m2/s', \
+    misc = 'K', 'm/s', 'unitless', 'kg' ,'m', 'm2','kg/m2/s', \
             'molec/cm2/s', 'mol/cm3/s',  'kg/s', 'hPa', 'atoms C/cm2/s' \
             'kg S', 'mb', 'atoms C/cm2/s', 'molec/cm3', 'v/v', 'cm/s', 's-1', \
             'molec/m3'
 
-        if any( [ (units ==  i) for i in 'pptv', 'pptC' ]):
-            scaleby = 1E12
-        elif any( [ (units ==  i) for i in 'ppbv', 'ppbC' ]):
-            scaleby = 1E9
-        elif any( [units ==i for i in misc ] ):
-            scaleby = 1
-        else:
-            print 'WARNING: This unit is not in unit lists: ', units
-        return scaleby
+    if any( [ (units ==  i) for i in 'pptv', 'pptC' ]):
+        scaleby = 1E12
+    elif any( [ (units ==  i) for i in 'ppbv', 'ppbC' ]):
+        scaleby = 1E9
+    elif any( [units ==i for i in misc ] ):
+        scaleby = 1
+    else:
+        print 'WARNING: This unit is not in unit lists: ', units
+    return scaleby
 
 # --------   
 # 4.16 - Species class for GEOS-Chem - Credit: Ben Newsome 
@@ -1635,7 +1635,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             l = l[:2]+ ['Br_het-Cl(v9.2)']+l[2:]  
 
     # Mannually override run names
-#    override=True
+    override=True
     if override:
         # --- Version  2.0/1.7 runs
 #        r = [ 
@@ -1662,10 +1662,15 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             'iGEOSChem_3.0_v10/run.PI_PD_STRAT.25',
             'iGEOSChem_3.0_v10/run.PI_PD_STRAT.5',
             'iGEOSChem_3.0_v10/run.PD_trop.PI_strat', 
-             'iGEOSChem_3.0_v10/run.PI.no_org_hal', 
-             'iGEOSChem_3.0_v10/run.no_org_hal', 
-             'iGEOSChem_3.0_v10/run',
-             'iGEOSChem_3.0_v10/run.PI']            
+            'iGEOSChem_3.0_v10/run.PI.no_org_hal', 
+            'iGEOSChem_3.0_v10/run.no_org_hal', 
+            'iGEOSChem_3.0_v10/run.no_HOI_I2', 
+            'iGEOSChem_3.0_v10/run.no_org_hal.no_HOI_I2',
+            'iGEOSChem_3.0_v10/run.PD_TROP_PI_STRAT.no_HOI_I2', 
+            'iGEOSChem_3.0_v10/run.PI.no_HOI_I2', 
+            'iGEOSChem_3.0_v10/run',
+            'iGEOSChem_3.0_v10/run.PI'
+            ]            
 
         l = [ 
             'NOHAL', 
@@ -1685,8 +1690,13 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             'PD trop, PI strat',
             'no org hal (PI)',
             'no org hal',
+            'Cl+Br+I- no I2/HOI', 
+            'no org hal - no I2/HOI', 
+            'PI w PD STRAT - no I2/HOI', 
+            'Cl+Br+I(PI) - no I2/HOI', 
             'Cl+Br+I', 
-            'Cl+Br+I(PI)' ]
+            'Cl+Br+I(PI)' 
+            ]
 
         # Just run and run.PI
 #        l =l[-2:]
