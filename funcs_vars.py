@@ -1460,8 +1460,8 @@ def get_ctm_nc_var( variable ):
         from *.dat file has failed. This function returns a category name + a 
         number value to refer to diagnostic ording in NetCDF.    
     NOTES:
-        (1) this is only called as a back up, and should only be used for test 
-        ouput
+        (1) This is only called as a back up, and should only be used for test 
+        ouput and not for production runs
 
     """
     d = {
@@ -1494,6 +1494,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
 
         Note: 
             (1) To set directories mannually here, set override=True 
+            (2) UPDATED NEEDED: move this to "induvidual setup" object function
     """
 
     if debug:
@@ -1635,7 +1636,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             l = l[:2]+ ['Br_het-Cl(v9.2)']+l[2:]  
 
     # Mannually override run names
-    override=True
+#    override=True
     if override:
         # --- Version  2.0/1.7 runs
 #        r = [ 
