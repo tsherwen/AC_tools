@@ -3167,12 +3167,13 @@ def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None, \
             ctm_f=False, trop_limit=True, all_data=False, annual_mean=True, \
             debug=False ):
     """ Get O3 burden in CTM output 
-        REDUNDENT? - this functionality is replicated in the get_burden function 
     NOTES:
         - all_data and annual_mean give the same result
-
+        -  REDUNDENT? - this functionality is replicated in the get_burden 
+        function, but it is still in use for automated output stat procsssing... 
+        therefore retain for back compatibility 
     """
-
+    # extract arrays not provided from wd
     if not isinstance(a_m, np.ndarray):
         print 'Getting a_m in get_O3_burden'
         if pygchem.__version__ == '0.2.0':

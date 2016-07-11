@@ -263,9 +263,8 @@ def hPa_to_Km(input, reverse=False, debug=False):
 # --------   
 # 1.07 - Find nearest
 # --------
-def find_nearest(array,value):
-    """
-        Find nearest point. Adapted from HappyLeapSecond's 
+def find_nearest( array, value ):
+    """ Find nearest point. Adapted from HappyLeapSecond's 
         Stackoverflow answer.  http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
     """
     idx = (np.abs(array-value)).argmin()
