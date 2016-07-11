@@ -1360,20 +1360,20 @@ def diagnosticname_gamap2iris( x  ):
 def get_unit_scaling( units, scaleby=1 ):
     """ Get scaling for a given unit string 
     """
-        misc = 'K', 'm/s', 'unitless', 'kg' ,'m', 'm2','kg/m2/s', \
+    misc = 'K', 'm/s', 'unitless', 'kg' ,'m', 'm2','kg/m2/s', \
             'molec/cm2/s', 'mol/cm3/s',  'kg/s', 'hPa', 'atoms C/cm2/s' \
             'kg S', 'mb', 'atoms C/cm2/s', 'molec/cm3', 'v/v', 'cm/s', 's-1', \
             'molec/m3'
 
-        if any( [ (units ==  i) for i in 'pptv', 'pptC' ]):
-            scaleby = 1E12
-        elif any( [ (units ==  i) for i in 'ppbv', 'ppbC' ]):
-            scaleby = 1E9
-        elif any( [units ==i for i in misc ] ):
-            scaleby = 1
-        else:
-            print 'WARNING: This unit is not in unit lists: ', units
-        return scaleby
+    if any( [ (units ==  i) for i in 'pptv', 'pptC' ]):
+        scaleby = 1E12
+    elif any( [ (units ==  i) for i in 'ppbv', 'ppbC' ]):
+        scaleby = 1E9
+    elif any( [units ==i for i in misc ] ):
+        scaleby = 1
+    else:
+        print 'WARNING: This unit is not in unit lists: ', units
+    return scaleby
 
 # --------   
 # 4.16 - Species class for GEOS-Chem - Credit: Ben Newsome 
@@ -1460,8 +1460,8 @@ def get_ctm_nc_var( variable ):
         from *.dat file has failed. This function returns a category name + a 
         number value to refer to diagnostic ording in NetCDF.    
     NOTES:
-        (1) this is only called as a back up, and should only be used for test 
-        ouput
+        (1) This is only called as a back up, and should only be used for test 
+        ouput and not for production runs
 
     """
     d = {
@@ -1494,6 +1494,7 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
 
         Note: 
             (1) To set directories mannually here, set override=True 
+            (2) UPDATED NEEDED: move this to "induvidual setup" object function
     """
 
     if debug:
@@ -1662,10 +1663,15 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             'iGEOSChem_3.0_v10/run.PI_PD_STRAT.25',
             'iGEOSChem_3.0_v10/run.PI_PD_STRAT.5',
             'iGEOSChem_3.0_v10/run.PD_trop.PI_strat', 
-             'iGEOSChem_3.0_v10/run.PI.no_org_hal', 
-             'iGEOSChem_3.0_v10/run.no_org_hal', 
-             'iGEOSChem_3.0_v10/run',
-             'iGEOSChem_3.0_v10/run.PI']            
+            'iGEOSChem_3.0_v10/run.PI.no_org_hal', 
+            'iGEOSChem_3.0_v10/run.no_org_hal', 
+            'iGEOSChem_3.0_v10/run.no_HOI_I2', 
+            'iGEOSChem_3.0_v10/run.no_org_hal.no_HOI_I2',
+            'iGEOSChem_3.0_v10/run.PD_TROP_PI_STRAT.no_HOI_I2', 
+            'iGEOSChem_3.0_v10/run.PI.no_HOI_I2', 
+            'iGEOSChem_3.0_v10/run',
+            'iGEOSChem_3.0_v10/run.PI'
+            ]            
 
         l = [ 
             'NOHAL', 
@@ -1685,8 +1691,13 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             'PD trop, PI strat',
             'no org hal (PI)',
             'no org hal',
+            'Cl+Br+I- no I2/HOI', 
+            'no org hal - no I2/HOI', 
+            'PI w PD STRAT - no I2/HOI', 
+            'Cl+Br+I(PI) - no I2/HOI', 
             'Cl+Br+I', 
-            'Cl+Br+I(PI)' ]
+            'Cl+Br+I(PI)' 
+            ]
 
         # Just run and run.PI
 #        l =l[-2:]
@@ -2673,6 +2684,10 @@ def get_obs_loc(loc, debug=False):
     [ 13.3833 , 7.0998, 10.0014, 8.3075, 10.7872, 11.5667, 13.133, 7.302, \
      7.8894] ],   
     'Weyborne' :[  [ 52.9420],  [1.1380 ]   ]    }
+    'Penlee' :[  [ 50.3214],  [-4.1858 ]   ]    }
+    'Leicester' :[  [ 52.619823],  [-1.127311 ]   ]    }
+
+
     return d[loc] 
     
 # --------------
