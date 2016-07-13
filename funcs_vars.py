@@ -1140,7 +1140,7 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, \
     'MO2': 'pptv', 'NOy':'ppbv','EOH': 'ppbv' , 'CO':'ppbv', 'CH4':'ppbv', \
     'TSKIN':'K', 'GMAO_TEMP': 'K', 'GMAO_VWND' :'m/s',\
     'GMAO_UWND': 'm/s', 'RO2': 'pptv', 'U10M':'m/s','V10M': 'm/s' ,\
-     'PRESS': 'hPa', 'CH2OO':'pptv', 'Bry':'ppbv',
+     'PRESS': 'hPa', 'CH2OO':'pptv', 'Bry':'ppbv', 'NOx': 'ppbv', 
     # Extra ClearFlo compounds
     u'acetylene': 'pptv', u'propene': 'pptv', u'Napthalene': 'pptv', \
     u'Styrene': 'pptv', u'1,3-butadiene': 'pptv', u'1,2-butadiene': 'pptv', \
@@ -2687,6 +2687,9 @@ def get_obs_loc(loc, debug=False):
     'Penlee' :[  [ 50.3214],  [-4.1858 ]   ] ,
     'Penlee_M2' :[  [ 49.7795272],  [-2.0229414 ]   ] ,
     'Penlee_M3' :[  [ 49.8370764,],  [-5.3652425 ]   ] ,
+    'Penlee_M4' :[  [ 50.25],  [-4.15 ]   ] ,
+    'Penlee_M5' :[  [ 50.25],  [-0.85  ]   ] ,
+    'Penlee_M6' :[  [ 50.25],  [-7.05 ]   ] ,
     'Mace_head_M3' :[  [ 53.209003], [  -10.846408 ]   ] ,
     'Leicester' :[  [ 52.619823],  [-1.127311 ]   ]    }
 

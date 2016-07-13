@@ -204,7 +204,7 @@ def add_hrs(sourcedate,hrs_, debug=False):
 # -------------
 # 1.09 - Incremental increase datetime by given minutes
 # -------------
-def add_minutes(sourcedate,min_, debug=False):
+def add_minutes( sourcedate, min_, debug=False ):
     """ Incremental increase of datetime by given minutes 
     """ 
     sourcedate += datetime.timedelta(minutes=min_)
@@ -213,7 +213,7 @@ def add_minutes(sourcedate,min_, debug=False):
 # -------------
 # 1.10 - Incremental increase datetime by given seconds
 # -------------
-def add_secs(sourcedate,secs_, debug=False):
+def add_secs( sourcedate, secs_, debug=False ):
     """ Incremental increase of datetime by given seconds 
     """ 
     sourcedate += datetime.timedelta(seconds=secs_)

@@ -2531,11 +2531,14 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 
     # if title != None, add to plot
     if not isinstance( title, type(None) ):
-#        plt.title( title, fontsize=f_size, y=title_y )
-#        plt.text(0.5, title_y, title, fontsize=f_size )
-        ax.annotate( title , xy=(title_x, title_y), \
-            textcoords='axes fraction', fontsize=f_size)
 
+        try:
+            ax.annotate( title , xy=(title_x, title_y), \
+                textcoords='axes fraction', fontsize=f_size)
+        except:
+            print 'WARNING! - using plt, not axis, for annotation of title'
+            plt.title( title, fontsize=f_size, y=title_y )
+#            plt.text(0.5, title_y, title, fontsize=f_size )        
 
     # Manually Add colorbar
     print '1'*300, orientation
