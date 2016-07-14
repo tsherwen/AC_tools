@@ -139,7 +139,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             extend='neither', degrade_resolution=False, discrete_cmap=False, \
             lon_0=None, lon_1=None, lat_0=None, lat_1=None, norm=None,\
             sigfig_rounding_on_cb=2, fixcb_buffered=None, ylabel=True, \
-            verbose=True, debug=False, **Kwargs):
+            xlabel=True, verbose=True, debug=False, **Kwargs):
     """ Plots Global/regional 2D (lon, lat) slices. Takes a numpy array and the 
         resolution of the output. The plot extent is then set by this output.
 
@@ -155,8 +155,10 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
 
         - colorbar settings
             extend ( 'both', 'min', 'both' ... )
-            shrink ( size of colorbar )    """
+            shrink ( size of colorbar )    
+    """
     if debug:
+        print 'map_plot called'
         print [ [ i.min(), i.max(), i.mean(), type(i) ] for i in [arr] ]
 
     # Kludge, mask for pcent arrays containing invalids ( to allow PDF save)
@@ -205,7 +207,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     # ---- Setup map ("m") using Basemap
     m = get_basemap( lat=lat, lon=lon, resolution=resolution, res=res, \
                 everyother=everyother, interval=interval, f_size=f_size, \
-                ylabel=ylabel, drawcountries=drawcountries )
+                ylabel=ylabel, xlabel=xlabel, drawcountries=drawcountries )
 
     # Process data to grid
     x, y = np.meshgrid( *m(lon, lat) )
@@ -397,7 +399,8 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
         Input resolution must be provide for non-default (4x5) output         
         This function will also apply maskes if set in arguments """
     if verbose:
-        print 'zonal plot called for arr of shape: ', arr.shape, set_window, xlabel
+        print 'zonal plot called for arr of shape: ', arr.shape, set_window, \
+            xlabel
     
     # Kludge, for pcent arrays with invalid within them, mask for these. 
     if mask_invalids:
@@ -612,6 +615,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
         ax.set_xlim( lat[0], lat[-1] ) 
     if not isinstance( xlimit, type(None) ):
         ax.set_xlim(xlimit[0], xlimit[1])
+    print '!'*50, xlabel, ylabel
     if xlabel: 
         ax.set_xlabel('Latitude', fontsize=f_size*.75)
     else:
@@ -2799,7 +2803,7 @@ def timeseries_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
 # 1.36 - Get monthly surface plots for (4D) array 
 # --------
 def plt_4Darray_surface_by_month( arr, res='4x5', dpi=160, \
-        no_dstr=True, f_size=10, dlist=None, fixcb=None, \
+        no_dstr=True, f_size=10, dlist=None, fixcb=None, format=None, \
         savetitle='', extend='neither',  wd=None, ax=None, fig=None, \
         sigfig_rounding_on_cb=3, nticks=7, discrete_cmap=False, \
         units=None, set_window=False, lat_0=None, lat_1=None, \
@@ -2809,7 +2813,8 @@ def plt_4Darray_surface_by_month( arr, res='4x5', dpi=160, \
     """ Create a window plot of surface amp plots from a 4D array
      """
     # Setup local variables + figure
-    left=0.025; right=0.9; bottom=0.05; top=0.9; hspace=0.315; wspace=0.05
+#    left=0.015; right=0.9; bottom=0.05; top=0.95; hspace=0.225; wspace=-0.01
+    left=0.015; right=0.87; bottom=0.05; top=0.95; hspace=0.225; wspace=-0.01
     fig  = plt.figure(figsize=(14, 10), dpi=dpi, facecolor='w', edgecolor='k')
 
     # Get datetime
@@ -2845,33 +2850,46 @@ def plt_4Darray_surface_by_month( arr, res='4x5', dpi=160, \
     for m, month in enumerate(dlist):
 
         # add axis
-        ax = fig.add_subplot(4,3,m+1)
+        axn = [4,3,m+1]
+        ax = fig.add_subplot( *axn )
 
         print arr[...,m].mean(axis=0).shape, arr.shape
+
+        # Only show x/y axis on edge plots 
+        ylabel=False
+        xlabel=False
+        num_cols=3
+        num_rows=4
+        if (m in range( len(dlist) )[-num_cols:] ):
+            xlabel=True
+        if any( [axn[-1]==i for i in range(1, len(dlist)+1)[::num_cols] ]) :
+            ylabel=True
 
         # Plot up
         map_plot( arr[...,0,m].T, format=format, cmap=cmap, ax=ax, \
                     fixcb=fixcb, return_m=return_m, log=log, window=window, \
                     no_cb=True, norm=norm, f_size=f_size*.75,  res=res, \
                     fixcb_buffered=fixcb_buffered, interval=interval,\
-                    ylabel=ylabel, verbose=verbose, debug=debug )
+                    ylabel=ylabel, xlabel=xlabel, verbose=verbose, debug=debug )
 
         # add month
-        plt.title(month.strftime("%b"), fontsize=f_size*2)
+        plt.title(month.strftime("%b"), fontsize=f_size*1.5)
 
     # Add single colorbar
-    mk_cb(fig, units=units, left=0.9, cmap=cmap, vmin=fixcb[0], \
+#    mk_cb(fig, units=units, left=0.9, cmap=cmap, vmin=fixcb[0], format=format,\
+    mk_cb(fig, units=units, left=0.87, cmap=cmap, vmin=fixcb[0], format=format,\
         vmax=fixcb[1], nticks=nticks, f_size=f_size, extend=extend ) 
 
     print nticks, fixcb, lvls
 
 
-    # sort out ascetics -  adjust plots and add title
-    fig.subplots_adjust( bottom=bottom, top=top, left=left, \
-        right=right,hspace=hspace, wspace=wspace)
+    # Sort out ascetics -  adjust plots and add title
     if fig_title:
         fig.suptitle(  '{}'.format( latex_spec_name(spec) ), fontsize=f_size*2, 
             x=.55 , y=.95  )
+        top = 0.9  # allow space for figure title
+    fig.subplots_adjust( bottom=bottom, top=top, left=left, \
+        right=right, hspace=hspace, wspace=wspace)
 
     #  save as pdf ?
     if pdf:
@@ -3000,7 +3018,6 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
         - X must be a list of numpy arrays 
         - Y must be a numpy array
     """
-    debug=True
 
     if debug:
         print 'X_stackplot called, with X[0] shape {}'.format( X[0].shape )
@@ -3679,7 +3696,7 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
 # --------
 def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
             everyother=1, f_size=10, interval=1, axis_titles=False, \
-            show_grid=True, drawcountries=False, ylabel=True ):
+            show_grid=True, drawcountries=False, ylabel=True, xlabel=True ):
     """ Creates a basemap object. 
 
         This should be used for first slide in python animated 
@@ -3718,6 +3735,9 @@ def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
     if not ylabel:
         ax_tmp = ax_tmp = plt.gca()
         ax_tmp.tick_params( axis='y', which='both', labelleft='off')
+    if not xlabel:
+        ax_tmp = ax_tmp = plt.gca()
+        ax_tmp.tick_params( axis='x', which='both', labelbottom='off')
 
     return m
  
