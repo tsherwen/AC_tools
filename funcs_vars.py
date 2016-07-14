@@ -3193,12 +3193,12 @@ def latex_spec_name(input_x, debug=False):
     # Adjusted names
     'ALD2':'Acetaldehyde', 
     # Analysis names 
-    'iodine_all':'All Iodine', 'Iy': u'I$_{y}$',\
-    'IOy': u'IO$_{y}$', \
+    'iodine_all':'All Iodine', 'Iy': u'I$_{\\rm y}$',\
+    'IOy': u'IO$_{\\rm y}$', \
     'IyOx': u'I$_{y}$O$_{x}$', 
-    'IOx': 'uIO$_{x}$', \
+    'IOx': u'IO$_{\\rm x}$', \
     'iodine_all_A':'All Iodine (Inc. AERI)',  \
-    'I2Ox': u'I$_{2}$O$_{X}$' , 'AERI/SO4': 'AERI/SO4', \
+    'I2Ox': u'I$_{2}$O$_{\\rm X$' , 'AERI/SO4': 'AERI/SO4', \
     'EOH':'Ethanol','OH reactivity / s-1': u'OH reactivity / s$^{-1}$', \
     'PSURF': 'Pressure at the bottom of level', \
     'GMAO_TEMP' : 'Temperature', 'TSKIN' : 'Temperature at 2m', \
@@ -3206,11 +3206,11 @@ def latex_spec_name(input_x, debug=False):
     'U10M':'10m Meridional Wind', 'V10M': '10m Zonal Wind', \
     'CH2OO':'CH$_{2}$OO', 'Sulfate': 'Sulfate', 'VOCs': 'VOCs', \
     # Family Names
-    'N_specs':u'NO$_{y}$', 'NOy':u'NO$_{y}$', 
-     'Bry':u'Br$_{y}$', 'Cly':u'Cl$_{y}$',  \
-    'N_specs_no_I': u'NO$_{y}$ exc. iodine', 
-    'NOx':u'NO$_{X}$', 'HOx':u'HO$_{X}$',\
-    'SOx':u'SO$_{X}$', \
+    'N_specs':u'NO$_{\\rm y}$', 'NOy':u'NO$_{\\rm y}$', 
+     'Bry':u'Br$_{\\rm y}$', 'Cly':u'Cl$_{\\rm y}$',  \
+    'N_specs_no_I': u'NO$_{\\rm y}$ exc. iodine', 
+    'NOx':u'NO$_{\\rm x}$', 'HOx':u'HO$_{\\rm x}$',\
+    'SOx':u'SO$_{\\rm x}$', \
     # typos
     'CH2BR2':'CH$_{2}$Br$_{2}$',\
     # Cly names

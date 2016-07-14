@@ -615,7 +615,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
         ax.set_xlim( lat[0], lat[-1] ) 
     if not isinstance( xlimit, type(None) ):
         ax.set_xlim(xlimit[0], xlimit[1])
-    print '!'*50, xlabel, ylabel
+
     if xlabel: 
         ax.set_xlabel('Latitude', fontsize=f_size*.75)
     else:
