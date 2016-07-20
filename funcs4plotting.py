@@ -2503,13 +2503,13 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
             print 'WARNING: Code (to create levels for log colorbar)'+\
                 'below needs checking'
             # Get logarithmically spaced integers
-#            lvls = np.logspace( np.log10(fixcb[0]), np.log10(fixcb[1]), \
-#                                                 num=nticks)
+            lvls = np.logspace( np.log10(fixcb[0]), np.log10(fixcb[1]), \
+                                                 num=nticks)
             # Normalise to Log space
 #            norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
-#            if isinstance( norm, type(None) ):
-#                norm=mpl.colors.LogNorm(vmin=fixcb[0], vmax=fixcb[1])
-            sys.exit()
+            if isinstance( norm, type(None) ):
+                norm=mpl.colors.LogNorm( vmin=fixcb[0], vmax=fixcb[1] )
+
         else: 
             # Assume numbers provided as fixcb +nticks will allow for creation 
             # of human readable levels. 
@@ -3672,10 +3672,11 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     if log:    
         round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
 
-        cb.set_ticks( [ float('{:.2g}'.format( t )) for t in lvls ],  \
-            fontsize=f_size )
+        cb.set_ticks( [ float('{:.2g}'.format( t )) for t in lvls ] )
+#        ,  \ fontsize=f_size )
         labels = [ round_to_n( i, sigfig_rounding_on_cb) for i in lvls ]
-        cb.set_ticklabels( [ format % i for i in labels], fontsize=f_size )
+        cb.set_ticklabels( [ format % i for i in labels] )
+#        , fontsize=f_size )
     
     # Set cb label sizes
     if units != None:
