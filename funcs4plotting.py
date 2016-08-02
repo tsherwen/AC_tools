@@ -139,7 +139,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             extend='neither', degrade_resolution=False, discrete_cmap=False, \
             lon_0=None, lon_1=None, lat_0=None, lat_1=None, norm=None,\
             sigfig_rounding_on_cb=2, fixcb_buffered=None, ylabel=True, \
-            xlabel=True, verbose=True, debug=False, **Kwargs):
+            xlabel=True, wd=None, verbose=True, debug=False, **Kwargs):
     """ Plots Global/regional 2D (lon, lat) slices. Takes a numpy array and the 
         resolution of the output. The plot extent is then set by this output.
 
@@ -157,6 +157,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             extend ( 'both', 'min', 'both' ... )
             shrink ( size of colorbar )    
     """
+    deubg=True
     if debug:
         print 'map_plot called'
         print [ [ i.min(), i.max(), i.mean(), type(i) ] for i in [arr] ]
@@ -182,7 +183,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             
     if debug:
         print '>'*5, [ [ i.min(), i.max(), i.mean(), type(i) ] for i in [arr] ]
-    lon, lat, NIU = get_latlonalt4res( res, centre=centre )
+    lon, lat, NIU = get_latlonalt4res( res, centre=centre, wd=wd )
 
     if set_window:
         # Convert lats and lons to GC lats and restrict lats, lons, and arr
@@ -1291,20 +1292,24 @@ def north_pole_surface_plot( arr, return_m=False, grid=True, centre=False, \
     # -------- colorbar variables...
     # set cb label sizes
     if not no_cb:
-        if fixcb:
+#        if fixcb:
+        if not isinstance( fixcb, type(None) ):
             tickmin, tickmax = fixcb[0], fixcb[1]
         else:
             tickmin, tickmax  = arr.min(), arr.max()
 
     # -----------------------  Linear plots -------------------------------
 #    plt.contourf( x, y, arr[:,get_gc_lat(boundinglat,res=res):].T, alpha=alpha)
-    if fixcb:
-        poly = m.pcolor( x, y, arr[:,get_gc_lat(boundinglat, \
-            res=res):].T, cmap=cmap, alpha=alpha,  vmin=fixcb[0], \
-            vmax=fixcb[1] )
+#    if fixcb:
+    polar_arr = arr[:,get_gc_lat(boundinglat, res=res):].T
+    if debug:
+        print [ (i.min(), i.max(), i.mean()) for i in [polar_arr]  ]
+    if not isinstance( fixcb, type(None) ):
+        poly = m.pcolor( x, y, polar_arr, cmap=cmap, alpha=alpha,  \
+            vmin=fixcb[0], vmax=fixcb[1] )
     else:
-        poly = m.pcolor( x, y, arr[:,get_gc_lat(boundinglat, \
-            res=res):].T, cmap=cmap, alpha=alpha )
+        poly = m.pcolor( x, y, polar_arr, cmap=cmap, alpha=alpha )
+
 
     # --------------  Log plots ---------------------------------------------
 
@@ -1393,20 +1398,23 @@ def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False,
 
     # -------- colorbar variables...
     # set cb label sizes
-    if fixcb:
+#    if fixcb:
+    if not isinstance( fixcb, type(None) ):
         tickmin, tickmax = fixcb[0], fixcb[1]
     else:
         tickmin, tickmax  = arr.min(), arr.max()
 
     # --------------------  Linear plots -------------------------------
 #    plt.contourf( x, y, arr[:,get_gc_lat(boundinglat,res=res):].T, alpha=alpha)
-    if fixcb:
-        poly = m.pcolor( x, y, arr[:,:get_gc_lat(boundinglat, \
-            res=res)+2].T, cmap=cmap, alpha=alpha, vmin=fixcb[0],\
-             vmax=fixcb[1] )
+#    if fixcb:
+    polar_arr = arr[:,:get_gc_lat(boundinglat, res=res)+2].T
+    if debug:
+        print [ (i.min(), i.max(), i.mean()) for i in [polar_arr]  ]    
+    if not isinstance( fixcb, type(None) ):
+        poly = m.pcolor( x, y, polar_arr, cmap=cmap, alpha=alpha, \
+            vmin=fixcb[0], vmax=fixcb[1] )
     else:
-        poly = m.pcolor( x, y, arr[:,:get_gc_lat(boundinglat, 
-            res=res)+2].T, cmap=cmap, alpha=alpha )
+        poly = m.pcolor( x, y, polar_arr, cmap=cmap, alpha=alpha )
 
     # -----------  Log plots ---------------------------------------------
 
@@ -2469,8 +2477,11 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, title=None, \
     window=False, interval=1, ylabel=True, cb='CMRmap_r', width=0.015,\
     orientation='vertical', rotatecbunits='vertical', title_y=1, title_x=0.5, \
-    no_cb=True, return_m=False, log=False, verbose=False, debug=False ):
-    """
+    no_cb=True, return_m=False, log=False, wd=None, resolution='c', \
+    lat_min = None, lat_max=None, lon_min=None, lon_max=None, \
+    xlabel=True, limit_window=False,  verbose=False, debug=False ):
+    """ Creates a "standard" spatial plot with acceptable ascethics. Customise 
+    with a range of arguements provide during the call to function. 
 
     NOTES:
         Provide an 3D array of lon, lat, and alt
@@ -2529,9 +2540,10 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     # Plot up
     plt_vars = map_plot( arr[...,0].T, format=format, cmap=cmap, ax=ax, \
                     fixcb=fixcb, return_m=return_m, log=log, window=window, \
-                    no_cb=True, norm=norm, f_size=f_size*.75,  res=res, \
+                    no_cb=True, norm=norm, f_size=f_size*.75,  res=res, wd=wd, \
                     fixcb_buffered=fixcb_buffered, interval=interval,\
-                    ylabel=ylabel, verbose=verbose, debug=debug )
+                    resolution=resolution, \
+                    xlabel=xlabel, ylabel=ylabel, verbose=verbose, debug=debug )
 
     # if title != None, add to plot
     if not isinstance( title, type(None) ):
@@ -2543,6 +2555,13 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
             print 'WARNING! - using plt, not axis, for annotation of title'
             plt.title( title, fontsize=f_size, y=title_y )
 #            plt.text(0.5, title_y, title, fontsize=f_size )        
+
+    # limit displayed extent of plot?
+    if limit_window:
+        ax = plt.gca()
+        #  set axis limits
+        ax.set_xlim( lon_min, lon_max )
+        ax.set_ylim( lat_min, lat_max )
 
     # Manually Add colorbar
     print '1'*300, orientation
@@ -3557,7 +3576,7 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     """ Create Colorbar. This allows for avoidance of basemap's issues with 
         spacing definitions when conbining with colorbar objects within a plot 
     """
-    
+
     # Get colormap (by feeding get_colormap array of min and max )
     if isinstance( cmap, type(None) ):
         cmap = get_colormap( arr=np.array( [vmin,vmax]   ) )

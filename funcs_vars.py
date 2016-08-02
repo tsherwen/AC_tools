@@ -1171,7 +1171,7 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, \
     u'n-butane': 'pptv', u'n-pentane': 'pptv', u'Undecane': 'pptv', \
     u'Decane': 'pptv', u'Octane': 'pptv', u'n-octane': 'pptv',\
     # Extra Cly species 
-    'ClNO2': 'ppbv', 
+    'ClNO2': 'pptv', 'ClNO3': 'pptv', 
     # extra tag "species" for  easy of processing 
     'PD421' : 'molec cm$^{-3}$ s$^{-1}$'
     } 
@@ -3214,7 +3214,7 @@ def latex_spec_name(input_x, debug=False):
     'IyOx': u'I$_{y}$O$_{x}$', 
     'IOx': u'IO$_{\\rm x}$', \
     'iodine_all_A':'All Iodine (Inc. AERI)',  \
-    'I2Ox': u'I$_{2}$O$_{\\rm X$' , 'AERI/SO4': 'AERI/SO4', \
+    'I2Ox': u'I$_{2}$O$_{\\rm X}$' , 'AERI/SO4': 'AERI/SO4', \
     'EOH':'Ethanol','OH reactivity / s-1': u'OH reactivity / s$^{-1}$', \
     'PSURF': 'Pressure at the bottom of level', \
     'GMAO_TEMP' : 'Temperature', 'TSKIN' : 'Temperature at 2m', \
