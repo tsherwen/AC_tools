@@ -913,19 +913,27 @@ def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
                   title=None, subtitle=None, legend=False, xrotation=90, \
                   window=False, label=None, ylabel=None, xlabel=True, \
                   title_loc_y=1.09, plt_txt_x=0.5, plt_txt_y=1.05, \
-                  loc='upper right' ):
+                  plot_Q1_Q3=False, low=None, high=None, loc='upper right' ):
     """ Plot up seaonal (monthly ) data. Requires data, and dates in numpy 
         array form. Dates must be as datetime.datetime objects. """
-            
+
+    # setup color list if not provided            
     if color == None:
         color = color_list( posn )[ pos ]
 
+    # if this is a window plot, then reduce text size
     if window:
         f_size=int(f_size/2)
-    # Plot
+
+    # Plot up provide monthly data
     plt.plot( np.arange(1,len(data)+1), data, color=color, lw=lw, ls=ls, \
         label=label )
 
+    # Also add 5th  and  95th %ile
+    if plot_Q1_Q3: # Plot quartiles as shaded area?
+            ax.fill_between( np.arange(1,len(data)+1), low, high, alpha=0.2, \
+                    color=color   )  
+                    
     # Beautify
     ax.set_xticklabels( [i.strftime("%b") \
             for i in [datetime.datetime(2009, int(i), 01)  \
@@ -1183,12 +1191,17 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
             unitrotation=45, color_by_z=False, fig=None,  xlabel=True, \
             positive=None, debug=False ):
     """ Plot up month timeseries of values. Requires data, and dates in numpy 
-        array form. Dates must be as datetime.datetime objects. """
+        array form. Dates must be as datetime.datetime objects. 
+    
+    NOTE(s):
+        - This just plot up timeseries, why is the name 
+        "timeseries_*month*_plot"? Update this.
+    """
 
     # Process data - reduce resolution to daily, and get std
     df = DataFrame( data, index=dates )
 
-    # remove dates outside of range (start_month > < end_month )
+    # remove dates outside of range (start_month > t  < end_month )
     def get_month(x):
         return x.month
     df[ 'month'] = df.index.map( get_month ) 
@@ -1211,9 +1224,7 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         cmap = get_colormap( z.copy(), positive=positive )
         print [ ( i.min(), i.max() ) for i in x, y, z ]
         colorline(x, y, z, cmap=cmap, linewidth=lw, ax=ax, \
-            norm=plt.Normalize( 0, 360 ), fig=fig ) #np.min(z), 1500))
-#        colorline(x, y, linewidth=lw, ax=ax)
-
+            norm=plt.Normalize( 0, 360 ), fig=fig ) 
     else:
         plt.plot( days, df.values, label=label, color=color, ls=ls, lw=lw  )
 
