@@ -4276,23 +4276,8 @@ def convert_molec_cm3_s2_molec_per_yr( ars=None, vol=None ):
     return ars
 
 # --------------
-# 2.45 - Get weighted average of latitude values
+# 2.45 - Get weighted average of latitude values - REDUNENT
 # -------------   
-#def land_area_weight_LAT( ars, s_area ):
-#    """ At different latidudes the land area between E and W extents is not     
-#    constant. At the poles the area 
-#    NOTEs:
-#        - Takes list of arrays. Arrays are assumed to be 3D (lat, ALT, time )
-#    """
-#
-    # Get surface area
-#    if isinstance( s_area, type(None) ):
-#        s_area = get_surface_area( res=res, debug=debug )[:,:,0]
-#    
-    # Time Lat dimension by area, then divide to weight
-#    for arr in ars:
-#        
-#    return ars
 
 # --------------
 # 2.46 - Convert molec/cm3/s to g/s
@@ -4308,6 +4293,9 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
     NOTES:
         - re-write of molec_cm3_s_2_Gg_Ox_np for clarity/split functionaltity
         - units of g/month can also be returned if month_eq=True
+        - All functions that use "get_pl_in_Gg" should be updated to use this
+        - It is most efficency to provide shared variables as arguements if this 
+        function is call more that once by a single driver
     """
     # --- Extract core model variables not provide
     print '1'*100, [ type(i) for i in months, years ]
@@ -4339,12 +4327,13 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
 
     # only consider troposphere ( update this to use mask4troposphere )
     if rm_strat:
-        ars = mask4troposphere( ars,  t_ps=t_ps, \
+        ars = mask4troposphere( ars,  t_ps=t_ps, wd=wd,\
             use_time_in_trop=use_time_in_trop, multiply_method=multiply_method )
 
-    print [ (i.sum(), i.shape) for i in ars ]
-    print [ (i.sum(), i.shape) for i in [ i[...,None] for i in ars ] ]
-    print np.concatenate( [ i[...,None] for i in ars ], axis=-1 ).shape
+    if debug:
+        print [ (i.sum(), i.shape) for i in ars ]
+        print [ (i.sum(), i.shape) for i in [ i[...,None] for i in ars ] ]
+        print np.concatenate( [ i[...,None] for i in ars ], axis=-1 ).shape
     
     if conbine_ars:
         return np.concatenate( [ i[...,None] for i in ars ], axis=-1 ) 

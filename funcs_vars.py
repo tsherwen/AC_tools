@@ -1490,6 +1490,25 @@ def get_ctm_nc_var( variable ):
      }
     return d[ variable ]
 
+# --------   
+# 4.19 - reference spec for family
+# --------
+def get_ref_spec( spec='LIOx' ):
+    """ Store of reference species for families. This is for use in conbination 
+    with functions that calculate relative values (e.g. in units of Ox, I, etc)
+     """
+    d = {
+    'Cly' : 'Cl',
+    'LIOx' :'I',
+    'PIOx' :'I',
+    'PClOx' :'Cl',
+    'LClOx' :'Cl',
+    'PBrOx' :'Br',
+    'LBrOx' :'Br'
+    }
+    return d[spec]
+
+
 # ----------------------- Section 5 -------------------------------------------
 # --------------  Misc
 #
