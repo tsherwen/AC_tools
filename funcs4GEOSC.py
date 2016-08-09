@@ -2381,11 +2381,11 @@ def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
 
     else:
         # [molec/cm3/s] => Gg Ox / yr
-        arrs = [ molec_cm3_s_2_Gg_Ox_np(arr, specs[i], vol=vol, wd=wd, \
-            debug=debug) for i, arr in enumerate(arrs) ] 
+        arrs = [ molec_cm3_s_2_Gg_Ox_np(arr, specs[i], vol=vol, wd=wd, debug=debug)\
+        	 for i, arr in enumerate(arrs) ]
         # get yearly mean + remove stratosphere
-		# NEEDS UPDATE - update troposphere removal method?
-		arrs = [ (arr*t_p).mean(axis=3) for arr in arrs ] 
+        # NEEDS UPDATE - update troposphere removal method?
+        arrs = [ (arr*t_p).mean(axis=3) for arr in arrs ] 
 
         return [ int( np.ma.masked_invalid( arrs[i] ).sum()/1E3)  \
             for i in range(len(specs )) ] # Tg

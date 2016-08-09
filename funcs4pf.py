@@ -200,7 +200,10 @@ def read_TOR_IO_files(filename, debug = False):
 # ----
 def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
             Kludge_fortan_output=False, ver=None, verbose=True, debug=False):
-    """ Read in sites from files in a given working directory """
+    """ Read in sites from files in a given working directory
+    NOTES:
+     - UPDATE NEEDED - the location assignment needs to be more generalised
+    """
     if verbose:
         print wd, spec, location, scale
 
@@ -219,7 +222,7 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
     'HOU', 'BOL', 'LAC', 'HES', 'SCH', 'TEX', 'CAL', 'PAS', 'WEY', \
     'MON'
     ]
-    plane_data = ['TOR', 'BAE', 'GCV', 'CGV' ]
+    plane_data = ['TOR', 'BAE', 'GCV', 'CGV', 'CON' ]
 
     # Pull values for a variable from data arrays and scale
     try:
@@ -227,9 +230,8 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
     except:
         print '>'*30, 'ERROR: failed to find >{}<'.format(spec) + \
             '< in names list ({}), trying planeflight equivilent'. format( \
-            ver ),  '<'*30
-#        print spec, GC_var('GCFP_d2TRA')[spec]
-        print names 
+            ver ), '<'*30, names
+		# Translate species
         spec = what_species_am_i( spec, ver=ver, invert=True ) 
 
         # Get index in list
@@ -270,7 +272,12 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
 # -------------- 
 def readfile_basic(files, location, debug=False, \
             Kludge_fortan_output=False, rm_empty=False):
-    """ basic readfile function for planeflight output in csv"""
+    """ basic readfile function for planeflight output in csv 
+
+    NOTE(s):
+     - This is a "kludge" option, for when the numbering is printed out 
+      as "***" due to incorrect format statements in planeflight_mod.F
+    """
     if debug:
     	print "files: {}, Location: {}".format( files, location )
     for file in files:
@@ -307,7 +314,10 @@ def readfile_basic(files, location, debug=False, \
 # -------------
 def readfile( files, location, years, months, days, plot_all_data=False, 
             debug=False, **kwargs):
-    """ Date specific readfile function for planeflight output in csv"""
+    """ Date specific readfile function for planeflight output in csv
+    NOTES:
+	 - UPDATE NEEDED - The approach be more efficent and readable
+    """
     plot_all_data=False
     print 'readfile called, for {} files, with 1st filename: {}'.format(len(files), files[0])
     big, names = [],[]
