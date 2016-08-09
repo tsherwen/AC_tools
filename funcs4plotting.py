@@ -260,8 +260,6 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     fixcb_ = fixcb_buffered
 
     print fixcb, fixcb_, fixcb_buffered, nticks, lvls
-#    fixcb_ = fixcb
-#    sys.exit()
 
     if verbose:
         print 'colorbar variables: ', fixcb_buffered, fixcb, fixcb_, lvls, \
@@ -278,9 +276,6 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     # --------------  Linear plots -------------------------------
     # standard plot 
     if any( [ (case==i) for i in 3, 9 ] ):
-
-#        debug=True
-#        print fixcb_[0], fixcb_[1]
         if debug:
             print fixcb_, arr.shape, [ len(i) for i in lon, lat ], norm, cmap
         poly = m.pcolor( lon, lat, arr, cmap=cmap, norm=norm, 
@@ -312,9 +307,6 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     if no_cb:
         pass
     else:
-#    do_cb = False
-#    if do_cb:
-#        pass
         if isinstance( cb, type(None) ):
             # if linear plot without fixcb set, then define here
             ax = plt.gca()
@@ -322,7 +314,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         if verbose:
             print shrink, m, m.ax, poly, alpha, format, lvls, norm,  \
                     extend, ax
-#        sys.exit()
+
         # New approach
         cb = plt.colorbar( poly, ax=ax, shrink=shrink, alpha=alpha,  \
                     extend=extend )
@@ -1189,7 +1181,7 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
             lw=1,ls='-', color=None, start_month=7, end_month=7, \
             boxplot=True, showmeans=False, alt_text=None, r_plt=False, \
             unitrotation=45, color_by_z=False, fig=None,  xlabel=True, \
-            positive=None, debug=False ):
+            second_title='', positive=None, debug=False ):
     """ Plot up month timeseries of values. Requires data, and dates in numpy 
         array form. Dates must be as datetime.datetime objects. 
     
@@ -1236,8 +1228,8 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
 
     # Beatify plot
     if not isinstance( title, type(None) ):
-        plt.title( title + ' for {}-{}'.format( num2month(start_month),\
-            num2month(end_month))  )
+        plt.title( title + ' for {}-{} {}'.format( num2month(start_month),\
+            num2month(end_month), second_title  ) )
     if not isinstance( alt_text, type(None) ):
         plt.figtext(x=0.05,y=0.85, s=alt_text, fontsize=f_size*.75 )
     if not isinstance( ylabel, type(None) ):
@@ -2520,6 +2512,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         lvls = get_human_readable_gradations( vmax=fixcb[1],  \
             vmin=fixcb[0], nticks=nticks, 
             sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
+
     else:
         if log:
             print 'WARNING: Code (to create levels for log colorbar)'+\
@@ -2547,7 +2540,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 
     if debug:
         print  [ (i.min(), i.max(), i.mean()) for i in [ arr[...,0] ] ]
-
+    
     # Plot up
     plt_vars = map_plot( arr[...,0].T, format=format, cmap=cmap, ax=ax, \
                     fixcb=fixcb, return_m=return_m, log=log, window=window, \
@@ -2608,7 +2601,7 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
     discrete_cmap=False, f_size=15, fig=None, res='4x5', wd=None, t_ps=None, \
     trop_limit=True, axn=None, cb_ax=None, orientation='vertical', \
     rotatecbunits='vertical', width=0.015, height=0.6, \
-    bottom=0.1, top=0.975, hspace=0.4, wspace=0.5, left=0.075, right=0.875, \
+    bottom=0.1, top=0.925, hspace=0.4, wspace=0.5, left=0.075, right=0.875, \
     cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160, no_cb=True, \
     region='All', lat_0=None, lat_1=None, pdftitle=None, return_m=False, \
     rtn_plt_vars=False, set_window=False, pdf=False, show=True, log=False, \
@@ -3587,6 +3580,8 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     """ Create Colorbar. This allows for avoidance of basemap's issues with 
         spacing definitions when conbining with colorbar objects within a plot 
     """
+    if debug:
+        print 'mk_cb called with: ', norm, vmin, vmax, log, lvls
 
     # Get colormap (by feeding get_colormap array of min and max )
     if isinstance( cmap, type(None) ):
@@ -3613,6 +3608,7 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
         else:
             # Normalise to linear space
             norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+
     if verbose:
         print lvls, vmin, vmax, norm
 
@@ -3688,12 +3684,10 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
                 orientation=orientation, ticklocation=ticklocation)
 
     # Standard approach below
-#        if (extend == 'neither') or (log==True):
     else:
         if verbose:
             print lvls, norm, boundaries, extend, orientation, ticklocation, \
                     cb_ax
-#        cb = mpl.colorbar.ColorbarBase(cb_ax )
         cb = mpl.colorbar.ColorbarBase(cb_ax, cmap=cmap, format=format,\
                 norm=norm, ticks=lvls, extend=extend, \
                 orientation=orientation, ticklocation=ticklocation)
@@ -3701,15 +3695,12 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
 
     if log:    
         round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
-
         cb.set_ticks( [ float('{:.2g}'.format( t )) for t in lvls ] )
-#        ,  \ fontsize=f_size )
         labels = [ round_to_n( i, sigfig_rounding_on_cb) for i in lvls ]
         cb.set_ticklabels( [ format % i for i in labels] )
-#        , fontsize=f_size )
     
     # Set cb label sizes
-    if units != None:
+    if not isinstance( units, type(None) ):
         for t in cb.ax.get_yticklabels():
             t.set_fontsize(f_size)
         if rotatecbunits == 'vertical':
@@ -3717,7 +3708,7 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
                 fontsize=f_size)                      
         else:
             cb.set_label( units, fontsize=f_size )
-    # set tick sizes regardless whether units (labels are provided) 
+    # set tick sizes regardless whether units (labels) are provided
     cb.ax.tick_params( labelsize=f_size ) #, size=f_size )  
 
     return cb_ax
@@ -4051,7 +4042,12 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
             sigfig_rounding_on_cb_ticks=2, \
             sigfig_rounding_on_cb_lvls=2, rtn_lvls_diff=False, \
             verbose=True, debug=False ):
-
+    """ Get human readible gradations for ploting ( e.g. colorbars etc ). 
+    """
+    debug=True
+    if debug:
+        print 'get_human_readable_gradations called: ', vmin, vmax, lvls
+    
     if isinstance( lvls, type(None) ):
         lvls = np.linspace( vmin, vmax, nticks, endpoint=True )
 
@@ -4066,32 +4062,36 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     except np.ma.core.MaskError:
         print 'Gotcha: numpy.ma.core.MaskError'
         print lvls, vmin, vmax
-        
-    
+            
     # significant figure ( sig. fig. ) rounding func.
     round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
-    
+
     # --- Get current gradations
     if debug:
-        print abs(lvls[-2])-abs(lvls[-3]), abs(lvls[-3])-abs(lvls[-2]), lvls,\
+        print abs(lvls[-4])-abs(lvls[-3]), abs(lvls[-4])-abs(lvls[-3]), lvls,\
                      sigfig_rounding_on_cb
     try:
-        lvls_diff = round_to_n( abs(lvls[-2])-abs(lvls[-3]), \
-                                sigfig_rounding_on_cb_ticks)
-
+        lvls_diff =[ round_to_n( abs( i-l[n+1] ), sigfig_rounding_on_cb_ticks) \
+            for n, i in enumerate( l[:-1] ) ] 
+        lvls_diff = list( set( lvls_diff ) )
+        if len(lvls_diff) > 1:
+            lvls_diff = max( lvls_diff )
+#        lvls_diff = round_to_n( abs(lvls[-3])-abs(lvls[-4]), \
+#                                sigfig_rounding_on_cb_ticks)
+    
     # handle if values (2,3) are both negative or abs. of both <0
     except:
         if debug:
-            print abs(lvls[-3])-abs(lvls[-2]), sigfig_rounding_on_cb_ticks
+            print abs(lvls[-4])-abs(lvls[-3]), sigfig_rounding_on_cb_ticks
         try:    # handle if values (2,3) are both negative
-            lvls_diff = round_to_n( abs(lvls[-3])-abs(lvls[-2]), \
+            lvls_diff = round_to_n( abs(lvls[-4])-abs(lvls[-3]), \
                                 sigfig_rounding_on_cb_ticks)                                
         except: # If both absolute of vmin and vmax  are <0 ( and +ve )
             if debug:
-                print lvls, lvls[-2], lvls[-3], sigfig_rounding_on_cb_ticks
-            lvls_diff = round_to_n( lvls[-2]-lvls[-3], \
+                print lvls, lvls[-3], lvls[-4], sigfig_rounding_on_cb_ticks
+            lvls_diff = round_to_n( lvls[-3]-lvls[-4], \
                                 sigfig_rounding_on_cb_ticks)                                
-                                
+
     # ---  Round top of colorbar lvls, then count down from this
     # first get top numer rounded up to nearest 'lvls_diff'
     # caution, this may result in a number outside the cmap, 
@@ -4142,6 +4142,7 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
         return lvls, lvls_diff
     else:
         return lvls
+
 # --------
 # 4.43 - mk colourmap discrete 
 # --------

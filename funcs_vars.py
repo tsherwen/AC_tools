@@ -3240,6 +3240,8 @@ def latex_spec_name(input_x, debug=False):
     'GMAO_UWND':'Zonal Wind', 'GMAO_VWND':'Meridional Wind', \
     'U10M':'10m Meridional Wind', 'V10M': '10m Zonal Wind', \
     'CH2OO':'CH$_{2}$OO', 'Sulfate': 'Sulfate', 'VOCs': 'VOCs', \
+    'GMAO_ABSH' : 'Absolute humidity', 'GMAO_SURF': 'Aerosol surface area', \
+    'GMAO_PSFC': 'Surface pressure', 
     # Family Names
     'N_specs':u'NO$_{\\rm y}$', 'NOy':u'NO$_{\\rm y}$', 
      'Bry':u'Br$_{\\rm y}$', 'Cly':u'Cl$_{\\rm y}$',  \

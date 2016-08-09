@@ -106,7 +106,7 @@ def read_in_kml_sites(filename, limter=10, ind=[0, 3, 1, 2 ], debug=False):
     """ Read in list format csv, with details of sites to output planeflight for
         double up of function 1.00
     """
-    debug=False
+    debug=True
 
     if debug:
         print 'read_in_kml_sites called for ', filename
