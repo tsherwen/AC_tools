@@ -90,18 +90,18 @@ def get_dir( input, loc='earth0' ):
 # ----                                                                                                                                                        
 # 1.02 -  Get Latitude as GC grid box number in dimension                                                                                                                  
 # ----                                                                                                                                                        
-def get_gc_lat(lat, res='4x5',debug=False):
+def get_gc_lat(lat, res='4x5', wd=None, debug=False):
     """ Get index of lat for given resolution """
-    NIU, lat_c, NIU = get_latlonalt4res(res=res)
+    NIU, lat_c, NIU = get_latlonalt4res( res=res, wd=wd )
     del NIU
     return find_nearest( lat_c, lat )
 
 # ----                                                                                                                                                        
 # 1.03 -  Get Longitude as GC grid box number in dimension                                                                                                       
 # ----                                                                                                                                                        
-def get_gc_lon(lon, res='4x5',debug=False):
+def get_gc_lon(lon, res='4x5', wd=None, debug=False):
     """ Get index of lon for given resolution """
-    lon_c, NIU, NIU = get_latlonalt4res( res=res )
+    lon_c, NIU, NIU = get_latlonalt4res( res=res, wd=wd )
     del NIU
     return find_nearest( lon_c, lon )
 
@@ -163,6 +163,9 @@ def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
     
     NOTE:
         - This function replaces most use dictionaries from "gchemgrid"
+        - The update to using ctm.nc files has cause an bug linked to the lat 
+        and lon variabe retrival. Just update to passing a wd with output at the 
+        correct resolution to fix this.
     """ 
     # Kludge. Update function to pass "wd" 
     # if model output directory ("wd") not provided use default directory
@@ -194,6 +197,7 @@ def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
         with Dataset( wd+'/'+filename, 'r' ) as d:
             lat = np.array( d[lat_var] )    
             lon = np.array( d[lon_var] )        
+            
 
     # Get edge values
     if (not centre) and ( not any([(res==i) for i in '1x1', '0.5x0.5' ]) ):
