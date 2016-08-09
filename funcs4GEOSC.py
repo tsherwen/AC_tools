@@ -547,7 +547,6 @@ def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, \
              molec_weight=True, time_averaged=True, debug=False ):
     """ Get OH/HO2 concentrations from ctm.bpch file """
 
-#    debug=True
     if debug:
         print 'get_OH_HO2 called for ', wd
 

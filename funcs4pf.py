@@ -106,7 +106,6 @@ def read_in_kml_sites(filename, limter=10, ind=[0, 3, 1, 2 ], debug=False):
     """ Read in list format csv, with details of sites to output planeflight for
         double up of function 1.00
     """
-    debug=True
 
     if debug:
         print 'read_in_kml_sites called for ', filename
@@ -550,13 +549,13 @@ def pf_csv2pandas( file=None, vars=None, epoch=False, r_vars=False, \
 # ----
 # 2.10 - Extract all pf data for a given site.
 # ----
-def wd_pf_2_gaw_arr( wd, spec='O3', location='CVO', scale=1E9 ):
+def wd_pf_2_gaw_arr( wd, spec='O3', location='CVO', scale=1E9, debug=False ):
     """ Extract all data rom a GEOS-Chem planeflight csv files in given 
           working directory, returning this in numpy array form """
 
     print wd
     files  =  sorted(glob.glob(wd +'/plane_flight_logs/plane.log.2*'))
-    model, names = readfile_basic( files, location, debug=True )
+    model, names = readfile_basic( files, location, debug=debug )
     data = np.float64( model[:,names.index( spec )]*1E9 )
     date = np.int64( model[:,names.index( 'YYYYMMDD' )] )
     time = np.int64( model[:,names.index( 'HHMM' )] )

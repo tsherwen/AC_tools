@@ -2914,7 +2914,6 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',  \
         (1) 'fp' option is now obselete. 
         (2) UPDATED NEEDED: MORE DETAILED DESCRIPT.    
     """
-#    debug=True
 
     if verbose:
         print 'PLO3_to_PD called for wd = ', wd

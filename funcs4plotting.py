@@ -4044,7 +4044,7 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
             verbose=True, debug=False ):
     """ Get human readible gradations for ploting ( e.g. colorbars etc ). 
     """
-    debug=True
+
     if debug:
         print 'get_human_readable_gradations called: ', vmin, vmax, lvls
     
