@@ -1058,6 +1058,7 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'LR4', 'LO3_78', 'LR78', 'PO3_67', 'PO3_92', 'RD08', 'LR75', \
     'PO3_01', 'RD07', 'LR9', 'LR62', 'LR37', 'LR73', 'LR19', 'LO3_79', \
     'RD15', 'PO3_68', 'RD06', 'LO3_80', 'LR83', 'LR80', 'LR99', \
+	# LR125 is the tag for ALD2 (hash out for runs without this tag)
     'LR125'
     ], 
     # not outputted by p/l ( but should be) : 'PO3_103', 'PO3_104', 'PO3_105', 
@@ -1171,7 +1172,9 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, \
     u'n-butane': 'pptv', u'n-pentane': 'pptv', u'Undecane': 'pptv', \
     u'Decane': 'pptv', u'Octane': 'pptv', u'n-octane': 'pptv',\
     # Extra Cly species 
-    'ClNO2': 'pptv', 'ClNO3': 'pptv', 
+    'ClNO2': 'pptv', 'ClNO3': 'pptv', 'HCl': 'pptv', 'ClOO': 'pptv', \
+	'Cl2O2': 'pptv', 'CH2Cl2': 'pptv', 'CHCl3': 'pptv', 'CH3Cl': 'pptv', \
+	'BrSALA': 'pptv', 'BrSALC':'pptv',\
     # extra tag "species" for  easy of processing 
     'PD421' : 'molec cm$^{-3}$ s$^{-1}$'
     } 
@@ -2671,6 +2674,8 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'TEX': (-95.425000, 30.350278,  60 ), 
     'CAL' : ( -114.12950, 51.07933,  1100), 
     'PAS':  ( -118.20, 34.23, 246  ), 
+    # --- ClNO2 (UK) sites
+    'PEN':  ( -4.1858, 50.3214 , 0  ), 
     # --- O3 preindustrial
     'MON' :  ( 2.338333, 48.822222,  75+5 ), 
 #    'MON' : (2.3, 48.8, 80), # Monsoursis 
@@ -3212,7 +3217,7 @@ def latex_spec_name(input_x, debug=False):
     'OCPI':'OCPI', 'BCPO':'BCPO','OCPO':'OCPO', 'DST1':'DST1', \
     'DST2':'DST2','DST3':'DST3','DST4':'DST4','SALA':'SALA', \
     'SALC':'SALC',  'HBr':'HBr', 'BrNO2': 'BrNO$_{2}$', \
-    'BrNO3': 'BrNO$_{3}$', 'MPN':'CH$_{3}$ON$_{2}$', \
+    'BrNO3': 'BrNO$_{3}$', 'MPN':'CH$_{3}$O$_{2}$NO$_{2}$', \
     'ISOPN':'ISOPN', 'MOBA':'MOBA', 'PROPNN':'PROPNN', \
     'HAC':'HAC', 'GLYC':'GLYC', 'MMN':'MMN', 'RIP':'RIP', \
     'IEPOX':'IEPOX','MAP':'MAP', 'AERI':'Aerosol Iodine', 'Cl2':'Cl$_{2}$', \
