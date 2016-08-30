@@ -1059,7 +1059,7 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'PO3_01', 'RD07', 'LR9', 'LR62', 'LR37', 'LR73', 'LR19', 'LO3_79', \
     'RD15', 'PO3_68', 'RD06', 'LO3_80', 'LR83', 'LR80', 'LR99', \
 	# LR125 is the tag for ALD2 (hash out for runs without this tag)
-    'LR125'
+#    'LR125'
     ], 
     # not outputted by p/l ( but should be) : 'PO3_103', 'PO3_104', 'PO3_105', 
     # 'PO3_10'
@@ -1502,10 +1502,19 @@ def get_ref_spec( spec='LIOx' ):
      """
     d = {
     'Cly' : 'Cl',
+    'LOX' :'O3',
+    'POX' :'O3',
     'LIOx' :'I',
     'PIOx' :'I',
     'PClOx' :'Cl',
     'LClOx' :'Cl',
+    'PClOxI' :'Cl',
+    'LClOxI' :'Cl',
+    'PClOxII' :'Cl',
+    'LClOxII' :'Cl',
+    'PClOxI' :'Cl',
+    'LCI' :'Cl',
+    'LCII' :'Cl',
     'PBrOx' :'Br',
     'LBrOx' :'Br'
     }
@@ -2722,15 +2731,15 @@ def get_obs_loc(loc, debug=False):
     [52.5167, 50.7340, 53.5653,54.9100, 52.4231, 48.1333, \
     48.491, 49.4508, 47.91111  ] , 
     [ 13.3833 , 7.0998, 10.0014, 8.3075, 10.7872, 11.5667, 13.133, 7.302, \
-     7.8894] ],   
-    'Weyborne' :[  [ 52.9420],  [1.1380 ]   ] , 
-    'Penlee' :[  [ 50.3214],  [-4.1858 ]   ] ,
-    'Penlee_M2' :[  [ 49.7795272],  [-2.0229414 ]   ] ,
-    'Penlee_M3' :[  [ 49.8370764,],  [-5.3652425 ]   ] ,
-    'Penlee_M4' :[  [ 50.25],  [-4.15 ]   ] ,
-    'Penlee_M5' :[  [ 50.25],  [-0.85  ]   ] ,
-    'Penlee_M6' :[  [ 50.25],  [-7.05 ]   ] ,
-    'Mace_head_M3' :[  [ 53.209003], [  -10.846408 ]   ] ,
+     7.8894] ],  \
+    'Weyborne' : [  [ 52.9420],  [1.1380 ]   ] , \
+    'Penlee' : [  [ 50.3214],  [-4.1858 ]   ] ,\
+    'Penlee_M2' :[  [ 49.7795272],  [-2.0229414 ]   ] , \
+    'Penlee_M3' :[  [ 49.8370764,],  [-5.3652425 ]   ] , \
+    'Penlee_M4' :[  [ 50.25],  [-4.15 ]   ] , \
+    'Penlee_M5' :[  [ 50.25],  [-0.85  ]   ] , \
+    'Penlee_M6' :[  [ 50.25],  [-7.05 ]   ] , \
+    'Mace_head_M3' :[  [ 53.209003], [  -10.846408 ]   ] , \
     'Leicester' :[  [ 52.619823],  [-1.127311 ]   ]    }
 
     return d[loc] 
