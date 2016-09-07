@@ -157,12 +157,11 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             extend ( 'both', 'min', 'both' ... )
             shrink ( size of colorbar )    
     """
-    deubg=True
     if debug:
         print 'map_plot called'
         print [ [ i.min(), i.max(), i.mean(), type(i) ] for i in [arr] ]
 
-    # Kludge, mask for pcent arrays containing invalids ( to allow PDF save)
+    # Mask for percent arrays containing invalid values ( to allow PDF save)
     if mask_invalids:
         arr = np.ma.masked_invalid( arr )
 
@@ -280,8 +279,6 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             print fixcb_, arr.shape, [ len(i) for i in lon, lat ], norm, cmap
         poly = m.pcolor( lon, lat, arr, cmap=cmap, norm=norm, 
                         vmin=fixcb_[0], vmax=fixcb_[1], alpha=alpha )
-#        poly = m.pcolormesh( lon, lat, arr, cmap=cmap, clevs=clevs,\
-#                        vmin=fixcb[0], vmax=fixcb[1], alpha=alpha )
 
     # -----------------  Log plots ---------------------------------------------
     if (case == 4 ) or log : # l
@@ -297,6 +294,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             # Normalise to Log space
             norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
 
+	        # Create colourbar instance
             cb = plt.colorbar(poly, ax=m.ax, ticks=lvls, format=format, \
                  shrink=shrink, alpha=alpha, norm=norm, extend='min')
 
@@ -315,13 +313,9 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             print shrink, m, m.ax, poly, alpha, format, lvls, norm,  \
                     extend, ax
 
-        # New approach
+        # Create colourbar instance
         cb = plt.colorbar( poly, ax=ax, shrink=shrink, alpha=alpha,  \
                     extend=extend )
-        # Old approach
-#            cb = plt.colorbar( poly, ax=m.ax, shrink=shrink, alpha=alpha,  \
-#                        format=format, ticks=lvls, norm=norm, \
-#                    extend=extend )
 
         for t in cb.ax.get_yticklabels():
             t.set_fontsize(f_size)
@@ -746,7 +740,7 @@ def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
     
     # Plot
     plt.plot( bins_used, y, color=color , label=label, linestyle=ls[pos-1], \
-                   alpha=alpha, marker=marker,  lw=lw, ms=markersize )
+        alpha=alpha, marker=marker, lw=lw, ms=markersize )
 
     # Beautify 
     ax.set_xticklabels( np.arange(0,24,1 )[::2]  )
@@ -3780,7 +3774,7 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         ticks
     """
 
-#    cb='Blues' # Kludge. Force blues for colorbar... 
+    cb='Blues' # Kludge. Force blues for colorbar... 
 #    cb='Reds' # Kludge. Force Reds for colorbar... 
 
     # Make sure cmap includes range of all readable levels (lvls)
