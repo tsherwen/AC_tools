@@ -3082,6 +3082,25 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='1.6', \
             arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
             arr = arr.sum( axis=-1) 
 
+    # ---  Reactive bromine ( BrOx )
+    if fam == 'ClOx' :
+        # Select species in family
+        specs = ['Cl', 'ClO', 'Cl2O2', 'ClOO', ]
+
+        # Extract data
+        arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ], \
+                    trop_limit=trop_limit, r_list=True  )
+        # Adjust to stoichiometry
+        arr = [ arr[n]*spec_stoich(i, ref_spec='Cl') \
+             for n,i in enumerate( specs ) ]
+                
+        if debug:
+            print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in arr  ]
+        if not rtn_list:
+            arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
+            arr = arr.sum( axis=-1) 
+
+
     if debug and (not rtn_list):
         print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in [arr ] ]    
     # --- Mask for troposphere if t_ps provided (& trop_limit=True)
@@ -4400,8 +4419,8 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
     # --- Get ClOx  lifetimes
     # ( Gg / Gg/year => *365*24 => mins  )
     try:
-        ClOx = ['ClO','Cl'] 
-        ClOx_loss = get_GC_output( wd, vars=['PORL_L_S__'+'LClOx'], \
+#        ClOx = ['ClO','Cl', 'ClO'] 
+        ClOx_loss = get_GC_output( wd, vars=['PORL_L_S__'+'LCII'], \
                 trop_limit=trop_limit)
         # Convert to mass (g/month) units from molec/cm3/s 
         ClOx_loss = convert_molec_cm3_s_2_g_X_s( ars=[ClOx_loss], \
@@ -4409,12 +4428,18 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
             t_ps=t_ps, res=res, months=months, years=years, vol=vol, \
             s_area=s_area, rm_strat=True, month_eq=True  ) / 1E9
 
-        ClOx_burdens = get_GC_output( wd, trop_limit=trop_limit, r_list=True, \
-            vars=['IJ_AVG_S__'+i for i in ClOx ] )
+#        ClOx_burdens = get_GC_output( wd, trop_limit=trop_limit, r_list=True, \
+#            vars=['IJ_AVG_S__'+i for i in ClOx ] )
+#		ClOx_burdens = 
 
-        ClOx_burdens =  [ species_v_v_to_Gg(i, spec=ClOx[n], a_m=a_m)  \
-                                        for n, i in enumerate( ClOx_burdens ) ]
-        ClOx_burdens = np.ma.array( ClOx_burdens ).mean(axis=-1)
+#        ClOx_burdens =  [ species_v_v_to_Gg(i, spec=ClOx[n], a_m=a_m)  \
+#                                        for n, i in enumerate( ClOx_burdens ) ]
+#        ClOx_burdens = np.ma.array( ClOx_burdens ).mean(axis=-1)
+        ClOx_burdens = fam_data_extractor( fam='ClOx', wd=wd, trop_limit=trop_limit, \
+            t_ps=t_ps, ver=ver, annual_mean=False)      
+        ClOx_burdens = species_v_v_to_Gg( ClOx_burdens, spec='Cl', a_m=a_m,
+    	     All=True, Iodine=False ).mean(axis=-1)
+
         ars = [ np.sum(i) for i in [ ClOx_burdens, ClOx_loss ]]
         ClOx_lifetime = ( ars[0] /(np.sum(ars[1:])) ) *365*24*60
     except:
