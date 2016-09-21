@@ -48,6 +48,7 @@
 # 1.28 - Get common GC diagnostic arrays 
 # 1.29 - Get 3D CH4 concentrations
 # 1.30 - Get Strat-Trop exchange (from geos.log files )
+# 1.31 - Get Model wind direction
 
 # --------------- ------------- ------------- 
 # ---- Section 2 ----- Data Processing tools/Extractors - GC...
@@ -158,139 +159,7 @@ from AC_tools.funcs_vars import *
 # -------------- Model Data Extractors
 #
 
-# --------------
-# 1.01 - open ctm.bpch using pygchem ( version '0.2.0' ) 
-# -------------- 
-def open_ctm_bpch(wd, fn='ctm.bpch', debug=False):
-    """ This is a vestigial programme, based on pychem version 0.2.0.
-        Updates have made this incompatibile. 
-        
-        Update functions to use iris class. e.g. 
-        
-        if :
-        wd = <run directory of containing ctm.bpch files/ctm.nc file to analyse>
-        then:
-        # setup variables 
-        list_of_species =  ['NO', 'O3', 'PAN', 'CO', 'ALK4']
 
-        # convert to Iris Cube/NetCDF naming form 
-        list_of_species = ['IJ_AVG_S__'+i for i in list_of_species ]
-
-        # this will return data as a 5D array ( species, lon, lat, alt, time)
-        data = get_GC_output( wd, vars=list_of_species )
-    """
-    
-    if ( debug ) :
-        print 'fn: {}'.format(fn)
-        print 'File to open: {}'. format(os.path.join(wd, fn))
-
-    if pygchem.__version__ == '0.2.0':
-        try:
-            ctm_f = gdiag.CTMFile.fromfile(os.path.join(wd, fn))
-        except:
-            print 'Error @ open_ctm_bpch for {}'. format(os.path.join(wd, fn))  
-            print gdiag.CTMFile.fromfile(os.path.join(wd, fn))
-            sys.exit(0)
-    else:
-        print 'WARNING, using: {}'.format(pygchem.__version__)
-        print 'Add a get data call, for specific data (spceies, category)' +\
-                'using the get_GC_output function' 
-
-    return ctm_f
-
-# --------------
-# 1.02 - get np array (4D) of ctm.bpch (lon, lat ,alt, time) 
-# --------------
-def get_gc_data_np(ctm, spec='O3', category="IJ-AVG-$", debug=False):
-    """ vestigial - This function extracts fields from diagnostics and 
-        was written to work with pychem version 0.2.0 - this is included 
-        for back compatibility
-    """
-
-    if debug:
-        print 'called get_np_gc_4D_diags'
-
-    # Retrieve given diagnostics
-    diags = ctm.filter(name=spec, category=category)
-    if debug:
-        print 'diagnostics', diags , spec, category
-
-    # Extract diagnostics to np array    
-    for diag in diags:
-        ar = (diag.values[:,:,:])[...,None]
-        if debug:
-            print diag.name ,'len(ar)', len(ar), 'type(ar)', type(ar), \
-                'diag.scale', diag.scale, 'ar.shape', ar.shape, 'diag.unit', \
-                diag.unit
-        try:
-            arr = np.concatenate( (arr, ar), axis=3 )
-        except NameError:
-            arr = ar
-        if debug:
-            print 'arr' , type(arr), len(arr), arr.shape, 'ar', type(ar), \
-                len(ar), ar.shape
-
-    if len([d for d in diags]) <1 :
-        print 'ERROR: No diags for {} and {} in {}'.format( spec, category, ctm)
-        sys.exit(0)
-
-    # if ctms len > 1, sort chronologically - this is to fix bug in pygchem
-    if debug:
-        print [ i[0] for i in get_gc_datetime(ctm ) ]
-    if get_gc_datetime( ctm ) > 1:
-        arr = np2chronological_fromctm([ ctm ], arr, debug=debug )
-    if debug:
-        print [ i[0] for i in get_gc_datetime(ctm ) ]
-
-    return arr
-
-# --------   
-# 1.03 - Process mod output to ctms
-# --------
-def wd2ctms(wd, fn='ctm.bpch', cat_="IJ-AVG-$", spec='O3', 
-                        start=None, end=None, debug=False):
-    """ REDUNDENT - this function returns chronologically ordered 
-        extracted ctm.bpch files - this is included for back compatibility
-    """
-
-    # List Bpch files in dir and sort by name... 
-    # (this assumes that months are labelled by YYYYMM etc...)
-    if wd[-1] != '/':
-        wd +=  '/'
-    fns = list( sorted( glob.glob( wd + '*ctm*' ) ) )
-
-    if pygchem.__version__ == '0.2.0':
-
-        # Select for date  - form:  YYYYMM.ctm.bpch
-        if ( (start != None) and  (end !=None) ):
-            wds = [ i for i in fns ]# if ()
-        else:
-            wds = fns   
-        if debug:
-            print wds, [ i.split('/')[-1] for i in wds ], \
-                ['/'.join(i.split('/')[:-1]) for i in wds ]
-
-        # Open files
-        ctms =  [ open_ctm_bpch('/'.join(i.split('/')[:-1]), i.split('/')[-1]) 
-            for i in wds ]
-
-        # What resolution
-        res = mod_res(wd, fn=fn)
-        if debug:
-            print res, wd
-
-        # Sort ctms to chronological order
-        if debug:
-            print ctms
-        ctms = ctms2chronological( ctms )
-
-        return ctms, res
-
-    # Re-write will be need for programmes using this technique
-    else:
-        print 'WARNING: PyGChem {} '.format ( pygchem.__version__ ) + \
-             'no longer combatible with this approach!'
-        sys.exit(0 )
     
 # ----
 # 1.04 -Get surface area  ( m^2 )
@@ -342,6 +211,9 @@ def get_land_map(res='4x5', time=None, wd1=None,debug=False):
     """ Return land, water, and ice indices (LWI ) from GEOS-Chem
         with integers for Land (1) and Water (0). 
         Ice fraction is given as fractional values. 
+	NOTES:
+	 - This approach is inefficent and requires large files. Could this be improved with
+	 on-line extract on inclusion of generic output for various resoltions as txt files? 
     """
 
     if debug:
@@ -381,40 +253,7 @@ def get_land_map(res='4x5', time=None, wd1=None,debug=False):
 
     return landmap
 
-# -------------- 
-# 1.06 - Get Gg of species 
-# -------------
-def get_Gg_species(ctm_f,species,air_mass,v_box, diagnostics=None,debug=False):
-    diagnostics = ctm_f.filter(name=species, category="IJ-AVG-$")
-    """ REDUNDENT - Get array of species in Gg
-    Note(s):
-     - not compatible with PyGChem 0.3.0  
-     - This function is retained for back compatibility 
-    """
 
-    for i, diag in enumerate(diagnostics):
-        scalar = diag.values[:,:,:]
-        if debug:
-            print diag.name ,'len(scalar)',len(scalar), 'type(scalar)',\
-                type(scalar), 'diag.scale', diag.scale, 'scalar.shape', \
-                scalar.shape, 'diag.unit', diag.unit
-
-        # Number of moles in box
-        moles = ( air_mass[0] * 1E3) / constants( 'RMM_air')     
-
-        # g of I in species
-        scalar = ( ( scalar * moles ) * 127 * spec_stoich(species) )[...,v_box] 
-
-        try:
-            np.append(scalar_list, scalar)
-            scalar_total = np.array(scalar_total, scalar)
-        except:
-            scalar_list  = np.array(scalar)
-            scalar_total = np.array(scalar)
-
-    # Average of values provided & convert to Gg
-    scalar = ( scalar_total / len(diagnostics) )  /1E6 
-    return scalar
 
 # --------------
 # 1.07 - get air mass (4D) np.array in kg
@@ -1192,6 +1031,7 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
 
 	NOTE(s):
      - update this to take any values for res... 
+	 - Does this function need updating?
 
         Credit: Bob Yantosca
         Original docs from ( grid_mod ):
@@ -1554,6 +1394,47 @@ def get_STRAT_TROP_exchange_from_geos_log( fn=None, ver='3.0', \
     else:
         return df
 
+# ----
+# 1.30 - Get Wind direction from U and V vectors 
+# ---  
+def get_mod_WIND_dir(  sdate=datetime.datetime(2012, 8, 1, 0 ), \
+            edate = datetime.datetime(2012, 8, 8, 0 ), loc='KEN', \
+            scale=1, adjustby=0, period = 'summer', \
+			vars = ('GMAO_UWND', 'GMAO_VWND'), \
+            verbose=False, debug=False):
+    """ extract synoptic wind direction 
+    NOTES:
+	 - this fucntion was written to work with GEOS-Chem planeflight output
+	   (thus U/V vector variables are set to pf varaibles), but alternates are accepted
+	   as arguements
+    """
+	
+    # Extract U10, W10 ( use 10 m wind? )
+    datal = []
+    
+    for spec in vars:
+        # Extract model data
+#        data, dates, units = get_pf_mod_data( sdate=sdate, edate=edate, \
+#                loc=loc, spec=spec, scale=scale,adjustby=adjustby, \
+#                period=period, units=None, debug=debug)
+        data, dates, units = get_NetCDF_mod_data( sdate=sdate, \
+                edate=edate, loc=loc, spec=spec, scale=scale,\
+                adjustby=adjustby, period=period, EOHemisions=True, \
+                units=None, debug=debug)
+
+        datal += [data ]
+
+    # Make dataframe to allow for function mapping 
+    df = DataFrame( data=np.array(datal).T, columns=vars )
+
+    # Calculate wind dir  " (270-atan2(V,U)*180/pi)%360  "
+    def f(x):    
+        return (270-atan2(x['GMAO_VWND'],x['GMAO_UWND'])*180/pi)%360
+    df= df.apply( f, axis=1)
+
+    # Return 
+    return [ np.array(i) for i in df, dates ]
+
 # ----------------------- Section 3 -------------------------------------------
 # -------------- Data Processing tools/drivers
 #
@@ -1685,55 +1566,7 @@ def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
 # -------------
 # Redundent - mv'd to bottom of this module
 
-# --------------
-# 2.10 - Get prod/Loss (change) ( [molec/cm3/s] =>  Gg I /s => Gg/  per month )
-# -------------
-def get_pl_in_Gg( specs=None, ctm_f=None, wd=None , years=None, months=None,
-             monthly=False, trop_limit=False, \
-            Iodine=True, IO=False, I=False, res='4x5', vol=None, spec=None, \
-            ver='1.6', debug=False  ):
-    """ Return prod/loss diagnostic for griven p/l species/tags
 
-    
-    NOTE: 
-	 - this is not the best approach with PyGChem >0.3.0 
-	 (use newer approach: convert_molec_cm3_s_2_g_X_s )
-     - This function was orginally writen for iodine 
-        ( set Iodine=False to use for other species )    
-    """
-    if debug:
-        print 'Specs',  specs
-    
-    if pygchem.__version__ == '0.2.0':
-        print 'WARNING: this approach needs updating to PyGChem 0.3.0'
-    else:
-        # -- Get Vars
-        if not isinstance(vol, np.ndarray):
-            vol = get_volume_np( ctm_f=ctm_f, wd=wd, res=res, debug=debug)
-        if (  not isinstance(years, list) or not isinstance(months, list)):
-            years  = get_gc_years( ctm_f=ctm_f, set_=False, wd=wd ) 
-            months = get_gc_months( ctm_f=ctm_f, wd=wd)
-
-        # --- Process data  # [molec/cm3/s] =>  Gg I /s 
-        # Extract as [molec/cm3/s] for specs 
-        specs_ = [ PLO3_to_PD( i, ver=ver, fp=True, wd=wd ) for i in specs ]
-        ars = get_GC_output( wd, vars=['PORL_L_S__'+i for i in specs_], \
-                    r_list=True, trop_limit=trop_limit)
-        # convert  [molec/cm3/s]  to Gg [I/Ox... ] /s 
-        # ( terms of mass defined by "spec" variable )
-        ars = [ molec_cm3_s_2_Gg_Ox_np( arr, specs[n], vol, ctm_f=ctm_f, \
-            spec=spec, Iodine=Iodine, IO=IO, I=I, year_eq=False,debug=debug)   \
-            for n, arr in enumerate( ars ) ]
-
-        # adjust to per month.
-        day_adjust = d_adjust( months, years)
-        ars = [  i*day_adjust  for i in ars ]  
-
-        if monthly: # concat. specs 
-            return np.concatenate( [ i[...,None] for i in ars ], axis=4 ) 
-        else: # yearly sum. dep*, concat. 
-            return np.concatenate([ i.sum(axis=3)[...,None] for i in ars ], \
-                    axis=3)
 
 # --------------
 # 2.11 - Get Emission of species in Gg
@@ -2390,43 +2223,6 @@ def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
         return [ int( np.ma.masked_invalid( arrs[i] ).sum()/1E3)  \
             for i in range(len(specs )) ] # Tg
 
-# --------------
-# 2.27 - Get Transport fluxes
-# -------------
-def get_tran_flux( ctm_f, spec='O3', years=None, months=None, \
-            s_area=None, all_data=False, debug=False):
-    """ Get transport fluxes from UPFLX... diagnostics """
-    
-    if not isinstance(months, list):
-        months = get_gc_months( ctm_f )
-    if not isinstance(years, list):
-        years  = get_gc_years( ctm_f, set_=False )
-    f_var = GC_var('f_var')
-    Ox    = GC_var('Ox_spec')    
-
-    ars_f_var  =  [ [ get_gc_data_np(ctm_f, spec, category=var )*1E3  \
-            for spec in Ox ] \
-            for var in f_var ]   
-
-    # List Ox specs, concat. and sum of rxns
-    ars_f_var  = [ np.sum( np.concatenate( [ i[...,None]  \
-                for ii ,i in enumerate(arrs_l) ], axis=4 ), axis=4 )  \
-                for arrs_l in ars_f_var ]
-
-    # Subtract values from adjoint box to get net flux
-    if debug:
-        print [(np.sum(i), i.shape) for i in ars_f_var ]
-    ars_f_var[0]  =  [ ars_ - np.roll(ars_, 1, axis=0) \
-        for ars_ in  [ ars_f_var[0]]  ][0] 
-    ars_f_var[1]  =  [ ars_ - np.roll(ars_, 1, axis=1) \
-        for ars_ in  [ ars_f_var[1]]  ][0] 
-    ars_f_var[2]  =  [ ars_ - np.roll(ars_, 1, axis=2) \
-        for ars_ in  [ ars_f_var[2]]  ][0] 
-    if debug:
-        print [(np.sum(i), i.shape) for i in ars_f_var ]
-
-    day_adjust = d_adjust( months, years)
-    return [day_adjust * arr/1E9 for arr in ars_f_var ]
 
 # --------------
 # 2.28 - Get wet dep
@@ -2532,57 +2328,6 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
         return np.concatenate( [ i[...,None] /scale \
                         for i in dep_w ], axis=-1 ).sum(axis=-1 )
 
-# --------------
-# 2.29 - BL mixing
-# -------------
-def get_BL_mix( ctm_f, months=None, years=None, spec='O3', debug=False):
-    """ Get Boundary layer mixing """
-
-    if not isinstance(months, list):
-        months = get_gc_months( ctm_f )
-    if not isinstance(years, list):
-        years  = get_gc_years( ctm_f, set_=False )
-    BL_m    = GC_var('BL_m')[0]
-    Ox      = GC_var('Ox_spec')
-
-    #   kg/s] =>  g / s    # BL mixing upwards of tracer
-    ars_BL_m     = [ get_gc_data_np(ctm_f, spec=i, category=BL_m )*1E3 \
-        for i in Ox ] 
-
-    # list Ox specs, concat. and sum of rxns                                            
-    ars_BL_m = np.sum( np.concatenate( [ i[:,:,:38,:,None]  \
-                for ii ,i in enumerate(ars_BL_m) ], axis=4 ), axis=4 )
-
-    ars_BL_m = [ ars_ - np.roll(ars_, 1, axis=2) \
-        for ars_ in  [ ars_BL_m ]   ][0]
-
-    day_adjust   = d_adjust( months, years)
-    return day_adjust * ars_BL_m /1E9
-
-# --------------
-# 2.30 - Cloud Flux
-# -------------
-def get_cld_f( ctm_f, months=None, years=None, spec='O3',  debug=False ):
-    """ Extract cloud flux"""
-
-    if not isinstance(months, list):
-        months = get_gc_months( ctm_f )
-    if not isinstance(years, list):
-        years  = get_gc_years( ctm_f, set_=False )
-    Cld_flx = GC_var('Cld_flx')[0]
-    Ox      = GC_var('Ox_spec')
-
-    # kg/s =>  g / s    # UPWARD MASS FLUX DUE TO WET CONVECTION
-    ars_cld_f    = [ get_gc_data_np(ctm_f, spec=i, category=Cld_flx )*1E3 \
-        for i in Ox ]  
-
-    # list Ox specs, concat. and sum of rxns                                     
-    ars_cld_f    = np.sum( np.concatenate( [ i[:,:,:38,:,None]  \
-                        for ii ,i in enumerate(ars_cld_f) ], axis=4 ), axis=4 )
-
-    ars_cld_f = [ ars_ - np.roll(ars_, 1, axis=2) for ars_ in [ars_cld_f] ][0]
-    day_adjust   = d_adjust( months, years)
-    return day_adjust *  ars_cld_f /1E9 
 
 # --------
 # 2.31 - Vol weighted array average value
@@ -2654,50 +2399,6 @@ def molec_weighted_avg( arr, wd=None, ctm_f=None, vol=None, t_p=None, n_air=None
             return (arr *molecs).sum()/molecs.sum()
 
 
-# --------------
-# 2.34 -  takes indices or generates indices for a given set of sites, these are then substract from all arrays given
-# -------------
-def rm_data_at_locs( data, lat, lon, alt, below_km=2, indiceslocs=None, \
-            debug=False):
-    """ Remove data at given sites
-    NOTE(s):
-     - This is a slow method quickly cobbled together, but is only used once, 
-        if called more than once if needs to re-written for better speed 
-    """
-
-    # Get indices of obs. on grid. for obs to fit to ...
-    glon, glat, galt = get_latlonalt4res( nest='high res global', centre=False,\
-        debug=debug )
-
-    # get grids and obs,. indicies
-    indices_list = obs2grid( glon=glon, glat=glat, galt=galt )
-    if debug:
-        print indices_list
-
-    # check for these locations with given spatial values
-    # for BL layer remove values near atolls of CHUUK, PILAU, GUAM
-    coastal = []
-    for n, lat_ in  enumerate( lat ):
-        if alt[n] < below_km:
-            loc  = get_xy(  lon[n], lat_ , glon, glat )
-            if any( [ loc == i for i in indices_list ] ):
-                if debug:
-                    print '-'*20
-                    print any( [ loc == i for i in indices_list ] ), n, lat_, \
-                         lon[n], alt[n], loc, indices_list
-                coastal += [n]
-                if debug:
-                    print '-'*20
-
-    print [len(i) for i in coastal, data, lat, lon, alt]    
-    arrs = data, lat, lon, alt 
-    arrs = [ np.delete(i, coastal) for i in arrs ]
-    data, lat, lon, alt  = arrs
-    print [ i.shape for i in arrs ]
-    print [ i.shape for i in data, lat, lon, alt ] 
-
-    # remove values at given sties and return data
-    return data, lat, lon, alt
 
 # --------------
 # 2.35 - Get Tropospheric Ox loss routes as list of arrays, + model resolution (res)
@@ -3082,6 +2783,25 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='1.6', \
             arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
             arr = arr.sum( axis=-1) 
 
+    # ---  Reactive bromine ( BrOx )
+    if fam == 'ClOx' :
+        # Select species in family
+        specs = ['Cl', 'ClO', 'Cl2O2', 'ClOO', ]
+
+        # Extract data
+        arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ], \
+                    trop_limit=trop_limit, r_list=True  )
+        # Adjust to stoichiometry
+        arr = [ arr[n]*spec_stoich(i, ref_spec='Cl') \
+             for n,i in enumerate( specs ) ]
+                
+        if debug:
+            print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in arr  ]
+        if not rtn_list:
+            arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
+            arr = arr.sum( axis=-1) 
+
+
     if debug and (not rtn_list):
         print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in [arr ] ]    
     # --- Mask for troposphere if t_ps provided (& trop_limit=True)
@@ -3394,6 +3114,156 @@ def prt_2D_vals_by_region( specs=None, res='4x5', arrs=None, prt_pcent=False, \
             df.to_csv( csv_title )
 
 
+
+
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# ---------------- Section X -------------------------------------------
+# -------------- Redundant Functions
+# --------------------------------------------------------------------------
+# 
+# NOTE(s): 
+# (1) These are retained even though they are redundant for back compatibility
+# (2) It is not advised to use these. 
+# (3) These will be removed when AC_tools is next re-structured.
+
+
+# --------------
+# 1.01 - open ctm.bpch using pygchem ( version '0.2.0' ) 
+# -------------- 
+def open_ctm_bpch(wd, fn='ctm.bpch', debug=False):
+    """ This is a vestigial programme, based on pychem version 0.2.0.
+        Updates have made this incompatibile. 
+        
+        Update functions to use iris class. e.g. 
+        
+        if :
+        wd = <run directory of containing ctm.bpch files/ctm.nc file to analyse>
+        then:
+        # setup variables 
+        list_of_species =  ['NO', 'O3', 'PAN', 'CO', 'ALK4']
+
+        # convert to Iris Cube/NetCDF naming form 
+        list_of_species = ['IJ_AVG_S__'+i for i in list_of_species ]
+
+        # this will return data as a 5D array ( species, lon, lat, alt, time)
+        data = get_GC_output( wd, vars=list_of_species )
+    """
+    
+    if ( debug ) :
+        print 'fn: {}'.format(fn)
+        print 'File to open: {}'. format(os.path.join(wd, fn))
+
+    if pygchem.__version__ == '0.2.0':
+        try:
+            ctm_f = gdiag.CTMFile.fromfile(os.path.join(wd, fn))
+        except:
+            print 'Error @ open_ctm_bpch for {}'. format(os.path.join(wd, fn))  
+            print gdiag.CTMFile.fromfile(os.path.join(wd, fn))
+            sys.exit(0)
+    else:
+        print 'WARNING, using: {}'.format(pygchem.__version__)
+        print 'Add a get data call, for specific data (spceies, category)' +\
+                'using the get_GC_output function' 
+
+    return ctm_f
+
+# --------------
+# 1.02 - get np array (4D) of ctm.bpch (lon, lat ,alt, time) 
+# --------------
+def get_gc_data_np(ctm, spec='O3', category="IJ-AVG-$", debug=False):
+    """ vestigial - This function extracts fields from diagnostics and 
+        was written to work with pychem version 0.2.0 - this is included 
+        for back compatibility
+    """
+
+    if debug:
+        print 'called get_np_gc_4D_diags'
+
+    # Retrieve given diagnostics
+    diags = ctm.filter(name=spec, category=category)
+    if debug:
+        print 'diagnostics', diags , spec, category
+
+    # Extract diagnostics to np array    
+    for diag in diags:
+        ar = (diag.values[:,:,:])[...,None]
+        if debug:
+            print diag.name ,'len(ar)', len(ar), 'type(ar)', type(ar), \
+                'diag.scale', diag.scale, 'ar.shape', ar.shape, 'diag.unit', \
+                diag.unit
+        try:
+            arr = np.concatenate( (arr, ar), axis=3 )
+        except NameError:
+            arr = ar
+        if debug:
+            print 'arr' , type(arr), len(arr), arr.shape, 'ar', type(ar), \
+                len(ar), ar.shape
+
+    if len([d for d in diags]) <1 :
+        print 'ERROR: No diags for {} and {} in {}'.format( spec, category, ctm)
+        sys.exit(0)
+
+    # if ctms len > 1, sort chronologically - this is to fix bug in pygchem
+    if debug:
+        print [ i[0] for i in get_gc_datetime(ctm ) ]
+    if get_gc_datetime( ctm ) > 1:
+        arr = np2chronological_fromctm([ ctm ], arr, debug=debug )
+    if debug:
+        print [ i[0] for i in get_gc_datetime(ctm ) ]
+
+    return arr
+
+# --------   
+# 1.03 - Process mod output to ctms
+# --------
+def wd2ctms(wd, fn='ctm.bpch', cat_="IJ-AVG-$", spec='O3', 
+                        start=None, end=None, debug=False):
+    """ REDUNDENT - this function returns chronologically ordered 
+        extracted ctm.bpch files - this is included for back compatibility
+    """
+
+    # List Bpch files in dir and sort by name... 
+    # (this assumes that months are labelled by YYYYMM etc...)
+    if wd[-1] != '/':
+        wd +=  '/'
+    fns = list( sorted( glob.glob( wd + '*ctm*' ) ) )
+
+    if pygchem.__version__ == '0.2.0':
+
+        # Select for date  - form:  YYYYMM.ctm.bpch
+        if ( (start != None) and  (end !=None) ):
+            wds = [ i for i in fns ]# if ()
+        else:
+            wds = fns   
+        if debug:
+            print wds, [ i.split('/')[-1] for i in wds ], \
+                ['/'.join(i.split('/')[:-1]) for i in wds ]
+
+        # Open files
+        ctms =  [ open_ctm_bpch('/'.join(i.split('/')[:-1]), i.split('/')[-1]) 
+            for i in wds ]
+
+        # What resolution
+        res = mod_res(wd, fn=fn)
+        if debug:
+            print res, wd
+
+        # Sort ctms to chronological order
+        if debug:
+            print ctms
+        ctms = ctms2chronological( ctms )
+
+        return ctms, res
+
+    # Re-write will be need for programmes using this technique
+    else:
+        print 'WARNING: PyGChem {} '.format ( pygchem.__version__ ) + \
+             'no longer combatible with this approach!'
+        sys.exit(0 )
+
+
 # ------------------ Section 6 -------------------------------------------
 # -------------- Time Processing
 #
@@ -3475,15 +3345,8 @@ def np2chronological_fromctm( ctms, arr, debug=False ):
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# ---------------- Section X -------------------------------------------
-# -------------- Redundant Functions
-# --------------------------------------------------------------------------
-# 
-# NOTE(s): 
-# (1) These are retained even though they are redundant for back compatibility
-# (2) It is not advised to use these. 
-# (3) These will be removed when AC_tools is next re-structured.
+# -------------- Delete/move to user specific modules 
+
 
 
 # --------------
@@ -4400,8 +4263,8 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
     # --- Get ClOx  lifetimes
     # ( Gg / Gg/year => *365*24 => mins  )
     try:
-        ClOx = ['ClO','Cl'] 
-        ClOx_loss = get_GC_output( wd, vars=['PORL_L_S__'+'LClOx'], \
+#        ClOx = ['ClO','Cl', 'ClO'] 
+        ClOx_loss = get_GC_output( wd, vars=['PORL_L_S__'+'LCII'], \
                 trop_limit=trop_limit)
         # Convert to mass (g/month) units from molec/cm3/s 
         ClOx_loss = convert_molec_cm3_s_2_g_X_s( ars=[ClOx_loss], \
@@ -4409,12 +4272,18 @@ def get_GC_run_stats( wd, Iodine=True, HOx_weight=False,  \
             t_ps=t_ps, res=res, months=months, years=years, vol=vol, \
             s_area=s_area, rm_strat=True, month_eq=True  ) / 1E9
 
-        ClOx_burdens = get_GC_output( wd, trop_limit=trop_limit, r_list=True, \
-            vars=['IJ_AVG_S__'+i for i in ClOx ] )
+#        ClOx_burdens = get_GC_output( wd, trop_limit=trop_limit, r_list=True, \
+#            vars=['IJ_AVG_S__'+i for i in ClOx ] )
+#		ClOx_burdens = 
 
-        ClOx_burdens =  [ species_v_v_to_Gg(i, spec=ClOx[n], a_m=a_m)  \
-                                        for n, i in enumerate( ClOx_burdens ) ]
-        ClOx_burdens = np.ma.array( ClOx_burdens ).mean(axis=-1)
+#        ClOx_burdens =  [ species_v_v_to_Gg(i, spec=ClOx[n], a_m=a_m)  \
+#                                        for n, i in enumerate( ClOx_burdens ) ]
+#        ClOx_burdens = np.ma.array( ClOx_burdens ).mean(axis=-1)
+        ClOx_burdens = fam_data_extractor( fam='ClOx', wd=wd, trop_limit=trop_limit, \
+            t_ps=t_ps, ver=ver, annual_mean=False)      
+        ClOx_burdens = species_v_v_to_Gg( ClOx_burdens, spec='Cl', a_m=a_m,
+    	     All=True, Iodine=False ).mean(axis=-1)
+
         ars = [ np.sum(i) for i in [ ClOx_burdens, ClOx_loss ]]
         ClOx_lifetime = ( ars[0] /(np.sum(ars[1:])) ) *365*24*60
     except:
@@ -4629,3 +4498,223 @@ def split_Ox_loss_by_fam( wd, arr, r_t=None, pl_dict=None, \
 
     return ars, r_t
 
+
+# --------------
+# 2.34 -  takes indices or generates indices for a given set of sites, these are then substract from all arrays given
+# -------------
+def rm_data_at_locs( data, lat, lon, alt, below_km=2, indiceslocs=None, \
+            debug=False):
+    """ Remove data at given sites
+    NOTE(s):
+     - This is a slow method quickly cobbled together, but is only used once, 
+        if called more than once if needs to re-written for better speed 
+    """
+
+    # Get indices of obs. on grid. for obs to fit to ...
+    glon, glat, galt = get_latlonalt4res( nest='high res global', centre=False,\
+        debug=debug )
+
+    # get grids and obs,. indicies
+    indices_list = obs2grid( glon=glon, glat=glat, galt=galt )
+    if debug:
+        print indices_list
+
+    # check for these locations with given spatial values
+    # for BL layer remove values near atolls of CHUUK, PILAU, GUAM
+    coastal = []
+    for n, lat_ in  enumerate( lat ):
+        if alt[n] < below_km:
+            loc  = get_xy(  lon[n], lat_ , glon, glat )
+            if any( [ loc == i for i in indices_list ] ):
+                if debug:
+                    print '-'*20
+                    print any( [ loc == i for i in indices_list ] ), n, lat_, \
+                         lon[n], alt[n], loc, indices_list
+                coastal += [n]
+                if debug:
+                    print '-'*20
+
+    print [len(i) for i in coastal, data, lat, lon, alt]    
+    arrs = data, lat, lon, alt 
+    arrs = [ np.delete(i, coastal) for i in arrs ]
+    data, lat, lon, alt  = arrs
+    print [ i.shape for i in arrs ]
+    print [ i.shape for i in data, lat, lon, alt ] 
+
+    # remove values at given sties and return data
+    return data, lat, lon, alt
+
+# --------------
+# 2.29 - BL mixing
+# -------------
+def get_BL_mix( ctm_f, months=None, years=None, spec='O3', debug=False):
+    """ Get Boundary layer mixing """
+
+    if not isinstance(months, list):
+        months = get_gc_months( ctm_f )
+    if not isinstance(years, list):
+        years  = get_gc_years( ctm_f, set_=False )
+    BL_m    = GC_var('BL_m')[0]
+    Ox      = GC_var('Ox_spec')
+
+    #   kg/s] =>  g / s    # BL mixing upwards of tracer
+    ars_BL_m     = [ get_gc_data_np(ctm_f, spec=i, category=BL_m )*1E3 \
+        for i in Ox ] 
+
+    # list Ox specs, concat. and sum of rxns                                            
+    ars_BL_m = np.sum( np.concatenate( [ i[:,:,:38,:,None]  \
+                for ii ,i in enumerate(ars_BL_m) ], axis=4 ), axis=4 )
+
+    ars_BL_m = [ ars_ - np.roll(ars_, 1, axis=2) \
+        for ars_ in  [ ars_BL_m ]   ][0]
+
+    day_adjust   = d_adjust( months, years)
+    return day_adjust * ars_BL_m /1E9
+
+# --------------
+# 2.30 - Cloud Flux
+# -------------
+def get_cld_f( ctm_f, months=None, years=None, spec='O3',  debug=False ):
+    """ Extract cloud flux"""
+
+    if not isinstance(months, list):
+        months = get_gc_months( ctm_f )
+    if not isinstance(years, list):
+        years  = get_gc_years( ctm_f, set_=False )
+    Cld_flx = GC_var('Cld_flx')[0]
+    Ox      = GC_var('Ox_spec')
+
+    # kg/s =>  g / s    # UPWARD MASS FLUX DUE TO WET CONVECTION
+    ars_cld_f    = [ get_gc_data_np(ctm_f, spec=i, category=Cld_flx )*1E3 \
+        for i in Ox ]  
+
+    # list Ox specs, concat. and sum of rxns                                     
+    ars_cld_f    = np.sum( np.concatenate( [ i[:,:,:38,:,None]  \
+                        for ii ,i in enumerate(ars_cld_f) ], axis=4 ), axis=4 )
+
+    ars_cld_f = [ ars_ - np.roll(ars_, 1, axis=2) for ars_ in [ars_cld_f] ][0]
+    day_adjust   = d_adjust( months, years)
+    return day_adjust *  ars_cld_f /1E9 
+
+# --------------
+# 2.27 - Get Transport fluxes
+# -------------
+def get_tran_flux( ctm_f, spec='O3', years=None, months=None, \
+            s_area=None, all_data=False, debug=False):
+    """ Get transport fluxes from UPFLX... diagnostics """
+    
+    if not isinstance(months, list):
+        months = get_gc_months( ctm_f )
+    if not isinstance(years, list):
+        years  = get_gc_years( ctm_f, set_=False )
+    f_var = GC_var('f_var')
+    Ox    = GC_var('Ox_spec')    
+
+    ars_f_var  =  [ [ get_gc_data_np(ctm_f, spec, category=var )*1E3  \
+            for spec in Ox ] \
+            for var in f_var ]   
+
+    # List Ox specs, concat. and sum of rxns
+    ars_f_var  = [ np.sum( np.concatenate( [ i[...,None]  \
+                for ii ,i in enumerate(arrs_l) ], axis=4 ), axis=4 )  \
+                for arrs_l in ars_f_var ]
+
+    # Subtract values from adjoint box to get net flux
+    if debug:
+        print [(np.sum(i), i.shape) for i in ars_f_var ]
+    ars_f_var[0]  =  [ ars_ - np.roll(ars_, 1, axis=0) \
+        for ars_ in  [ ars_f_var[0]]  ][0] 
+    ars_f_var[1]  =  [ ars_ - np.roll(ars_, 1, axis=1) \
+        for ars_ in  [ ars_f_var[1]]  ][0] 
+    ars_f_var[2]  =  [ ars_ - np.roll(ars_, 1, axis=2) \
+        for ars_ in  [ ars_f_var[2]]  ][0] 
+    if debug:
+        print [(np.sum(i), i.shape) for i in ars_f_var ]
+
+    day_adjust = d_adjust( months, years)
+    return [day_adjust * arr/1E9 for arr in ars_f_var ]
+
+# --------------
+# 2.10 - Get prod/Loss (change) ( [molec/cm3/s] =>  Gg I /s => Gg/  per month )
+# -------------
+def get_pl_in_Gg( specs=None, ctm_f=None, wd=None , years=None, months=None,
+             monthly=False, trop_limit=False, \
+            Iodine=True, IO=False, I=False, res='4x5', vol=None, spec=None, \
+            ver='1.6', debug=False  ):
+    """ Return prod/loss diagnostic for griven p/l species/tags
+
+    
+    NOTE: 
+	 - this is not the best approach with PyGChem >0.3.0 
+	 (use newer approach: convert_molec_cm3_s_2_g_X_s )
+     - This function was orginally writen for iodine 
+        ( set Iodine=False to use for other species )    
+    """
+    if debug:
+        print 'Specs',  specs
+    
+    if pygchem.__version__ == '0.2.0':
+        print 'WARNING: this approach needs updating to PyGChem 0.3.0'
+    else:
+        # -- Get Vars
+        if not isinstance(vol, np.ndarray):
+            vol = get_volume_np( ctm_f=ctm_f, wd=wd, res=res, debug=debug)
+        if (  not isinstance(years, list) or not isinstance(months, list)):
+            years  = get_gc_years( ctm_f=ctm_f, set_=False, wd=wd ) 
+            months = get_gc_months( ctm_f=ctm_f, wd=wd)
+
+        # --- Process data  # [molec/cm3/s] =>  Gg I /s 
+        # Extract as [molec/cm3/s] for specs 
+        specs_ = [ PLO3_to_PD( i, ver=ver, fp=True, wd=wd ) for i in specs ]
+        ars = get_GC_output( wd, vars=['PORL_L_S__'+i for i in specs_], \
+                    r_list=True, trop_limit=trop_limit)
+        # convert  [molec/cm3/s]  to Gg [I/Ox... ] /s 
+        # ( terms of mass defined by "spec" variable )
+        ars = [ molec_cm3_s_2_Gg_Ox_np( arr, specs[n], vol, ctm_f=ctm_f, \
+            spec=spec, Iodine=Iodine, IO=IO, I=I, year_eq=False,debug=debug)   \
+            for n, arr in enumerate( ars ) ]
+
+        # adjust to per month.
+        day_adjust = d_adjust( months, years)
+        ars = [  i*day_adjust  for i in ars ]  
+
+        if monthly: # concat. specs 
+            return np.concatenate( [ i[...,None] for i in ars ], axis=4 ) 
+        else: # yearly sum. dep*, concat. 
+            return np.concatenate([ i.sum(axis=3)[...,None] for i in ars ], \
+                    axis=3)
+                    
+# -------------- 
+# 1.06 - Get Gg of species 
+# -------------
+def get_Gg_species(ctm_f,species,air_mass,v_box, diagnostics=None,debug=False):
+    diagnostics = ctm_f.filter(name=species, category="IJ-AVG-$")
+    """ REDUNDENT - Get array of species in Gg
+    Note(s):
+     - not compatible with PyGChem 0.3.0  
+     - This function is retained for back compatibility 
+    """
+
+    for i, diag in enumerate(diagnostics):
+        scalar = diag.values[:,:,:]
+        if debug:
+            print diag.name ,'len(scalar)',len(scalar), 'type(scalar)',\
+                type(scalar), 'diag.scale', diag.scale, 'scalar.shape', \
+                scalar.shape, 'diag.unit', diag.unit
+
+        # Number of moles in box
+        moles = ( air_mass[0] * 1E3) / constants( 'RMM_air')     
+
+        # g of I in species
+        scalar = ( ( scalar * moles ) * 127 * spec_stoich(species) )[...,v_box] 
+
+        try:
+            np.append(scalar_list, scalar)
+            scalar_total = np.array(scalar_total, scalar)
+        except:
+            scalar_list  = np.array(scalar)
+            scalar_total = np.array(scalar)
+
+    # Average of values provided & convert to Gg
+    scalar = ( scalar_total / len(diagnostics) )  /1E6 
+    return scalar

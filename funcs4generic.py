@@ -1,9 +1,11 @@
 #!/usr/bin/python
 """ Generic functions for use with GEOS-Chem/Data Analysis.
-    
-    These functions were written whilst learning python, vestigial 
-    inefficient code is being removed/updated. 
-    Where external code is used credit is given. """
+
+NOTE(S):    
+ - These functions were written whilst learning python, vestigial 
+   inefficient code is being removed/updated. 
+ - Where external code is used credit is given. 
+"""
 
 # ------------------------- Section 0 -----------------------------------------
 # -------------- Required modules:
@@ -111,75 +113,6 @@ def myround(x, base=5, integer=True, round_up=False):
         return int( rounded )
     else:        
         return rounded
-        
-
-# -------------- 
-# 1.04 - csv, opener - upgrade to pandas makes this redundent
-# -------------
-#def csv_opener(fn_,big=None,delimiter=',',debug=False):
-#    if debug:
-#        print 'csv_opener'
-#    reader = open(fn_, 'rb')
-#    row_list=[]
-#    for ii, row in enumerate(reader):
-#        row = row.strip().split(delimiter)
-#        if debug:
-#            print row 
-#        row_list.append(row)
-#    return row_list
-
-# -------------
-# 1.05 - "Binner" - bins data by a given var for a given bin_size - tms
-# -------------
-def bin_data( data, bin_by, bin_size, set_min=None, set_max=None, debug=False ):
-    """ Redundant program? - manual binner of data using list comprehension  """
-    # set bin dimensions, round to get ranges and then extend if min and max are not captured.
-    bmin, bmax = myround(np.ma.min(bin_by), bin_size, integer=False), myround( np.ma.max(bin_by), bin_size, integer=False)    
-    if bmin > np.ma.min(bin_by):
-        bmin =  bmin- bin_size
-    if bmax < np.ma.max(bin_by):
-        bmax =  bmax+ bin_size
-    bins = np.arange( bmin, bmax+bin_size, bin_size ) 
-    if all( [(not isinstance(i, type(None))) for i in set_min, set_max ]):
-        bins = np.arange( set_min, set_max+bin_size, bin_size ) 
-    if debug:
-        print 'min: {}, max: {}, and # of bins: {}'.format(bmin, bmax, len(np.ma.arange( bmin, bmax, bin_size)) )
-
-    # Loop and bin for given dimensions.
-    for bin in bins:
-        binned = [ d_ for n_, d_ in enumerate(data)  if ( (bin+bin_size) > bin_by[n_] >= ( bin ) )]
-        if debug:
-            print 'binning between {} and {}'.format( bin,  (bin+bin_size) ) 
-        try :
-            binned_list.append( binned )
-        except:
-            binned_list = [ binned ]
-        if debug:
-            print bin, [ len(i) for i in [ binned_list, data, binned ]]
-
-    # remove any extra unfilled bins (if not using pre-defined min and max )
-    if not all( [(not isinstance(i, type(None))) for i in set_min, set_max ]):
-        empty_bins = [ n for n, i in enumerate(bins) if ( len(binned_list[n]) < 1) ]
-        if len( empty_bins) > 0 :
-            print 'removing empty bins: {}'.format( empty_bins )
-            print [type(i) for i in  binned_list , bins  ]
-            bins   = list(bins)
-            [ [ i.pop(ii) for ii in empty_bins[::-1] ] for i in binned_list , bins ]
-            bins   = np.ma.array(bins)
-    return binned_list , bins
-
-# --------------
-# 1.06 - translsate columns to rows 
-# ------------- 
-# written for python 3! re-write
-#def columns_to_rows(filename):
-#        with open(filename) as f:
-#            lis=[x.split() for x in f]
-#
-#        for x in zip(*lis):
-#            for y in x:
-#                print(y+'\t',end='')
-#            print('\n')
 
 # --------------
 # 1.07 - Count number of files/the filenames that contain certain phrase/number conbinations (e.g. dates) - tms 
@@ -189,24 +122,6 @@ def counter_directory_contains_files(model_path,must_contain):
     model_ouput_file_counter = len(glob.glob1(model_path,must_contain))
     return model_ouput_file_counter
             
-# ----
-# 1.08 - bin by range
-# ----
-def bin_w_range(min, max, bin_size, data, press):
-    """ REDUNDENT? ( see 1.05) - manual "binner" of data using list 
-        comprehension """
-    bins = []
-    for bin in np.arange(min, max, bin_size):
-        binned = [ d_ for n_, d_ in enumerate(data)  \
-            if ( (bin+bin_size) > press[n_] >= ( bin ) )]
-        try :  
-            binned_list.append(binned)
-        except:
-            binned_list = [ binned ]
-        bins.append( bin )
-        print 'bin: {} to {}'.format(bin,bin+bin_size), \
-             [ len(i) for i in [ binned_list, data, binned ]] 
-    return binned_list#, np.array( bins )
 
 # ----
 # 1.09 - Rename vars/strs in files
@@ -372,7 +287,7 @@ def sort_sites_by_lat(sites):
 # --------
 def find_nearest(array,value):
     """
-        Find nearest point. Adapted from HappyLeapSecond's Stackoverflow 
+        Find nearest number in array to given value. Adapted from HappyLeapSecond's Stackoverflow 
         answer. http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
     """
     idx = (np.abs(array-value)).argmin()
@@ -419,7 +334,7 @@ def get_shortest_in(needle, haystack, r_distance=False):
         return list(d).index( np.min(d) )
 
 # --------   
-# 1.19 - get logarithmically spaced integers
+# 1.19 - Get logarithmically spaced integers
 # --------
 def gen_log_space(limit, n):
     """
@@ -450,7 +365,8 @@ http://stackoverflow.com/questions/12418234/logarithmically-spaced-integers
 def get_arr_edge_indices( arr, res='4x5', extra_points_point_on_edge=None, \
             verbose=True, debug=False):
     """ Find indices in a lon, lat (2D) grid, where value does not equal a given 
-            value ( e.g.g the edge )    """
+            value ( e.g. the edge )    
+    """
     
     if verbose:
         print 'get_arr_edge_indices for arr of shape: ', arr.shape
@@ -1421,3 +1337,62 @@ def get_cruise_track_mask(  max_lon=None, min_lon=None, max_lat=None, \
 # NOTE(s): 
 # (1) These are retained even though they are redundant for back compatibility
 # (2) It is not advised to use these. 
+
+# -------------
+# 1.05 - "Binner" - bins data by a given var for a given bin_size - tms
+# -------------
+def bin_data( data, bin_by, bin_size, set_min=None, set_max=None, debug=False ):
+    """ Redundant program? - manual binner of data using list comprehension  """
+    # set bin dimensions, round to get ranges and then extend if min and max are not captured.
+    bmin, bmax = myround(np.ma.min(bin_by), bin_size, integer=False), myround( np.ma.max(bin_by), bin_size, integer=False)    
+    if bmin > np.ma.min(bin_by):
+        bmin =  bmin- bin_size
+    if bmax < np.ma.max(bin_by):
+        bmax =  bmax+ bin_size
+    bins = np.arange( bmin, bmax+bin_size, bin_size ) 
+    if all( [(not isinstance(i, type(None))) for i in set_min, set_max ]):
+        bins = np.arange( set_min, set_max+bin_size, bin_size ) 
+    if debug:
+        print 'min: {}, max: {}, and # of bins: {}'.format(bmin, bmax, len(np.ma.arange( bmin, bmax, bin_size)) )
+
+    # Loop and bin for given dimensions.
+    for bin in bins:
+        binned = [ d_ for n_, d_ in enumerate(data)  if ( (bin+bin_size) > bin_by[n_] >= ( bin ) )]
+        if debug:
+            print 'binning between {} and {}'.format( bin,  (bin+bin_size) ) 
+        try :
+            binned_list.append( binned )
+        except:
+            binned_list = [ binned ]
+        if debug:
+            print bin, [ len(i) for i in [ binned_list, data, binned ]]
+
+    # remove any extra unfilled bins (if not using pre-defined min and max )
+    if not all( [(not isinstance(i, type(None))) for i in set_min, set_max ]):
+        empty_bins = [ n for n, i in enumerate(bins) if ( len(binned_list[n]) < 1) ]
+        if len( empty_bins) > 0 :
+            print 'removing empty bins: {}'.format( empty_bins )
+            print [type(i) for i in  binned_list , bins  ]
+            bins   = list(bins)
+            [ [ i.pop(ii) for ii in empty_bins[::-1] ] for i in binned_list , bins ]
+            bins   = np.ma.array(bins)
+    return binned_list , bins
+
+# ----
+# 1.08 - bin by range
+# ----
+def bin_w_range(min, max, bin_size, data, press):
+    """ REDUNDENT? ( see 1.05) - manual "binner" of data using list 
+        comprehension """
+    bins = []
+    for bin in np.arange(min, max, bin_size):
+        binned = [ d_ for n_, d_ in enumerate(data)  \
+            if ( (bin+bin_size) > press[n_] >= ( bin ) )]
+        try :  
+            binned_list.append(binned)
+        except:
+            binned_list = [ binned ]
+        bins.append( bin )
+        print 'bin: {} to {}'.format(bin,bin+bin_size), \
+             [ len(i) for i in [ binned_list, data, binned ]] 
+    return binned_list#, np.array( bins )

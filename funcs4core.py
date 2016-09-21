@@ -1,6 +1,10 @@
 #!/usr/bin/python
 """ Core functions used to be used by all function levels of 
-    GEOS-Chem/Data analysis in AC_Tools """
+    GEOS-Chem/Data analysis in AC_Tools 
+
+NOTES: 
+ - user specific functions need to be migrated to a seperate fuction
+"""
 
 # --------------- ------------- ------------- ------------- ------------- 
 # ---- Section 0 ----- Modules required
