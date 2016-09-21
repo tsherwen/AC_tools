@@ -2555,7 +2555,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 #            plt.text(0.5, title_y, title, fontsize=f_size )        
 
     # limit displayed extent of plot?
-	limit_window=False
+#	limit_window=False
     if limit_window:
         ax = plt.gca()
         #  set axis limits

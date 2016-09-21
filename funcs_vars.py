@@ -687,7 +687,7 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, \
     # Extra Cly species 
     'ClNO2': 'pptv', 'ClNO3': 'pptv', 'HCl': 'pptv', 'ClOO': 'pptv', \
 	'Cl2O2': 'pptv', 'CH2Cl2': 'pptv', 'CHCl3': 'pptv', 'CH3Cl': 'pptv', \
-	'BrSALA': 'pptv', 'BrSALC':'pptv',\
+	'BrSALA': 'pptv', 'BrSALC':'pptv', 'Cly':'pptv', \
     # extra tag "species" for  easy of processing 
     'PD421' : 'molec cm$^{-3}$ s$^{-1}$'
     } 
