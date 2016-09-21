@@ -3406,7 +3406,10 @@ def setup_diurnal(years, months, f_size=20):
 # 4.27 -  print NCAS & York logos in the bottom corners
 # -------------
 def add_logos_NCAS_york_bottom(fig):
-    """ Add NCAS + York logo for external plots used externally """
+    """ Add NCAS + York logo for external plots used externally 
+    NOTE(s):
+     - This function is not general enough and needs to be removed from AC_tools
+    """
     
     wd1 = get_dir ('dwd') +'misc/logos/'
     logo_list= ['NCAS_national_centre_logo.gif', 'nerclogo1000.gif' , 'york_uni_shield.tif' ,   \

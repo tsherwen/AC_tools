@@ -34,6 +34,9 @@ def get_dir( input, loc='earth0' ):
     """
         Retrieves directories within structure on a given platform
         ( e.g. York cluster, Mac, Old cluster  )
+    NOTES:
+     - This function is not general enough to be transferrable.
+     - Update to use $USER flag. 
     """
 
     try:
