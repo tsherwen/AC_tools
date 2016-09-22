@@ -6,3 +6,8 @@ To access the help, from python or ipython, type help(AC_tools) to get general h
 To get more detailed help from a module for example, type help(AC_tools.funcs4time.py)
 If you find missing documentation in any of this, please request a git push to github.
 """
+
+import logging
+from beeprint import pp
+import numpy as np
+
