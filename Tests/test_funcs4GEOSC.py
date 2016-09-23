@@ -1,7 +1,8 @@
 from ..funcs4GEOSC import *
 import logging
 import pytest
-logging.basicConfig(filename='test.log',level=logging.DEBUG)
+FORMAT = "[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"
+logging.basicConfig(filename='test.log',level=logging.DEBUG, format=FORMAT)
 logging.info('Starting funcs4GEOSC test.')
 
 wd = 'Test_files/GC_run'
@@ -24,15 +25,6 @@ def test_get_air_mass_np():
 #1.22
 def test_get_GC_output():
     logging.info("Beginning test.")
-    arr = get_GC_output(wd=wd, species='O3', category='IJ_AVG_S')
-    assert isinstance( arr, np.ndarray), 'GC output is not a numpy array'
-    logging.info("Test complete.")
-    return
- 
-@noCTM
-def test_get_GC_output_noCTM():
-    logging.info("Beginning test.")
-    os.remove( wd+'/ctm.nc' )
     arr = get_GC_output(wd=wd, species='O3', category='IJ_AVG_S')
     assert isinstance( arr, np.ndarray), 'GC output is not a numpy array'
     logging.info("Test complete.")
