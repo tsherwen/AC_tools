@@ -13,4 +13,6 @@ setup(  name='AC_tools',
             'numpy',
         ],
         )
+
+# Add any other install scripts here, like the user config setup that we want.
         
