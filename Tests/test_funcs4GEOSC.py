@@ -13,6 +13,23 @@ noCTM = pytest.mark.skipif(
     reason="need --runslow option to run"
 )
 
+
+#1.04
+def test_get_surface_area():
+    arr = get_surface_area()
+    assert isinstance( arr, np.ndarray), 'Surface area not a numpy array.'
+    assert (len(arr.shape)==3), 'Surface area has too many dimensions.'
+    return
+
+#1.05
+def get_land_map():
+    arr = get_land_map()
+    assert isinstance( arr, np.ndarray), 'Land map not a numpy array.'
+    assert (len(arr.shape) == 3), 'Land map has too many dimensions.'
+    return
+
+
+
 #1.07
 def test_get_air_mass_np():
     logging.info("Begining test.")
