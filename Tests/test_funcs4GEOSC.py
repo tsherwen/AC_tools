@@ -1,9 +1,16 @@
 from ..funcs4GEOSC import *
 import logging
+import pytest
 logging.basicConfig(filename='test.log',level=logging.DEBUG)
 logging.info('Starting funcs4GEOSC test.')
 
-wd = 'test_files/GC_run'
+wd = 'Test_files/GC_run'
+
+# Option to remake CTM files - Not recomended for normal tests - slow.
+noCTM = pytest.mark.skipif(
+    not pytest.config.getoption("--remake_ctm"),
+    reason="need --runslow option to run"
+)
 
 #1.07
 def test_get_air_mass_np():
@@ -22,5 +29,13 @@ def test_get_GC_output():
     logging.info("Test complete.")
     return
  
+@noCTM
+def test_get_GC_output_noCTM():
+    logging.info("Beginning test.")
+    os.remove( wd+'/ctm.nc' )
+    arr = get_GC_output(wd=wd, species='O3', category='IJ_AVG_S')
+    assert isinstance( arr, np.ndarray), 'GC output is not a numpy array'
+    logging.info("Test complete.")
+    return
 
 logging.info('funcs4GEOSC test complete.')   
