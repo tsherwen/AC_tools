@@ -1,0 +1,2377 @@
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+DEBUG:root:No netCDF file found. Attempting to create one.
+DEBUG:root:Found 0 bpch files.
+ERROR:root:No bpch files found.
+INFO:root:Started io test
+INFO:root:Finished io test
+INFO:root:Opening netCDF file: test_files/temp.nc
+DEBUG:root:No netCDF file found. Attempting to create one.
+DEBUG:root:Found 1 bpch files.
+DEBUG:root:Creating a netCDF file from bpch.
+INFO:root:Creating a plot settings class
+INFO:root:Creating a plot settings class
+INFO:root:Plotting a multi line plot.
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Started io test
+INFO:root:Finished io test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Opening netCDF file: test_files/temp.nc
+DEBUG:root:No netCDF file found. Attempting to create one.
+DEBUG:root:Found 1 bpch files.
+DEBUG:root:Creating a netCDF file from bpch.
+INFO:root:Creating a plot settings class
+INFO:root:Creating a plot settings class
+INFO:root:Plotting a multi line plot.
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Started io test
+INFO:root:Finished io test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Opening netCDF file: test_files/temp.nc
+DEBUG:root:No netCDF file found. Attempting to create one.
+DEBUG:root:Found 1 bpch files.
+DEBUG:root:Creating a netCDF file from bpch.
+INFO:root:Creating a plot settings class
+INFO:root:Creating a plot settings class
+INFO:root:Plotting a multi line plot.
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Started io test
+INFO:root:Finished io test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Opening netCDF file: test_files/temp.nc
+DEBUG:root:No netCDF file found. Attempting to create one.
+DEBUG:root:Found 2 bpch files.
+DEBUG:root:Creating a netCDF file from bpch.
+INFO:root:Creating a plot settings class
+INFO:root:Creating a plot settings class
+INFO:root:Plotting a multi line plot.
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Started io test
+INFO:root:Finished io test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Opening netCDF file: test_files/temp.nc
+DEBUG:root:No netCDF file found. Attempting to create one.
+DEBUG:root:Found 1 bpch files.
+DEBUG:root:Creating a netCDF file from bpch.
+INFO:root:Creating a plot settings class
+INFO:root:Creating a plot settings class
+INFO:root:Plotting a multi line plot.
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Started io test
+INFO:root:Finished io test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Opening netCDF file: test_files/temp.nc
+DEBUG:root:No netCDF file found. Attempting to create one.
+DEBUG:root:Found 1 bpch files.
+DEBUG:root:Creating a netCDF file from bpch.
+INFO:root:Creating a plot settings class
+INFO:root:Creating a plot settings class
+INFO:root:Plotting a multi line plot.
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Started io test
+INFO:root:Finished io test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the total tropsopheric PL for PO1
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Opening netCDF file: test_files/temp.nc
+DEBUG:root:No netCDF file found. Attempting to create one.
+DEBUG:root:Found 1 bpch files.
+DEBUG:root:Creating a netCDF file from bpch.
+INFO:root:Creating a plot settings class
+INFO:root:Creating a plot settings class
+INFO:root:Plotting a multi line plot.
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the total tropsopheric PL for PO1
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the total tropsopheric PL for PO1
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the total tropsopheric PL for PO1
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the total tropsopheric PL for PO1
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the total tropsopheric PL for PO1
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the total tropsopheric PL for PO1
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+WARNING:root:No RMM found for bob. Assuming mass of 1.0
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the total tropsopheric PL for PO1
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+WARNING:root:No RMM found for bob. Assuming mass of 1.0
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the total tropsopheric PL for PO1
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the dry deposition for O3
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+WARNING:root:No RMM found for bob. Assuming mass of 1.0
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the total tropsopheric PL for PO1
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the dry deposition for O3
+INFO:root:Getting DRYD_VEL__O3dv data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+WARNING:root:No RMM found for bob. Assuming mass of 1.0
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the total tropsopheric PL for PO1
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the dry deposition for O3
+INFO:root:Getting DRYD_VEL__O3dv data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+WARNING:root:No RMM found for bob. Assuming mass of 1.0
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the total tropsopheric PL for PO1
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the dry deposition for O3
+INFO:root:Getting DRYD_VEL__O3dv data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+WARNING:root:No RMM found for bob. Assuming mass of 1.0
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the total tropsopheric PL for PO1
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the dry deposition for O3
+INFO:root:Getting DRYD_VEL__O3dv data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+WARNING:root:No RMM found for bob. Assuming mass of 1.0
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the total tropsopheric PL for PO1
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the dry deposition for O3
+INFO:root:Getting DRYD_VEL__O3dv data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+WARNING:root:No RMM found for bob. Assuming mass of 1.0
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the total tropsopheric PL for PO1
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the dry deposition for O3
+INFO:root:Getting DRYD_VEL__O3dv data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+WARNING:root:No RMM found for bob. Assuming mass of 1.0
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the total tropsopheric PL for PO1
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the dry deposition for O3
+INFO:root:Getting DRYD_VEL__O3dv data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the annual dry deposition.
+DEBUG:root:Getting the dry deposition for O3
+INFO:root:Getting DRYD_VEL__O3dv data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Started io test
+INFO:root:Finished io test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+WARNING:root:No RMM found for bob. Assuming mass of 1.0
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the total tropsopheric PL for PO1
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the dry deposition for O3
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting DRYD_FLX__O3df data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the annual dry deposition.
+DEBUG:root:Getting the dry deposition for O3
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting DRYD_FLX__O3df data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Opening netCDF file: test_files/temp.nc
+DEBUG:root:No netCDF file found. Attempting to create one.
+DEBUG:root:Found 1 bpch files.
+DEBUG:root:Creating a netCDF file from bpch.
+INFO:root:Creating a plot settings class
+INFO:root:Creating a plot settings class
+INFO:root:Plotting a multi line plot.
+INFO:root:figure saved to test_outputs/multi_line_plot.png
+INFO:root:Started GC_funcs test
+INFO:root:Opening netCDF file: /work/home/bn506/Python/GC_tools/tests/test_files/ctm.nc
+INFO:root:netCDF file opened successfuly
+INFO:root:Finished GC_funcs test
+INFO:root:Started io test
+INFO:root:Finished io test
+INFO:root:Begining test.
+INFO:root:Getting surfice area from netCDF file
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Test complete.
+INFO:root:Begining test.
+INFO:root:Getting the list of netCDF variables
+INFO:root:Test complete.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting fail data from netCDF file
+ERROR:root:Could not find variable fail
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+WARNING:root:No RMM found for bob. Assuming mass of 1.0
+INFO:root:Getting the tropospheric O3 mass.
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting O3 data.
+INFO:root:Getting IJ_AVG_S__O3 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the total tropsopheric PL for PO1
+INFO:root:Getting the tropospheric prod/loss for PO1
+INFO:root:Getting PORL_L_S__PO1 data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting the air mass.
+INFO:root:Getting BXHGHT_S__AD data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting TIME_TPS__TIMETROP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'dim2')
+INFO:root:Getting BXHGHT_S__BXHEIGHT data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude', u'model_level_number')
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the dry deposition for O3
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting DRYD_FLX__O3df data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+DEBUG:root:Getting the annual dry deposition.
+DEBUG:root:Getting the dry deposition for O3
+INFO:root:Getting DXYP__DXYP data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Getting DRYD_FLX__O3df data from netCDF file
+INFO:root:Found data with dimensions (u'longitude', u'latitude')
+INFO:root:Opening netCDF file: test_files/temp.nc
+DEBUG:root:No netCDF file found. Attempting to create one.
+DEBUG:root:Found 1 bpch files.
+DEBUG:root:Creating a netCDF file from bpch.
+INFO:root:Creating a plot settings class
+INFO:root:Creating a plot settings class
+INFO:root:Plotting a multi line plot.
+INFO:root:figure saved to test_outputs/multi_line_plot.png
