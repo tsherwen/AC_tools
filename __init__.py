@@ -20,6 +20,7 @@ from AC_tools.funcs4generic import *
 from AC_tools.funcs4pf import *
 from AC_tools.funcs4time import *
 from AC_tools.funcs_vars import *
+from AC_tools.funcs4plotting import *
 
 
 
