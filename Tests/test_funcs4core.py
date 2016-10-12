@@ -3,15 +3,6 @@ import logging
 import pytest
 logging.basicConfig(filename='test.log',level=logging.DEBUG)                    
 
-noCTM = pytest.mark.skipif(                                                     
-    not pytest.config.getoption("--remake_ctm"),                                
-    reason="need --runslow option to run"                                       
-)   
-
-@noCTM
-def test_convert_to_netCDF():
-    return
-
 def test_gchemgrid():
     # Test fail for no inputs
     with pytest.raises(Exception):

@@ -5,13 +5,7 @@ FORMAT = "[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"
 logging.basicConfig(filename='test.log',level=logging.DEBUG, format=FORMAT)
 logging.info('Starting funcs4GEOSC test.')
 
-wd = 'Test_files/GC_run'
-
-# Option to remake CTM files - Not recomended for normal tests - slow.
-noCTM = pytest.mark.skipif(
-    not pytest.config.getoption("--remake_ctm"),
-    reason="need --runslow option to run"
-)
+wd = 'test_files'
 
 
 #1.04

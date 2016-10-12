@@ -1,0 +1,191 @@
+test_funcs4GEOSC.py:6 - <module>() : Starting funcs4GEOSC test.
+test_funcs4GEOSC.py:50 - <module>() : funcs4GEOSC test complete.
+test_funcs4generic.py:5 - <module>() : Starting funcs4GEOSC test.
+test_funcs4generic.py:23 - <module>() : funcs4GEOSC test complete
+test_funcs4pf.py:5 - <module>() : Starting funcs4GEOSC test.
+test_funcs4pf.py:23 - <module>() : funcs4GEOSC test complete
+test_funcs4plotting.py:5 - <module>() : Starting funcs4GEOSC test.
+test_funcs4plotting.py:23 - <module>() : funcs4GEOSC test complete
+test_funcs4time.py:5 - <module>() : Starting funcs4GEOSC test.
+test_funcs4time.py:23 - <module>() : funcs4GEOSC test complete
+test_funcs4vars.py:5 - <module>() : Starting funcs4GEOSC test.
+test_funcs4vars.py:23 - <module>() : funcs4GEOSC test complete
+test_bpch2netCDF.py:32 - test_get_folder() : beginning test
+test_funcs4GEOSC.py:35 - test_get_air_mass_np() : Begining test.
+test_funcs4GEOSC.py:44 - test_get_GC_output() : Beginning test.
+funcs4core.py:486 - gchemgrid() : gchemgrid called
+funcs4core.py:486 - gchemgrid() : gchemgrid called
+test_bpch2netCDF.py:42 - test_get_folder() : beginning test
+test_bpch2netCDF.py:18 - setup_function() : Downloading test files
+test_bpch2netCDF.py:20 - setup_function() : Download of test files complete
+test_bpch2netCDF.py:44 - test_get_folder() : beginning test
+test_bpch2netCDF.py:31 - setup_function() : ctm.nc not found. Downloading now.
+test_bpch2netCDF.py:31 - setup_function() : ctm.nc not found. Downloading now.
+test_bpch2netCDF.py:34 - setup_function() : ctm.nc downloaded.
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:49 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:31 - setup_function() : test.bpch not found. Downloading now.
+test_bpch2netCDF.py:34 - setup_function() : test.bpch downloaded.
+test_bpch2netCDF.py:31 - setup_function() : tracerinfo.dat not found. Downloading now.
+test_bpch2netCDF.py:34 - setup_function() : tracerinfo.dat downloaded.
+test_bpch2netCDF.py:31 - setup_function() : diaginfo.dat not found. Downloading now.
+test_bpch2netCDF.py:34 - setup_function() : diaginfo.dat downloaded.
+test_bpch2netCDF.py:49 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:32 - setup_function() : ctm.nc not found. Downloading now.
+test_bpch2netCDF.py:35 - setup_function() : ctm.nc downloaded.
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+bpch2netCDF.py:29 - convert_to_netCDF() : No bpch files found in test_files
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+bpch2netCDF.py:32 - convert_to_netCDF() : test_files/ctm.nc already exists. Not recreating.
+test_bpch2netCDF.py:57 - test_convert_to_netCDF() : Comparing the temp netCDF file to the origional
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:57 - test_convert_to_netCDF() : Comparing the temp netCDF file to the origional
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:57 - test_convert_to_netCDF() : Comparing the temp netCDF file to the origional
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:57 - test_convert_to_netCDF() : Comparing the temp netCDF file to the origional
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_bpch2netCDF.py:32 - setup_function() : ctm.nc not found. Downloading now.
+test_bpch2netCDF.py:35 - setup_function() : ctm.nc downloaded.
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:57 - test_convert_to_netCDF() : Comparing the temp netCDF file to the origional
+test_bpch2netCDF.py:62 - test_convert_to_netCDF() : test complete
+test_bpch2netCDF.py:32 - setup_function() : ctm.nc not found. Downloading now.
+test_bpch2netCDF.py:35 - setup_function() : ctm.nc downloaded.
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_funcs4GEOSC.py:6 - <module>() : Starting funcs4GEOSC test.
+test_funcs4generic.py:5 - <module>() : Starting funcs4GEOSC test.
+test_funcs4pf.py:5 - <module>() : Starting funcs4GEOSC test.
+test_funcs4plotting.py:5 - <module>() : Starting funcs4GEOSC test.
+test_funcs4time.py:5 - <module>() : Starting funcs4GEOSC test.
+test_funcs4vars.py:5 - <module>() : Starting funcs4GEOSC test.
+test_bpch2netCDF.py:50 - test_convert_to_netCDF() : beginning test
+test_bpch2netCDF.py:52 - test_convert_to_netCDF() : Creating the temp netCDF file
+test_bpch2netCDF.py:57 - test_convert_to_netCDF() : Comparing the temp netCDF file to the origional
+test_bpch2netCDF.py:62 - test_convert_to_netCDF() : test complete
+test_bpch2netCDF.py:32 - setup_function() : ctm.nc not found. Downloading now.
+test_bpch2netCDF.py:35 - setup_function() : ctm.nc downloaded.
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_funcs4GEOSC.py:6 - <module>() : Starting funcs4GEOSC test.
+test_funcs4GEOSC.py:44 - <module>() : funcs4GEOSC test complete.
+test_funcs4generic.py:5 - <module>() : Starting funcs4GEOSC test.
+test_funcs4generic.py:15 - <module>() : funcs4GEOSC test complete
+test_funcs4pf.py:5 - <module>() : Starting funcs4GEOSC test.
+test_funcs4pf.py:15 - <module>() : funcs4GEOSC test complete
+test_funcs4plotting.py:5 - <module>() : Starting funcs4GEOSC test.
+test_funcs4plotting.py:17 - <module>() : funcs4GEOSC test complete
+test_funcs4time.py:5 - <module>() : Starting funcs4GEOSC test.
+test_funcs4time.py:17 - <module>() : funcs4GEOSC test complete
+test_funcs4vars.py:5 - <module>() : Starting funcs4GEOSC test.
+test_funcs4vars.py:17 - <module>() : funcs4GEOSC test complete
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_funcs4GEOSC.py:29 - test_get_air_mass_np() : Begining test.
+test_funcs4GEOSC.py:38 - test_get_GC_output() : Beginning test.
+funcs4core.py:486 - gchemgrid() : gchemgrid called
+funcs4core.py:486 - gchemgrid() : gchemgrid called
+test_funcs4GEOSC.py:6 - <module>() : Starting funcs4GEOSC test.
+test_funcs4GEOSC.py:44 - <module>() : funcs4GEOSC test complete.
+test_funcs4generic.py:5 - <module>() : Starting funcs4GEOSC test.
+test_funcs4generic.py:15 - <module>() : funcs4GEOSC test complete
+test_funcs4pf.py:5 - <module>() : Starting funcs4GEOSC test.
+test_funcs4pf.py:15 - <module>() : funcs4GEOSC test complete
+test_funcs4plotting.py:5 - <module>() : Starting funcs4GEOSC test.
+test_funcs4plotting.py:17 - <module>() : funcs4GEOSC test complete
+test_funcs4time.py:5 - <module>() : Starting funcs4GEOSC test.
+test_funcs4time.py:17 - <module>() : funcs4GEOSC test complete
+test_funcs4vars.py:5 - <module>() : Starting funcs4GEOSC test.
+test_funcs4vars.py:17 - <module>() : funcs4GEOSC test complete
+test_bpch2netCDF.py:66 - test_get_folder() : beginning test
+test_bpch2netCDF.py:70 - test_get_folder() : test complete
+test_funcs4GEOSC.py:29 - test_get_air_mass_np() : Begining test.
+test_funcs4GEOSC.py:33 - test_get_air_mass_np() : Test complete.
+test_funcs4GEOSC.py:38 - test_get_GC_output() : Beginning test.
+test_funcs4GEOSC.py:41 - test_get_GC_output() : Test complete.
+funcs4core.py:486 - gchemgrid() : gchemgrid called
+funcs4core.py:486 - gchemgrid() : gchemgrid called
