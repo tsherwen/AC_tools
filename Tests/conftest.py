@@ -13,5 +13,6 @@ logging.basicConfig(filename='test.log',level=logging.DEBUG, format=FORMAT)
 
 
 def pytest_addoption(parser):
-    parser.addoption("--remake_ctm", action="store_true",
+    parser.addoption("--slow", action="store_true",
         help="remake ctm.nc tests")
+

@@ -11,3 +11,16 @@ import logging
 from beeprint import pp
 import numpy as np
 
+
+# We can use an import here so that submodules can be accessed easier.
+
+from AC_tools.funcs4GEOSC import *
+from AC_tools.funcs4core import *
+from AC_tools.funcs4generic import *
+from AC_tools.funcs4pf import *
+from AC_tools.funcs4time import *
+from AC_tools.funcs_vars import *
+
+
+
+
