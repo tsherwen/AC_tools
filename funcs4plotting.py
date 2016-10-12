@@ -158,6 +158,20 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             extend ( 'both', 'min', 'both' ... )
             shrink ( size of colorbar )    
     """
+
+    # Make sure the input data is usable and try to fix it if not.
+    assert len(arr.shape)==2, "input array should be 2D"
+    if res=='4x5':
+        if arr.shape==(46,72):
+            pass
+        elif arr.shape==(72,46):
+            arr = arr.T
+            logging.warning("Array was wrong shape and has been transposed!")
+        else:
+            logging.error("Array is the wrong shape. \
+                Should be (46,72). Got " + str(arr.shape))
+            raise AssertionError, "Incorrect array shape."
+
     if debug:
         print 'map_plot called'
         print [ [ i.min(), i.max(), i.mean(), type(i) ] for i in [arr] ]
