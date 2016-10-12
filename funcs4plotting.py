@@ -73,6 +73,7 @@
 #
 
 # -- Plotting                                                                                       
+from PIL import Image
 from mpl_toolkits.basemap import Basemap
 from matplotlib.colors import LogNorm
 from matplotlib.ticker import LogFormatter
