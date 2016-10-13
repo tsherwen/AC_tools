@@ -2263,6 +2263,8 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'LEI_AUG' :  ( -1.127311, 52.619823, 0 ),
     'LEI_MAR' :  ( -1.127311, 52.619823, 0 ),
     'LEI' :  ( -1.127311, 52.619823, 0 ),
+    # --- Europ sites
+    'DZK' :  ( 4.5000, 52.299999237, 4 ),
     # --- O3 preindustrial
     'MON' :  ( 2.338333, 48.822222,  75+5 ), 
 #    'MON' : (2.3, 48.8, 80), # Monsoursis 
@@ -2310,15 +2312,19 @@ def get_obs_loc(loc, debug=False):
     48.491, 49.4508, 47.91111  ] , 
     [ 13.3833 , 7.0998, 10.0014, 8.3075, 10.7872, 11.5667, 13.133, 7.302, \
      7.8894] ],  \
-    'Weyborne' : [  [ 52.9420],  [1.1380 ]   ] , \
-    'Penlee' : [  [ 50.3214],  [-4.1858 ]   ] ,\
-    'Penlee_M2' :[  [ 49.7795272],  [-2.0229414 ]   ] , \
-    'Penlee_M3' :[  [ 49.8370764,],  [-5.3652425 ]   ] , \
-    'Penlee_M4' :[  [ 50.25],  [-4.15 ]   ] , \
-    'Penlee_M5' :[  [ 50.25],  [-0.85  ]   ] , \
-    'Penlee_M6' :[  [ 50.25],  [-7.05 ]   ] , \
-    'Mace_head_M3' :[  [ 53.209003], [  -10.846408 ]   ] , \
-    'Leicester' :[  [ 52.619823],  [-1.127311 ]   ]    }
+    'Weyborne'  : [[52.9420], [1.1380]], \
+    'Penlee'    : [[50.3214], [-4.1858]],\
+    'Penlee_M2' :[[49.7795272], [-2.0229414]], \
+    'Penlee_M3' :[[49.8370764,], [-5.3652425]], \
+    'Penlee_M4' :[[50.25], [-4.15]], \
+    'Penlee_M5' :[[50.25], [-0.85]], \
+    'Penlee_M6' :[[50.25], [-7.05]], \
+    'Mace_head_M3' :[[53.209003], [ -10.846408 ]], \
+    'Leicester' :[[52.619823], [-1.127311 ]], \
+    # Europe?
+    'De Zilk'   : [[52.299999237], [4.5000]], \
+    'Mainz'   : [[49.9841900], [8.2791000]], \
+    }
 
     return d[loc] 
     
@@ -3247,17 +3253,17 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             'iGEOSChem_3.0_v10/run_5IBr', 
             'iGEOSChem_3.0_v10/run_5IBr.PI', 
             'iGEOSChem_3.0_v10/run.SSBr', 
-            'iGEOSChem_3.0_v10/run_PI_PD',
-            'iGEOSChem_3.0_v10/run_PD_PI',
+#            'iGEOSChem_3.0_v10/run_PI_PD',
+#            'iGEOSChem_3.0_v10/run_PD_PI',
             'iGEOSChem_3.0_v10/run_PD_PI.PD_STRAT',
-            'iGEOSChem_3.0_v10/run.PI_PD_STRAT',
-            'iGEOSChem_3.0_v10/run.PI_PD_STRAT.25',
-            'iGEOSChem_3.0_v10/run.PI_PD_STRAT.5',
+#            'iGEOSChem_3.0_v10/run.PI_PD_STRAT',
+#            'iGEOSChem_3.0_v10/run.PI_PD_STRAT.25',
+#            'iGEOSChem_3.0_v10/run.PI_PD_STRAT.5',
             'iGEOSChem_3.0_v10/run.PD_trop.PI_strat', 
-            'iGEOSChem_3.0_v10/run.PI.no_org_hal', 
-            'iGEOSChem_3.0_v10/run.no_org_hal', 
+#            'iGEOSChem_3.0_v10/run.PI.no_org_hal', 
+#            'iGEOSChem_3.0_v10/run.no_org_hal', 
             'iGEOSChem_3.0_v10/run.no_HOI_I2', 
-            'iGEOSChem_3.0_v10/run.no_org_hal.no_HOI_I2',
+#            'iGEOSChem_3.0_v10/run.no_org_hal.no_HOI_I2',
             'iGEOSChem_3.0_v10/run.PD_TROP_PI_STRAT.no_HOI_I2', 
             'iGEOSChem_3.0_v10/run.PI.no_HOI_I2', 
             'iGEOSChem_3.0_v10/run',
@@ -3273,17 +3279,17 @@ def MUTD_runs( standard=True, sensitivity=False, titles=False, \
             '0.5IBr', 
             '0.5IBr(PI)', 
             'SSBr', 
-            'PI w PD hal ', 
-           'PD w PI hal ', 
+#            'PI w PD hal ', 
+#           'PD w PI hal ', 
            'PD w PI hal (no strat)', 
-            'PI w PD STRAT', 
-            'PI w PD STRAT 0.25', 
-            'PI w PD STRAT 0.5', 
+#            'PI w PD STRAT', 
+#            'PI w PD STRAT 0.25', 
+#            'PI w PD STRAT 0.5', 
             'PD trop, PI strat',
-            'no org hal (PI)',
-            'no org hal',
+#            'no org hal (PI)',
+#            'no org hal',
             'Cl+Br+I- no I2/HOI', 
-            'no org hal - no I2/HOI', 
+#            'no org hal - no I2/HOI', 
             'PI w PD STRAT - no I2/HOI', 
             'Cl+Br+I(PI) - no I2/HOI', 
             'Cl+Br+I', 

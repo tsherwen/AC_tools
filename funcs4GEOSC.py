@@ -129,6 +129,7 @@ import re
 from bisect import bisect_left
 from netCDF4 import Dataset
 #import iris # Kludge as iris is not on Mac
+import logging
 
 # - Math/Analysis                                                                                   
 import numpy as np
@@ -147,13 +148,21 @@ import datetime as datetime
 from datetime import datetime as datetime_
 #from iris.time import PartialDateTime # Kludge as iris is not on Mac
 
+
+
+# ---  This needs to be tidied up
 # Import tms modules with shared functions
 from AC_tools.funcs4core import *
 from AC_tools.funcs4generic import *
 from AC_tools.funcs4time import *
-#from funcs4obs import * #( need: get_CVO_DOAS_obs ... )
 from AC_tools.funcs4pf import *
 from AC_tools.funcs_vars import *
+
+
+# Temporary logging test
+logging.basicConfig(filename='test.log', filemode='w',level=logging.DEBUG)
+logging.info('Started GC_funcs test')
+
 
 # --------------------------------- Section 2 ----------------------------------
 # -------------- Model Data Extractors
@@ -2889,11 +2898,11 @@ def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
         are consdidered if trop_limit=True ( e.g. array shape is (72,46,38,12)
         instead of (72,46,47,12)   
     """
-    if debug:
-        print 'mask4troposphere called for arr of shape: {},'.format( \
-            ars[0].shape) + 'with multiply method?=', multiply_method, \
-            ',use_time_in_trop=', use_time_in_trop, 'type(t_lvl): ', \
-            type(t_lvl), 'type(t_ps): ', type(t_ps)
+    logging.info( 'mask4troposphere called for arr of shape: {},'.format( \
+            ars[0].shape)  )
+    logging.debug('mask4troposphere - with multiply method?=', multiply_method, \
+        ',use_time_in_trop=', use_time_in_trop, 'type(t_lvl): ', \
+        type(t_lvl), 'type(t_ps): ', type(t_ps) )
 
     # --- Get time tropopause diagnostic (if not given as argument)
     if not isinstance(t_ps, np.ndarray) and use_time_in_trop: 
@@ -2917,6 +2926,9 @@ def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
         # Invert values if masking troposphere
         if masks4stratosphere:
             t_ps = 1 - t_ps
+        # If 3D array with is given without a time dimension, average t_ps
+        if len(ars[0].shape) == 3:
+            t_ps = t_ps.mean(axis=-1)
         # Multiply fractional array by provided array            
         ars = [i*t_ps for i in ars ]
 
@@ -2935,7 +2947,7 @@ def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
     else:
         # Setup dummy array with model numbers as values
         t_ps = np.zeros( ars[0].shape  )
-        print [ i.shape for i in t_ps, t_lvl, ars[0] ]
+        logging.debug( [ i.shape for i in t_ps, t_lvl, ars[0] ] )
         for i, n in enumerate( range(1,ars[0].shape[-2]+1) ):
             t_ps[:,:,i,:] =n
        
@@ -2947,12 +2959,25 @@ def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
             t_ps = np.ma.masked_where( t_ps>t_lvl[:,:,None,:], t_ps)
         
     # --- Set array mask to have strat mask (trop if masks4stratosphere=True)
-    if not multiply_method:
+    if (not multiply_method):
         for n, arr in enumerate( ars ):
+            logging.debug( 'Using multiply_method={}, use_time_in_trop={}'.format(
+                multiply_method, use_time_in_trop ) )
             try:
                 ars[n] = np.ma.array( arr, mask=t_ps.mask )
             except:
-                print 'FAIL>'*10, [i.shape  for i in arr, t_ps  ]
+                if len(arr.shape) == 3:
+                    logging.debug( 'using tps averaged over time' )
+                    # Apply mask
+                    ars[n] = np.ma.array( arr, mask=t_ps.mean(axis=-1).mask )
+                else:
+                    # Log error
+                    log_str = 'Using multiply_method={}, use_time_in_trop={}'.format(
+                        multiply_method, use_time_in_trop )
+                    logging.debug( log_str )
+                    log_str = 'mask not applied for shapes', [i.shape  for i in arr, t_ps  ] 
+                    logging.debug( log_str )
+                    sys.exit()
 
     return ars 
 
