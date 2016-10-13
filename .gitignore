@@ -11,6 +11,7 @@
 *.swo*
 *.out
 *.csv
+*.log
 *restart.4x5.geos5.*
 *.data
 d_planeflight_generator/data/*
@@ -21,3 +22,5 @@ MChem_bpch_plotter.py
 MChem_tools.py
 monthly_run
 *.sh
+/Tests/test_files
+/Tests/__pycache__

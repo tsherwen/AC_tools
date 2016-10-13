@@ -73,6 +73,7 @@
 #
 
 # -- Plotting                                                                                       
+from PIL import Image
 from mpl_toolkits.basemap import Basemap
 from matplotlib.colors import LogNorm
 from matplotlib.ticker import LogFormatter
@@ -157,6 +158,20 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             extend ( 'both', 'min', 'both' ... )
             shrink ( size of colorbar )    
     """
+
+    # Make sure the input data is usable and try to fix it if not.
+    assert len(arr.shape)==2, "input array should be 2D"
+    if res=='4x5':
+        if arr.shape==(46,72):
+            pass
+        elif arr.shape==(72,46):
+            arr = arr.T
+            logging.warning("Array was wrong shape and has been transposed!")
+        else:
+            logging.error("Array is the wrong shape. \
+                Should be (46,72). Got " + str(arr.shape))
+            raise AssertionError, "Incorrect array shape."
+
     if debug:
         print 'map_plot called'
         print [ [ i.min(), i.max(), i.mean(), type(i) ] for i in [arr] ]
@@ -3406,7 +3421,10 @@ def setup_diurnal(years, months, f_size=20):
 # 4.27 -  print NCAS & York logos in the bottom corners
 # -------------
 def add_logos_NCAS_york_bottom(fig):
-    """ Add NCAS + York logo for external plots used externally """
+    """ Add NCAS + York logo for external plots used externally 
+    NOTE(s):
+     - This function is not general enough and needs to be removed from AC_tools
+    """
     
     wd1 = get_dir ('dwd') +'misc/logos/'
     logo_list= ['NCAS_national_centre_logo.gif', 'nerclogo1000.gif' , 'york_uni_shield.tif' ,   \
