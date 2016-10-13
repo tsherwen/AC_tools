@@ -23,7 +23,8 @@ import datetime as datetime
 # --- math
 from math import radians, sin, cos, asin, sqrt, pi, atan2
 
-# --- tms modules
+# ---  This needs to be updated, imports should be specific and in individual functions
+# import tms modules with shared functions
 from AC_tools.funcs4core import *
 from AC_tools.funcs_vars import *
 
@@ -81,7 +82,9 @@ from AC_tools.funcs_vars import *
 # 1.01 -  Split arrays into chunks (e.g. days)
 # -------------
 def chunks(l, n):
-    """ Split list in chunks - useful for controlling memory usage """
+    """ 
+    Split list in chunks - useful for controlling memory usage 
+    """
     if n < 1:
         n = 1
     return [l[i:i + n] for i in range(0, len(l), n)]
@@ -90,14 +93,20 @@ def chunks(l, n):
 # 1.02 - Get len of file
 # -------------
 def file_len(fname):
-    """ Get length of file """
+    """ 
+    Get length of file 
+    """
     return sum(1 for line in open(fname))
 
 # -------------
 # 1.03 - My round - credit: Alok Singhal
 # -------------
 def myround(x, base=5, integer=True, round_up=False):
-    """ Round up values - mappable function for pandas processing """
+    """ 
+    Round up values - mappable function for pandas processing 
+    NOTES:
+     - credit: Alok Singhal
+    """
 
     round_up=True # Kludge - always set this to True
 
@@ -118,7 +127,9 @@ def myround(x, base=5, integer=True, round_up=False):
 # 1.07 - Count number of files/the filenames that contain certain phrase/number conbinations (e.g. dates) - tms 
 # -------------
 def counter_directory_contains_files(model_path,must_contain):
-    """ Count number of files in directory """
+    """ 
+    Count number of files in directory 
+    """
     model_ouput_file_counter = len(glob.glob1(model_path,must_contain))
     return model_ouput_file_counter
             
@@ -127,7 +138,9 @@ def counter_directory_contains_files(model_path,must_contain):
 # 1.09 - Rename vars/strs in files
 # ----
 def replace_strs_in_files( wd, input_str, output_str, debug=False ):
-    """ replace text in files """
+    """ 
+    replace text in files
+    """
     print wd, input_str, output_str
     for f in os.listdir(wd) :
         if not f.startswith('.'):
@@ -139,11 +152,15 @@ def replace_strs_in_files( wd, input_str, output_str, debug=False ):
 # 1.10- Get X and Y coordinates for a given grid - Credit: Eric Sofen
 # ----
 def get_xy(Lon,Lat, lon_edges, lat_edges, debug=False):
-    """Takes lon,lat values for a point (e.g. station) and arrays of longitude
-     and latitudes indicating edges of gridboxes.
-    Returns the index of the gridbox corresponding to this point.  Could be
-     easily extended to return data values corresponding
-    to points."""
+    """
+    Takes lon,lat values for a point (e.g. station) and arrays of longitude
+    and latitudes indicating edges of gridboxes.
+
+    Returns the index of the gridbox corresponding to this point.  
+    NOTES:
+     - Credit: Eric Sofen
+     - Could be easily extended to return data values corresponding to points.
+    """
     hasobs,lonrange,latrange=np.histogram2d([Lon],[Lat],[lon_edges, lat_edges])
     gridindx,gridindy=np.where(hasobs>=1)
     if not gridindx:
@@ -153,19 +170,16 @@ def get_xy(Lon,Lat, lon_edges, lat_edges, debug=False):
     else:
         #print Lon, Lat, gridindx, gridindy
         return gridindx[0],gridindy[0]
-
-# --------------
-# 1.11 - Convert from hPa to km or vice versa.
-# -------------
-#=> mv's to funcs4core.py
         
 # --------   
 # 1.12 - Save as pdf.
 # --------
 def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,\
-            justHH=False, no_dstr=True, save2png=True, \
-            save2eps=False, transparent=True, debug=False ):
-    """ Save figures (matplotlib) to pdf file """
+        justHH=False, no_dstr=True, save2png=True, \
+        save2eps=False, transparent=True, debug=False ):
+    """ 
+    Save figures (e.g. matplotlib) to pdf file 
+    """
 
     # set save directory ( using default directory dictionary )
     from funcs_vars import get_dir 
@@ -207,10 +221,11 @@ def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,\
 # --------   
 # 1.13- Save as mulitple page pdf.
 # --------
-def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, 
-                                    dpi=160, open=False, close=False, 
-                                    justHH=False, no_dstr=False ):
-    """ Save figures (matplotlib) to pdf file with multiple pages """
+def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, \
+        dpi=160, open=False, close=False, justHH=False, no_dstr=False ):
+    """ 
+    Save figures (e.g. matplotlib) to pdf file with multiple pages 
+    """
 
     # set save directory ( using default directory dictionary )
     from funcs_vars import get_dir # Kludge
@@ -249,30 +264,34 @@ def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True,
 # 1.14 -  Return mesh and indics for which obs are within 
 # -------------
 def obs2grid(  glon=None, glat=None, galt=None, nest='high res global', \
-                         sites=None, debug=False ):
-        """ values that have a given lat, lon and alt """
-        if isinstance(glon, type(None)):
-            glon, glat, galt = get_latlonalt4res( nest=nest, centre=False, \
-                debug=debug )
+        sites=None, debug=False ):
+    """ 
+    values that have a given lat, lon and alt
+    """
+    if isinstance(glon, type(None)):
+        glon, glat, galt = get_latlonalt4res( nest=nest, centre=False, \
+            debug=debug )
 
-        # Assume use of known CAST sites... unless others given.
-        if isinstance(sites, type(None)):
-            loc_dict = get_loc( rtn_dict=True )
-            sites = loc_dict.keys()            
+    # Assume use of known CAST sites... unless others given.
+    if isinstance(sites, type(None)):
+        loc_dict = get_loc( rtn_dict=True )
+        sites = loc_dict.keys()            
 
-        # pull out site location indicies
-        indices_list=[] 
-        for site in sites :
-            lon, lat, alt = loc_dict[site]
-            vars = get_xy(  lon,  lat , glon, glat ) 
-            indices_list += [ vars ]
-        return indices_list
+    # pull out site location indicies
+    indices_list=[] 
+    for site in sites :
+        lon, lat, alt = loc_dict[site]
+        vars = get_xy(  lon,  lat , glon, glat ) 
+        indices_list += [ vars ]
+    return indices_list
 
 # --------   
 # 1.15 - Sort (GAW) sites by Latitude and return
 # --------
 def sort_sites_by_lat(sites): 
-    """ Order given list of GAW sties by latitudes """ 
+    """ 
+    Order given list of GAW sties by latitudes 
+    """ 
 
     # Get info
     vars = [ gaw_2_loc( s ) for s in sites ] # lat, lon, alt, TZ
@@ -285,19 +304,24 @@ def sort_sites_by_lat(sites):
 # --------   
 # 1.16 - Find nearest
 # --------
-def find_nearest(array,value):
-    """
-        Find nearest number in array to given value. Adapted from HappyLeapSecond's Stackoverflow 
-        answer. http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
-    """
-    idx = (np.abs(array-value)).argmin()
-    return idx
+#def find_nearest(array,value):
+#    """
+#    Find nearest number in array to given value. 
+#    
+#    NOTES:
+#    - Adapted from (credit:) HappyLeapSecond's Stackoverflow answer. 
+#    ( http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array )
+#    """
+#    idx = (np.abs(array-value)).argmin()
+#    return idx
 
 # --------   
 # 1.17 - Get suffix for number
 # --------
 def get_suffix(n):
-    """ Add the appropriate suffix (th/st/rd) to any number given """
+    """ 
+    Add the appropriate suffix (th/st/rd) to any number given 
+    """
     ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(n/10%10!=1)*(n%10<4)*n%10::4])
     return ordinal(n)
 
@@ -305,12 +329,13 @@ def get_suffix(n):
 # 1.18 - Get shortest distance on a sphere ( for finding closest point )
 # --------
 def get_shortest_in(needle, haystack, r_distance=False):
-    """needle is a single (lat,long) tuple.
-        haystack is a numpy array to find the point in
-        that has the shortest distance to needle
+    """
+    needle is a single (lat,long) tuple. haystack is a numpy array to find the point in
+    that has the shortest distance to needle
     
-        adapted from stackover (Credit: jterrace):
-        http://stackoverflow.com/questions/6656475/python-speeding-up-geographic-comparison
+    NOTES:
+     - adapted from stackoverflow (Credit: jterrace):
+    (http://stackoverflow.com/questions/6656475/python-speeding-up-geographic-comparison)
     """
     # set Earth's radius
     earth_radius_miles = 3956.0
@@ -338,8 +363,11 @@ def get_shortest_in(needle, haystack, r_distance=False):
 # --------
 def gen_log_space(limit, n):
     """
-    credit: Avaris
-http://stackoverflow.com/questions/12418234/logarithmically-spaced-integers
+    Get logarithmically spaced integers
+    
+    NOTES:
+    - credit: Avaris
+    ( http://stackoverflow.com/questions/12418234/logarithmically-spaced-integers)
     """
     result = [1]
     if n>1:  # just a check to avoid ZeroDivisionError
@@ -364,8 +392,9 @@ http://stackoverflow.com/questions/12418234/logarithmically-spaced-integers
 # --------
 def get_arr_edge_indices( arr, res='4x5', extra_points_point_on_edge=None, \
             verbose=True, debug=False):
-    """ Find indices in a lon, lat (2D) grid, where value does not equal a given 
-            value ( e.g. the edge )    
+    """ 
+    Find indices in a lon, lat (2D) grid, where value does not equal a given 
+    value ( e.g. the edge )    
     """
     
     if verbose:
@@ -461,8 +490,10 @@ def get_arr_edge_indices( arr, res='4x5', extra_points_point_on_edge=None, \
 # --------
 def split_data_by_days( data=None, dates=None, day_list=None, \
             verbose=False, debug=False ):
-    """ takes a list of datetimes and data and returns a list of data and
-        the bins ( days )  """
+    """ 
+    Takes a list of datetimes and data and returns a list of data and
+    the bins ( days )  
+    """
     if verbose:
         print 'split_data_by_days called'
 
@@ -502,9 +533,13 @@ def split_data_by_days( data=None, dates=None, day_list=None, \
 # 2.01 - Ocean mask
 # --------
 def ocean_unmasked(res='4x5', debug=False):
-    """ Get ocean mask from GEOS-Chem LWI ( at given resolution) 
-        <= update 
-        NOTE: this currently returns mask with all except ocean masked """
+    """ 
+    Get ocean mask from GEOS-Chem LWI ( at given resolution) 
+    
+    NOTES: 
+     - this currently returns mask with all except ocean masked 
+     - NEEDS UPDATE 
+    """
 
     from funcs4GEOSC import get_land_map 
     if debug:
@@ -520,7 +555,9 @@ def ocean_unmasked(res='4x5', debug=False):
 # 2.02 - Land mask
 # --------
 def land_unmasked(res='4x5', debug=False):
-    """ Get land mask from GEOS-Chem LWI ( at given resolution) """
+    """ 
+    Get land mask from GEOS-Chem LWI ( at given resolution) 
+    """
     from funcs4GEOSC import get_land_map # Kludge, use GEOS-Chem LWI
 
     # Create a np.ma mask 
@@ -535,11 +572,12 @@ def land_unmasked(res='4x5', debug=False):
 # 2.03 - Ice mask
 # --------
 def ice_unmasked(res='4x5', debug=False):
-    """ Get mask for all areas but ice surface. Ice mask is from GEOS-Chem
+    """ 
+    Get mask for all areas but ice surface. Ice mask is from GEOS-Chem
     LWI ( at given resolution) 
 
     NOTES:
-        - returns 3D array as default ( to return 2D set mask2D=True )
+     - returns 3D array as default ( to return 2D set mask2D=True )
     """
     # Create a np.ma mask 
     m= np.logical_not( (land_unmasked(res)*ocean_unmasked(res)) )
@@ -552,9 +590,11 @@ def ice_unmasked(res='4x5', debug=False):
 # --------
 def surface_unmasked( res='4x5', trop_limit=False, mask2D=False, \
             debug=False ):
-    """ Get mask for all areas but surface
+    """ 
+    Get mask for all areas but surface
+
     NOTES:
-        - returns 3D array as default ( to return 2D set mask2D=True )
+     - returns 3D array as default ( to return 2D set mask2D=True )
     """
     # Create a np.ma mask 
     m=np.ma.array( np.zeros( get_dims4res(res) ), mask=False)
@@ -576,9 +616,11 @@ def surface_unmasked( res='4x5', trop_limit=False, mask2D=False, \
 # --------
 def tropics_unmasked(res='4x5', saizlopez=False, pradosroman=False, \
         mask2D=False ):
-    """ Get mask for all areas but tropics
+    """ 
+    Get mask for all areas but tropics
+
     NOTES:
-        - returns 3D array as default ( to return 2D set mask2D=True )
+     - returns 3D array as default ( to return 2D set mask2D=True )
     """
 
     # Create a mask of 1s for chosen area and or 0s elsewhere
@@ -605,10 +647,12 @@ def tropics_unmasked(res='4x5', saizlopez=False, pradosroman=False, \
 # --------
 def mid_lats_unmasked( res='4x5', saizlopez=False, pradosroman=False, \
             mask2D=False ):
-    """ Get mask for all areas but mid latitudes
+    """ 
+    Get mask for all areas but mid latitudes
+
     NOTES:
-        - returns 3D array as default ( to return 2D set mask2D=True )    
-     """
+     - returns 3D array as default ( to return 2D set mask2D=True )    
+    """
 
     # Create a mask of 1s for chosen area and or 0s elsewhere
     m=np.zeros(get_dims4res(res))
@@ -637,9 +681,11 @@ def mid_lats_unmasked( res='4x5', saizlopez=False, pradosroman=False, \
 # 2.07 - 40N to 40S Mask
 # --------
 def mask_lat40_2_40( res='4x5', mask2D=False ):
-    """ Get mask for all areas but 40S-40N latitudes (40 to 40 deg latitude) 
+    """ 
+    Get mask for all areas but 40S-40N latitudes (40 to 40 deg latitude) 
+
     NOTES:
-        - returns 3D array as default ( to return 2D set mask2D=True )    
+     - returns 3D array as default ( to return 2D set mask2D=True )    
     """    
 
     # Create a mask of 1s for chosen area and or 0s elsewhere
@@ -686,8 +732,8 @@ def extratropics_unmasked( res='4x5', mask2D=False):
 def all_unmasked( res='4x5', mask2D=False ):
     """ Get un-masked mask of size GEOS-Chem dimensions 
     NOTES:
-        - returns 3D array as default ( to return 2D set mask2D=True )    
-     """
+     - returns 3D array as default ( to return 2D set mask2D=True )    
+    """
 
     m = np.ma.array( np.ones(get_dims4res(res) ), mask=False)
 
@@ -703,13 +749,15 @@ def all_unmasked( res='4x5', mask2D=False ):
 def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
     M_all=False, use_multiply_method=True, trop_limit=False, \
     verbose=True, debug=False ):
-    """ Creates Maskes by pressure array  (required shape: 72,46,47), 
-        with conditions (lower and upper bounds) set by given cases for
-         MBL, UT, FT 
+    """ 
+    Creates Maskes by pressure array  (required shape: 72,46,47), 
+    with conditions (lower and upper bounds) set by given cases for
+    MBL, UT, FT 
+
     NOTES:
-        - originally written to generate masks for mulitplication 
-        (i.e. use_multiply_method = True ), but can also be use to make 
-        more pythonic masks ( if use_multiply_method=False )
+     - originally written to generate masks for mulitplication 
+    (i.e. use_multiply_method = True ), but can also be use to make 
+    more pythonic masks ( if use_multiply_method=False )
     """
     if verbose:
         print 'mask_3D called for sect={}, use_multiply_method={}'.format( \
@@ -778,8 +826,9 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
 # --------
 def lat2lat_2D_unmasked( lowerlat=None, higherlat=None, res='2x2.5', \
             debug=False ):
-    """ Takes a lower and higher latitude value and then creates 
-    mask of area boxes outside given laitidue limits.
+    """ 
+    Takes a lower and higher latitude value and then creates mask of area boxes outside 
+    given laitidue limits.
     """
 
     # Get vars
@@ -801,10 +850,12 @@ def lat2lat_2D_unmasked( lowerlat=None, higherlat=None, res='2x2.5', \
 # 2.12 - South Pole mask
 # --------
 def southpole_unmasked(  res='4x5', mask2D=False ):
-    """ Return global np.ma with southpole masked
+    """ 
+    Return global np.ma with southpole masked
+
     NOTES:
-        - returns 3D array as default ( to return 2D set mask2D=True )    
-     """
+     - returns 3D array as default ( to return 2D set mask2D=True )    
+    """
 
     # Create a mask of 1s for chosen area and or 0s elsewhere
     m = np.zeros(get_dims4res(res))
@@ -831,9 +882,11 @@ def southpole_unmasked(  res='4x5', mask2D=False ):
 # 2.13 - North Pole mask
 # --------
 def northpole_unmasked(  res='4x5', mask2D=False ):
-    """ Return global np.ma with northpole masked 
+    """ 
+    Return global np.ma with northpole masked 
+
     NOTES:
-        - returns 3D array as default ( to return 2D set mask2D=True )        
+     - returns 3D array as default ( to return 2D set mask2D=True )        
     """
 
     # Create a mask of 1s for chosen area and or 0s elsewhere
@@ -861,9 +914,11 @@ def northpole_unmasked(  res='4x5', mask2D=False ):
 # 2.14 - North Hemisphere mask
 # --------
 def NH_unmasked(  res='4x5', mask2D=False ):
-    """ Return global np.ma with north hemisphere masked 
+    """ 
+    Return global np.ma with north hemisphere masked 
+
     NOTES:
-        - returns 3D array as default ( to return 2D set mask2D=True )    
+     - returns 3D array as default ( to return 2D set mask2D=True )    
     """
     m=np.ma.array( np.ones( get_dims4res(res) ), mask=True)
     if res=='4x5':
@@ -886,9 +941,11 @@ def NH_unmasked(  res='4x5', mask2D=False ):
 # 2.15 - South Hemisphere mask
 # --------
 def SH_unmasked(  res='4x5', mask2D=False ):
-    """ Return global np.ma with south hemisphere masked 
+    """ 
+    Return global np.ma with south hemisphere masked 
+
     NOTES:
-        - returns 3D array as default ( to return 2D set mask2D=True )    
+     - returns 3D array as default ( to return 2D set mask2D=True )    
     """
     m=np.ma.array( np.ones( get_dims4res(res) ), mask=True)
     if res=='4x5':
@@ -916,9 +973,9 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
     """
     Return list of mask arrays for analysis 
 
-    For comparisons with Saiz-Lopez et al. 2014, set M_all to True,
-    this maskes the UT and FT as well as the BL 
-    (therefore gives MBL, MFT, MUT) 
+    NOTES:
+    - For comparisons with Saiz-Lopez et al. 2014, set M_all to True, this maskes the 
+    UT and FT as well as the BL  (therefore gives MBL, MFT, MUT) 
     
     """
     # --- Check hPa has been provided as arg.
@@ -1034,12 +1091,14 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
             res='4x5', trop_limit=True, \
             mask2D=False, mask3D=False, mask4D=False, \
             use_multiply_method=True, verbose=False, debug=False ):
-    """ Mask selector for analysis. global mask provided for with given region 
+    """ 
+    Mask selector for analysis. global mask provided for with given region 
         unmasked 
-        NOTE: 
-            (1) "unmask_all" yeilds completely unmasked array
-            (2) fucntion was oringialyl used to mulitple masks, however, 
-                this approch is   """
+    NOTE: 
+     - "unmask_all" yeilds completely unmasked array
+     - fucntion was oringialyl used to mulitple masks, however, this approch is 
+     unpythonic and therefore reccomended against. 
+     """
 
     # --- Setup cases...   
     # ( except None, unmask_all and global to retrive no mask )
@@ -1277,10 +1336,11 @@ def lon2lon_2D_unmasked(lowerlon, higherlon, res='2x2.5', debug=False ):
 # 2.19 - EU mask
 # --------
 def get_EU_unmasked( res='1x1',  ):
-    """ Mask 'EU' as defined by GEOS-Chem EU grid
-        the grid of "'0.5x0.666" resolution is used by default, but
-        any list of lat and lons could be provided and the extremities 
-        would be used as the mask edges  """
+    """ 
+    Mask 'EU' as defined by GEOS-Chem EU grid the grid of "'0.5x0.666" resolution is 
+    used by default, but any list of lat and lons could be provided and the extremities 
+    would be used as the mask edges  
+    """
 
     # Get GEOS-Chem EU lat and lons
     lon, lat, NIU = get_latlonalt4res( res='0.5x0.666' )
@@ -1301,8 +1361,8 @@ def get_EU_unmasked( res='1x1',  ):
 # --------
 def get_cruise_track_mask(  max_lon=None, min_lon=None, max_lat=None, \
         min_lat=None, unmask_water=True, res='4x5', trop_limit=True ):
-    """ Mask whole area of ship based research campaigns 
-        for bulk comparison
+    """ 
+    Mask whole area of ship based research campaigns for bulk comparison
     """
     
     # only look at surface
