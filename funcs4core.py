@@ -51,6 +51,7 @@ def get_dir( input, loc='earth0' ):
         'Linux-3.0.101-0.46-default-x86_64-with-SuSE-11-x86_64':2,  
          # updated 15/12
         'Linux-3.0.101-0.47.71-default-x86_64-with-SuSE-11-x86_64': 2,
+        'Darwin-15.6.0-x86_64-i386-64bit':2, 
         # reverted on 15 03 10        
         'Linux-3.2.0-56-generic-x86_64-with-debian-wheezy-sid':3
         }[platform.platform()]

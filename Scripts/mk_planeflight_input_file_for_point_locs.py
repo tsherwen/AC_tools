@@ -1,36 +1,43 @@
+#!/usr/bin/python
+"""
+This programme makes the planeflight*.dat files required to output for specific locations and times in the model. The deafult settting is for hourly output.
+
+NOTES:
+ - This programme can be used to produce files to output data for observational sites (e.g. goverment air quality sites)
+"""
 # --- Packages
-from AC_tools.funcs4GEOSC import *
-from AC_tools.funcs4pf import * 
 import numpy as np
 from time import gmtime, strftime
 import time
 import glob
+import AC_tools as AC
 
 # --- Settings
 wd = '/work/home/ts551/data/'#IO_obs'
+# file of locations?
 pf_loc_dat_file ='ClBrI_ClNO2_PI_O3_PDRA.dat'
-# 'ClBrI_ClNO2_PI_O3.dat'#'ClBrI_ClNO2.dat'
-
-# 'ClearFlo.dat'#'CVO_BMW_MNM_SMO_RPB_ogasawara_ROS.dat'
-#start_year, end_year = 2004,2006
-#start_year, end_year = 2006,2010
+# Years output is required for?
 start_year, end_year = 2014,2016
+# debug?
 debug = False
+# output all reactions?
 all_REAs = False
-ver='3.0' # ( e.g. '1.6', '1.7'  )
+# 
+# Which (halogen) code version is being used?
+#ver = '1.6' # Iodine simulation in v9-2
+#ver = '2.0' # Iodine + Bromine simulation
+ver = '3.0' # Cl-Br-I simulation 
+# add extra spacing? (needed for large amounts of output, like nested grids)
 Extra_spacings =False
 
 # --- Read in site Detail
 numbers, lats, lons, pres, locs = readin_gaw_sites( pf_loc_dat_file )
+# make sure the format is numpt float 64
 lats, lons, pres = [ np.float64(i) for i in lats, lons, pres ]
 print lats[0:4]
 
 # --- Set Variables
 slist = pf_var('slist', ver=ver )#_REAs_all')
-# get all variables for ClearFlo
-#slist = pf_var('slist_v10_1.7_allspecs', ver=ver )
-# kludge additional of ethanol
-#slist = slist+ ['TRA_86']
 
 # extra scpaes need for runs with many points
 if Extra_spacings:
@@ -46,11 +53,7 @@ if all_REAs:
     MUTDwd =  MUTD_runs()[0]
     rdict = rxn_dict_from_smvlog( MUTDwd, ver=ver)
 
-    if ver == '1.5':
-        slist = pf_var('slist_REAs_all')   
-        rdict = rxn_dict_from_smvlog(MUTDwd)
-    [ slist.pop(iii) for iii in [slist.index(ii) for ii in[ 'REA_'+str(i)  for i in range(1,535) if len(rdict[i]) <7 ][::-1] ] ]
-
+# setup required time range
 nvar=len(slist)
 yr = range(start_year, end_year )
 m  = range(01,13)
