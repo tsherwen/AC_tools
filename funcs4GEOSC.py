@@ -127,7 +127,7 @@ import pandas as pd
 import re
 from bisect import bisect_left
 from netCDF4 import Dataset
-#import iris # Kludge as iris is not on Mac
+import iris 
 import logging
 
 # - Math/Analysis                                                                                   
@@ -145,11 +145,10 @@ import time
 import calendar
 import datetime as datetime
 from datetime import datetime as datetime_
-#from iris.time import PartialDateTime # Kludge as iris is not on Mac
+from iris.time import PartialDateTime 
 
-
-# ---  This needs to be tidied up
-# Import tms modules with shared functions
+# ---  This needs to be updated, imports should be specific and in individual functions
+# import tms modules with shared functions
 from AC_tools.funcs4core import *
 from AC_tools.funcs4generic import *
 from AC_tools.funcs4time import *
