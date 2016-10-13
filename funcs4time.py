@@ -1,5 +1,8 @@
 #!/usr/bin/python
-""" Time processing functions for use with GEOS-Chem/Data analysis
+""" 
+Time processing functions for use with GEOS-Chem/Data analysis. 
+
+See induvidual function (e.g help( 'insert function name')) for details.
 """
 
 # --------------- 
@@ -35,15 +38,17 @@
 # 1.29 - Convert datetime.datetine to  Unix time
 # 1.30 - Process time/date to CV days equivilent 
 
+import logging
+
 # - Math/Analysis                                                                                   
 import numpy as np
 from time import mktime
-import scipy.stats as stats
-from pandas import HDFStore
+#import scipy.stats as stats
+#from pandas import HDFStore
 from pandas import DataFrame
-from pandas import Series
-from pandas import Panel
-import math
+#from pandas import Series
+#from pandas import Panel
+#import math
 
 # -- Time                                                                                           
 import time
@@ -52,9 +57,9 @@ import datetime as datetime
 from datetime import datetime as datetime_
 
 # --- Extras
-from AC_tools.funcs4core import *
-from AC_tools.funcs_vars import *
-from AC_tools.funcs4generic import *
+#from AC_tools.funcs4core import *
+#from AC_tools.funcs_vars import *
+#from AC_tools.funcs4generic import *
 
 # ----------------------- Section 1 -------------------------------------------
 # -------------- Time Processing
@@ -64,10 +69,11 @@ from AC_tools.funcs4generic import *
 # 1.01 - Datetime to fractional day 
 # --------------
 def get_day_fraction(date):
-    """ Get day fraction.
+    """ 
+    Get day fraction.
+
     NOTES:
-        - for working with numpy arrays of datetimes, instead of pandas 
-        dataframes
+     - for working with numpy arrays of datetimes, instead of pandas dataframes
     """
     secs = (date.hour *60.*60.)+(date.minute*60.)+(date.second)
     dsecs = 24.*60.*60.
@@ -77,10 +83,12 @@ def get_day_fraction(date):
 # 1.02 - numpy.datetime64 to datetime.datetime (assuming UTC )
 # ------------- 
 def dt64_2_dt( dt64 ):
-    """  convert numpy.datetime64 to datetime.datetime (assuming UTC )
+    """  
+    Convert numpy.datetime64 to datetime.datetime (assuming UTC )
+
     NOTES:
-        - ACTION NEEDED: Convert this to work as a lamdba function for 
-            scalability
+     - ACTION NEEDED: Convert this to work as a lamdba function for 
+        scalability
     """
     ns = 1e-9 # number of seconds in a nanosecond
     return  [ datetime_.utcfromtimestamp(i.astype(int) * ns) for i in dt64 ]
@@ -89,9 +97,14 @@ def dt64_2_dt( dt64 ):
 # 1.03 - numpy.datetime64 to datetime.datetime (assuming UTC )
 # ------------- 
 def nonISOdate2ISO( ds ):
-    """ Convert a non ISO date string to a ISO date string
+    """ 
+    Convert a non ISO date string to a ISO date string
+    NOTES:
+     - ds: date string
     """
-    print 'nonISOdate2ISO'
+    import re
+
+    logging.info( 'nonISOdate2ISO called' )
     regex = re.compile( '(\d\d\d\d-\d-\d\d)')
     regexII = re.compile( '(.*\s\d:.*)')    
     print ds
@@ -129,9 +142,15 @@ def nonISOdate2ISO( ds ):
 # 1.04 - Find nearest timestamp - Credit: Raymond Hettinger 
 # -------------
 def nearest(ts, s):
-    """ Find nearest timestamp
+    """ 
+    Find nearest timestamp. 
+
+    ARGUEMENTS:
+     - ts: point as object (float, int, timestamp) that nearset to which is being sought
+     - s: list of objects of the same type to be searched
     NOTES:
-        (1) Credit: Raymond Hettinger  -      http://stackoverflow.com/questions/8162379/python-locating-the-closest-timestamp              
+     - Credit: Raymond Hettinger  -      
+    http://stackoverflow.com/questions/8162379/python-locating-the-closest-timestamp              
     """
     # Given a presorted list of timestamps:  s = sorted(index)
     i = bisect_left(s, ts)
@@ -141,9 +160,15 @@ def nearest(ts, s):
 # --------------
 # 1.05 -  convert two lists/numpy arrays for date andtime to a datetime numpy 
 # -------------
-def YYYYMMDD_HHMM_2_datetime( str1=None, str2=None,  conbined=False,  \
+def YYYYMMDD_HHMM_2_datetime( str1=None, str2=None, conbined=False,  \
             verbose=False, debug=False ):    
-    """ Mappable converter of strings to datetime. 
+    """ 
+    Mappable converter of strings to datetime. 
+
+    ARGUEMENTS:
+     - list of strings of dates (str1) and times (str2)
+     - cobined (boolean): if True, then a single list of strings is provided
+     - shared functionality with "DF_YYYYMMDD_HHMM_2_dt" ?
     """
     # combined as one string
     if conbined : 
@@ -172,7 +197,8 @@ def YYYYMMDD_HHMM_2_datetime( str1=None, str2=None,  conbined=False,  \
 # 1.06 - Incremental increase datetime by given months - credit: Dave Webb
 # -------------
 def add_months(sourcedate,months):
-    """ Incremental increase of datetime by given months 
+    """ 
+    Incremental increase of datetime by given months 
     """ 
     month = sourcedate.month - 1 + months
     year = sourcedate.year + month / 12
@@ -185,7 +211,8 @@ def add_months(sourcedate,months):
 # 1.07 - Incremental increase datetime by given days 
 # -------------
 def add_days(sourcedate,days_):
-    """ Incremental increase of  datetime by given days 
+    """ 
+    Incremental increase of  datetime by given days 
     """ 
     sourcedate += datetime.timedelta(days=days_)
     return sourcedate
@@ -194,7 +221,8 @@ def add_days(sourcedate,days_):
 # 1.08 - Incremental increase datetime by given hours
 # -------------
 def add_hrs(sourcedate,hrs_, debug=False):
-    """ Incremental increase of datetime by given hours 
+    """ 
+    Incremental increase of datetime by given hours 
     """ 
     if debug:
         print sourcedate, hrs_
@@ -205,7 +233,8 @@ def add_hrs(sourcedate,hrs_, debug=False):
 # 1.09 - Incremental increase datetime by given minutes
 # -------------
 def add_minutes( sourcedate, min_, debug=False ):
-    """ Incremental increase of datetime by given minutes 
+    """ 
+    Incremental increase of datetime by given minutes 
     """ 
     sourcedate += datetime.timedelta(minutes=min_)
     return sourcedate
@@ -214,43 +243,19 @@ def add_minutes( sourcedate, min_, debug=False ):
 # 1.10 - Incremental increase datetime by given seconds
 # -------------
 def add_secs( sourcedate, secs_, debug=False ):
-    """ Incremental increase of datetime by given seconds 
+    """ 
+    Incremental increase of datetime by given seconds 
     """ 
     sourcedate += datetime.timedelta(seconds=secs_)
     return sourcedate
-
-
-# -------------
-# 1.11 - convert_days_2_mod_year - Kludge for comparing obs and model data from different years
-# ------------- 
-# <=remove this (1.11). 
-#def convert_days_2_mod_year( days, run1213=True ):
     
-    # Set year. - standard years run x/07 to y/07
-#    if run1213:
-#        y = [2012, 2012, 2012, 2012, 2012, 2012, 2013, 2013, 2013, 2013, 2013, 2013]
-#    else:
-#        y = [2005]*12        
-#    m = [7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6]
-#    modd = dict(zip(m, y))
-
-    # get input year, month, day
-#    id = [ [i.year, i.month, i.day] for i  in days ]
-#    print id
-
-    # change years to mod year if month == input month
-#    for v in id:
-#        v[0] = modd[ v[1]  ]
-
-#    print id
-#    days = [ datetime.datetime( *v) for v in id]
-#    return days    
 
 # --------------
 # 1.12 - day adjust -  seconds to months
 # -------------
 def d_adjust( months=None, years=None ):
-    """ Get adjustment values to convert an array of per second to per month
+    """ 
+    Get adjustment values to convert an array of per second to per month
     """
     # Get months and years if not given
     if not isinstance(months, list):
@@ -266,7 +271,9 @@ def d_adjust( months=None, years=None ):
 # 1.13 - adjust non UT times to UT
 # ------------- 
 def gaw_lc_2_UT(time_s, site, half_hour=None, debug=False):
-    """ Adjust list of local times to UTC for a given GAW site
+    """ 
+    Adjust list of local times to UTC for a given GAW site
+
     NOTEs:
         - This function is redundent. 
     """
@@ -287,10 +294,14 @@ def gaw_lc_2_UT(time_s, site, half_hour=None, debug=False):
 # 1.14 - Adjust to lt from UT 
 # ----  
 def adjust_UT_2_lt( time, date, data, site='CVO', dUTC=None, debug=False ):
-    """ Adjust list of UTC times to local time a given GAW site
+    """ 
+    Adjust list of UTC times to local time a given GAW site
+
     NOTEs:
-        - This function is redundent. It is reverse of function "gaw_lc_2_UT"
+     - This function is redundent. It is reverse of function "gaw_lc_2_UT"
     """
+    from funcs4generic import chunks
+
     if (dUTC ==  None ):
         dUTC   = gaw_2_loc(site)[-1]
     if debug:
@@ -315,7 +326,9 @@ def adjust_UT_2_lt( time, date, data, site='CVO', dUTC=None, debug=False ):
 # 1.16 - returns data as a mean monthly value
 # -------------
 def data2monthly( data, dates ):
-    """ resample list of numpy data by month (taken from given list of dates )
+    """ 
+    Resample list of numpy data by month (taken from given list of dates )
+
     NOTES:
         - Why is this a seperate function?
     """
@@ -328,10 +341,17 @@ def data2monthly( data, dates ):
 # --------------
 # 1.18 - Get datetimes for run period
 # -------------
-def get_dt4run(time_span='year', period=1, startyear=2005,endyear=2005, 
-                endhour=23, a=None, b=None  ): 
-    """ Get list of datetimes for a given range or between two provided 
+def get_dt4run(time_span='year', period=1, startyear=2005, endyear=2005, \
+        endhour=23, a=None, b=None ): 
+    """ 
+    Get list of datetimes for a given range or between two provided 
     datetimes  ( "a" and "b" )
+
+    ARGUMENTS:
+     - time_span : string of time period (e.g. days)
+     - period: periodicty (1= 1 hour)
+     - endhour: last hour of datetime list
+     - first (startyear) and last year (endyear) requied 
     """
     # Set dates
     if isinstance(a, type(None) ):
@@ -356,9 +376,11 @@ def get_dt4run(time_span='year', period=1, startyear=2005,endyear=2005,
 # 1.19 - returns data as a mean monthly value
 # -------------
 def data2daily( data, dates ):
-    """ resample list of numpy data by day (taken from given list of dates )
+    """ 
+    resample list of numpy data by day (e.g. taken from given list of dates )
+
     NOTES:
-        - Why is this a seperate function?
+     - Redundent? Why is this a seperate function?
     """
     df = DataFrame(data,index=dates )
     totals = df.resample('D', how='mean')
@@ -368,7 +390,12 @@ def data2daily( data, dates ):
 # 1.20 - Datetime hours between datetime a and datetime b
 # -------------
 def dt_hrs_a2b( a, b, period=1, debug=False ) :
-    """ Returns list of hour spaced datetimes between two given datetimes
+    """ 
+    Returns list of hour spaced datetimes between two given datetimes
+
+    ARGUMENTS:
+     - two dates, one before (a) the other (b)
+     - periodicty (1= 1 hour)
     """
     dates = [a]
     if debug:
@@ -383,6 +410,12 @@ def dt_hrs_a2b( a, b, period=1, debug=False ) :
 # 1.21 - Get interval dates assuming month gap in output.
 # -----
 def get_int_btwn(start, end, months=False, years=False ):
+    """
+    Get interval dates assuming month gap in output.
+    
+    NOTES:
+     - Is this function redundent?
+    """
     # list of dates
     m_,i = [], 0
     while(add_months(start,i) != end ):  # -1 so that final (end) value included
@@ -399,30 +432,39 @@ def get_int_btwn(start, end, months=False, years=False ):
 #        print 'State whether years or months are required as boolean arg (e.g. months=True)'
 
 # --------------
-#  1.24 - Normalise data to daily maximiun.   - mv'd to funcs4time
+#  1.24 - Normalise data to daily maximiun. 
 # --------------
 def normalise2dailymax(dates, data, debug=False ):
+    """
+    Normalise data to daily maximiun. 
+
+    ARGUMENTS:
+     - list of dates as datetime.datetime objects.
+     - list of of  
+    """
+    logging.info( 'normalise2dailymax called' )
     if debug:
-        print [( type(i), i.shape ) for i in data, dates ]#,  [(i.shape, np.ma.max(i), np.ma.min(i)) for i in [ data ] ]
+        logging.debug( [( type(i), i.shape ) for i in data, dates ] )
 
     # Get list of unique dates & remove mean from dates
     dates = np.ma.array([ datetime.datetime(*i.timetuple()[:3]) for i in dates ] )
     idates =np.ma.array((sorted(set( dates ) ) ))
 
     if debug:
-        print [(np.min(i), np.max(i), np.mean(i) ) for i in [data] ]
+        logging.debug( [(np.min(i), np.max(i), np.mean(i) ) for i in [data] ] )
     for s in idates:
 #        print s, len(data[np.ma.where( dates == s) ]),  np.ma.max(data[np.ma.where( dates == s )] )
         data[np.ma.where( dates == s) ]  = data[np.ma.where( dates == s) ] - np.ma.max(data[np.ma.where( dates == s )] )
     if debug:
-        print [(np.min(i), np.max(i), np.mean(i) ) for i in [data] ]
+        logging.debug(  [(np.min(i), np.max(i), np.mean(i) ) for i in [data] ] )
     return data
 
 # ----  
 #  1.26 - Translate from time to datetime
 # ----  
 def time2datetime( dates ):
-    """ Convert time object to datetime object
+    """ 
+    Convert time object to datetime object
     """
     return [ datetime_.fromtimestamp(mktime(i)) for i in dates ]
     
@@ -430,7 +472,12 @@ def time2datetime( dates ):
 #  1.27 - return abbreviated month for a given month number or vice versa
 # ----  
 def num2month(input=None, reverse=False, rtn_dict=False):
-    """ Convert number (1-12) to month in year (or reverse if reverse==True). 
+    """ 
+    Convert number (1-12) to month in year 
+
+    ARGUMENTS:
+     - reverse (boolean): invert dictionary if reverse==True. 
+     - input is either a 3 character month string or an integer 1=>12
     """
     d={
         1: 'Jan',
@@ -448,20 +495,7 @@ def num2month(input=None, reverse=False, rtn_dict=False):
     }
 
     if reverse:
-        d= {
-        'Jan' : 1,
-        'Feb' : 2,
-        'Mar' : 3,
-        'Apr' : 4,
-        'May' : 5,
-        'Jun' : 6,
-        'Jul' : 7,
-        'Aug' : 8,
-        'Sep' : 9, 
-        'Oct' : 10,
-        'Nov' : 11,
-        'Dec' : 12 
-        }
+        d = {v: k for k, v in d.items()}
 
     if rtn_dict:
         return d 
@@ -474,8 +508,17 @@ def num2month(input=None, reverse=False, rtn_dict=False):
 def DF_YYYYMMDD_HHMM_2_dt(df, date_header='YYYYMMDD', 
         time_header='HHMM', rmvars=None, epoch=False,  
         verbose=False, debug=False):
-    """ Use pandas DataFrame to allow for converting date and time strings
-        by mapped functions for speed. """
+    """ 
+    Convert times to datetime from time strings of HHMM and YYYYMMDD
+
+    ARGUMENTS:
+     - column titles for time (time_header) and date (date_header)
+     - rmvars: list of variables to remove from dataframe
+
+    NOTES:
+     - Use pandas DataFrame to allow for converting date and time strings
+    by mapped functions for speed. 
+    """
 
     # --- Process time and dates
     # Map integer to 4 char str
@@ -489,7 +532,7 @@ def DF_YYYYMMDD_HHMM_2_dt(df, date_header='YYYYMMDD',
     df['Datetime'] = df[date_header].astype(int).astype(str) + \
                                     df[time_header].astype(str) 
     if debug:
-        print df['Datetime'][:10]
+        logging.debug( df['Datetime'][:10] )
     df['Datetime']  = pd.to_datetime( df['Datetime'], format='%Y%m%d%H%M' )
             
     # remove stated variables.
@@ -513,16 +556,31 @@ def DF_YYYYMMDD_HHMM_2_dt(df, date_header='YYYYMMDD',
 #  1.29 - Convert datetime.datetine to  Unix time
 # ----------
 def unix_time(dt):
-    """ time from epoch - datetime.datetime(1970, 1, 1, 0, 0) """
+    """ 
+    Convert datetime to Unix time. 
+
+    ARGUMENTS:
+     - Single datetime object
+
+    NOTES:
+     - epoch = datetime.datetime(1970, 1, 1, 0, 0) 
+    """
     epoch = datetime.datetime.utcfromtimestamp(0)
     delta = dt - epoch
 #    return delta.total_seconds()
     return delta.days*86400+delta.seconds+delta.microseconds/1e6
     
 # --------------
-# 1.31 - Datetime hours between datetime a and datetime b
+# 1.31 - Datetime days between datetime a and datetime b
 # -------------
 def dt_days_a2b( a, b, period=1, debug=False ) :
+    """
+    Calculate days between two dattime.datetime format dates 
+
+    ARGUMENTS:
+     - two dates, one before (a) the other (b)
+     - periodicty (1= 1day)
+    """
     dates = [a]
     if debug:
         print dates, a, b, period
@@ -548,7 +606,15 @@ def dt_days_a2b( a, b, period=1, debug=False ) :
 # 1.30 - Process time/date to CV days equivilent - mje
 # -------------
 def year_to_since_2006(model):
-    """ translate year to "since2006" function """
+    """
+    Converts planeflight output date and time to unit Cape Verde (CVAO) years.  
+
+    ARGUEMTNS:
+     -  extracted model data from funcs4pf.readfile_basic 
+
+    NOTES:
+     - Credit MJE
+    """
     year=(model[:,0]//10000)
     month=((model[:,0]-year*10000)//100)
     day=(model[:,0]-year*10000-month*100)
