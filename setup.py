@@ -7,7 +7,7 @@ setup(  name='AC_tools',
         author='Tomas Shewen, Ben Newsome',
         author_email='Tomas.Sherwn@york.ac.uk',
         url='https://github.com/tsherwen/AC_tools',
-        licence="why are they all so complicated - citatios would be nice :-)",
+        licence="why are they all so complicated - citations would be nice :-)",
         packages=['AC_tools'],
         install_requires=[
             'numpy',
