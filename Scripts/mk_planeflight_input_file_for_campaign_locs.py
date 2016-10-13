@@ -1,27 +1,42 @@
+#!/usr/bin/python
+"""
+This programme makes the planeflight*.dat files required to output for specific locations and times in the model.
+
+NOTES:
+ - This programme can be used to produce files to output data for ship and aricraft campaigns
+"""
 # --- Packages
-from AC_tools.funcs4GEOSC import *
-from AC_tools.funcs4pf import * 
 import numpy as np
 from time import gmtime, strftime
 import time
 import glob
+import AC_tools as AC
 
 # --- Settings
-wd = get_dir( 'dwd' )
-#camp = 'planeflight/planeflight_dat_files_Malasapina'#'/CAST_2014_BAE146/'
-#camp ='/IO_obs/TORERO/updatedtoreroiodata_surface_data'
-camp = 'planeflight/pf_dat_files_CONTRAST_GV_CGV_hv_66_TRA_4_Johan_UPDATE16/'
+try:
+    wd = AC.get_dir( 'dwd' )
+except:
+    wd = './'
+# the directory where files of required output locations are (one per UTC day)
+camp = './' # Set location for output files here
+# Set first and last year to look
 start_year, end_year = 2013, 2015
-debug, tag = True, 'CON' #'TRB'#'MAL'#'ANT'
+# debug the oubtput
+debug = True
+# tag to (up to 4 characters)
+tag=  'CON' #'TRB'#'MAL'#'ANT'
+# do the altitude values need converting from input files ( must be in hPa)
 convert_km_2_hPa, convert_m_2_hPa, convert_2_m = False, False, False 
 time_str ='%H:%M' # '%H%M'  # '%H:%M:%S' #    # '%h/%m/%s',
+# Which (halogen) code version is being used?
 #ver = '1.6' # Iodine simulation in v9-2
 #ver = '2.0' # Iodine + Bromine simulation
 ver = '3.0' # Cl-Br-I simulation
 
 # --- Set Variables
+# extract variables for a given (halogen code) version
 slist = pf_var('slist', ver=ver)
-nvar=len( slist )
+nvar = len( slist )
 yr = range(start_year, end_year )
 m  = range(01,13)
 da  = range(01,32,1)
@@ -49,7 +64,7 @@ for year in yr:
                     print 2, fn_
                 
                 # --- Extract info from csv.
-                times, lats, lons, press = read_in_kml_sites( fn_, debug=debug )
+                times, lats, lons, press = AC.read_in_kml_sites( fn_, debug=debug )
                 if debug:
                     print 3, 'esc read_in_kml_sites'
                     print times[:10]

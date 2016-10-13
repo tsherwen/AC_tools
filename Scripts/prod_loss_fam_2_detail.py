@@ -1,23 +1,23 @@
-#from funcs4plotting_special import *
-from AC_tools.funcs4GEOSC import *
-from AC_tools.funcs_vars  import *
-from AC_tools.funcs4generic import *
-
+#!/usr/bin/python  
 import sys
+import AC_tools as AC
 
+# --- Master debug setting
 DEBUG=True
 
 def main( trop_limit=True, res='4x5',  debug=False):
-    """ Get prod loss output for a family and print this to screen  """
+    """ 
+    Get prod loss output for a family and print this to screen  
+    """
     # --- Get family from Command line (and other vars)
     wd =  sys.argv[1]
     spec =  sys.argv[2]
     # version?
-    ver = iGEOSChem_ver( wd)
+    ver = AC.iGEOSChem_ver( wd)
 
     # --- Get all tags for this family (through dictionary route)   
     # ( e.g. 'PIOx', 'LIOx',  'P_Iy', 'L_Iy' )
-    nums, rxns, tags, Coe = prod_loss_4_spec( wd, spec, ver=ver )
+    nums, rxns, tags, Coe = AC.prod_loss_4_spec( wd, spec, ver=ver )
     # beatify reaction strings
     rxnstr_l = [ ''.join( i[4:] ) for i in rxns ]
     # one consider one tag per reaction and tagged reactions
@@ -34,13 +34,13 @@ def main( trop_limit=True, res='4x5',  debug=False):
 
     # --- Extract prod loss for these tracers
     # get prod loss IDs
-    PDs = [ PLO3_to_PD(i, ver=ver, wd=wd, fp=True) for i in tags ]    
+    PDs = [ AC.PLO3_to_PD(i, ver=ver, wd=wd, fp=True) for i in tags ]    
     # extract en mass
-    fam_loss = get_GC_output( wd, vars=['PORL_L_S__'+i for i in PDs], \
+    fam_loss = AC.get_GC_output( wd, vars=['PORL_L_S__'+i for i in PDs], \
                 trop_limit=trop_limit, r_list=True)
 #    print [ ( i.shape, i.sum() ) for i in fam_loss ]
     # Get reference species for family ( e.g. so output is in X g of Y )
-    ref_spec = get_ref_spec( spec )
+    ref_spec = AC.get_ref_spec( spec )
     # get shared variable arrrays
     s_area = get_surface_area(res=res)[...,0] # m2 land map
     # convert to mass terms  ( in g X )

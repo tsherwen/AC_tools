@@ -1,14 +1,15 @@
 #!/usr/bin/python
 # modules
-from MChem_tools import *
+import AC_tools as AC
 import numpy as np
 import sys
+import matplotlib.pyplot as plt
 
 # Setup, choose species
 species  = 'O3'#'CO2'
 RMM_species = 16.*3.
 res = '4x5' # ( e.g. '4x5', '2x2.5', '0.5x0.666', '0.25x0.3125'  )
-unit, scale = tra_unit( species, scale=True)
+unit, scale = AC.tra_unit( species, scale=True)
 
 # debug/print verbose output?
 debug=True
@@ -23,7 +24,7 @@ except: # Otherwise use path below
     wd = '<insert GEOS-Chem run direcotory path here>'
 
 # get data as 4D array ( lon, lat, alt, time ) 
-mixing_ratio  = get_GC_output( wd, species=species, category='IJ-AVG-$', \
+mixing_ratio  = AC.get_GC_output( wd, species=species, category='IJ-AVG-$', \
     trop_limit=trop_limit ) 
 print mixing_ratio.shape
 
@@ -31,10 +32,10 @@ print mixing_ratio.shape
 if calc_burden:
 
     # Get air mass as numpy array
-    air_mass = get_GC_output( wd, vars=['BXHGHT_S__AD'], \
+    air_mass = AC.get_GC_output( wd, vars=['BXHGHT_S__AD'], \
                                   trop_limit=trop_limit )
     # get time in troposphere as fraction from ctm.bpchh diagnostics
-    time_in_trop = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'],
+    time_in_trop = AC.get_GC_output( wd, vars=['TIME_TPS__TIMETROP'],
                                   trop_limit=trop_limit )
     # print shapes of array to screen
     print [i.shape for i in mixing_ratio, air_mass, time_in_trop ]
@@ -66,7 +67,8 @@ mixing_ratio = np.transpose( mixing_ratio )
 print mixing_ratio.shape, res
 
 # plot surface
-plt, cb = basic_map_plot( mixing_ratio, species, unit, res=res, debug=debug )
+#plt, cb = AC.basic_map_plot( mixing_ratio, species, unit, res=res, debug=debug )
+AC.map_plot( mixing_ratio, title=species, units=unit, res=res, wd=wd, grid='off', debug=debug )
 
 # Show plot
 plt.show()

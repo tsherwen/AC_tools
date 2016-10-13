@@ -1,8 +1,12 @@
 #!/usr/bin/python
-from AC_tools.funcs_vars import get_dir
-from netCDF4 import Dataset
-from AC_tools.funcs4pf import get_pf_headers, pf_csv2pandas
-from AC_tools.funcs4generic import chunks
+""" 
+Convert planeflight output to NetCDF form en masse. A list of variables can be provided to restrict output 
+
+This function is written to convert any pf output to NetCDF.
+
+NOTES:
+ - if GRD output is provided, 3D output can be obtained ( also in NetCDF form )
+"""
 
 import glob
 import time 
@@ -10,6 +14,7 @@ import os.path
 import sys
 import numpy as np
 from pandas import DataFrame
+import AC_tools as AC
 
 # ---  Master  settings for main call
 # Verbose/debug output? (set  debug=True)
@@ -23,18 +28,8 @@ GRD_input_3D=True#False#True
 # Are there mulitple sites?
 Multiple_sites=False#True  # NOTE: this option is not currently working
 
-def main( wd, vars=None, npwd=None,  \
-          GRD_input_3D=False, renumerated=False, \
+def main( wd, vars=None, npwd=None, GRD_input_3D=False, renumerated=False, \
           verbose=False, debug=False ):
-    """ Convert planeflight output to NetCDF form en masse. 
-        A list of variables can be provided to restrict output 
-
-        This function is written to convert any pf output to NetCDF.
-
-        if GRD output is provided, 3D output can be obtained in
-        ( also in NetCDF form )
-    """
-
     # Get save directory and set output NC name
     import os
     if not isinstance(npwd, str ):
@@ -61,7 +56,9 @@ def main( wd, vars=None, npwd=None,  \
         
 
 def get_pf_files( wd, renumerated=False, debug=False ):
-    """ Get pf files - edit this give location of planeflight files"""
+    """ 
+    Get pf files - edit this give location of planeflight files
+    """
     # Ensure working dorectory string has leading foreward slash
     if wd[-1] != '/':
         wd += '/'
@@ -78,7 +75,9 @@ def get_pf_files( wd, renumerated=False, debug=False ):
     return files
 
 def mk_NetCDF_of_pf_files( files, ncfilename=None, debug=False ):
-    """ Make a table like NetCDF file from to any pf output"""
+    """ 
+    Make a table like NetCDF file from to any pf output
+    """
     # --- Setup NetCDF file
     ncfile = Dataset( ncfilename,'w', format='NETCDF4') 
 
