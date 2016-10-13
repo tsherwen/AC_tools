@@ -115,7 +115,6 @@ import os
 import sys
 import csv
 import glob
-from PIL import Image
 import pygchem
 if pygchem.__version__ == '0.2.0':
     import pygchem.diagnostics as gdiag

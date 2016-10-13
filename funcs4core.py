@@ -14,6 +14,7 @@ from netCDF4 import Dataset
 from pandas import DataFrame
 import platform
 import sys
+import logging
 
 # --------------- ------------- ------------- ------------- ------------- 
 # ---- Section 1 ----- Modules required
@@ -309,7 +310,28 @@ def iGEOSChem_ver(wd, verbose=True, debug=False):
 # 1.99 - Reference data (lon, lat, and alt) adapted from gchem - credit: GK (Gerrit Kuhlmann )             
 # -------------                                                                                                                                      
 def gchemgrid(input=None, rtn_dict=False, debug=False):
-    d = {
+    """
+    GeosChem grid lookup table.
+    Can give the latitude, longitude or altitude positions of geoschem in 
+    units to convert from model units.
+    Returns a numpy array.
+    Example:
+    gchemgrid('c_lon_4x5')
+    [-180, -175, -170 ,..., 175, 180]
+    Options:
+    rtn_dict=False  : return the lookup dictionary instead of only a numpy array.
+    debug=False     : Prints extra infromaiton in the function for debugging.
+    If the array begins with a 'c' then this denotes the center position of the gridbox.
+    'e' denotes the edge.
+    The following arrays ara available:
+    c_lon_4x5, e_lon_4x5, c_lat_4x5, e_lat_4x5, 
+    e_eta_geos5_r, e_km_geos5_r, e_hpa_geos5_r, 
+    c_eta_geos5_r, c_km_geos5_r, c_hpa_geos5_r, 
+    """
+
+    if ((input==None) and (rtn_dict==False)):
+        raise KeyError('gchemgrid requires an input or rtn_dict=True')
+
     """
  Updated to dictionary from gchemgrid (credit: Gerrit Kuhlmann ) with 
      additional grid adds 
@@ -335,7 +357,15 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-    """            
+    """           
+
+
+    d = {
+    # 4x5                                                                                        
+   'c_lon_4x5' : np.arange(-180, 175+5, 5) ,
+   'e_lon_4x5' : np.arange(-182.5, 177.5+5, 5) ,
+   'c_lat_4x5' : np.array( [-89]+ range(-86, 90, 4)+ [89] ),
+   'e_lat_4x5' : np.array( [-90]+ range(-88, 92, 4)+ [90] ),
 
     # Altitude - Grid box level edges (eta coordinate):                                          
     'e_eta_geos5_r' : np.array([
@@ -453,6 +483,7 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
     }
     if debug:
         print 'gchemgrid called'
+    logging.debug('gchemgrid called')
 
     if rtn_dict:
         return d
