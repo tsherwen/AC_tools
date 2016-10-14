@@ -50,8 +50,9 @@ import glob
 import pandas as pd
 from pandas import HDFStore
 from pandas import DataFrame
-from pandas import Series
-from pandas import Panel
+#from pandas import Series
+#from pandas import Panel
+import logging
 
 # Math functions
 import numpy as np
@@ -511,8 +512,9 @@ def pf_csv2pandas( file=None, vars=None, epoch=False, r_vars=False, \
     # Open file
     with open(file, 'rb') as f :
 
-        if debug:
+#        if debug:
 #            print '>'*30, f
+        logging.debug( f )
 
         # Label 1st column ( + LOC ) if names not in vars
         # ( This effectively means that pandas arrays are the same

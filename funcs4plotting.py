@@ -2276,117 +2276,112 @@ def plot_specs_surface_change_annual2pdf( arr, res='4x5', dpi=160, \
     """ 
     Create multipage PDF with each page containing a 2D (lon,lat) slice     
     plot for given species in list of "specs" Takes 5D array  ( species ,lon , lat, alt, 
-    time) """
-        print 'plot_specs_surface_change_monthly2pdf called'
+    time) 
+    """
+    logging.info( 'plot_specs_surface_change_monthly2pdf called' )
 
-        # setup pdfs + titles
-        if column:
-            savetitle = 'Column_by_spec'+savetitle 
-        else:
-            savetitle = 'Surface_by_spec'+savetitle 
-        pdff = plot2pdfmulti( title=savetitle, open=True, \
-                              dpi=dpi, no_dstr=no_dstr )    
-        left=0.05; right=0.9; bottom=0.05; top=0.875; hspace=0.315; wspace=0.1
+    # setup pdfs + titles
+    if column:
+        savetitle = 'Column_by_spec'+savetitle 
+    else:
+        savetitle = 'Surface_by_spec'+savetitle 
+    pdff = plot2pdfmulti( title=savetitle, open=True, dpi=dpi, no_dstr=no_dstr )    
+    left=0.05; right=0.9; bottom=0.05; top=0.875; hspace=0.315; wspace=0.1
 
-        # Loop species
-        for n, spec in enumerate( specs ):
+    # Loop species
+    for n, spec in enumerate( specs ):
 #            if debug:
-            print n, spec
+        print n, spec
 
-            # Get units/scale for species + setup fig (allow of 
-            if isinstance( units, type( None) ):
-                if column and (not pcent):
-                    units, scale = 'DU', 1        
-                elif pcent:
-                    units, scale = '%', 1
-                else:
-                    units, scale = tra_unit( spec, scale=True, \
-                        global_unit=True )
+        # Get units/scale for species + setup fig (allow of 
+        if isinstance( units, type( None) ):
+            if column and (not pcent):
+                units, scale = 'DU', 1        
+            elif pcent:
+                units, scale = '%', 1
+            else:
+                units, scale = tra_unit( spec, scale=True, global_unit=True )
             
-            # setup masking... 
-            cbarr = arr[n,:,:,0,:].mean(axis=-1).copy() * scale
+        # setup masking... 
+        cbarr = arr[n,:,:,0,:].mean(axis=-1).copy() * scale
 
-            if pcent:
-                mask_invalids = True
+        if pcent:
+            mask_invalids = True
 
-                # mask for changes greater than 500%
-                if len( cbarr[ cbarr>500 ]  ) > 0:
-                    cbarr = np.ma.masked_where( cbarr>500, cbarr )
-                    extend='max'
+            # mask for changes greater than 500%
+            if len( cbarr[ cbarr>500 ]  ) > 0:
+                cbarr = np.ma.masked_where( cbarr>500, cbarr )
+                extend='max'
 
-                elif len( cbarr[cbarr<-500])>0:
-                    cbarr = np.ma.masked_where( cbarr<-500, cbarr )
-                    if  extend == 'max':
-                        extend = 'both'
-                    else:
-                        extend = 'min'
-
+            elif len( cbarr[cbarr<-500])>0:
+                cbarr = np.ma.masked_where( cbarr<-500, cbarr )
+                if  extend == 'max':
+                    extend = 'both'
                 else:
-                    extend='neither'
+                    extend = 'min'
 
             else:
                 extend='neither'
-                cbarr = cbarr
 
-            # Set the correct title        
-            ptitle = 'Annual Avg. {}'.format( latex_spec_name(spec) )
-            if column:
-                ptitle += ' column'
-            else:
-                ptitle += ' surface'
+        else:
+            extend='neither'
+            cbarr = cbarr
 
-            if diff:
-                ptitle += ' $\Delta$ concentration'
-            else:
-                ptitle += ' concentration'
-            ptitle += ' ({})'.format( units )
+        # Set the correct title        
+        ptitle = 'Annual Avg. {}'.format( latex_spec_name(spec) )
+        if column:
+            ptitle += ' column'
+        else:
+            ptitle += ' surface'
 
-            fig  = plt.figure(figsize=(22, 14), dpi=dpi, 
-                facecolor='w', edgecolor='k')
+        if diff:
+            ptitle += ' $\Delta$ concentration'
+        else:
+            ptitle += ' concentration'
+        ptitle += ' ({})'.format( units )
 
-            # set cb ranges for whiole data period
-            fixcb  = [( i.min(), i.max() ) for i in [cbarr]][0]
+        fig  = plt.figure(figsize=(22, 14), dpi=dpi, facecolor='w', edgecolor='k')
 
-            # Kludge, force max cap at .2
+        # set cb ranges for whiole data period
+        fixcb  = [( i.min(), i.max() ) for i in [cbarr]][0]
+
+        # Kludge, force max cap at .2
 #            if units == 'ratio':
 #                fixcb = [ fixcb[0], 0.2 ]
 #                extend = 'max'
-            if (units == 'pmol mol$^{-1}$ m$^{-3}$') and ( spec == 'AERI' ):
-                fixcb = [ fixcb[0], 500 ]
-                extend = 'max'                
+        if (units == 'pmol mol$^{-1}$ m$^{-3}$') and ( spec == 'AERI' ):
+            fixcb = [ fixcb[0], 500 ]
+            extend = 'max'                
 
-            cmap = get_colormap( fixcb  )
+        cmap = get_colormap( fixcb )
                 
-            # Loop thorugh months
+        # Loop thorugh months
 #            for m, month in enumerate(dlist):
-            fig.add_subplot(111)
+        fig.add_subplot(111)
 
-            # plot up spatial surface change
-            map_plot( arr[n,:,:,0,:].mean(axis=-1).T*scale, cmap=cmap, case=9, \
-                res=res,\
-                no_cb=True, f_size=f_size, fixcb=fixcb, window=True,\
-                set_window=set_window,lat_0=lat_0, lat_1=lat_1, \
-                mask_invalids=mask_invalids, debug=debug)
+        # plot up spatial surface change
+        map_plot( arr[n,:,:,0,:].mean(axis=-1).T*scale, cmap=cmap, case=9, \
+            res=res, no_cb=True, f_size=f_size, fixcb=fixcb, window=True,\
+            set_window=set_window,lat_0=lat_0, lat_1=lat_1, \
+            mask_invalids=mask_invalids, debug=debug)
 
-            # Add single colorbar
-            mk_cb(fig, units=units, left=0.905,  cmap=cmap,vmin=fixcb[0],
-                 vmax=fixcb[1], f_size=f_size, extend=extend ) 
+        # Add single colorbar
+        mk_cb(fig, units=units, left=0.905,  cmap=cmap,vmin=fixcb[0],
+            vmax=fixcb[1], f_size=f_size, extend=extend ) 
 
-            # sort out ascetics -  adjust plots and add title
-            fig.suptitle( ptitle, fontsize=f_size*2, x=.55 , y=.95  )
+        # sort out ascetics -  adjust plots and add title
+        fig.suptitle( ptitle, fontsize=f_size*2, x=.55 , y=.95  )
 
-            # save out figure
-            plot2pdfmulti( pdff, savetitle, dpi=dpi,\
-                no_dstr=no_dstr )
+        # save out figure
+        plot2pdfmulti( pdff, savetitle, dpi=dpi, no_dstr=no_dstr )
 
-            # close fig
-            plt.clf()
-            plt.close()
-            del fig
+        # close fig
+        plt.clf()
+        plt.close()
+        del fig
 
-        #  save entire pdf  
-        plot2pdfmulti( pdff, savetitle, close=True, dpi=dpi,\
-                       no_dstr=no_dstr )
+    #  save entire pdf  
+    plot2pdfmulti( pdff, savetitle, close=True, dpi=dpi, no_dstr=no_dstr )
 
 
 # --------
@@ -2400,130 +2395,119 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
     """ 
     Create multipage PDF with each page containing a zonal plot for given species in list
      of "specs" 
+
     NOTES:
      - Takes 5D array  ( species ,lon , lat, alt, time) 
     """
-        savetitle = 'Annual_Zonal_by_spec'+savetitle 
-        pdff = plot2pdfmulti( title=savetitle, open=True, \
-                              dpi=dpi, no_dstr=no_dstr )    
-        left=0.05; right=0.9; bottom=0.05; top=0.875; hspace=0.315; wspace=0.2
+    savetitle = 'Annual_Zonal_by_spec'+savetitle 
+    pdff = plot2pdfmulti( title=savetitle, open=True, dpi=dpi, no_dstr=no_dstr )    
+    left=0.05; right=0.9; bottom=0.05; top=0.875; hspace=0.315; wspace=0.2
     
-        # Loop species
-        for n, spec in enumerate( specs ):
-#            if debug:
-            print n, spec, Vars.shape
+    # Loop species
+    for n, spec in enumerate( specs ):
+#           if debug:
+        print n, spec, Vars.shape
 
-            # Get units/scale for species + setup fig        
-#            scale=1
-            if isinstance( units, type(None) ):
-                units, scale = tra_unit( spec, scale=True, global_unit=True )
-            if pcent:
-                units, scale = '%', 1
-                mask_invalids=True
+        # Get units/scale for species + setup fig        
+#           scale=1
+        if isinstance( units, type(None) ):
+            units, scale = tra_unit( spec, scale=True, global_unit=True )
+        if pcent:
+            units, scale = '%', 1
+            mask_invalids=True
 
-            # Set the correct title        
-            ptitle = 'Annual avg. {}'.format( latex_spec_name(spec) )
-            if diff:
-                ptitle += ' zonal $\Delta$ concentration'
-            else:
-                ptitle += ' zonal concentration'
-            ptitle += ' ({})'.format( units )
+        # Set the correct title        
+        ptitle = 'Annual avg. {}'.format( latex_spec_name(spec) )
+        if diff:
+            ptitle += ' zonal $\Delta$ concentration'
+        else:
+            ptitle += ' zonal concentration'
+        ptitle += ' ({})'.format( units )
 
-            fig  = plt.figure(figsize=(22, 14), dpi=dpi, 
-                facecolor='w', edgecolor='k')
+        fig  = plt.figure(figsize=(22, 14), dpi=dpi, facecolor='w', edgecolor='k')
 
-            cbVars = Vars[n,:,:,:,:].mean(axis=-1).copy()*scale
+        cbVars = Vars[n,:,:,:,:].mean(axis=-1).copy()*scale
 
-            # set ranges for whiole data period
-            if pcent:
-                if len( cbVars[ cbVars>500 ] ) > 0:
-                    cbVars =  np.ma.masked_where( cbVars>500, \
-                        cbVars )
-                    extend='max'
-                elif len( cbVars[cbVars<-500])>0:
-                    cbVars = np.ma.masked_where( cbVars<-500, cbVars )
-                    if  extend == 'max':
-                        extend = 'both'
-                    else:
-                        extend = 'min'
+        # set ranges for whiole data period
+        if pcent:
+            if len( cbVars[ cbVars>500 ] ) > 0:
+                cbVars =  np.ma.masked_where( cbVars>500, cbVars )
+                extend='max'
+            elif len( cbVars[cbVars<-500])>0:
+                cbVars = np.ma.masked_where( cbVars<-500, cbVars )
+                if  extend == 'max':
+                    extend = 'both'
                 else:
-                    extend='neither'
-
+                    extend = 'min'
             else:
                 extend='neither'
 
-            if set_lon:
-                set_lon = get_gc_lon( set_lon, res=res )
-                fixcb  = [( i.min(), i.max() ) \
-                    for i in [ cbVars[set_lon,...] ]][0]               
-                print 'SETTING LON to GC index: ', set_lon
-            else:
-                cbVars = cbVars.mean( axis=0 )
-            if set_window:
-                gclat_0, gclat_1 = [ get_gc_lat(i, res=res ) \
-                    for i in lat_0, lat_1 ]
-                cbVars = cbVars[...,gclat_0:gclat_1, :]
+        else:
+            extend='neither'
 
-            fixcb  = [( i.min(), i.max() ) for i in [ cbVars ]][0]
+        if set_lon:
+            set_lon = get_gc_lon( set_lon, res=res )
+            fixcb  = [( i.min(), i.max() ) for i in [ cbVars[set_lon,...] ]][0]               
+            print 'SETTING LON to GC index: ', set_lon
+        else:
+            cbVars = cbVars.mean( axis=0 )
+        if set_window:
+            gclat_0, gclat_1 = [ get_gc_lat(i, res=res ) for i in lat_0, lat_1 ]
+            cbVars = cbVars[...,gclat_0:gclat_1, :]
 
-            # Kludge, force max cap at .2
-            if units == 'ratio':
-                fixcb = [ fixcb[0], 0.2 ]
-                extend = 'max'
+        fixcb  = [( i.min(), i.max() ) for i in [ cbVars ]][0]
 
-            cmap = get_colormap( fixcb  )
+        # Kludge, force max cap at .2
+        if units == 'ratio':
+            fixcb = [ fixcb[0], 0.2 ]
+            extend = 'max'
+
+        cmap = get_colormap( fixcb  )
             
-            axn =[ 111 ]
-            ax = fig.add_subplot( *axn )  
+        axn =[ 111 ]
+        ax = fig.add_subplot( *axn )  
 
 #                if pcent:
 #                    print [ (np.min(i), np.max(i))  \
 #                        for i in [ Vars[n,:,:,:,m].mean(axis=0)*scale ] ] 
 #                    print [ (np.min(i), np.max(i))  \
 #                        for i in [ Vars[n,:,:,:,m].median(axis=0)*scale ] ] 
-            if set_lon:
-                arr = Vars[n,set_lon,...].mean(axis=-1)*scale                
-            else:
-                arr = Vars[n,...].mean(axis=0).mean(axis=-1)*scale                
+        if set_lon:
+            arr = Vars[n,set_lon,...].mean(axis=-1)*scale                
+        else:
+            arr = Vars[n,...].mean(axis=0).mean(axis=-1)*scale                
             
-            if set_window:
-                arr = arr[...,get_gc_lat(lat_0, res=res): \
-                    get_gc_lat(lat_1, res=res), :]
+        if set_window:
+            arr = arr[...,get_gc_lat(lat_0, res=res): get_gc_lat(lat_1, res=res), :]
 
-            # plot up spatial surface change
-            zonal_plot( arr, fig, ax=ax, \
-                title=None, debug=debug, tropics=False, \
-                units=units,f_size=f_size, c_off =37, no_cb=True, \
-                lat_0=lat_0, lat_1=lat_1, set_window=set_window,\
-                fixcb=fixcb, extend=extend, window=True, \
-                    lower_limited=True, res=res, mask_invalids=mask_invalids, \
-                    cmap=cmap )
+        # plot up spatial surface change
+        zonal_plot( arr, fig, ax=ax, title=None, debug=debug, tropics=False, \
+            units=units,f_size=f_size, c_off =37, no_cb=True, lat_0=lat_0, lat_1=lat_1, \
+            set_window=set_window, fixcb=fixcb, extend=extend, window=True, \
+            lower_limited=True, res=res, mask_invalids=mask_invalids, cmap=cmap )
                 
-            # only show troposphere
-            greyoutstrat( fig, t_ps.mean(axis=0).mean(axis=-1), axn=axn, \
-                    res=res )
+        # only show troposphere
+        greyoutstrat( fig, t_ps.mean(axis=0).mean(axis=-1), axn=axn, res=res )
 
-            # Add single colorbar
-            mk_cb(fig, units=units, left=0.915,  cmap=cmap,vmin=fixcb[0],
-                 vmax=fixcb[1], f_size=f_size, extend=extend ) 
+        # Add single colorbar
+        mk_cb(fig, units=units, left=0.915,  cmap=cmap,vmin=fixcb[0],
+            vmax=fixcb[1], f_size=f_size, extend=extend ) 
 
-            # sort out ascetics -  adjust plots and add title
+        # sort out ascetics -  adjust plots and add title
 #            fig.subplots_adjust( bottom=bottom, top=top, left=left, \
 #                right=right,hspace=hspace, wspace=wspace)
-            fig.suptitle( ptitle, fontsize=f_size*2, x=.55 , y=.95  )
+        fig.suptitle( ptitle, fontsize=f_size*2, x=.55 , y=.95  )
 
-            # save out figure
-            plot2pdfmulti( pdff, savetitle, dpi=dpi,\
-                no_dstr=no_dstr )
+        # save out figure
+        plot2pdfmulti( pdff, savetitle, dpi=dpi, no_dstr=no_dstr )
 
-            # close fig
-            plt.clf()
-            plt.close()
-            del fig
+        # close fig
+        plt.clf()
+        plt.close()
+        del fig
 
         #  save entire pdf 
-        plot2pdfmulti( pdff, savetitle, close=True, dpi=dpi,\
-                       no_dstr=no_dstr )
+        plot2pdfmulti( pdff, savetitle, close=True, dpi=dpi, no_dstr=no_dstr )
 
 # --------
 # 1.32 - Spatial Figure maker ( just provide lon, lat, time,  np array )
