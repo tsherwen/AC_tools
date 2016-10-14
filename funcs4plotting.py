@@ -73,7 +73,6 @@
 #
 
 # -- Plotting                                                                                       
-from PIL import Image
 from mpl_toolkits.basemap import Basemap
 from matplotlib.colors import LogNorm
 from matplotlib.ticker import LogFormatter
@@ -3512,10 +3511,13 @@ def add_logos_NCAS_york_bottom(fig):
     NOTE(s):
      - This function is not general enough and needs to be removed from AC_tools
     """
+    from PIL import Image
     
     wd1 = get_dir ('dwd') +'misc/logos/'
-    logo_list= ['NCAS_national_centre_logo.gif', 'nerclogo1000.gif' , 'york_uni_shield.tif' ,   \
-                            'york_uni_name.tif' ]
+    logo_list= [
+    'NCAS_national_centre_logo.gif', 'nerclogo1000.gif' , 'york_uni_shield.tif' ,   \
+    'york_uni_name.tif' 
+    ]
 
     # Setup logo 1
     logo1 = Image.open( wd1 + logo_list[3])  # York name

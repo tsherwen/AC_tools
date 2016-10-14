@@ -1,17 +1,19 @@
 #!/usr/bin/python
-""" This script analysis a folder containing bpch files and outputs the results
-        in a single netCDF file in the folder.
+""" 
+This script analysis a folder containing bpch files and outputs the results
+in a single netCDF file in the folder.
 
-         This allows for significantly faster and easier input of data, 
-         and more common anaylsis techniques like pandas without extra 
-         post processing. """
+This allows for significantly faster and easier input of data, 
+and more common anaylsis techniques like pandas without extra 
+post processing. 
+"""
 
 import logging
-#import iris
 import sys
 import glob
 import os
 import netCDF4
+# retain back compatibility for PyGChem
 try:
   from pygchem import datasets
 except:
@@ -19,9 +21,10 @@ except:
 
 def convert_to_netCDF(folder='none',filename='ctm.nc',\
                          bpch_file_list=None, remake=False):
-
+   """    
+    Converts GEOS-Chem ctm.bpch output file(s) to NetCDF
+   """   
    # Check if file already exists and warn about remaking
-
    from bpch2netCDF import get_folder
    folder = get_folder(folder)
    output_file = folder + '/' + filename
@@ -32,9 +35,6 @@ def convert_to_netCDF(folder='none',filename='ctm.nc',\
            logging.warning(output_file + ' already exists. Not recreating.')
            return
        
-
-   
-
    # By default look inside the folder for any files
    if bpch_file_list==None:
        bpch_files = glob.glob( folder + '/*.bpch*' )
@@ -58,7 +58,6 @@ def convert_to_netCDF(folder='none',filename='ctm.nc',\
    print bpch_files
    bpch_data = datasets.load(bpch_files)
 
-
    # Save the netCDF file
 #   iris.fileformats.netcdf.save(data, output_file)
    datasets.save( bpch_data, output_file )
@@ -66,7 +65,9 @@ def convert_to_netCDF(folder='none',filename='ctm.nc',\
    return
 
 def get_folder(folder):
-
+   """
+    Get name of folder that contains ctm.bpch data from command line 
+   """
    if folder=='none':
       # getting the folder location from system argument
       if len(sys.argv)<=1:
