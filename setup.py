@@ -11,8 +11,6 @@ setup(  name='AC_tools',
         packages=['AC_tools'],
         install_requires=[
             'numpy',
-            'wget>3.0',
-            'filecmp',
             'pytest',
             'logging',
             'os',
