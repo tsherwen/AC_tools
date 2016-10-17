@@ -6,16 +6,15 @@ observations.
 
 The module is setup to be used as a submodule, with collections of
 functions held in module files that can be imported in entirely or 
-seperately
+seperately.
  
 e.g. 
 
-from AC_tools.funcs4time import *
+import AC_tools as AC
 
-or 
+AC.get_GC_output()
 
-from AC_tools import *
+Example analysis code for GEOS-Chem using AC_tools is available in the 
+scripts folder.
 
-Example analysis code for GEOS-Chem using AC_tools is available here:
-https://github.com/tsherwen/MChem_tools/
-
+For more infomation, please visit the wiki: https://github.com/tsherwen/AC_tools/wiki

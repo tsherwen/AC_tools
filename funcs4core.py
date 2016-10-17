@@ -33,8 +33,8 @@ import logging
 # -------------                                                                                               
 def get_dir( input, loc='earth0' ):
     """
-        Retrieves directories within structure on a given platform
-        ( e.g. York cluster, Mac, Old cluster  )
+    Retrieves directories within structure on a given platform
+        ( e.g. York computer (earth0), Mac, Old cluster (atmosviz1... etc)  )
     NOTES:
      - This function is not general enough to be transferrable.
      - Update to use $USER flag. 
@@ -51,6 +51,7 @@ def get_dir( input, loc='earth0' ):
         'Linux-3.0.101-0.46-default-x86_64-with-SuSE-11-x86_64':2,  
          # updated 15/12
         'Linux-3.0.101-0.47.71-default-x86_64-with-SuSE-11-x86_64': 2,
+        'Darwin-15.6.0-x86_64-i386-64bit':2, 
         # reverted on 15 03 10        
         'Linux-3.2.0-56-generic-x86_64-with-debian-wheezy-sid':3
         }[platform.platform()]
@@ -99,19 +100,23 @@ def get_dir( input, loc='earth0' ):
 # 1.02 -  Get Latitude as GC grid box number in dimension                                                                                                                  
 # ----                                                                                                                                                        
 def get_gc_lat(lat, res='4x5', wd=None, debug=False):
-    """ Get index of lat for given resolution """
+    """ 
+    Get index of lat for given resolution 
+    """
     NIU, lat_c, NIU = get_latlonalt4res( res=res, wd=wd )
     del NIU
-    return find_nearest( lat_c, lat )
+    return find_nearest_value( lat_c, lat )
 
 # ----                                                                                                                                                        
 # 1.03 -  Get Longitude as GC grid box number in dimension                                                                                                       
 # ----                                                                                                                                                        
 def get_gc_lon(lon, res='4x5', wd=None, debug=False):
-    """ Get index of lon for given resolution """
+    """ 
+    Get index of lon for given resolution 
+    """
     lon_c, NIU, NIU = get_latlonalt4res( res=res, wd=wd )
     del NIU
-    return find_nearest( lon_c, lon )
+    return find_nearest_value( lon_c, lon )
 
 # --------                                                                                          
 # 1.04 - Get model array dimension for a given resolution                                           
@@ -275,9 +280,13 @@ def hPa_to_Km(input, reverse=False, debug=False):
 # --------   
 # 1.07 - Find nearest
 # --------
-def find_nearest( array, value ):
-    """ Find nearest point. Adapted from HappyLeapSecond's 
-        Stackoverflow answer.  http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
+def find_nearest_value( array, value ):
+    """ 
+    Find nearest point. 
+    
+    NOTEs:
+     - Adapted from (credit:) HappyLeapSecond's Stackoverflow answer.  
+    ( http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array )
     """
     idx = (np.abs(array-value)).argmin()
     return idx
@@ -286,13 +295,17 @@ def find_nearest( array, value ):
 # 1.08 - Work out iGEOS-Chem version 
 # ------------- 
 def iGEOSChem_ver(wd, verbose=True, debug=False):
-    """ get iGEOS-Chem verson - iGEOS-Chem 
-        e.g. iGeosChem 1.1 or 1.2 from dir name ( wd ) 
+    """ 
+    Get iGEOS-Chem verson 
+
+    NOTES:
+     - These are not GEOSChem versions, but halogen branch versions
+    (e.g. iGeosChem 1.1 or 1.2 from dir name ( wd )  )
     """
     # List iGEOSChem versions+ then DataFrame
     versions = [
     '1.1','1.2', '1.3', '1.4', '1.5', '1.6', '1.6.1', '1.6.2', \
-     '1.6.3', '1.7', '2.0', '3.0'  ]
+     '1.6.3', '1.7', '2.0', '3.0', '4.0'  ]
     df= DataFrame( versions, columns=['Versions'] )
     if debug:
         print wd, versions, df
@@ -312,18 +325,21 @@ def iGEOSChem_ver(wd, verbose=True, debug=False):
 def gchemgrid(input=None, rtn_dict=False, debug=False):
     """
     GeosChem grid lookup table.
-    Can give the latitude, longitude or altitude positions of geoschem in 
-    units to convert from model units.
-    Returns a numpy array.
+    
+    Can give the latitude, longitude or altitude positions of geoschem in units to 
+    convert from model units. Returns a numpy array.
+
     Example:
     gchemgrid('c_lon_4x5')
     [-180, -175, -170 ,..., 175, 180]
-    Options:
-    rtn_dict=False  : return the lookup dictionary instead of only a numpy array.
-    debug=False     : Prints extra infromaiton in the function for debugging.
-    If the array begins with a 'c' then this denotes the center position of the gridbox.
+
+    ARGUEMENTS:
+     - rtn_dict=False : return the lookup dictionary instead of only a numpy array.
+     - debug=False : Prints extra infromaiton in the function for debugging.
+    NOTES:
+     - If the array begins with a 'c' then this denotes the center position of the gridbox.
     'e' denotes the edge.
-    The following arrays ara available:
+     -  The following arrays ara available:
     c_lon_4x5, e_lon_4x5, c_lat_4x5, e_lat_4x5, 
     e_eta_geos5_r, e_km_geos5_r, e_hpa_geos5_r, 
     c_eta_geos5_r, c_km_geos5_r, c_hpa_geos5_r, 
@@ -333,32 +349,30 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
         raise KeyError('gchemgrid requires an input or rtn_dict=True')
 
     """
- Updated to dictionary from gchemgrid (credit: Gerrit Kuhlmann ) with 
-     additional grid adds 
+    Updated to dictionary from gchemgrid (credit: Gerrit Kuhlmann ) with 
+    additional grid adds 
 
     This [function] contains (some) grid coordinates used within GEOS-Chem 
     as numpy arrays
 
-# Distribution advice from gchem:
+    Distribution advice from gchem (credit: Gerrit Kuhlmann):
 
-# Python Script Collection for GEOS-Chem Chemistry Transport Model (gchem)
-# Copyright (C) 2012 Gerrit Kuhlmann
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    Python Script Collection for GEOS-Chem Chemistry Transport Model (gchem)
+    Copyright (C) 2012 Gerrit Kuhlmann
 
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
     """           
-
 
     d = {
     # 4x5                                                                                        
@@ -386,7 +400,7 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
             4.02600000e-03,   1.62500000e-03,   6.01000000e-04,
             1.99000000e-04,   5.50000000e-05,   0.00000000e+00]) ,
 
-#Grid box level edges [km]:                                                                      
+    #Grid box level edges [km]:                                                                      
     'e_km_geos5_r' : np.array([
             6.00000000e-03,   1.35000000e-01,   2.66000000e-01,
             3.99000000e-01,   5.33000000e-01,   6.69000000e-01,
@@ -405,7 +419,7 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
             3.75740000e+01,   4.42860000e+01,   5.17880000e+01,
             5.99260000e+01,   6.83920000e+01,   8.05810000e+01]) ,
 
-#Grid box level edges [hPa]:                                                                     
+    #Grid box level edges [hPa]:                                                                     
     'e_hPa_geos5_r' : np.array([
             1.01181400e+03,   9.96636000e+02,   9.81382000e+02,
             9.66128000e+02,   9.50874000e+02,   9.35621000e+02,
@@ -424,7 +438,7 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
             4.07700000e+00,   1.65100000e+00,   6.17000000e-01,
             2.11000000e-01,   6.60000000e-02,   1.00000000e-02]) ,
 
-#Grid box level centers (eta-coordinates)                                                        
+    #Grid box level centers (eta-coordinates)                                                        
     'c_eta_geos5_r' : np.array([
             9.94283000e-01,   9.79217000e-01,   9.64113000e-01,
             9.49010000e-01,   9.33908000e-01,   9.18805000e-01,
@@ -443,7 +457,7 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
             2.82500000e-03,   1.11300000e-03,   4.00000000e-04,
             1.27000000e-04,   2.80000000e-05]) ,
 
-#Grid box level centers [km]                                                                     
+    #Grid box level centers [km]                                                                     
     'c_km_geos5_r' : np.array([
             7.10000000e-02,   2.01000000e-01,   3.32000000e-01,
             4.66000000e-01,   6.01000000e-01,   7.37000000e-01,
@@ -462,7 +476,7 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
             4.01660000e+01,   4.71350000e+01,   5.48340000e+01,
             6.30540000e+01,   7.21800000e+01]) ,
 
-#Grid box level centers [hPa]                                                                    
+    #Grid box level centers [hPa]                                                                    
     'c_hPa_geos5_r' : np.array([
             1.00422500e+03,   9.89009000e+02,   9.73755000e+02,
             9.58501000e+02,   9.43247000e+02,   9.27994000e+02,

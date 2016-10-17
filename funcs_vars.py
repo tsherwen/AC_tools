@@ -114,7 +114,8 @@ import glob
 # - Math/Analysis                                                                                   
 import numpy as np
 
-# - tms
+# ---  This needs to be updated, imports should be specific and in individual functions
+# import tms modules with shared functions
 from AC_tools.funcs4core import *
 
 # ------------------------------------------- Section 1 -------------------------------------------
@@ -452,9 +453,10 @@ def species_mass( spec ):
 # --------------
 def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
             C=False, Br=False, Cl=False, S=False, ref_spec=None, debug=False ): 
-    """ Returns unit equivelent of X ( e.g. I ) for a give species. 
+    """ 
+    Returns unit equivalent of X ( e.g. I ) for a given species. 
         
-        This can be automatically set by providing a reference species
+    This can be automatically set by providing a reference species
         
     Notes:
      - Update Needed: re-write to take stioch species (e.g. OH, I instead of booleans )
@@ -462,7 +464,7 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
      - C3H5I == C2H5I 
         (this is a vestigle typo, left in to allow for use of older model runs )
      - aerosol cycling specs
-    # 'LO3_36' : (2.0/3.0) , 'LO3_37' : (2.0/4.0),           # aersol loss rxns... 'LO3_37' isn't true loss, as I2O4 is regen. temp
+    # 'LO3_36' : (2.0/3.0) , 'LO3_37' : (2.0/4.0),  # aersol loss rxns... 'LO3_37' isn't true loss, as I2O4 is regen. temp
      - Aerosol loss rxns ( corrected stochio for Ox, adjsutment need for I )
     """
     # If reference species provided automatically select family
@@ -612,7 +614,6 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
     'LR46': 1.0, 'LR47': 1.0, 'LR39': 1.0
         }
 
-
     # Kludge for testing. Allow values to equal 1.0 if not defined. 
     try:
         if debug:
@@ -632,7 +633,8 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
 def tra_unit(x, scale=False, adjustment=False, adjust=True, \
             global_unit=False, ClearFlo_unit=False, IUPAC_unit=False, \
             debug=False ):
-    """ Get appropirate unit for Tracer. 
+    """ 
+    Get appropirate unit for Tracer
 
     NOTES:
 	 - Is this redundent now with the species class?
@@ -755,18 +757,13 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, \
     else:
         return units
 
-# --------------
-# 4.08 - Store of directories for servers ( earth0, atmosviz1, and tms MBP)
-# ------------- 
-# moved to AC_tools.funcs4core.py
-
-
 
 # ----
 #  4.10 - Return dictionary of gaw sites
 # ----
 def gaw_2_name():
-    """ Returns dictionary GAW of sites
+    """ 
+    Returns dictionary GAW of sites
     """
     wdf = get_dir('dwd') +'ozonesurface/' + 'gaw_site_list.h5'
     df= pd.read_hdf( wdf,  'wp', mode='r' )
@@ -783,7 +780,8 @@ def gaw_2_name():
 #  4.11 - Returns list of gaw sites in HDF file of O3 surface data
 # ----
 def get_global_GAW_sites(f='gaw_site_list_global.h5'):
-    """ Get list of just GAW global sites. 
+    """ 
+    Get list of just GAW global sites. 
     """
     wd= get_dir('dwd') +'ozonesurface/' 
     df= pd.read_hdf( wd+f,  'wp', mode='r' )
@@ -794,21 +792,12 @@ def get_global_GAW_sites(f='gaw_site_list_global.h5'):
 #[ 'AMS', 'MKN', 'IZO' , 'WLG', 'PYR', 'USH', 'ABP', 'ALT'] ]
     return vars
 
-# ----
-#  4.12 - returns lon/lat/alt for res
-# ----
-# moved to AC_tools.funcs4core
-
-# --------   
-# 4.13 - Get CTM (GEOS-Chem) array dimension for a given resolution
-# --------
-# moved to AC_tools.funcs4core
-
 # --------   
 # 4.14 - Convert gamap category/species name to Iris/bpch name
 # --------
 def diagnosticname_gamap2iris( x  ):
-    """ Convert ctm.bpch name into NetCDF normenclature
+    """ 
+    Convert ctm.bpch name into NetCDF nomenclature
     """
     d={
     "IJ-AVG-$": 'IJ_AVG_S', 
@@ -837,15 +826,18 @@ def diagnosticname_gamap2iris( x  ):
 # 4.15 - Get scaling for a given unit
 # --------
 def get_unit_scaling( units, scaleby=1 ):
-    """ Get scaling for a given unit string 
+    """ 
+    Get scaling for a given unit string 
     """
     misc = 'K', 'm/s', 'unitless', 'kg' ,'m', 'm2','kg/m2/s', \
             'molec/cm2/s', 'mol/cm3/s',  'kg/s', 'hPa', 'atoms C/cm2/s' \
             'kg S', 'mb', 'atoms C/cm2/s', 'molec/cm3', 'v/v', 'cm/s', 's-1', \
             'molec/m3'
 
+    # parts per trillion
     if any( [ (units ==  i) for i in 'pptv', 'pptC' ]):
         scaleby = 1E12
+    # parts per billion
     elif any( [ (units ==  i) for i in 'ppbv', 'ppbC' ]):
         scaleby = 1E9
     elif any( [units ==i for i in misc ] ):
@@ -858,14 +850,11 @@ def get_unit_scaling( units, scaleby=1 ):
 # 4.16 - Species class for GEOS-Chem - Credit: Ben Newsome 
 # --------
 class species:
-    """ Class for holding infomation about chemical speices. 
+    """ 
+    Class for holding infomation about chemical speices. 
 
     NOTES:
-        (1) code copied from Ben Newsome's function in MChem_tools
-    ( https://github.com/tsherwen/MChem_tools/blob/master/MChem_tools.py )
-        (2)  UPDATE Q? - should this be removed from MChem_tools and just keep 
-        here? 
-
+     -  the class is build from a csv file (species.csv) in the git Repository.
     """
     def __init__(self, name):
         self.name = name
@@ -904,8 +893,8 @@ class species:
 # 4.17 -  Observational site class
 # --------
 class GEO_Site:
-    """ Class for holding infomation about observational sites 
-    
+    """ 
+    Class for holding infomation about observational sites 
     """
     def __init__(self, name ):
         self.name = name
@@ -935,12 +924,14 @@ class GEO_Site:
 # 4.18 -  dictionary of category + species names from diagnostic ordering
 # --------
 def get_ctm_nc_var( variable ):
-    """ Get number variable for diagnostic family where NetCDF import 
-        from *.dat file has failed. This function returns a category name + a 
-        number value to refer to diagnostic ording in NetCDF.    
+    """ 
+    Get number variable for diagnostic family where NetCDF import 
+    from *.dat file has failed. This function returns a category name + a 
+    number value to refer to diagnostic ording in NetCDF.    
+
     NOTES:
-        (1) This is only called as a back up, and should only be used for test 
-        ouput and not for production runs
+     - This is only called as a back up, and should only be used for test 
+    ouput and not for production runs
 
     """
     d = {
@@ -954,13 +945,13 @@ def get_ctm_nc_var( variable ):
     return d[ variable ]
 
 
-
-
 # --------------
 # 5.02 - Store of  constants for use by funcs/progs
 # --------------
 def constants(input_x, rtn_dict=False, debug=False):
-    """ Dictionary storing commonly used constants """
+    """ 
+    Dictionary storing commonly used constants 
+    """
     con_dict ={
     'RMM_air' : ( .78*(2.*14.)+.22*(2.*16.) )  ,
     'AVG' : 6.0221413E23, 
@@ -981,12 +972,14 @@ def constants(input_x, rtn_dict=False, debug=False):
 # ------------- 
 def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
             LaTeX=False, debug=False ):
-    """ build a dictionary reaction of reaction details from smv.log
-          This can be used as an external call to analyse other prod/loss 
-          reactions through smvgear  
+    """ 
+    Build a dictionary reaction of reaction details from smv.log.
+    This can be used as an external call to analyse other prod/loss 
+    reactions through smvgear  
+
     NOTES:
-        (1) This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
-        will make it redundent and therefore this is not being maintained. 
+     - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
+    will make it redundent and therefore this is not being maintained. 
     """
     
     if isinstance( PHOTOPROCESS, type(None) ):
@@ -1054,10 +1047,12 @@ def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
 # 6.02 - Extract reactions tracked by prod loss diag for a given p/l family
 # ------------- 
 def rxns_in_pl( wd, spec='LOX', debug=False ):
-    """ Extract reactions tracked by p/l family in smvgear
+    """ 
+    Extract reactions tracked by p/l family in smvgear
+
     NOTES:
-        (1) This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
-        will make it redundent and therefore this is not being maintained. 
+     - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
+    will make it redundent and therefore this is not being maintained. 
     """
     
     fn =  'smv2.log'
@@ -1101,10 +1096,12 @@ def rxns_in_pl( wd, spec='LOX', debug=False ):
 # ------------- 
 def rxn4pl( pls, wd='example/example', rdict=None, reduce_size=True, \
             ver='1.7', debug=False ):
-    """ Get information on reaction in smvgear from a provide reaction tag 
+    """ 
+    Get information on reaction in smvgear from a provide reaction tag 
+
     NOTES:
-        (1) This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
-        will make it redundent and therefore this is not being maintained. 
+     - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
+    will make it redundent and therefore this is not being maintained. 
     """
 
     # ---  Get Dict of reaction detail
@@ -1118,7 +1115,6 @@ def rxn4pl( pls, wd='example/example', rdict=None, reduce_size=True, \
         for i in rdict.keys():
             if any( [ (s_ in ''.join( rdict[i] ) ) for s_ in pls ] ):
                 print i, 'yes'
-#        print rdict#.keys()
 
     # --- Indices for 
     # reduce dict size
@@ -1158,8 +1154,6 @@ def get_indicies_4_fam( tags, fam=False, IO_BrOx2=False, rtnspecs=False,
     # Create dictionary from tags and fam assignment
     fd = dict(zip(tags, fams) )
 
-#    print fams, tags
-#    sys.exit()
 
     # Select tags with assigned family in list ("famsn")
     ll =  []
@@ -1202,7 +1196,9 @@ def get_indicies_4_fam( tags, fam=False, IO_BrOx2=False, rtnspecs=False,
 # 6.05 - Get tags for reactions
 # ------------- 
 def get_p_l_tags( rxns, debug=False):
-    """ get p/l tags for a given smvgear reaction """
+    """ 
+    Get p/l tags for a given smvgear reaction 
+    """
 
     # (PD??, RD??, LO3_??, PO3_??, LR??)
     prefixs = 'PD', 'RD', 'PO3','LO3' , 'LR'
@@ -1224,10 +1220,12 @@ def get_p_l_tags( rxns, debug=False):
 # ------------- 
 def p_l_species_input_geos( wd, ver='1.7', 
             rm_multiple_tagged_rxs=False, debug=False ):
-    """ Extract prod/loss species (input.geos) and reaction tags (globchem.dat) 
+    """ 
+    Extract prod/loss species (input.geos) and reaction tags (globchem.dat) 
+
     NOTES:
-        (1) This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
-        will make it redundent and therefore this is not being maintained. 
+     - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
+    will make it redundent and therefore this is not being maintained. 
     """
     # find and open input.geos file
     fn = glob.glob(wd+'/*input.geos*')[0] 
@@ -1286,10 +1284,12 @@ def p_l_species_input_geos( wd, ver='1.7',
 # 6.07 - extract all active tags from smv.log
 # ------------- 
 def tags_from_smvlog( wd ): #, spec='LOX' ):
-    """  Get all active p/l tags in smvgear ( from smv2.log )
+    """  
+    Get all active p/l tags in smvgear ( from smv2.log )
+
     NOTES:
-        (1) This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
-        will make it redundent and therefore this is not being maintained.          
+     - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
+    will make it redundent and therefore this is not being maintained.          
     """
     fn =  'smv2.log'
     file_ =  open( wd+'/'+fn, 'rb' )
@@ -1318,10 +1318,12 @@ def tags_from_smvlog( wd ): #, spec='LOX' ):
 # 6.08 - extract all active PDs from smv.log
 # ------------- 
 def PDs_from_smvlog( wd, spec='LOX' ):
-    """  Get all active PDs tags in smvgear ( from smv2.log ) 
+    """  
+    Get all active PDs tags in smvgear ( from smv2.log ) 
+
     NOTES:
-        (1) This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
-        will make it redundent and therefore this is not being maintained. 
+     - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
+    will make it redundent and therefore this is not being maintained.
     """
     fn =  'smv2.log'
     file_ =  open( wd+'/'+fn, 'rb' )
@@ -1353,10 +1355,12 @@ def PDs_from_smvlog( wd, spec='LOX' ):
 # 6.09 - Give all reactions tag is active within
 # ------------- 
 def rxns4tag( tag, rdict=None, ver='1.7', wd=None ):
-    """ get a list of all reactions with a given p/l tag 
+    """ 
+    Get a list of all reactions with a given p/l tag 
+
     NOTES:
-        (1) This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
-        will make it redundent and therefore this is not being maintained. 
+     - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
+    will make it redundent and therefore this is not being maintained.
     """
     # --- get reaction dictionary 
     if isinstance( rdict, type(None) ):
@@ -1396,11 +1400,13 @@ def rxns4tag( tag, rdict=None, ver='1.7', wd=None ):
 def get_tag_details( wd, tag=None, PDs=None,  rdict=None, \
             PHOTOPROCESS=None, ver='1.7', LaTeX=False, print_details=False, \
             debug=False ):
-    """ Retriveve prod/loss tag details from smv.log
+    """ 
+    Retriveve prod/loss tag details from smv.log
         ( rxn number + reaction description)
+
     NOTES:
-        (1) This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
-        will make it redundent and therefore this is not being maintained. 
+     - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
+    will make it redundent and therefore this is not being maintained.
     """
 
     # what is the number of the first photolysis reaction?
@@ -1447,14 +1453,14 @@ def get_tag_details( wd, tag=None, PDs=None,  rdict=None, \
 # ------------- 
 def get_rxn_Coe(wd, num, tag, nums=None, rxns=None, tags=None, \
             Coe=None, spec='LOX', ver='1.6', debug=False):
-    """ Retrieve given reaction coefficient for smvgear (from smv2.log)
+    """ 
+    Retrieve given reaction coefficient for smvgear (from smv2.log)
 
     NOTES:
-        (1) This is no longer the case. However, previously if using dev. 
-        Iy scheme, then the listed values from fuction
-        Ox_in_species() will be used. 
-        (2) This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
-        will make it redundent and therefore this is not being maintained. 
+     - This is no longer the case. However, previously if using dev. 
+    Iy scheme, then the listed values from fuction Ox_in_species() will be used. 
+     - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
+    will make it redundent and therefore this is not being maintained.
     """
 
     # --- get dictionaries for reactions within
@@ -1489,8 +1495,9 @@ def get_rxn_Coe(wd, num, tag, nums=None, rxns=None, tags=None, \
 # 6.12 - Remove ClBrI het loss tracers during testing
 # -------------
 def rm_ClBrI_het_loss( spec_l=None, r_=None, fam=None, debug=False):
-    """ Allow for remove of het loss routes during testing 
-            Can return species list (spec_l) + optionally 
+    """ 
+    Allow for remove of het loss routes during testing. Can return species list 
+    (spec_l) + optionally 
     """
 
     # Print argument variables
@@ -1563,14 +1570,15 @@ def rm_ClBrI_het_loss( spec_l=None, r_=None, fam=None, debug=False):
 def get_pldict_reactants( pl_dict=None, only_rtn_tracers=True, \
             rm_OH=True, rm_Cl=True, tags=None, \
             debug=False ):
-    """ Get reactant from smv2.log dictionary 
-    NOTE: 
-        (1) some reactants are not tracers ( see list: non_TRAs )  
-        ( to remove these set only_rtn_tracers=True )
-        (2) to remove OH from reactant list set rm_OH=True
-        (3) This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
-        will make it redundent and therefore this is not being maintained. 
+    """ 
+    Get reactant from smv2.log dictionary 
 
+    NOTE: 
+     - some reactants are not tracers ( see list: non_TRAs )  
+    ( to remove these set only_rtn_tracers=True )
+     - to remove OH from reactant list set rm_OH=True
+     - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
+    will make it redundent and therefore this is not being maintained.
     """
 #    non_TRAs = ['CH4', '', 'ETHLN', 'ISOPND', 'E', 'M', 'HCO', 'MVKN', 'ACTA']
 
@@ -1613,7 +1621,8 @@ def get_pldict_reactants( pl_dict=None, only_rtn_tracers=True, \
 def get_adjustment4tags( tags, PDs=None, pl_dict=None, ver='1.6', \
             verbose=False, wd=None, Include_Chlorine=False, IO_BrOx2=False, \
             debug=False):
-    """  Get coefficent for rxn tag from smv2.log using the provided family
+    """  
+    Get coefficent for rxn tag from smv2.log using the provided family
     and adjusts the reaction tag to unity.
 
     The adjust to uniuty only occurs for older LO3_??/PO3_?? tags, which 
@@ -1621,10 +1630,10 @@ def get_adjustment4tags( tags, PDs=None, pl_dict=None, ver='1.6', \
 
     This function is a cousin to "get_rxn_Coe", but takes rxn tags as arguements 
     and adjusts a tag to unity. 
+
     NOTE(s):
-        (1) This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
-        will make it redundent and therefore this is not being maintained.     
-    """
+     - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
+    will make it redundent and therefore this is not being maintained.    """
         
     # --- get dictionaries for reactions + PDs, if not provided
     if isinstance( pl_dict, type(None) ):
@@ -1683,10 +1692,11 @@ def get_adjustment4tags( tags, PDs=None, pl_dict=None, ver='1.6', \
     return Coes
 
 def adjust2half4crossover( tag='LO3_24', ):
-    """ Consider half the value for halogen cross-over reaction tags. 
+    """ 
+    Consider half the value for halogen cross-over reaction tags. 
         This allows for the tags to be included once per family 
     NOTE(s):
-        (1) This function is redundent (and no longer in use?)
+     - This function is redundent (and no longer in use?)
 
     """
     
@@ -1717,11 +1727,11 @@ def adjust2half4crossover( tag='LO3_24', ):
 # -------------
 def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',  \
             verbose=False, debug=False): 
-    """ Converts globchem.dat tracer to PD/LD from prod/loss diag in 
-    input.geos
-    NOTES
-        (1) 'fp' option is now obselete. 
-        (2) UPDATED NEEDED: MORE DETAILED DESCRIPT.    
+    """ 
+    Converts globchem.dat tracer to PD/LD from prod/loss diag in input.geos
+    NOTES:
+     - 'fp' option is now obselete. 
+     - UPDATED NEEDED: MORE DETAILED DESCRIPT.    
     """
 
     if verbose:
@@ -1760,11 +1770,12 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',  \
 # ------------- 
 def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', \
         rm_redundent_ClBrI_tags=False, debug=False):
-    """ Get reaction IDs for each rxn. in spec (p/l, e.g. LOX) 
-        This is the driver for the prod/loss programmes 
+    """ 
+    Get reaction IDs for each rxn. in spec (p/l, e.g. LOX). This is the driver for 
+    the prod/loss programmes 
+
     NOTES:
-        -  UPDATED NEEDED: MORE DETAILED DESCRIPT.
-                
+     - UPDATED NEEDED: MORE DETAILED DESCRIPT.
     """
     if debug:
         print 'get_pl_dict called for ', ver, spec, wd
@@ -1866,13 +1877,14 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', \
 # ------------- 
 def prod_loss_4_spec( wd, fam, all_clean=True, \
         ver='1.7', debug=False ):
-    """ Retrieve reaction numbers for family of tags
+    """ 
+    Retrieve reaction numbers for family of tags
     
     NOTES
-        - coefficecents ("Coe") returned are for the family (e.g LOX)
-        within a reaciton. ( aka not for the tag )
-        -  UPDATED NEEDED: MORE DETAILED DESCRIPT.
-     """
+     - coefficecents ("Coe") returned are for the family (e.g LOX)
+    within a reaciton. ( aka not for the tag )
+     -  UPDATED NEEDED: MORE DETAILED DESCRIPT.
+    """
 
     # ---  Get Dict of all reactions, Keys = #s
     rdict = rxn_dict_from_smvlog( wd, ver=ver )
@@ -1990,8 +2002,10 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
 # 4.05 -  GEOS-Chem/ctm.bpch values
 # --------------
 def latex_spec_name(input_x, debug=False):
-    """ Formatted ( Latex ) strings for species and analysis  
-        REDUNDENT: now using class structure ( see MChem_tools ) """
+    """ 
+    Formatted ( Latex ) strings for species and analysis  
+    REDUNDENT: now using class structure ( see species instance ) 
+    """
     spec_dict = {
     'OIO': 'OIO', 'C3H7I': 'C$_{3}$H$_{7}$I', 'IO': 'IO', 'I': 'I', \
     'I2': 'I$_{2}$', 'CH2ICl': 'CH$_{2}$ICl', 'HOI': 'HOI', \
@@ -2083,155 +2097,22 @@ def latex_spec_name(input_x, debug=False):
 # (2) It is not advised to use these. 
 
 
-# --------------
-#  7.01 - open ocean IO data  
-# --------------
-def IO_obs_data(just_IO=False):
-    """ Dictionary of open ocean IO observations for automated comparisons
 
-    key = ref (e.g. name_year )     
-    values =  alt, lon, lat, times, full_name  , IO (avg), BrO (avg), CAM-Chem IO, CAM-Chem BrO, group
-    NOTE(s):
-        (1) This function is redundent (and no longer in use?)s
-        (2) UPDATE NEEDED: move this to func_vars4obs
-    """
-
-    IO_obs_dict={
-    'Read_2008': [0.0, -24.87, 16.85, 6.0, 'Read, 2008', '1', '2', '1', '2', 'Leeds'], 
-    'Weddel_Sea': [0.03, -50.0, 75.0, 10.0, 'Weddel Sea', '-', '-', '-', '-', '-'], 
-    'Oetjen_2009': [0.0, 73.5, 5.0, 2.0, 'Oetjen, 2009', '2.4', '-', '1', '-', 'Leeds'], 
-    'Jones_2010_II': [0.0, -19.0, 30.0, 7.0, 'Jones, 2010, RHaMBLe II (26-36N)', '-', '-', '-', '-', '-'], 
-    'Leser_2003': [0.0, -24.87, 16.85, 10.0, 'Leser, 2003', '-', '3.6', '-', '0.8', 'Heidelberg'], 
-    'Jones_2010_I': [0.0, -19.0, 20.0, 7.0, 'Jones, 2010, RHaMBLe I (15-25N)', '-', '-', '-', '-', '-'], 
-    'Halley_BAS': [0.03, -26.34, 75.35, 10.0, 'Halley, BAS', '-', '-', '-', '-', '-'], 
-    'Theys_2007': [0.0, -20.9, -55.5, 8.0, 'Theys, 2007', '-', '<0.5', '-', '0.8', 'Belgium'], 
-    'Dix_2013': [9.0, -160.0, 10.0, 1.0, 'Dix, 2013', '0.1', '-', '', '-', 'NCAR'], 
-    'Allan_2000': [0.162, -16.6, 28.4, 6.0, 'Allan, 2000', '1.2', '-', '0.4', '-', 'Leeds'], 
-    'Jones_2010_MAP': [0.0, -10.0, 55.0, 6.0, 'Jones, 2010, MAP', '-', '-', '-', '-', '-'], 
-    'Grobmann_2013': [0.0, 150.0, 15.0, 1.0, 'Grobmann, 2013', '0.72-1.8', '-', '-', '-', 'Heidelberg'], 
-    'Dix_2013_j_comp': [9.0, -160.0, 10.0, 5.0, 'Dix, 2013 (wrong month to allow with jones runs comparisons)', '-', '-', '-', '-', '-'], 
-    'schonart_2009_II': [0.0, -80.0, -20.0, 10.0, 'Schonart, 2009 (satilitte)', '3.3', '-', '1', '-', 'Bremen'], 
-    'Martin_2009': [0.0, -24.87, 16.85, 2.0, 'Martin, 2009', '-', '<3.0', '-', '1.2', 'Heidelberg'], 
-    'schonart_2009_I': [0.0, -90.0, -5.0, 10.0, 'Schonart, 2009 (satilitte)', '3.3', '-', '1', '-', 'Bremen'], 
-    'Yokouchi_2013': [0.0, 120.0, 15.0, 2.0, 'Yokouchi, 2013', '-', '-', '-', '-', '-'], 'Butz_2009': [0.045, -44.4, -2.4, 12.0, 'Butz, 2009', '0.1', '~1.0', '0.02', '0.5', 'Leeds']}
-    IO_obs_dict_just = {
-    'Read_2008': [0.0, -24.87, 16.85, 6.0, 'Read, 2008', '1', '2', '1', '2', 'Leeds'], 
-    'schonart_2009_II': [0.0, -80.0, -20.0, 10.0, 'Schonart, 2009 (satilitte)', '3.3', '-', '1', '-', 'Bremen'], 
-    'Oetjen_2009': [0.0, 73.5, 5.0, 2.0, 'Oetjen, 2009', '2.4', '-', '1', '-', 'Leeds'], 
-    'Allan_2000': [0.162, -16.6, 28.4, 6.0, 'Allan, 2000', '1.2', '-', '0.4', '-', 'Leeds'], 
-    'Leser_2003': [0.0, -24.87, 16.85, 10.0, 'Leser, 2003', '-', '3.6', '-', '0.8', 'Heidelberg'], 
-    'Theys_2007': [0.0, -20.9, -55.5, 8.0, 'Theys, 2007', '-', '<0.5', '-', '0.8', 'Belgium'], 
-    'Dix_2013': [9.0, -160.0, 10.0, 1.0, 'Dix, 2013', '0.1', '-', '', '-', 'NCAR'], 
-    'Grobmann_2013': [0.0, 135.0, 15.0, 1.0, 'Grobmann, 2013', '1.095', '-', '-', '-', 'Heidelberg'], 
-    'schonart_2009_I': [0.0, -90.0, -5.0, 10.0, 'Schonart, 2009 (satilitte)', '3.3', '-', '1', '-', 'Bremen'], 
-    'Martin_2009': [0.0, -24.87, 16.85, 2.0, 'Martin, 2009', '-', '<3.0', '-', '1.2', 'Heidelberg'], 
-    'Butz_2009': [0.045, -44.4, -2.4, 12.0, 'Butz, 2009', '0.1', '~1.0', '0.02', '0.5', 'Leeds'], 
-    'Mahajan_2010': [0., -100, -10, 4.0, 'Mahajan, 2010', '0.58', '-', '-', '-', 'Leeds'] }
-
-    if (just_IO):
-        return IO_obs_dict_just
-    else:
-        return IO_obs_dict
-
-# --------------
-# 7.02 - BAE  flight ID to date
-# -------------
-def bae_flight_ID_2_date( f_ID, debug=False):
-    """ BAE flight flight ID to date for CAST campaign
-    NOTES:
-        - UPDATE NEEDED: move this to func_vars4obs
-    """
-
-    if debug:
-        print 'bae_flight_ID_2_date called'
-    f_ID_dict = {'847':'2014-02-18','846':'2014-02-17','845':'2014-02-17', '844':'2014-02-16','843':'2014-02-15','842':'2014-02-17','840':'2014-02-13','839':'2014-02-12','838':'2014-02-05','837':'2014-02-04','836':'2014-02-04','835':'2014-02-03','834':'2014-02-01','833':'2014-02-01','832':'2014-01-30','831':'2014-01-30','830':'2014-01-30','829':'2014-01-28','828':'2014-01-26','827':'2014-01-26','826':'2014-01-25','825':'2014-01-24','824':'2014-01-21','823':'2014-01-18'}
-    return f_ID_dict[f_ID]
-
-# --------------
-# 7.03 - details on flights from FAAM's NETCDF core data files, 
-# --------------
-def CAST_flight(all=True, CIMS=False, CIMSII=False):
-    """ Callable dictionary of CAST flight details 
-        removed 'CAST_flight, 'b822': '20140108'' 
-    NOTES:
-        - UPDATE NEEDED: move this to func_vars4obs
-    """
-    flight_dict={
-    'b828': ['20140126', '0559', '20140126', '0930', 1390715993, 1390728623], 
-    'b829': ['20140128', '1932', '20140129', '0224', 1390937523, 1390962280], 
-    'b824': ['20140121', '1956', '20140122', '0413', 1390334165, 1390363990], 
-    'b825': ['20140124', '1940', '20140125', '0140', 1390592404, 1390614058],
-     'b826': ['20140125', '0128', '20140125', '0637', 1390613301, 1390631839], 
-    'b827': ['20140126', '0041', '20140126', '0445', 1390696903, 1390711511], 
-    'b823': ['20140118', '1713', '20140119', '0147', 1390065184, 1390096069], 
-    'b839': ['20140212', '0320', '20140212', '0824', 1392175209, 1392193471], 
-    'b838': ['20140205', '2246', '20140206', '0545', 1391640363, 1391665549], 
-    'b837': ['20140204', '1901', '20140205', '0318', 1391540463, 1391570305], 
-    'b836': ['20140204', '0134', '20140204', '0627', 1391477699, 1391495264], 
-    'b835': ['20140203', '2101', '20140204', '0104', 1391461263, 1391475894], 
-    'b834': ['20140201', '0610', '20140201', '1217', 1391235033, 1391257044], 
-    'b833': ['20140201', '0045', '20140201', '0606', 1391215547, 1391234764], 
-    'b832': ['20140130', '0622', '20140130', '1131', 1391062943, 1391081485], 
-    'b831': ['20140130', '0101', '20140130', '0614', 1391043666, 1391062492], 
-    'b830': ['20140129', '0239', '20140129', '0830', 1390963178, 1390984251], 
-    'b846': ['20140217', '2058', '20140218', '0510', 1392670683, 1392700201], 
-    'b847': ['20140218', '0503', '20140218', '0857', 1392699809, 1392713860], 
-    'b844': ['20140216', '1857', '20140217', '0324', 1392577026, 1392607467], 
-    'b845': ['20140217', '0323', '20140217', '0753', 1392607430, 1392623590], 
-    'b842': ['20140214', '0508', '20140214', '1035', 1392354530, 1392374130], 
-    'b843': ['20140215', '1903', '20140216', '0400', 1392490986, 1392523256], 
-    'b840': ['20140213', '0005', '20140213', '0658', 1392249904, 1392274686],
-     'b841': ['20140214', '0004', '20140214', '0458', 1392336265, 1392353901]}
-
-    if (CIMS):
-        flight_dict={'b828': ['20140126', '0559', '20140126', '0930', 1390715993, 1390728623], 'b829': ['20140128', '2322', '20140129', '0224', 1390937523, 1390962280], 'b824': ['20140122', '0155', '20140122', '0411', 1390334165, 1390363990], 'b825': ['20140124', '2230', '20140125', '0034', 1390592404, 1390614058], 'b826': ['20140125', '0128', '20140125', '0637', 1390613301, 1390631839], 'b827': ['20140126', '0041', '20140126', '0445', 1390696903, 1390711511], 'b823': ['20140118', '2006', '20140119', '0055', 1390065184, 1390096069], 'b839': ['20140212', '0320', '20140212', '0824', 1392175209, 1392193471], 'b838': ['20140205', '2246', '20140206', '0545', 1391640363, 1391665549], 'b837': ['20140204', '2333', '20140205', '0315', 1391540463, 1391570305], 'b836': ['20140204', '0134', '20140204', '0608', 1391477699, 1391495264], 'b835': ['20140203', '2316', '20140204', '0104', 1391461263, 1391475894], 'b834': ['20140201', '0610', '20140201', '1220', 1391235033, 1391257044], 'b833': ['20140201', '0145', '20140201', '0606', 1391215547, 1391234764], 'b832': ['20140130', '0622', '20140130', '1123', 1391062943, 1391081485], 'b831': ['20140130', '0201', '20140130', '0614', 1391043666, 1391062492], 'b830': ['20140129', '0249', '20140129', '0825', 1390963178, 1390984251], 'b846': ['20140217', '2058', '20140218', '0510', 1392670683, 1392700201], 'b847': ['20140218', '0503', '20140218', '0857', 1392699809, 1392713860], 'b844': ['20140216', '1857', '20140217', '0324', 1392577026, 1392607467], 'b845': ['20140217', '0323', '20140217', '0750', 1392607430, 1392623590], 'b842': ['20140214', '0611', '20140214', '1011', 1392354530, 1392374130], 'b843': ['20140215', '2227', '20140216', '0324', 1392490986, 1392523256], 'b840': ['20140213', '0304', '20140213', '0648', 1392249904, 1392274686], 'b841': ['20140214', '0004', '20140214', '0456', 1392336265, 1392353901]}
-    if (CIMSII):
-        flight_dict={'b828': ['20140126', '0559', '20140126', '0930', 1390715993, 1390728623], 'b829': ['20140128', '2322', '20140129', '0224', 1390937523, 1390962280], 'b824': ['20140122', '0155', '20140122', '0411', 1390334165, 1390363990], 'b825': ['20140124', '2230', '20140125', '0034', 1390592404, 1390614058], 'b826': ['20140125', '0141', '20140125', '0619', 1390613301, 1390631839], 'b827': ['20140126', '0100', '20140126', '0442', 1390696903, 1390711511], 'b823': ['20140118', '2006', '20140119', '0055', 1390065184, 1390096069], 'b839': ['20140212', '0320', '20140212', '0824', 1392175209, 1392193471], 'b838': ['20140205', '2246', '20140206', '0545', 1391640363, 1391665549], 'b837': ['20140204', '2333', '20140205', '0315', 1391540463, 1391570305], 'b836': ['20140204', '0134', '20140204', '0608', 1391477699, 1391495264], 'b835': ['20140203', '2338', '20140204', '0104', 1391461263, 1391475894], 'b834': ['20140201', '0619', '20140201', '1210', 1391235033, 1391257044], 'b833': ['20140201', '0223', '20140201', '0558', 1391215547, 1391234764], 'b832': ['20140130', '0622', '20140130', '1123', 1391062943, 1391081485], 'b831': ['20140130', '0201', '20140130', '0614', 1391043666, 1391062492], 'b830': ['20140129', '0249', '20140129', '0825', 1390963178, 1390984251], 'b846': ['20140218', '0035', '20140218', '0507', 1392670683, 1392700201], 'b847': ['20140218', '0503', '20140218', '0857', 1392699809, 1392713860], 'b844': ['20140216', '2224', '20140217', '0324', 1392577026, 1392607467], 'b845': ['20140217', '0323', '20140217', '0750', 1392607430, 1392623590], 'b842': ['20140214', '0611', '20140214', '1011', 1392354530, 1392374130], 'b843': ['20140215', '2227', '20140216', '0324', 1392490986, 1392523256], 'b840': ['20140213', '0342', '20140213', '0648', 1392249904, 1392274686], 'b841': ['20140214', '0050', '20140214', '0456', 1392336265, 1392353901]}
-    if (all) :
-        return flight_dict
-
-# --------------
-# 7.04 - Iodocarbon obs. meta data
-# --------------
-def iodocarbon_obs():
-    """ dictionary of Iodocarbon observations for automated 
-        analysis/comparions with observations 
-    NOTES:
-        - UPDATE NEEDED: move this to func_vars4obs    
-    """
-    Org_obs= { 
-    'CH3IT'  : [  \
-    ['Chuck et al (2005)' ,  list(np.linspace( -36, -49, 3) ) + \
-    list( np.linspace( -20, 28, 3) ), [-20] *6,  [0.71]*3 + [ 1.94]*3  ]  ] , 
-    'CH2ICl' : [  \
-    ['Chuck et al (2005)' , list(  np.linspace(  -36, -49, 3 )  )+  \
-    list(np.linspace( -20, 28, 3) ), [-20] *6, [0.23]*3+ [0.32]*3 ],\
-    ['Jones et al (2010)' , np.linspace( 60, 15, 5), [-15] *5, [0.12]*5 ] ],
-    'CH2I2' : [  \
-    ['Jones et al (2010)' , np.linspace( 60,15, 5), [-15] *5, [0.01]*5 ]  ],
-    'CH2IBr' : [  \
-    ['Jones et al (2010)' , np.linspace( 60, 15, 5), [-15] *5, [0.01]*5 ]  ],
-    'C2H5I' : [  \
-    ['Jones et al (2010)' , np.linspace( 26, 36, 3), [120] *3, [0.09]*3 ]  ],
-    'I2' : [  ['Lawler et al (2014)' , [16.51]   , [-24], [0.2] ]  ],
-               }
-    return Org_obs
 
 # --------------
 # 7.05 - Stores locations for use by funcs/progs - 
 # --------------
 def get_loc( loc=None, rtn_dict=False, debug=False ):
     """
-        Dictionary to store locations for automated analysis
+    Dictionary to store locations for automated analysis
 
-        Data arranged: LON, LAT, ALT 
-        ( LON in deg E, LAT in deg N, ALT in metres a.s.l. )
+    Data arranged: LON, LAT, ALT 
+    ( LON in deg E, LAT in deg N, ALT in metres a.s.l. )
 
-        Notes:
-            - double up? ( with 5.02 ?? )
-            - Now use Class of GEO_site in preference to this func. 
-    NOTES:
-        - UPDATE NEEDED: move this to func_vars4obs    
+    Notes:
+     - double up? ( with 5.02 ?? )
+     - Now use Class of GEO_site in preference to this func?
+     - UPDATE NEEDED: move this to func_vars4obs    
     """
 
     loc_dict ={    
@@ -2263,6 +2144,8 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'LEI_AUG' :  ( -1.127311, 52.619823, 0 ),
     'LEI_MAR' :  ( -1.127311, 52.619823, 0 ),
     'LEI' :  ( -1.127311, 52.619823, 0 ),
+    # --- Europ sites
+    'DZK' :  ( 4.5000, 52.299999237, 4 ),
     # --- O3 preindustrial
     'MON' :  ( 2.338333, 48.822222,  75+5 ), 
 #    'MON' : (2.3, 48.8, 80), # Monsoursis 
@@ -2310,15 +2193,19 @@ def get_obs_loc(loc, debug=False):
     48.491, 49.4508, 47.91111  ] , 
     [ 13.3833 , 7.0998, 10.0014, 8.3075, 10.7872, 11.5667, 13.133, 7.302, \
      7.8894] ],  \
-    'Weyborne' : [  [ 52.9420],  [1.1380 ]   ] , \
-    'Penlee' : [  [ 50.3214],  [-4.1858 ]   ] ,\
-    'Penlee_M2' :[  [ 49.7795272],  [-2.0229414 ]   ] , \
-    'Penlee_M3' :[  [ 49.8370764,],  [-5.3652425 ]   ] , \
-    'Penlee_M4' :[  [ 50.25],  [-4.15 ]   ] , \
-    'Penlee_M5' :[  [ 50.25],  [-0.85  ]   ] , \
-    'Penlee_M6' :[  [ 50.25],  [-7.05 ]   ] , \
-    'Mace_head_M3' :[  [ 53.209003], [  -10.846408 ]   ] , \
-    'Leicester' :[  [ 52.619823],  [-1.127311 ]   ]    }
+    'Weyborne'  : [[52.9420], [1.1380]], \
+    'Penlee'    : [[50.3214], [-4.1858]],\
+    'Penlee_M2' :[[49.7795272], [-2.0229414]], \
+    'Penlee_M3' :[[49.8370764,], [-5.3652425]], \
+    'Penlee_M4' :[[50.25], [-4.15]], \
+    'Penlee_M5' :[[50.25], [-0.85]], \
+    'Penlee_M6' :[[50.25], [-7.05]], \
+    'Mace_head_M3' :[[53.209003], [ -10.846408 ]], \
+    'Leicester' :[[52.619823], [-1.127311 ]], \
+    # Europe?
+    'De Zilk'   : [[52.299999237], [4.5000]], \
+    'Mainz'   : [[49.9841900], [8.2791000]], \
+    }
 
     return d[loc] 
     
@@ -2326,10 +2213,12 @@ def get_obs_loc(loc, debug=False):
 # 7.07 - sonde station variables (list of 432 sondes)
 # -------------
 def sonde_STNs():
-    """ Dictionary of WOUDC sonde location variables 
+    """ 
+    Dictionary of WOUDC sonde location variables 
+
     NOTES:
-        - redundent. Now using NetCDF meta data online
-        - UPDATE NEEDED: move this to func_vars4obs    
+     - redundent. Now using NetCDF meta data online
+     - UPDATE NEEDED: move this to func_vars4obs    
     """
     
     sonde_dict = {
@@ -2456,27 +2345,29 @@ def sonde_STNs():
 #  7.08 - returns  (lat, lon, alt (press), timezone (UTC) ) for a given site
 # ----
 def gaw_2_loc(site,  f =  'GLOBAL_SURFACE_O3_2006_2012.nc' ):
-    """ Extract GAW site locations for a given site 
-     Another file is availible with just GAW sites:
-          'GAW_SURFACE_O3_2006_2012.nc'  
+    """ 
+    Extract GAW site locations for a given site. 
+    
     NOTE:
-        - Also stores non GAW sites ( obs)
-        - UPDATE NEEDED: move this to func_vars4obs    
+     - Also stores non GAW sites ( obs)
+     - UPDATE NEEDED: move this to func_vars4obs    
+     - Another file is availible with just GAW sites:
+    ( 'GAW_SURFACE_O3_2006_2012.nc' )
     """
-    from AC_tools.funcs4generic import hPa_to_Km
+    from ..funcs4generic import hPa_to_Km
 
     # Use simple dictionary if site listed
     try:
         gaw_sites= {
-        'SMO': (-14.247,  -170.565,1002.7885270480558, -11), \
-        'MNM':(24.285, 153.981, 1011.9342452324959, 9), \
-        'BMW':(32.27, -64.88, 1008.6109830510485, -4 ) ,\
-        'CVO': (16.848, -24.871, 1011.6679817831093, -1), \
-        'RPB':(13.17000, -59.43000, 1007.0196960034474, -4 ), \
-        'ogasawara': (26.38, 142.10,996.08181619552602, 9 ), \
-        'OGA': (26.38, 142.10,996.08181619552602, 9 ), \
-        # Add extras for ease of analysis (e.g. Roscoff ... )
-        'ROS': (48.433, -3.5904, 1011.6679817831093, +1)       
+    'SMO': (-14.247,  -170.565,1002.7885270480558, -11), \
+    'MNM':(24.285, 153.981, 1011.9342452324959, 9), \
+    'BMW':(32.27, -64.88, 1008.6109830510485, -4 ) ,\
+    'CVO': (16.848, -24.871, 1011.6679817831093, -1), \
+    'RPB':(13.17000, -59.43000, 1007.0196960034474, -4 ), \
+    'ogasawara': (26.38, 142.10,996.08181619552602, 9 ), \
+    'OGA': (26.38, 142.10,996.08181619552602, 9 ), \
+    # Add extras for ease of analysis (e.g. Roscoff ... )
+    'ROS': (48.433, -3.5904, 1011.6679817831093, +1)       
         }
         return gaw_sites[ site ] 
 
@@ -2494,9 +2385,11 @@ def gaw_2_loc(site,  f =  'GLOBAL_SURFACE_O3_2006_2012.nc' ):
 # 1.02 - Return NO2 photolysis reaction REA_XX assignment
 # -------------
 def get_NO2_phot_REA_XXX( ver='1.6', debug=False ):
-    """ Returns the NO2 photolysis reaction number depending on iGC version
+    """ 
+    Returns the NO2 photolysis reaction number depending on iGC version
+
 	NOTES:
-	 -  This is a halogen run specific function
+	 - This is a halogen run specific function
     """
 
     if ver == '1.6':
@@ -2519,7 +2412,8 @@ def get_NO2_phot_REA_XXX( ver='1.6', debug=False ):
 # 3.01 - Spec to photolysis reaction p/l tag 
 # -------------
 def spec_phot_2_RD(spec):
-    """ Get tags for photolsysis of provide species
+    """ 
+    Get tags for photolsysis of provide species
     """
     d = {
     'OIO': 'RD67', 'ICl': 'RD74', 'I2O2': 'RD70', 'I2': 'RD64', \
@@ -2533,12 +2427,14 @@ def spec_phot_2_RD(spec):
 # 3.02 - Get families for reactions 
 # ------------- 
 def get_tag_fam( tag ):
-    """ Return family of a given reaction tag ( e.g. Ox loss family ). This is 
+    """ 
+    Return family of a given reaction tag ( e.g. Ox loss family ). This is 
     just a manually constructed dictionary/assignment list
+
     NOTES:
-            - Ox loss familes
-            - addition for GC paranox Kludge 
-            ( in v9-2 (patched), but removed in v10? )
+     - Ox loss familes
+     - addition for GC paranox Kludge 
+    ( in v9-2 (patched), but removed in v10? )
     """
     # Ox family dictionary
     fam_d = {
@@ -2605,10 +2501,9 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     analysis programmes.  
 
     Note(s): 
-        (A) A lot of this dictionary is vestigial. consider removing entirely? 
-        or moving to redundetn section
-
-        - Variables includes:
+     - A lot of this dictionary is vestigial. consider removing entirely? 
+        or moving to redundent section
+     - Variables includes:
     f_var = GC flux (EW, NS , UP) variables
     Ox = 'Ox', 'POX', 'LOX' + list of drydep species 
     ( # not inc. 'NO3df', 'HNO4df', 'BrOdf' , 'BrNO2', 'IO', 'IONO', 'OIO', )
@@ -2957,9 +2852,12 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
 # 4.06 - converts P/L rxn tag coefficient to 1 
 # --------------
 def p_l_unity(rxn, debug=False):
-    """ Converts all coefficents for OX tracers to unity. 
-        (just time Coe by output )
-        This allows for automatic adjust from smv2.log values.
+    """ 
+    Converts all coefficents for OX tracers to unity. 
+    (just time Coe by output )
+
+    This allows for automatic adjustment of smv2.log values.
+
     NOTE:
         - All values ion the dictionary are present in Ox_in_species
     """
@@ -2988,7 +2886,9 @@ def p_l_unity(rxn, debug=False):
 # 4.09 -  Ox in species
 # -------------
 def Ox_in_species(in_=None, rxns=False, keys=False):
-    """ returns units of OX in species/reaction
+    """ 
+    Returns units of OX in species/reaction
+
     NOTE:
      - This is an old approach. Update approach takes online coefficents from smv2.log 
      - This approach is still valid for older tag with coefficens.     
@@ -3041,9 +2941,12 @@ def Ox_in_species(in_=None, rxns=False, keys=False):
 # 4.19 - reference spec for family
 # --------
 def get_ref_spec( spec='LIOx' ):
-    """ Store of reference species for families. This is for use in conbination 
-    with functions that calculate relative values (e.g. in units of Ox, I, etc)
-     """
+    """ 
+    Store of reference species for families. 
+    
+    This is for use in conbination  with functions that calculate relative values 
+    (e.g. in units of Ox, I, etc)
+    """
     d = {
     'Cly' : 'Cl',
     'LOX' :'O3',
@@ -3068,237 +2971,3 @@ def get_ref_spec( spec='LIOx' ):
 # ----------------------- Section 5 -------------------------------------------
 # --------------  Misc
 #
-
-# --------------
-#  5.01 - Return MUTD runs  - no hal, just Br, just I, and I + Br
-# --------------
-def MUTD_runs( standard=True, sensitivity=False, titles=False, \
-        IO_obs=False,no_I2Ox=False, respun=True,            \
-        preindustrial=False, skip3=False, v10v92comp=False,              \
-        nested_EU=False, just_bcase_no_hal=False, just_std=False, \
-        just_bcase_std=False, ver='1.6', res='4x5', override=False,    \
-        inc_schmidt_2015=False, inc_iGC_ver1_6=False, \
-        debug=False): 
-    """ Dictionary of storage of TMS model runs.
-      
-        returns list of directories ("r") and titles ( "l")
-
-        Note: 
-            (1) To set directories mannually here, set override=True 
-            (2) UPDATED NEEDED: move this to "induvidual setup" object function
-    """
-
-    if debug:
-        print standard, sensitivity, titles, IO_obs, preindustrial, skip3,\
-                    nested_EU, just_bcase_std, ver
-    rwd = get_dir( 'rwd' )
-    l_dict= GC_var('latex_run_names')
-
-    # Get version directories for versions
-    d= { 
-    '4x5': { 
-    '1.6':'iGEOSChem_1.6_G5/',  
-#    '1.6':'iGEOSChem_1.6.1_G5/',  
-    '1.6.1':'iGEOSChem_1.6.1_G5/',  
-    '1.5': 'iGEOSChem_1.5_G5/' ,
-    '1.7': 'iGEOSChem_1.7_v10/', 
-    '2.0' : 'iGEOSChem_2.0_v10/', 
-    '3.0' : 'iGEOSChem_3.0_v10/'}, 
-    '2x2.5': {
-    '1.6':'iGEOSChem_1.6_G5_2x2.5/' ,
-    } }[res]
-    d=d[ver]
-
-    # Select out for ACPD sensitivity run
-    if sensitivity:
-        l = [ 
-        'no_hal', 'Just_Br',  'just_I', 'run', 'Just_I_org',  'I2Ox_double',\
-        'I2Ox_half', 'het_double','het_half', 'no_het',  'Sulfate_up', \
-        'MacDonald_iodide', 'I2Ox_phot_x2','I2Ox_phot_exp', 'no_I2Ox', \
-        'BrO2pptv' ]                                     
-        r = [ d + i for i in l ]
-
-        # adjust names to inc. repsin
-#        if respun:
-#            r = [ i+'.respun' for i in r ]
-
-    if standard and (not any( [preindustrial,sensitivity, v10v92comp]) ):
-        if just_bcase_std:
-            l = [ 'Just_Br',  'run' ]
-#            l = [ 'Just_Br',  'no_I2Ox' ]
-        elif just_bcase_no_hal:
-            l = [ 'no_hal',  'run' ]
-#            l = [ 'no_hal',  'no_I2Ox' ]
-        elif just_std:
-            l = [ 'Just_Br' ]
-        else:
-            if ver == '1.7':
-#                l = ['no_hal', 'run' ]
-                l = ['Just_Br', 'run' ]
-            # IA runs ( Sherwen et al + Schmidt et al )
-            elif ver == '2.0':
-                l = ['no_hal', 'run.Cl.Br.I.aerosol.no.SSA.Br2' ]
-#                l = ['no_hal', 'run.Cl.Br.I.aerosol' ]
-            # Couple halogen runs 
-            elif ver == '3.0':
-#                l = ['no_hal', 'Just_Br', 'run' ]
-                l = ['no_hal', 'run' ] # Don't consider just_Br run
-            # Main 2 ACPD runs + 2 extra runs 
-            else:
-                l = ['no_hal', 'Just_Br', 'just_I', 'run' ]
-#        if any( [ (ver ==i) for i in  '1.5', '1.6' ] ) :
-
-
-        r = [ d + i for i in  l ]
-
-    if nested_EU:
-        d= 'iGEOS_Chem_1.6_G5_NPOINTS/'
-        if just_bcase_std:
-            l = [ 'Just_Br',  'run' ]            
-        else:
-            l = [ 'no_hal',  'run' ]   
-        r = [ d+i for  i in l ]
-
-    # Setup latex titles list
-    if titles and (not any( [preindustrial, v10v92comp]) ) and ( standard or \
-        sensitivity or nested_EU):
-        l = [ l_dict[i] for i in l ]       
-
-    if v10v92comp:
-        if just_bcase_std:
-            l = [ 'Just_Br',  'run' ]            
-        else:
-            l = [ 'no_hal',  'run' ]        
-
-        r= [ 'iGEOSChem_1.7_v10/'+ i for i in l ]+ \
-             [ 'iGEOS_Chem_1.6_G5/'+ i for i in l ]
-        l= [ 'NOHAL (v10)', 'Br-I (v10)']  + \
-            [ 'NOHAL (v9-2)', 'Br-I (v9-2)'] 
-
-    if IO_obs:
-        l = 'run_CVO', 'run_GRO', 'run_MAL', 'run_HAL', \
-            'run_TOR_updated.respun', 'run_TOR_updated_surface.respun'
-        r = [d+ i for i in l]
-        if no_I2Ox:
-            r = [ i+'_no_I2Ox' for i in r ]
-
-    if preindustrial:
-        if ver == '1.5':
-            r = [ 
-            'iGEOS_Chem_1.5_G5/no_hal', 'iGEOS_Chem_1.5_G5/run' ,   \
-            'iGEOS_Chem_1.5_G5_preindustrial_no_hal/no_hal',    \
-            'iGEOS_Chem_1.5_G5_preindustrial/run'  
-            ]
-
-            l =  [ \
-            '(I-,Br-)', '(I+,Br+)' , '(I-,Br-) - 1750',  '(I+,Br+) - 1750']
-        if ver == '3.0':
-            r = [ 'no_hal', 'run', 'no_hal.PI', 'run.PI' ]
-            r = [d +i for i in r ]
-            l = [ 'NOHAL', 'Cl+Br+I', 'NOHAL (PI)', 'Cl+Br+I (PI)' ]
-
-    if debug:                         
-        print [rwd + i for i in r ], l
-
-    if debug:
-        [rwd + i for i in r ]
-    if skip3:
-        [ [ i.pop(0) for i in l, r ] for ii in range(3) ]
-
-
-    # Override run names if version 3.0 used.
-    if (ver == '3.0') and (not any( [preindustrial, v10v92comp, IO_obs]) ):
-
-        if just_bcase_std:
-            l =  [ 'BROMINE', 'Cl+Br+I' ]
-        if just_bcase_no_hal:
-            l =  ['NOHAL',  'Cl+Br+I' ]
-        if (not just_bcase_std) and (not just_bcase_no_hal):
-            l =  ['NOHAL', 'BROMINE', 'Cl+Br+I' ]
-
-        # Add extra runs?
-        if inc_iGC_ver1_6:
-            extra = 'iGEOSChem_1.6_G5/run/'
-            r = r[:2]+ [extra]+r[2:]        
-            l = l[:2]+ ['Br-I(v9.2)']+l[2:]        
-        if inc_schmidt_2015:
-            extra = '/../../collaboration/johan/v9-2//run.johan.v92.rundir/'
-            r = r[:2]+ [extra]+r[2:]        
-            l = l[:2]+ ['Br_het-Cl(v9.2)']+l[2:]  
-
-    # Mannually override run names
-#    override=True
-    if override:
-        # --- Version  2.0/1.7 runs
-#        r = [ 
-#        'iGEOSChem_1.7_v10/run', 'iGEOSChem_2.0_v10/run' 
-#            'iGEOSChem_1.7_v10/run' , 'johan/bpch_v10'
-#        ]
-#        l = '1.6', '1.7'
-#        l = 'v10, I+Br Parella', 'v10, I+Br+Cl johan'
-            # Version  3.0 runs
-        # --- All 3.0 runs + Parella et al (2012)
-        r = [
-            'iGEOSChem_3.0_v10/no_hal',
-            'iGEOSChem_3.0_v10/no_hal.PI',
-#             'iGEOSChem_3.0_v10/Just_Br',
-            'iGEOSChem_3.0_v10/run_25IBr', 
-            'iGEOSChem_3.0_v10/run_25IBr.PI', 
-            'iGEOSChem_3.0_v10/run_5IBr', 
-            'iGEOSChem_3.0_v10/run_5IBr.PI', 
-            'iGEOSChem_3.0_v10/run.SSBr', 
-            'iGEOSChem_3.0_v10/run_PI_PD',
-            'iGEOSChem_3.0_v10/run_PD_PI',
-            'iGEOSChem_3.0_v10/run_PD_PI.PD_STRAT',
-            'iGEOSChem_3.0_v10/run.PI_PD_STRAT',
-            'iGEOSChem_3.0_v10/run.PI_PD_STRAT.25',
-            'iGEOSChem_3.0_v10/run.PI_PD_STRAT.5',
-            'iGEOSChem_3.0_v10/run.PD_trop.PI_strat', 
-            'iGEOSChem_3.0_v10/run.PI.no_org_hal', 
-            'iGEOSChem_3.0_v10/run.no_org_hal', 
-            'iGEOSChem_3.0_v10/run.no_HOI_I2', 
-            'iGEOSChem_3.0_v10/run.no_org_hal.no_HOI_I2',
-            'iGEOSChem_3.0_v10/run.PD_TROP_PI_STRAT.no_HOI_I2', 
-            'iGEOSChem_3.0_v10/run.PI.no_HOI_I2', 
-            'iGEOSChem_3.0_v10/run',
-            'iGEOSChem_3.0_v10/run.PI'
-            ]            
-
-        l = [ 
-            'NOHAL', 
-            'NOHAL(PI)', 
-#        'Just_Br', 
-            '0.25IBr', 
-            '0.25IBr(PI)', 
-            '0.5IBr', 
-            '0.5IBr(PI)', 
-            'SSBr', 
-            'PI w PD hal ', 
-           'PD w PI hal ', 
-           'PD w PI hal (no strat)', 
-            'PI w PD STRAT', 
-            'PI w PD STRAT 0.25', 
-            'PI w PD STRAT 0.5', 
-            'PD trop, PI strat',
-            'no org hal (PI)',
-            'no org hal',
-            'Cl+Br+I- no I2/HOI', 
-            'no org hal - no I2/HOI', 
-            'PI w PD STRAT - no I2/HOI', 
-            'Cl+Br+I(PI) - no I2/HOI', 
-            'Cl+Br+I', 
-            'Cl+Br+I(PI)' 
-            ]
-
-        # Just run and run.PI
-#        l =l[-2:]
-#        r=r[-2:]
-        # Just use the XO run
-#        r = ['iGEOSChem_3.0_v10/run.ClBrI.R.t22.Br1.H1_15IBr_XO']
-#        l = [ 'run.XO' ] 
-
-    # return list with inc. main dir
-    rtn_list = [rwd + i for i in r ] 
-    if titles:
-        rtn_list = [ rtn_list, l ]
-    return   rtn_list
