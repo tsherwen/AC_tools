@@ -19,7 +19,13 @@ def pytest_addoption(parser):
     parser.addoption("--slow", action="store_true",
         help="remake ctm.nc tests")
 
-def pytest_configure():                                                   
+def pytest_configure():
+
+    # Make sure we are in the correct folder for the test.
+    dirname = os.path.split(os.getcwd())[1]
+    if not dirname=='Tests':
+        pytest.exit("Not running in the Tests folder!")
+                                                  
     """                                                                                    
     Downloads all the test dataset files using rsync.                                      
     """                                                                         
