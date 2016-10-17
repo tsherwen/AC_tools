@@ -2,8 +2,7 @@ from ..bpch2netCDF import *
 import logging
 import pytest
 import os
-import wget
-import filecmp
+import urllib2
 
 slow = pytest.mark.skipif(                                                     
     not pytest.config.getoption("--slow"),                                
@@ -17,9 +16,9 @@ def setup_function(function):
     Downloads all the test dataset files using rsync.                                      
     """
 
-    test_files = ['ctm.nc', 'test.bpch','tracerinfo.dat','diaginfo.dat']
+    test_files = ['test.nc', 'test.bpch','tracerinfo.dat','diaginfo.dat']
 
-    url_base =  'http://atmosviz1.york.ac.uk/~bn506/data/GC_funcs_test/test_files/'
+    url_base =  'http://atmosviz1.york.ac.uk/~bn506/data/AC_tools/'
     test_file_dir = 'test_files'
 
 
@@ -29,9 +28,13 @@ def setup_function(function):
     for file_name in test_files:
         file_path = os.path.join(test_file_dir, file_name)
         if not os.path.isfile(file_path):
+            my_file = open(file_path, 'wb')
             logging.debug(file_name + " not found. Downloading now.")
             url = url_base + file_name
-            filename = wget.download(url, out=test_file_dir)
+            file_data = urllib2.urlopen( url ).read()
+            my_file.write(file_data)
+            my_file.close()
+            
             logging.debug(file_name + " downloaded.")
         
             
@@ -44,6 +47,14 @@ def setup_function(function):
 #        # Consider making the above more pythonic.
     return
 
+def file_comparison(file_1, file_2):
+        file_1_data = open(file_1, 'r')
+        file_2_data = open(file_2, 'r')
+        if file_1_data.read() == file_2_data.read():
+            same = True
+        else:
+            same = False
+        return same
 
 @slow
 def test_convert_to_netCDF():
@@ -55,10 +66,10 @@ def test_convert_to_netCDF():
     testfile = os.path.join(test_file_dir, 'test.nc')
 
     logging.debug("Comparing the temp netCDF file to the origional")
-    assert filecmp.cmp(datafile, testfile), \
+    assert file_comparison(datafile, testfile), \
         'bpch converter failed to replicate the origional file.'
 
-    os.remove(datafile)
+#    os.remove(datafile)
     logging.info("test complete")
     return
 
