@@ -2,7 +2,6 @@ from ..bpch2netCDF import *
 import logging
 import pytest
 import os
-import filecmp
 import urllib2
 
 slow = pytest.mark.skipif(                                                     
@@ -48,6 +47,14 @@ def setup_function(function):
 #        # Consider making the above more pythonic.
     return
 
+def file_comparison(file_1, file_2):
+        file_1_data = open(file_1, 'r')
+        file_2_data = open(file_2, 'r')
+        if file_1_data.read() == file_2_data.read():
+            same = True
+        else:
+            same = False
+        return same
 
 @slow
 def test_convert_to_netCDF():
@@ -59,10 +66,10 @@ def test_convert_to_netCDF():
     testfile = os.path.join(test_file_dir, 'test.nc')
 
     logging.debug("Comparing the temp netCDF file to the origional")
-    assert filecmp.cmp(datafile, testfile), \
+    assert file_comparison(datafile, testfile), \
         'bpch converter failed to replicate the origional file.'
 
-    os.remove(datafile)
+#    os.remove(datafile)
     logging.info("test complete")
     return
 
