@@ -133,7 +133,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         cmap=None, no_cb=False, cb=None, rotatecbunits='horizontal',  \
         fixcb=None, nbins=25, nticks=10, mask_invalids=False,  \
         format='%.2f', adjust_window=0, f_size=20, alpha=1, log=False, \
-        set_window=False, res='4x5', ax=None, case='default', units=None, \
+        set_window=False, res=None, ax=None, case='default', units=None, \
         drawcountries=True,  set_cb_ticks=True, title=None, lvls=None,  \
         interval=1, resolution='c', shrink=0.4, window=False, everyother=1,\
         extend='neither', degrade_resolution=False, discrete_cmap=False, \
@@ -151,6 +151,19 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
      - extend: colorbar format settings ( 'both', 'min', 'both' ... )
      - shrink: colorbar size settings ( fractional shrink )    
     """
+
+    # Find out what resolution we are using if not specified
+    if (res==None and not wd=None):
+        try True:
+            res = get_gc_res(wd)
+            print res
+        except:
+            # Assume 4x5 resolution
+            logging.warning('No resolution specified or found. Assuming 4x5')
+            logging.warning('Try specifying the wd or manualy specifying the res')
+            res='4x5'
+
+
     # Make sure the input data is usable and try to fix it if not.
     assert len(arr.shape)==2, "input array should be 2D"
     if res=='4x5':
@@ -162,7 +175,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         else:
             logging.error("Array is the wrong shape. \
                 Should be (46,72). Got " + str(arr.shape))
-            raise AssertionError, "Incorrect array shape."
+            raise AssertionError, "Incorrect array shape for 4x5."
 
     if debug:
         print 'map_plot called'
