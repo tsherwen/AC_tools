@@ -804,11 +804,15 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
                             if verbose:
                                 print 'successfull indiv. extraction of: ',var_
                         except IndexError:
-                            abrv_var_ = get_ctm_nc_var(var_)
-                            arr += [ np.array( rootgrp[ abrv_var_ ] )]
-                            if verbose:
-                                print 'using {} instead of {}'.format( \
-                                     abrv_var_, var_ )
+                            logging.error('failed to find {var}'.format(var=var_))
+                            print "Here is a list of variables:"
+                            for variable in rootgrp.variables:
+                                print variable
+#                            abrv_var_ = get_ctm_nc_var(var_)
+#                            arr += [ np.array( rootgrp[ abrv_var_ ] )]
+#                            if verbose:
+#                                print 'using {} instead of {}'.format( \
+#                                     abrv_var_, var_ )
 
                 # files are stored in NetCDF at GC scaling. 
                 # ( This is different to ctm.bpch, rm for back compatibility. )
