@@ -304,16 +304,16 @@ def sort_sites_by_lat(sites):
 # --------   
 # 1.16 - Find nearest
 # --------
-#def find_nearest(array,value):
-#    """
-#    Find nearest number in array to given value. 
-#    
+def find_nearest(array,value):
+    """
+    Find nearest number in array to given value. 
+    
 #    NOTES:
 #    - Adapted from (credit:) HappyLeapSecond's Stackoverflow answer. 
 #    ( http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array )
 #    """
-#    idx = (np.abs(array-value)).argmin()
-#    return idx
+    idx = (np.abs(array-value)).argmin()
+    return idx
 
 # --------   
 # 1.17 - Get suffix for number
