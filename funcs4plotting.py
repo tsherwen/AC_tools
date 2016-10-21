@@ -153,8 +153,8 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     """
 
     # Find out what resolution we are using if not specified
-    if (res==None and not wd=None):
-        try True:
+    if (res==None and not wd==None):
+        try :
             res = get_gc_res(wd)
             print res
         except:
