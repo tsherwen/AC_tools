@@ -2,64 +2,27 @@
 """ 
 Time processing functions for use with GEOS-Chem/Data analysis. 
 
-See induvidual function (e.g help( 'insert function name')) for details.
-"""
+Use help(<name of function>) to get details on a particular function. 
 
-# --------------- 
-# ---- Section 1 ----- Time processing
-# 1.01 - Datetime to fractional day 
-# 1.02 - numpy.datetime64 to datetime.datetime 
-# 1.03 - Non ISO date to ISO (sonde strings )
-# 1.04 - Find nearest timestamp in list (datetime)
-# 1.05 - Process HHMM and YYYYMM strings to datetime
-# 1.06 - Increase datetime by given months
-# 1.07 - Increase datetime by given days
-# 1.08 - Increase datetime by given hours
-# 1.09 - Increase datetime by given minutes
-# 1.10 - Increase datetime by given seconds
-# 1.11 - convert dates to mod years (Kludge for obs. comparisons)
-# 1.12 - Get days in months for a given year ( to adjust monhtly averages )
-# 1.13 - non UT to UTC time corrector
-# 1.14 - non UTC to UTC ... (redundent?) 
-# 1.15 - Sort list of ctms into chronological order
-# 1.16 - Avg. data by month
-# 1.17 - Takes monthly outputs and sort to chronological order
-# 1.18 - Get datetimes for period of run... 
-# 1.19 - adjust data to daily
-# 1.20 - Datetime hours between datetime a and datetime b
-# 1.21 - Get interval dates assuming month gap in output
-# 1.22 - Normalise data to daily mean. 
-# 1.23 - Normalise data to daily min. 
-# 1.24 - Normalise data to daily max. 
-# 1.25 - hourly data to diurnal ... 
-# 1.26 - Translate from time to datetime
-# 1.27 - translate abrev. month name to num ( or vice versa ) 
-# 1.28 - convert times to datetime from HHMM and YYYYMMDD
-# 1.29 - Convert datetime.datetine to  Unix time
-# 1.30 - Process time/date to CV days equivilent 
+NOTE(S):    
+ - This module is underdevelopment vestigial/inefficient code is being removed/updated. 
+ - Where external code is used credit is given. 
+"""
+# ----------------------------- Section 0 -----------------------------------
+# -------------- Required modules:
 
 import logging
 
-# - Math/Analysis                                                                                   
+# -- Math/Analysis                                                                                   
 import numpy as np
 from time import mktime
-#import scipy.stats as stats
-#from pandas import HDFStore
 from pandas import DataFrame
-#from pandas import Series
-#from pandas import Panel
-#import math
 
 # -- Time                                                                                           
 import time
 import calendar
 import datetime as datetime
 from datetime import datetime as datetime_
-
-# --- Extras
-#from AC_tools.funcs4core import *
-#from AC_tools.funcs_vars import *
-#from AC_tools.funcs4generic import *
 
 # ----------------------- Section 1 -------------------------------------------
 # -------------- Time Processing

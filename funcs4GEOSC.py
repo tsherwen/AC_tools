@@ -1,113 +1,15 @@
 #!/usr/bin/python
-# ============================================================================
-# ------------------------------ tms - module of programs/code for re-use ----------------------------------
-# -------------- 
-# Section 1 - Plotters funcs
-# Section 2 - Model Data Extractors
-# Section 3 - Data Processing tools/drivers
-# Section 4 - Data Analysis funcs
-# Section 5 - Plotting Ancillaries 
-# Section 6 - Time processing
-# Section 7 - Generic processing 
+"""
+Functions for use with the GEOS-Chem chemical transport model (CTM).
 
-# --------------- ------------- ------------- ------------- ------------- 
-# --------------  Contents
-# --------------- ------------- ------------- ------------- ------------- 
-# ---- Section 0 ----- Required modules
+Use help(<name of function>) to get details on a particular function. 
 
-# --------------- ------------- ------------- ------------- ------------- 
-# ---- Section 1 ----- Model Data Extractors
-# 1.01 - open ctm.bpch 
-# 1.02 - get np array (4D) of ctm.bpch ( lon, lat, alt, time)
-# 1.03 - bulk ctm.bpch processor (Process mod output to ctms)
-# 1.04 - Get surface area
-# 1.05 - Get land map
-# 1.06 - Get Species Gg
-# 1.07 - Get air mass
-# 1.08 - get OH mean (read from geos.log)
-# 1.0X - get OH mean (read from geos.log)
-# 1.09 - Read X-Calc files (in need of update)
-# 1.10 - BD file reader (from DB)
-# 1.11 - SSA I2 file extractor
-# 1.12 - Extract all pf data for a given site.
-# 1.13 - Extract array from dir, saving the intermediate array to disc
-# 1.14 - Extract OH and HO2 for a given ctm.bpch file
-# 1.15 - Extract spec (surface) data from HDF for given time
-# 1.16 - Open and re-structure data for a given 
-# 1.17 - convert hdf (table to pandas panel) for spec
-# 1.18 - Extract surface data for a given location from nested run HDF
-# 1.19 - Extract spec ( EU surface) data from HDF for given time
-# 1.20 - Extract spec ( EU surface) data from HDF for given time ( for a family)
-# 1.21 - Process species for given arrays to (v/v) in respective scale + DU
-# 1.22 - Get var data for model run ( PyGChem >0.3.0 version combatible )
-# 1.23 - Get  surface data from HDF of surface plane flight data
-# 1.24 - Get gc resolution from ctm.nc
-# 1.25 - Get surface area ( m^2 ) for any global resolution
-# 1.26 - Process species for given family arrays to (v/v)
-# 1.27 - Convert v/v array to DU array 
-# 1.28 - Get common GC diagnostic arrays 
-# 1.29 - Get 3D CH4 concentrations
-# 1.30 - Get Strat-Trop exchange (from geos.log files )
-# 1.31 - Get Model wind direction
+NOTE(S):    
+ - This module is underdevelopment vestigial/inefficient code is being removed/updated. 
+ - Where external code is used credit is given. 
+"""
 
-# --------------- ------------- ------------- 
-# ---- Section 2 ----- Data Processing tools/Extractors - GC...
-# 2.01 - Retrieve model resolution 
-# 2.02 - Get model array dimension for a given resolution - mv's to core
-# 2.03 - Get GC ctm.bpch years 
-# 2.04 - Get GC ctm.bpch months
-# 2.05 - Get GEOS-Chem longitude index for a given latitude
-# 2.06 - Get GEOS-Chem latitude index for a given latitude
-# 2.07 - Get GC datetime
-# 2.08 - Work out iGEOS-Chem version
-# 2.09 - Get GC species burden of species (driver)
-# 2.10 - Get GC species prod loss (driver)
-# 2.11 - Get GC species emission (driver)
-# 2.12 - Get CH4  lifetime (driver)
-# 2.13 - Get GC Land/Water/Ice indices (LWI)
-# 2.14 - Get GEOS-Chem altitude index for a given latitude
-# 2.15 - Get Gg from v/v
-# 2.16 - Get GC volume 
-# 2.17 - Test is grid box for a given lat and lon is over water
-# 2.18 - Deposition for a given species 
-# 2.19 - Get Land map
-# 2.20 - Convert 3D prod/loss molec/cm3/s2 to Gg/month (driver) 
-# 2.21 - Convert 2D prod/loss tracer (molec/cm2/s2) to Gg/month (driver) 
-# 2.22 - get Dry deposition for a given species
-# 2.23 - Get GC run stats (driver) ***
-# 2.24 - Get DU mean value (area weighted)
-# 2.25 - Get O3 burden (redundent? - get_spec_burden does this already?)
-# 2.26 - Get Ox prod(POX)/loss(LOX)
-# 2.27 - Get Transport fluxes (driver)
-# 2.28 - Get species wet deposition 
-# 2.29 - Get species Boundary layer (BL) mixing
-# 2.30 - Get cloud flux
-# 2.31 - Volume weigh numbers
-# 2.32 - molecule weighted array average value
-# 2.33 - Return mesh and indics for which obs are within 
-# 2.34 - takes indices or generates indices for a given set of sites, these are then substract from all arrays given
-# 2.35 - Get Ox loss by route
-# 2.36 - Split Tropospheric Ox by loss route families 
-# 2.37 - Select only active wet dep tracers from given list
-# 2.38 - split 4D ( lon, lat, alt, time) output by season
-# 2.39 - Convert v/v to ng/m^3
-# 2.40 - Print array weighed 
-# 2.41 - Extract data by family for a given wd
-# 2.42 - Convert v/v to molec/cm3
-# 2.43 - mask non tropospheric boxes of 4D array
-# 2.44 - Convert [molec/cm3/s ] to [molec/yr] 
-# 2.45 - Get weighed average of latitude values
-# 2.46 - Convert molec/cm3/s to g/s
-# 2.47 - Print out stats on a list of 2D arrays in terms of masked areas
-
-
-# --------------- 
-# ---- Section 3 ----- Time processing
-# => all generic funcs moved to time funcs
-# 3.01 - Sort list of ctms into chronological order
-# 3.02 - Takes monthly outputs and sort to chronological order
-
-# ------------------------------------------- Section 0 -------------------------------------------
+# ----------------------------- Section 0 -----------------------------------
 # -------------- Required modules:
 #
 # -- I/O / Low level                                                                                
@@ -130,7 +32,7 @@ from netCDF4 import Dataset
 import iris 
 import logging
 
-# - Math/Analysis                                                                                   
+# -- Math/Analysis                                                                                   
 import numpy as np
 from time import mktime
 import scipy.stats as stats
@@ -147,7 +49,7 @@ import datetime as datetime
 from datetime import datetime as datetime_
 from iris.time import PartialDateTime 
 
-# ---  This needs to be updated, imports should be specific and in individual functions
+# --  This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
 from AC_tools.funcs4core import *
 from AC_tools.funcs4generic import *

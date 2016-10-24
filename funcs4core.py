@@ -6,8 +6,8 @@ NOTES:
  - user specific functions need to be migrated to a seperate fuction
 """
 
-# --------------- ------------- ------------- ------------- ------------- 
-# ---- Section 0 ----- Modules required
+# ----------------------------- Section 0 -----------------------------------
+# -------------- Required modules:
 
 import numpy as np
 from netCDF4 import Dataset
@@ -16,17 +16,6 @@ import platform
 import sys
 import logging
 
-# --------------- ------------- ------------- ------------- ------------- 
-# ---- Section 1 ----- Modules required
-# 1.01 - Get file directory
-# 1.02 - Get Latitude as GC grid box number 
-# 1.03 - Get Longitude as GC grid box number in dimension
-# 1.04 - Get model array dimension for a given resolution
-# 1.05 - Get grid values of lon, lat, and alt for a given resolution 
-# 1.06 - Convert from hPa to km or vice versa.
-# 1.07 - find nearest
-# 1.08 - Work out iGEOS-Chem version 
-# 1.99 - Get Reference data (lon, lat, and alt)  for a given resolution/nest
 
 # --------------                                                                                              
 # 1.01 - Store of dirs for earth0, atmosviz1, and tms mac                                                     
