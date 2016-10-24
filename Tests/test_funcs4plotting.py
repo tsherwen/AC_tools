@@ -25,6 +25,38 @@ def test_map_plot(test_data):
         map_plot( None )
     return
 
+@slow
+def test_save_plot(test_data):
+    map_plot(test_data[:,:,0])
+
+    save_plot()
+    filename_0 = "myplot.png"
+
+    save_plot(title="test_1")
+    filename_1 = "test_1.png"
+
+    save_plot(title="test_2", location=wd)
+    filename_2 = os.path.join(wd, "test_2.png")
+
+    save_plot(title="test_3", location="new_folder")
+    filename_3 = os.path.join("new_folder", "test_3.png")
+
+    save_plot(title="test_4", location=wd, extensions=["pdf", "png"])
+    filename_4 = os.path.join(wd, "test_4.png")
+    filename_5 = os.path.join(wd, "test_4.pdf")
+
+    # Test plot has been created, and then remove it"
+    filenames = [filename_0, filename_1, filename_2, 
+                filename_3, filename_4, filename_5]
+    for filename in filenames:
+        assert os.path.isfile( filename ), "Failed to create {file}".format(file=filename)
+        os.remove(filename)
+
+    os.rmdir("new_folder")
+
+    return
+    
+
 
 
 
