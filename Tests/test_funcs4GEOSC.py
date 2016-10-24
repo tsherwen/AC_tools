@@ -10,14 +10,14 @@ wd = 'test_files'
 
 #1.04
 def test_get_surface_area():
-    arr = get_surface_area()
+    arr = get_surface_area(wd=wd)
     assert isinstance( arr, np.ndarray), 'Surface area not a numpy array.'
     assert (len(arr.shape)==3), 'Surface area has too many dimensions.'
     return
 
 #1.05
 def get_land_map():
-    arr = get_land_map()
+    arr = get_land_map(wd=wd)
     assert isinstance( arr, np.ndarray), 'Land map not a numpy array.'
     assert (len(arr.shape) == 3), 'Land map has too many dimensions.'
     return
