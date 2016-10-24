@@ -15,7 +15,9 @@ import AC_tools as AC
 # --- Settings
 wd = '/work/home/ts551/data/'#IO_obs'
 # file of locations?
-pf_loc_dat_file ='ClBrI_ClNO2_PI_O3_PDRA.dat'
+#pf_loc_dat_file ='ClBrI_ClNO2_PI_O3_PDRA.dat'
+pf_loc_dat_file ='Weyborne.dat'
+#pf_loc_dat_file ='EU_GRID_0.25x0.3125.dat' 
 # Years output is required for?
 start_year, end_year = 2014,2016
 # debug?
@@ -31,13 +33,13 @@ ver = '3.0' # Cl-Br-I simulation
 Extra_spacings =False
 
 # --- Read in site Detail
-numbers, lats, lons, pres, locs = readin_gaw_sites( pf_loc_dat_file )
+numbers, lats, lons, pres, locs = AC.readin_gaw_sites( pf_loc_dat_file )
 # make sure the format is numpt float 64
 lats, lons, pres = [ np.float64(i) for i in lats, lons, pres ]
 print lats[0:4]
 
 # --- Set Variables
-slist = pf_var('slist', ver=ver )#_REAs_all')
+slist = AC.pf_var('slist', ver=ver )#_REAs_all')
 
 # extra scpaes need for runs with many points
 if Extra_spacings:
@@ -51,7 +53,7 @@ else:
 if all_REAs:
     # Get dictionary of rxns for wd/ver
     MUTDwd =  MUTD_runs()[0]
-    rdict = rxn_dict_from_smvlog( MUTDwd, ver=ver)
+    rdict = AC.rxn_dict_from_smvlog( MUTDwd, ver=ver)
 
 # setup required time range
 nvar=len(slist)

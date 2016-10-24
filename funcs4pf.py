@@ -1,49 +1,16 @@
 #!/usr/bin/python
-# ============================================
-# ------------ tms - module of programs/code for re-use -------------------
-# -------------- 
-# Section 0 - required modules
-# Section 1 - Planeflight Setup tools
-# Section 2 - Planeflight extractors
-# Section 3 - Planeflight Analysis/Post formating 
+""" 
+Generic functions for use with output from GEOS-Chem's planeflight module.
 
-# --------------- ------------- ------------- ------------- ------------- 
-# --- Section 1 - Planeflight Setup tools
-# 1.00 - "readin_gaw_sites" - Read in file of GAW sites as lists
-# 1.01 - "read_in_kml_sites"  - read sties from kml file
-# 1.02 -  "read TOR files" from Dix/Volkamer
-# 1.03 - 
-# 1.04 - 
-# 1.05 - 
-
-# --------------- ------------- ------------- ------------- ------------- 
-# --- Section 2 - Planeflight extractors
-# 2.01 - "wd_pf_2_data" - extract planeflight.dat files to numpy arrays for a given location 
-# 2.02 - "readfile_basic" - standard pf file reader
-# 2.03 - readfile for specific dates
-# 2.04 - process files
-# 2.05 - 'numpy_log_creator_db.py' - Dene's binary file writer
-# 2.06 - get planeflight headers
-# 2.07 - pf2pandas
-# 2.08 - in a df,  convert times to datetime from HHMM and YYYYMMDD
-# 2.10 - Extract all pf data for a given site.
-# 2.11 -  gaw site data for comp
-# 2.12 - Read pf data from 2D NetCDF table file 
-
-# --------------- ------------- ------------- ------------- ------------- 
-# --- Section 3 - Planeflight Analysis/Post formating 
-# 3.01 - process pf model array to datetime 
-# 3.02 - list CV dates in pf data
-# 3.03 - shift alignment of data from non-UTC to UTC
-# 3.04 - translate pf model data to days since 2006
-# 3.05 - Procss ATOM outputted files
-# 3.06 -
-# 3.07 - 
+NOTE(S):    
+ - This module is underdevelopment vestigial/inefficient code is being removed/updated. 
+ - Where external code is used credit is given. 
+"""
 
 # ----------------------------- Section 0 -----------------------------------
 # -------------- Required modules:
-#
-# I/O functions / Low level          
+
+# -- I/O functions / Low level          
 import sys
 import csv
 import glob
@@ -57,16 +24,16 @@ import logging
 # Math functions
 import numpy as np
 
-# ---  This needs to be updated, imports should be specific and in individual functions
+# -- This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
 from AC_tools.funcs4core import *
 from AC_tools.funcs4generic import *
 from AC_tools.funcs4time import *
 
-# Time functions
+# -- Time functions
 import datetime as datetime
 
-# vars
+# -- Variables
 from AC_tools.funcs_vars import *
 
 # ------------------------------------------- Section 1 -------------------------------------------

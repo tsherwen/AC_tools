@@ -1,15 +1,17 @@
 #!/usr/bin/python
-""" Generic functions for use with GEOS-Chem/Data Analysis.
+""" 
+Generic functions for use with GEOS-Chem/Data Analysis.
+
+Use help(<name of function>) to get details on a particular function. 
 
 NOTE(S):    
- - These functions were written whilst learning python, vestigial 
-   inefficient code is being removed/updated. 
+ - This module is underdevelopment vestigial/inefficient code is being removed/updated. 
  - Where external code is used credit is given. 
 """
 
-# ------------------------- Section 0 -----------------------------------------
+# ----------------------------- Section 0 -----------------------------------
 # -------------- Required modules:
-#
+
 # -- I/O / Low level                                                                                
 import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
@@ -20,60 +22,15 @@ from pandas import DataFrame
 import time
 import datetime as datetime
 
-# --- math
+# -- math
 from math import radians, sin, cos, asin, sqrt, pi, atan2
 
-# ---  This needs to be updated, imports should be specific and in individual functions
+# --  This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
 from AC_tools.funcs4core import *
 from AC_tools.funcs_vars import *
 
-# --------------- ------------- ------------- ------------- ------------- 
-# ---- Section 1 ----- Generic processing 
-# 1.01 - Chunker (splits data into chunks )
-# 1.02 - length of file
-# 1.03 - round values to given base (stipulate if not integer )
-# 1.04 - CSV opener - REDUDENT
-# 1.05 - Data "binner" (splits x by y, with given conditions )
-# 1.06 - Translate columns to rows  (in python 3)
-# 1.07 - Count files in dir
-# 1.08 - Bin range (redundent? )
-# 1.09 - Renames files
-# 1.10 - Get X and Y coordinates for a given grid
-# 1.11 - hPa to Km 
-# 1.12 - Save as pdf
-# 1.13 - save as multi page pdf
-# 1.14 - Obs finder for a given grid
-# 1.15 - Sort (GAW) sites by latitude
-# 1.16 - find nearest values in array
-# 1.17 - get number suffix
-# 1.18 - Get shortest distance on a sphere ( for finding closest point )
-# 1.19 - Get logritymcally spaced integers
-# 1.20 - Get indices in array where change in value of x occurs
-# 1.21 - Get data binned by uniques days in data
 
-# ------------- ------------- ------------- ------------- ------------- 
-# ---- Section 2 ----- Masks, for data analysis involving maps
-# 2.01 - Ocean Mask
-# 2.02 - Mask land
-# 2.03 - Mask Ice
-# 2.04 - Mask Surface
-# 2.05 - Tropical mask
-# 2.06 - Mid Lats mask
-# 2.07 - 40N to 40S Mask
-# 2.08 - Extra Tropics Mask
-# 2.09 - Mask 
-# 2.10 - MBL, FT, UT - 3D mask by pressure
-# 2.11 - Custom 2D mask by Lat (just give Lats) 
-# 2.12 - South Pole mask
-# 2.13 - North Pole mask
-# 2.14 - North Hemisphere mask 
-# 2.15 - South Hemisphere mask
-# 2.16 - Get Analysis maskes (list of masks and titles)
-# 2.17 - Get single mask ( single maks: e.g. tropical ) 
-# 2.18 - Custom 2D mask by Lat (just give Lats) 
-# 2.19 - EU mask
-    
 # -------------------------- Section 7 -------------------------------
 # -------------- Generic Processing
 #
@@ -304,16 +261,16 @@ def sort_sites_by_lat(sites):
 # --------   
 # 1.16 - Find nearest
 # --------
-#def find_nearest(array,value):
-#    """
-#    Find nearest number in array to given value. 
-#    
+def find_nearest(array,value):
+    """
+    Find nearest number in array to given value. 
+    
 #    NOTES:
 #    - Adapted from (credit:) HappyLeapSecond's Stackoverflow answer. 
 #    ( http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array )
 #    """
-#    idx = (np.abs(array-value)).argmin()
-#    return idx
+    idx = (np.abs(array-value)).argmin()
+    return idx
 
 # --------   
 # 1.17 - Get suffix for number
