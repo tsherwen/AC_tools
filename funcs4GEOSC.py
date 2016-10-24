@@ -640,6 +640,11 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
       - Species and category variables are maintained ( and translated ) to allow for 
       backwards compatibility with functions written for pygchem version 0.2.0
     """
+
+# bjn
+# This function is not completly clear to me, and could do with a re-write
+# The try command would probably be useful here for large parts.
+# logging would also be good for replacing debug.
     
     if debug:
         if not isinstance( vars, type(None) ):
@@ -707,14 +712,19 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
                                 print 'successfull indiv. extraction of: ',var_
                         except IndexError:
                             logging.error('failed to find {var}'.format(var=var_))
-                            print "Here is a list of variables:"
-                            for variable in rootgrp.variables:
-                                print variable
+                            raise ValueError('failed to find {var} in netCDF file'\
+                                    .format(var=var_))
+
+#------------------- Not sure what this does --- obsolete? ---------
+# Leaving this bit in incase it breakes anything.
+#
+#
 #                            abrv_var_ = get_ctm_nc_var(var_)
 #                            arr += [ np.array( rootgrp[ abrv_var_ ] )]
 #                            if verbose:
 #                                print 'using {} instead of {}'.format( \
 #                                     abrv_var_, var_ )
+#---------------------------------------------------------------------
 
                 # files are stored in NetCDF at GC scaling. 
                 # ( This is different to ctm.bpch, rm for back compatibility. )

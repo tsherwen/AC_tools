@@ -121,7 +121,8 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
     '1x1' :  (360,181,47), 
     '0.5x0.5' :  (720,361,47), 
     '0.5x0.666':(121,81,47) ,
-    '0.25x0.3125':(177, 115, 47)
+    '0.25x0.3125':(177, 115, 47),
+    '0.5x0.625':(145,133,47),
     }
     if debug:
         print dims
@@ -169,9 +170,11 @@ def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
         and lon variabe retrival. Just update to passing a wd with output at the 
         correct resolution to fix this.
     """ 
+    logging.info("Calling get_latlonalt4res")
+    logging.debug( locals() )
     # Kludge. Update function to pass "wd" 
     # if model output directory ("wd") not provided use default directory
-    if isinstance( wd, type(None) ):
+    if wd == None:
         dwd = get_dir( 'dwd') + '/misc_ref/'
         dir = {
         '4x5':'/LANDMAP_LWI_ctm',  \
@@ -181,6 +184,7 @@ def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
         '0.5x0.5' :'/work/data/GEOS/HEMCO/EMEP/v2015-03/',\
         '0.5x0.666' :'LANDMAP_LWI_ctm_05x0666',  \
         '0.25x0.3125' :'LANDMAP_LWI_ctm_025x03125',  \
+        # Need to add a 0.5x0.625!
         }[res]
         wd = dwd +dir
     

@@ -49,7 +49,7 @@ from AC_tools.funcs_vars import *
 from AC_tools.funcs4generic import *
 from AC_tools.funcs4time import *
 from AC_tools.funcs4pf import *
-from AC_tools.funcs4GEOSC import * # wd2ctms
+from AC_tools.funcs4GEOSC import * # wd2ctms, get_gc_res
 
 # math
 from math import log10, floor
@@ -70,7 +70,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         cmap=None, no_cb=False, cb=None, rotatecbunits='horizontal',  \
         fixcb=None, nbins=25, nticks=10, mask_invalids=False,  \
         format='%.2f', adjust_window=0, f_size=20, alpha=1, log=False, \
-        set_window=False, res='4x5', ax=None, case='default', units=None, \
+        set_window=False, res=None, ax=None, case='default', units=None, \
         drawcountries=True,  set_cb_ticks=True, title=None, lvls=None,  \
         interval=1, resolution='c', shrink=0.4, window=False, everyother=1,\
         extend='neither', degrade_resolution=False, discrete_cmap=False, \
@@ -88,6 +88,20 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
      - extend: colorbar format settings ( 'both', 'min', 'both' ... )
      - shrink: colorbar size settings ( fractional shrink )    
     """
+
+    # Find out what resolution we are using if not specified
+    
+    if (res==None) and not (wd==None):
+        res = get_gc_res(wd)
+    else:
+            # Assume 4x5 resolution
+            logging.warning('No resolution specified or found. Assuming 4x5')
+            logging.warning('Try specifying the wd or manualy specifying the res')
+            res='4x5'
+
+    print "res = {res}".format(res=res)
+
+
     # Make sure the input data is usable and try to fix it if not.
     assert len(arr.shape)==2, "input array should be 2D"
     if res=='4x5':
@@ -99,7 +113,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         else:
             logging.error("Array is the wrong shape. \
                 Should be (46,72). Got " + str(arr.shape))
-            raise AssertionError, "Incorrect array shape."
+            raise AssertionError, "Incorrect array shape for 4x5."
 
     if debug:
         print 'map_plot called'
@@ -113,14 +127,14 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     if window:
         interval = 2   # double interval size 
         degrade_resolution=True
-#      nticks, nbins, resolution, shrink  =int(nticks/3), int(nbins/2), 'l', 0.2
+    #      nticks, nbins, resolution, shrink  =int(nticks/3), int(nbins/2), 'l', 0.2
     if  res == '0.5x0.666':
         interval,  adjust_window, resolution,shrink  =0.5, 3, 'f', 0.6
     if degrade_resolution:
         resolution = 'l'
 
     if res == '0.25x0.3125':
-#        centre=True
+    #        centre=True
         centre=False
         adjust_window = 6
             
@@ -203,8 +217,8 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     print fixcb, fixcb_, fixcb_buffered, nticks, lvls
 
     if verbose:
-        print 'colorbar variables: ', fixcb_buffered, fixcb, fixcb_, lvls, \
-                cmap, lvls
+        logging.info( 'colorbar variables: ' + str([fixcb_buffered, fixcb, fixcb_, lvls, \
+                cmap, lvls]))
 
 #    if discrete_cmap:
 #        if isinstance( fixcb, type(None) ):
@@ -213,7 +227,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
 #        else:
 #            cmap, norm = mk_discrete_cmap( vmin=fixcb[0], vmax=fixcb[1], \
 #                    nticks=nticks, cmap=cmap 
-
+    
     # --------------  Linear plots -------------------------------
     # standard plot 
     if any( [ (case==i) for i in 3, 9 ] ):
@@ -290,8 +304,8 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             print tick_locs, lvls, [ type(i) for i in tick_locs, lvls ]
             print cb.get_clim(), title, format
     
-    # Set number of ticks
-    # FIX NEEDED - this currently doesn't doesn't work for log plots
+# Set number of ticks
+# FIX NEEDED - this currently doesn't doesn't work for log plots
 #    if (case != 3) and (not no_cb) and ( case != 4):
 #        if set_cb_ticks:
 #            tick_locator = ticker.MaxNLocator( nticks=nticks )
@@ -3868,9 +3882,9 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
             cb = cb+'_r'
 
     if verbose:
-        print 'cmap is: >{}< & data is:'.format( cb ), 
-        print '< postive == {}, negative == {}, divergent == {} >'.format(  \
-            positive, negative, (( not positive) and (not negative))   )
+        logging.info( 'cmap is: >{}< & data is:'.format( cb ))
+        logging.info( '< postive == {}, negative == {}, divergent == {} >'.format(  \
+            positive, negative, (( not positive) and (not negative)) ))
 
     # load color map
     cmap = plt.get_cmap( cb )
