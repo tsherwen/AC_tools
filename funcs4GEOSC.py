@@ -57,8 +57,6 @@ from AC_tools.funcs4time import *
 from AC_tools.funcs4pf import *
 from AC_tools.funcs_vars import *
 
-# Temporary logging test
-logging.basicConfig(filename='test.log', filemode='w',level=logging.DEBUG)
 
 
 # --------------------------------- Section 2 ----------------------------------
@@ -70,44 +68,67 @@ logging.basicConfig(filename='test.log', filemode='w',level=logging.DEBUG)
 # ----
 # 1.04 -Get surface area  ( m^2 )
 # ----
-def get_surface_area(res='4x5',time=None, debug=False):
+def get_surface_area(res='4x5',time=None, debug=False, wd=None):
     """ 
     Get_surface_area of grid boxes for a given resolution
+
+    INPUTS:
+    wd=None (Specify the wd to get the results from a run.)
+    res='4x5' (Specify the resolution if wd not given.)
+    time=None (Not used atall = Probably legacy? bjn)
+    debug=False (legacy debug, replaced by logging)
+    OUTPUTS:
+    s_area (2d numpy array of surface area per gridbox)    
 
     NOTE(s):
 	 - this function accesses previsouly run GEOS-Chem 
         1day files with just DXYP / DXYP diagnostic ouptuted
      - back compatibility with PyGChem 0.2.0 is retained  
     """
+    logging.info( "Getting the surface area" ) 
 
-    if debug:
-        print 'called get surface area'
-    dwd = get_dir( 'dwd') + '/misc_ref/'
-    dir = {
-    '4x5':'/LANDMAP_LWI_ctm',  \
-    '2x2.5': '/LANDMAP_ctm_2x25',  \
-    '0.5x0.666' :'LANDMAP_LWI_ctm_05x0666',  \
-    '0.25x0.3125' :'LANDMAP_LWI_ctm_025x03125',  \
-    }[res]
-    fd = dwd +dir
-    if debug:
-        print fd, res
-    if pygchem.__version__ == '0.2.0' :
-        ctm = gdiag.CTMFile.fromfile( fd +'/ctm.bpch' )
-        diags = ctm.filter(name="DXYP",category="DXYP")#,time=date_list[0])     
+    # if the wd has not been specified then use the previous runs
+    if wd==None:
 
-        # extract diags
-        first_time=True
-        if debug:
-            print diags
-        while first_time:
-            for diag in diags:
-                if debug:
-                    print diag.unit
-                s_area = diag.values
-            first_time=False
+        # What is dwd? 
+        # All of this might make sense to replace with example data?
+        dwd = os.path.join( get_dir('dwd'), '/misc_ref/')
+        logging.debug("dwd = " + str( dwd) )
+
+    #    dwd = get_dir( 'dwd') + '/misc_ref/'
+        dir = {
+        '4x5':'/LANDMAP_LWI_ctm',  \
+        '2x2.5': '/LANDMAP_ctm_2x25',  \
+        '0.5x0.666' :'LANDMAP_LWI_ctm_05x0666',  \
+        '0.25x0.3125' :'LANDMAP_LWI_ctm_025x03125',  \
+        }
+        fd = os.path.join( dwd , dir[res])
+        logging.debug( "resolution = {res}, lookup directory = {fd}"\
+            .format(res=res, fd=fd))
+    #    if debug:
+    #        print fd, res
+        wd = fd
+
+
+    try:
+        s_area = get_GC_output( wd, vars=['DXYP__DXYP'] ) 
+    except:
+        if pygchem.__version__ == '0.2.0' :
+            ctm = gdiag.CTMFile.fromfile( fd +'/ctm.bpch' )
+            diags = ctm.filter(name="DXYP",category="DXYP")#,time=date_list[0])     
+
+            # extract diags
+            first_time=True
+            if debug:
+                print diags
+            while first_time:
+                for diag in diags:
+                    if debug:
+                        print diag.unit
+                    s_area = diag.values
+                first_time=False
     else:
-        s_area = get_GC_output( fd, vars=['DXYP__DXYP'] ) 
+        logging.error("Could not get the surface area!")
 
     return s_area
 
