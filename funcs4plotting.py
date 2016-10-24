@@ -1,76 +1,16 @@
 #!/usr/bin/python
-# --------------- ------------- ------------- ------------- ------------- 
-# ---- Section 1 ----- Common Plot Types
-# 1.01 - Global/nested region surface plotter ***
-# 1.02 - Zonal plotter ***
-# 1.05 - Latitudinal binned plot
-# 1.06 - Diurnal binned boxplot
-# 1.07 - Diurnal binned plot
-# 1.11 - Sonde Plot ***
-# 1.12 - DB netCDF plotter
-# 1.13 - plot up monthly from data provided from DB netCDF
-# 1.14 - plot up monthly timeseries from ...
-# 1.15 - plot up daily timeseries from ...
-# 1.16 - plot up timeseries from May through Septmeber
-# 1.17 - plot up timeseries from between two given months 
-# 1.18 - North Pole plot
-# 1.19 -  South pole plot
-# 1.20 - PDF of monthly surface change plots for given species
-# 1.21 - PDF of monthly zonal change plots for given species
-# 1.22 - PDF of monthly column change plots for given species
-# 1.23 - Column change
-# 1.24 - Coupler to select plot type 
-# 1.25 - Probability distribution plotter
-# 1.26 - X vs. Y plot 
-# 1.27 - Scatter 3D cube
-# 1.28 - Plot up seasonal output from 4D arr (lon, lat, alt, time)
-# 1.29 - Hist X vs. Y.
-# 1.30 - PDF of annual surface change plots for given species
-# 1.31 - PDF of annual zonal change plots for given species
-# 1.32 - Figure generation ( just provide lon, lat np array )
-# 1.33 - Zonal Figure maker ( just provide lon, lat np array )
-# 1.34 - Lat plotter of average + Q1/Q3
-# 1.35 - Timeseries plotter ( takes datetime + np.array )
-# 1.36 - Get monthly surface plots for (4D) array 
-# 1.37 - Get monthly zonal plots for (4D) array 
-# 1.38 - Stackplot for variables over X axis
+""" 
+Generic plotting functions for timeseries/multi-dimensional output.
 
-# --------------- ------------- ------------- ------------- ------------- 
-# ---- Section 4 ----- Plotting Ancillaries 
-# 4.01 - Get percentiles
-# 4.02 - Moving average 
-# 4.03 - Make color list
-# 4.04 - Weighted Average
-# 4.05 - Get R^2 for data
-# 4.06 - Setup box plot ascetics.
-# 4.07 - Get Marker types
-# 4.08 - Setup Trendline
-# 4.09 - Plot up GC bands 
-# 4.10 - Get list of linestyles
-# 4.21 - Grey out stratosphere
-# 4.22 - Adjust subplots
-# 4.24 - Setup diurnal plot 
-# 4.25 - 
-# 4.26 - 
-# 4.27 - Print NCAS & York logos in the bottom corners
-# 4.28 - Mask all locations apart from given observational site
-# 4.29 - 
-# 4.30 - Annotate Grid
-# 4.31 - Centre colour bar
-# 4.35 - Add side colorbar
-# 4.36 - build basemap
-# 4.37 - Contruct and fill array of with data from ordinals (Lat, Lon) 
-# 4.38 - Get colormap ( dif for if all postive , all negative, mix )
-# 4.39 - Retrieves color by grouping of sensitivity study
-# 4.40 - Make segments for variable line color plot
-# 4.41 - Make colored line for plot
-# 4.42 - Get human readable gradations for plot
-# 4.43 - mk colourmap discrete 
-# 4.99 - Get input variables for  plotting
+Use help(<name of function>) to get details on a particular function. 
+
+NOTE(S):    
+ - This module is underdevelopment vestigial/inefficient code is being removed/updated. 
+ - Where external code is used credit is given. 
+"""
 
 # ------------------- Section 0 -------------------------------------------
 # -------------- Required modules:
-#
 
 # -- Plotting                                                                                       
 from mpl_toolkits.basemap import Basemap
@@ -94,7 +34,6 @@ import matplotlib
 from mpl_toolkits.axes_grid1 import AxesGrid
 from mpl_toolkits.mplot3d import Axes3D
 
-
 # -- Time                                                                                           
 import time
 import calendar
@@ -115,11 +54,9 @@ from AC_tools.funcs4GEOSC import * # wd2ctms, get_gc_res
 # math
 from math import log10, floor
 
-# colormaps
+# colormaps - Additional maps from Eric Sofen
 #from option_c import test_cm as cmc
 #from option_d import test_cm as cmd
-
-
 
 
 # ----------------------------- Section 1 ------------------------------------

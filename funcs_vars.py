@@ -1,106 +1,20 @@
 #!/usr/bin/python
+"""
+Variable store/dictionarys for use in AC_Tools.
 
-# =================================================
-# --------- tms - module of Variables for re-use----------------
-# -------------- 
+Use help(<name of function>) to get details on a particular function. 
 
-# Section 0 - Required modules
-# Section 1 - Planeflight variables
-# Section 3 - GeosChem (bpch) prod loss variables
-# Section 4 - GeosChem (bpch) general variables
-# Section 5 - Misc
-# Section 6 - Dynamic p/l processing
-# Section 7 - Obervational variables
-# Section 8- Drivers functions
-
-# ---------------------------- ------------- ------------- ------------- 
-# --------------  Contents
-# --------------- ------------- ------------- -------------
-# ---- Section 0 ----- Required modules
-# --------------- ------------- ------------- -------------
-
-# ---- Section 1 ----- Planeflight variables
-# 1.01 - PF variable dictionary ***
-# 1.02 - TRA_?? to Geos-Chem species name ***
-
-# --------------- ------------- ------------- -------------
-# ---- Section 2 ----- Drivers functions
-# 2.01 - P/L tag to PD tag ***
-# 2.02 - Get P/L dictionary for a given species ***
-# 2.03 - Get prod loss (P/L) reactions for a given family.
-
-# --------------- ------------- ------------- -------------
-# ---- Section 3 ----- GeosChem (bpch) prod loss variables
-# 3.01 - Spec to photolysis reaction p/l tag 
-# 3.02 - Ox family for tag
-
-# --------------- ------------- ------------- -------------
-# ---- Section 4 ----- GeosChem (bpch) general variables
-# 4.01 - v9-2 species in input.geos from num
-# 4.02 - Get Species Mass 
-# 4.03 - Get Species stoichiometry 
-# 4.04 - GEOS-Chem/ctm.bpch values (current main dict ) ***
-# 4.05 - latex species name
-# 4.06 - converts P/L tracer mulitpler to 1
-# 4.07 - Returns tracers unit and scale (if requested)
-# 4.08 - Store of dirs for earth0, atmosviz1, and tms mac
-# 4.09 - Ox in species (redundant now? should adapt species stoich )
-# 4.10 - Get Gaw site name from GAW ID
-# 4.11 - returns dict of gaw sites
-# 4.12 - Return lat, lon, alt for a given resolution
-# 4.13 - Get model array dimension for a given resolution
-# 4.14 - Convert gamap category/species name to Iris/bpch name
-# 4.15 - Get scaling for a given unit
-# 4.16 - Species Class 
-# 4.17 - Observation Site Class 
-# 4.18 -  dictionary of category + species names from diagnostic ordering
-# 4.99 - Reference data, (inc. grid data) from gchem 
-
-# --------------- ------------- ------------- -------------
-# ---- Section 5 ----- Misc
-# 5.01 - dir store (standard directories on different servers )
-# 5.02 - Store of  constants for use by funcs/progs
-
-# --------------- ------------- ------------- -------------
-# ---- Section 6 ----- Dynamic prod/loss dictionary processing ( For GEOS-Chem)
-# 6.01 - Make rxn dict of all active reactions ***
-# 6.02 - Return all reactions for a given p/l family ***
-# 6.03 - Return reaction infomaiton for given tags (e.g. PD... )
-# 6.04 - Create an indices list to split reaction by family (e.g. for Ox loss)
-# 6.05 - Return tags for a given reaction
-# 6.06 - Extract all p/l speacies in a given input.geos
-# 6.07 - Extract all active tags from a given smv.log
-# 6.08 - Extract all active PDs from a given smv.log
-# 6.09 - get all active reaction for a given tag
-# 6.10 - get all details for a given tag 
-# 6.11 - get reaction coeffifecent
-# 6.12 - Remove ClBrI het loss tracers during testing
-# 6.13 - PD to rxn str - remake of redundant function
-# 6.14 - Get OH reactants from reaction number dictionary
-
-
-# --------------- ------------- ------------- -------------
-# ---- Section 7 ----- Observational variables
-# 7.01 - IO observation dictionary
-# 7.02 - BAE flight ID dictionary
-# 7.03 - CAST flight dictionary for CIMS/CIMSII
-# 7.04 - Iodocarbon obs. meta data
-# 7.05 - Stores locations for use by funcs/progs - LON, LAT, ALT - double up? ( with 5.02 ?? )
-# 7.06 - Get Locations of observations (lats, lons, alts ) for given sites
-# 7.07 - sonde station variables (list of 432 sondes)
-# 7.08 - returns  (lat, lon, alt (press), timezone (UTC) ) for a given site
-
-
-# --------------- ------------- ------------- -------------
-# ---- Section XX ----- Redundant functions
-# 4.05 - Convert species to formatted "LaTeX" form
+NOTE(S):    
+ - This code will be updated to use a user configuration apoach (*.rc file) shortly.
+ - This module is underdevelopment vestigial/inefficient code is being removed/updated. 
+ - Where external code is used credit is given.
+"""
 
 
 
-# ------------------ Section 0 -----------------------------------
+# ----------------------------- Section 0 -----------------------------------
 # -------------- Required modules:
-#
-#
+
 # -- I/O / Low level                                                                                
 import re
 import os 
@@ -111,14 +25,14 @@ from netCDF4 import Dataset
 import sys
 import glob
 
-# - Math/Analysis                                                                                   
+# -- Math/Analysis                                                                                   
 import numpy as np
 
-# ---  This needs to be updated, imports should be specific and in individual functions
+# --  This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
 from AC_tools.funcs4core import *
 
-# ------------------------------------------- Section 1 -------------------------------------------
+# ----------------------------- Section 1 -----------------------------------
 # -------------- Planeflight variables
 #
 
