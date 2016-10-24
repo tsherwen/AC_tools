@@ -3,11 +3,6 @@ import AC_tools as AC
 # Download the example data if it is not already downloaded.
 from AC_tools.Scripts import get_example_files
 
-# Add some logging
-import logging
-#logging.basicConfig(filename='example.log',level=0)     
-
-
 # Specify the working directory
 wd = "example_data"
 
