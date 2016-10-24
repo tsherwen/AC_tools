@@ -4392,6 +4392,35 @@ def get_input_vars(debug=False):
 
     return wd, fn, cat_, spec, start, end
 
+def show_plot():
+    """
+    Wrapper for plt.show(). Use to plot to screen.
+    """
+    plt.show()
+    return
+
+def save_plot(title="myplot", location=os.getcwd(),  extensions=['png']):
+    """
+    Save a plot to disk.
+    Inputs:
+    title=myplot (String)
+    location=None (String of directory to save output)
+    extensions=['png'] (List of strings of file extensions.)
+    Outputs:
+    None
+    """
+
+    if not os.path.isdir(location):
+        os.mkdir(location)
+        logging.warning("Plotting location not found")
+        logging.warning("Creating dir {folder}".format(folder=location))
+
+    for extension in extensions:
+        filename = os.path.join(location, title+"."+extension) 
+        plt.savefig( filename )
+        logging.info("Plot saved to {location}".format(location=filename))
+    return
+
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
