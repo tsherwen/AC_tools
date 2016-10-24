@@ -89,6 +89,8 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
      - shrink: colorbar size settings ( fractional shrink )    
     """
 
+    logging.info("map_plot called")
+
     # Find out what resolution we are using if not specified
     
     if (res==None) and not (wd==None):
@@ -98,8 +100,6 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             logging.warning('No resolution specified or found. Assuming 4x5')
             logging.warning('Try specifying the wd or manualy specifying the res')
             res='4x5'
-
-    print "res = {res}".format(res=res)
 
 
     # Make sure the input data is usable and try to fix it if not.
@@ -115,9 +115,9 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
                 Should be (46,72). Got " + str(arr.shape))
             raise AssertionError, "Incorrect array shape for 4x5."
 
-    if debug:
-        print 'map_plot called'
-        print [ [ i.min(), i.max(), i.mean(), type(i) ] for i in [arr] ]
+#    if debug:
+#        print 'map_plot called'
+#        print [ [ i.min(), i.max(), i.mean(), type(i) ] for i in [arr] ]
 
     # Mask for percent arrays containing invalid values ( to allow PDF save)
     if mask_invalids:
@@ -138,9 +138,10 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         centre=False
         adjust_window = 6
             
-    if debug:
-        print '>'*5, [ [ i.min(), i.max(), i.mean(), type(i) ] for i in [arr] ]
+#    if debug:
+#        print '>'*5, [ [ i.min(), i.max(), i.mean(), type(i) ] for i in [arr] ]
     lon, lat, NIU = get_latlonalt4res( res, centre=centre, wd=wd )
+
 
     if set_window:
         # Convert lats and lons to GC lats and restrict lats, lons, and arr
@@ -155,8 +156,8 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     # ----------------  Basemap setup  ----------------  
     # Grid/Mesh values
     x, y = np.meshgrid(lon,lat)
-    if debug:
-        print 1, len(x), len(y)
+#    if debug:
+#        print 1, len(x), len(y)
 
     # Set existing axis to current if axis provided
     if not isinstance( ax, type( None ) ):
@@ -169,9 +170,9 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
 
     # Process data to grid
     x, y = np.meshgrid( *m(lon, lat) )
-    if debug:
-        print 2, 'len:',  [ len(i) for i in x,y,lat,lon ]
-        print '>'*5, [ [ i.min(), i.mean(), i.max() ] for i in [arr ] ]
+#    if debug:
+#        print 2, 'len:',  [ len(i) for i in x,y,lat,lon ]
+#        print '>'*5, [ [ i.min(), i.mean(), i.max() ] for i in [arr ] ]
 
     if (set_window):
         plt.xlim( lon_0, lon_1)
@@ -185,8 +186,8 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         case = {
         'linear':3, 'default':3, 'IO': 1,'limit_to_1_2': 2, 'log': 4,  
         }[case]
-    if debug:
-        print 3, case, [ np.array(i).shape for i in lon, lat, arr ], alpha
+#    if debug:
+#        print 3, case, [ np.array(i).shape for i in lon, lat, arr ], alpha
 
     # -------- colorbar variables...
     # Set cmap range I to limit poly, if not given cmap )
@@ -214,10 +215,9 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         fixcb_buffered = fixcb_
     fixcb_ = fixcb_buffered
 
-    print fixcb, fixcb_, fixcb_buffered, nticks, lvls
+#    print fixcb, fixcb_, fixcb_buffered, nticks, lvls
 
-    if verbose:
-        logging.info( 'colorbar variables: ' + str([fixcb_buffered, fixcb, fixcb_, lvls, \
+    logging.info( 'colorbar variables: ' + str([fixcb_buffered, fixcb, fixcb_, lvls, \
                 cmap, lvls]))
 
 #    if discrete_cmap:
@@ -254,8 +254,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             cb = plt.colorbar(poly, ax=m.ax, ticks=lvls, format=format, \
                  shrink=shrink, alpha=alpha, norm=norm, extend='min')
 
-        if debug:
-            print np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), lvls
+        logging.debug(np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), lvls)
 
     # ----------------  Colorbars  ----------------  
     if no_cb:
@@ -264,10 +263,6 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         if isinstance( cb, type(None) ):
             # if linear plot without fixcb set, then define here
             ax = plt.gca()
-
-        if verbose:
-            print shrink, m, m.ax, poly, alpha, format, lvls, norm,  \
-                    extend, ax
 
         # Create colourbar instance
         cb = plt.colorbar( poly, ax=ax, shrink=shrink, alpha=alpha,  \
@@ -300,9 +295,8 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         cb.set_ticklabels( lvls )#, format=format )
 
 
-        if verbose:
-            print tick_locs, lvls, [ type(i) for i in tick_locs, lvls ]
-            print cb.get_clim(), title, format
+        #logging.info(tick_locs, lvls, [ type(i) for i in tick_locs, lvls ])
+        #logging.info(cb.get_clim(), title, format)
     
 # Set number of ticks
 # FIX NEEDED - this currently doesn't doesn't work for log plots
@@ -454,8 +448,11 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, \
             cb = plt.colorbar(poly, ax=ax, ticks=lvls, format=format, \
                  shrink=shrink, alpha=alpha, norm=norm, extend='min')
 
-        if debug:
-            print np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), lvls
+        logging.debug('cb min = {cb_min}, cb max = {cb_max}, lvls = {cb_lvls}'\
+                    .format(
+                        cb_min = np.ma.min(np.ma.log(arr)),
+                        cb_max = np.ma.max(np.ma.log(arr)),
+                        cb_lvls = lvls))
 
 #            l_f = LogFormatter(10, labelOnlyBase=False)
 #            if fixcb[0] == 0:
@@ -4159,8 +4156,6 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     if debug:
         print 1, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
 
-    if verbose:
-        print vmax_rounded,  lvls_diff, nticks
     lvls = np.array([ vmax_rounded - lvls_diff*i \
             for i in range( nticks ) ][::-1])   
     if debug:

@@ -57,8 +57,8 @@ from AC_tools.funcs4time import *
 from AC_tools.funcs4pf import *
 from AC_tools.funcs_vars import *
 
-# Temporary logging test
-logging.basicConfig(filename='test.log', filemode='w',level=logging.DEBUG)
+from AC_tools.Scripts.bpch2netCDF import convert_to_netCDF
+
 
 
 # --------------------------------- Section 2 ----------------------------------
@@ -70,46 +70,110 @@ logging.basicConfig(filename='test.log', filemode='w',level=logging.DEBUG)
 # ----
 # 1.04 -Get surface area  ( m^2 )
 # ----
-def get_surface_area(res='4x5',time=None, debug=False):
+def get_surface_area(res=None,time=None, debug=False, wd=None):
     """ 
     Get_surface_area of grid boxes for a given resolution
+
+    INPUTS:
+    wd=None (Specify the wd to get the results from a run.)
+    res='4x5' (Specify the resolution if wd not given.)
+    time=None (Not used atall = Probably legacy? bjn)
+    debug=False (legacy debug, replaced by logging)
+    OUTPUTS:
+    s_area (2d numpy array of surface area per gridbox)    
 
     NOTE(s):
 	 - this function accesses previsouly run GEOS-Chem 
         1day files with just DXYP / DXYP diagnostic ouptuted
      - back compatibility with PyGChem 0.2.0 is retained  
     """
+    logging.info( "Getting the surface area" ) 
 
-    if debug:
-        print 'called get surface area'
-    dwd = get_dir( 'dwd') + '/misc_ref/'
-    dir = {
-    '4x5':'/LANDMAP_LWI_ctm',  \
-    '2x2.5': '/LANDMAP_ctm_2x25',  \
-    '0.5x0.666' :'LANDMAP_LWI_ctm_05x0666',  \
-    '0.25x0.3125' :'LANDMAP_LWI_ctm_025x03125',  \
-    }[res]
-    fd = dwd +dir
-    if debug:
-        print fd, res
-    if pygchem.__version__ == '0.2.0' :
-        ctm = gdiag.CTMFile.fromfile( fd +'/ctm.bpch' )
-        diags = ctm.filter(name="DXYP",category="DXYP")#,time=date_list[0])     
+    if res==None and wd==None:
+        res = ('4x5')
+        logging.warning("No res or wd specified. Assuming 4x5.")
 
-        # extract diags
-        first_time=True
-        if debug:
-            print diags
-        while first_time:
-            for diag in diags:
-                if debug:
-                    print diag.unit
-                s_area = diag.values
-            first_time=False
-    else:
-        s_area = get_GC_output( fd, vars=['DXYP__DXYP'] ) 
+    print locals()
+
+    # if the wd has not been specified then use the previous runs
+    if wd==None:
+
+        # What is dwd? 
+        # All of this might make sense to replace with example data?
+        dwd = os.path.join( get_dir('dwd'), '/misc_ref/')
+        logging.debug("dwd = " + str( dwd) )
+
+    #    dwd = get_dir( 'dwd') + '/misc_ref/'
+        dir = {
+        '4x5':'/LANDMAP_LWI_ctm',  \
+        '2x2.5': '/LANDMAP_ctm_2x25',  \
+        '0.5x0.666' :'LANDMAP_LWI_ctm_05x0666',  \
+        '0.25x0.3125' :'LANDMAP_LWI_ctm_025x03125',  \
+        }
+        fd = os.path.join( dwd , dir[res])
+        logging.debug( "resolution = {res}, lookup directory = {fd}"\
+            .format(res=res, fd=fd))
+    #    if debug:
+    #        print fd, res
+        wd = fd
+
+
+
+    logging.debug("Trying to get surface area from {wd}".format(wd=wd))
+    try:
+        s_area = get_GC_output( wd, vars=['DXYP__DXYP'] ) 
+    except ValueError:
+        logging.debug("Failed getting surface area from wd")
+        logging.debug("Trying to get surface area grom bpch file pygchem v0.2")
+        if pygchem.__version__ == '0.2.0' :
+            ctm = gdiag.CTMFile.fromfile( fd +'/ctm.bpch' )
+            diags = ctm.filter(name="DXYP",category="DXYP")#,time=date_list[0])     
+
+            # extract diags
+            first_time=True
+            if debug:
+                print diags
+            while first_time:
+                for diag in diags:
+                    if debug:
+                        print diag.unit
+                    s_area = diag.values
+                first_time=False
+    except:
+        logging.error("Could not get the surface area!")
+        raise ValueError("Could not find the surface area")
 
     return s_area
+
+def list_variables(wd=None):
+    """
+    Show a list of variables in a wd that we can get at.
+
+    INPUTS:
+    wd=None (Specify the working directory)
+
+    OUTPUTS:
+    prints a list of variables.
+
+    #Note
+    Only currently prints variables in the ctm.nc
+    Should be expanded to include planeflight and HEMCO
+    """
+
+    logging.info("Listing variables in {wd}".format(wd=wd))
+    if wd==None:
+        raise ValueError("Please specify a working dir")
+
+    ctm_nc = os.path.join(wd, 'ctm.nc')
+    if not os.path.isfile( ctm_nc ):
+        convert_to_netCDF( wd )
+
+    for var in Dataset( ctm_nc ).variables:
+        print var
+
+    return
+        
+    
 
 # ----
 # 1.05 - Get Land map. 
@@ -646,6 +710,7 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
 # The try command would probably be useful here for large parts.
 # logging would also be good for replacing debug.
     logging.info("Called get_GC_output")
+    logging.debug("get_GC_output inputs:")
     logging.debug(locals())
     
     if debug:
@@ -692,48 +757,80 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
                 from bpch2netCDF  import convert_to_netCDF
                 convert_to_netCDF( wd )
 
-            if verbose:
-                print fname
+            logging.debug("Opening netCDF file {fname}".format(fname=fname))
             # "open" NetCDF + extract requested variables as numpy arr.
-            with Dataset( fname, 'r' ) as rootgrp:
+
+
+            netCDF_data = Dataset( fname, 'r' )
+            arr = []
+            for var in vars:
                 try:
-                    arr = [ np.array(rootgrp[i]) for i in vars ]  
-                except IndexError:
-                    if verbose:
-                        print 'WARNING: VAR NOT IN NETCDF '
-                        print 'IndexError was found either due to lack of ' + \
-                            'variable in NetCDF file or error in name' + \
-                            ' species import from *.dat. Will attempt renaming'
-                    arr =[]
-                    for var_ in vars:
-                        if verbose:
-                            print 'Atempting indiviudual extraction of: ', var_
-                        try:
-                            arr += [ np.array( rootgrp[var_] ) ]
-                            if verbose:
-                                print 'successfull indiv. extraction of: ',var_
-                        except IndexError:
-                            logging.error('failed to find {var}'.format(var=var_))
-#                            raise ValueError('failed to find {var} in netCDF file'\
-#                                    .format(var=var_))
+                    logging.debug("opening variabel {var}".format(var=var))
+                    var_data = ( netCDF_data.variables[var] )
+                except:
+                    logging.warning("Variable {var} not found in netCDF")\
+                        .format(var=var)
+                    logging.warning("Will attempt renaming")
+                    abrv_var = get_ctm_nc_var( var )
+                    try:
+                        var_dara = ( netCDF_data.varialbes[var][:] )
+                    except:
+                        logging.error("Renamed variable {var} not found in netCDF")\
+                            .format(var=abrv_var)
 
-                
-                            # If not found try an abreviation
-                            abrv_var_ = get_ctm_nc_var(var_)
-                            arr += [ np.array( rootgrp[ abrv_var_ ] )]
-                            if verbose:
-                                print 'using {} instead of {}'.format( \
-                                     abrv_var_, var_ )
-
-                # files are stored in NetCDF at GC scaling. 
-                # ( This is different to ctm.bpch, rm for back compatibility. )
                 if restore_zero_scaling:
                     try:
-                        arr =[ arr[n]/get_unit_scaling( rootgrp[i].ctm_units ) \
-                            for n, i in enumerate( vars ) ]
+                        var_data[:] = var_data[:]/get_unit_scaling( var_data.ctm_units)
                     except:
-                        print 'WARNING: SCALING NOT ADJUSTED TO' + \
-                            ' PREVIOUS APPROACH'
+                        logging.warning("Scaling not adjusted to previous approach")
+
+                arr.append(var_data[:])
+
+                
+#####--- bjn - re-wrote to make more understandable ---###
+#
+#            with Dataset( fname, 'r' ) as rootgrp:
+#                try:
+#                    arr = [ np.array(rootgrp[i]) for i in vars ]  
+#                except IndexError:
+#                    if verbose:
+#                        print 'WARNING: VAR NOT IN NETCDF '
+#                        print 'IndexError was found either due to lack of ' + \
+#                            'variable in NetCDF file or error in name' + \
+#                            ' species import from *.dat. Will attempt renaming'
+#                    arr =[]
+#                    for var_ in vars:
+#                        if verbose:
+#                            print 'Atempting indiviudual extraction of: ', var_
+#                        try:
+#                            arr += [ np.array( rootgrp[var_] ) ]
+#                            if verbose:
+#                                print 'successfull indiv. extraction of: ',var_
+#                        except IndexError:
+#                            logging.error('failed to find {var}'.format(var=var_))
+##                            raise ValueError('failed to find {var} in netCDF file'\
+##                                    .format(var=var_))
+#
+#                
+#                            # If not found try an abreviation
+#                            abrv_var_ = get_ctm_nc_var(var_)
+#                            arr += [ np.array( rootgrp[ abrv_var_ ] )]
+#                            if verbose:
+#                                print 'using {} instead of {}'.format( \
+#                                     abrv_var_, var_ )
+#
+#                # files are stored in NetCDF at GC scaling. 
+#                # ( This is different to ctm.bpch, rm for back compatibility. )
+#                if restore_zero_scaling:
+#                    try:
+#                        arr =[ arr[n]/get_unit_scaling( rootgrp[i].ctm_units ) \
+#                            for n, i in enumerate( vars ) ]
+#                    except:
+#                        print 'WARNING: SCALING NOT ADJUSTED TO' + \
+#                            ' PREVIOUS APPROACH'
+#
+#############################################################################
+
 
     # Use Iris cubes via PyGChem to extract ctm.bpch files 
     else:
@@ -858,6 +955,7 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
 #        return cubes.data
 
     # Return model resolution? 
+
     if r_res:
         return output, res
     else:
