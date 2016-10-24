@@ -8,7 +8,7 @@ slow = pytest.mark.skipif(
     reason="need --slow option to run"                                          
 )                                                                               
         
-
+wd='test_files'
 @pytest.fixture()
 def test_data():
     from ..funcs4GEOSC import get_GC_output 
@@ -19,14 +19,12 @@ def test_data():
 def test_map_plot(test_data):
     logging.info("begining test")
     map_plot( test_data[:,:,0] )
-    map_plot( test_data[:,:,0].T )
+    map_plot( test_data[:,:,0].T)
     with pytest.raises(AssertionError):
-        map_plot( test_data[0,:,:] )
+        map_plot( test_data[0,:,:], wd=wd )
         map_plot( None )
     return
 
-def test_get_folder():
-    return
 
 
 
