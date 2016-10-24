@@ -743,6 +743,8 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
 # This function is not completly clear to me, and could do with a re-write
 # The try command would probably be useful here for large parts.
 # logging would also be good for replacing debug.
+    logging.info("Called get_GC_output")
+    logging.debug(locals())
     
     if debug:
         if not isinstance( vars, type(None) ):
@@ -773,17 +775,17 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
         if isinstance(vars, type(None)):
             vars = [ 'IJ_AVG_S__O3'  ]
 
-    # ensure wd has a leading '/'
-    if wd[-1] != '/':
-        wd +=  '/'
+#    # ensure wd has a leading '/'
+#    if wd[-1] != '/':
+#        wd +=  '/'
 
     # Work with NetCDF. Convert ctm.bpch to NetCDF if not already done.
     if use_NetCDF:
 
             # Check for compiled NetCDF file
             # If not found, create NetCDF file from ctm.bpch files                
-            fname = wd+ '/ctm.nc'
             import os.path
+            fname = os.path.join(wd, 'ctm.nc')
             if not os.path.isfile(fname):
                 from bpch2netCDF  import convert_to_netCDF
                 convert_to_netCDF( wd )
@@ -810,19 +812,16 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
                                 print 'successfull indiv. extraction of: ',var_
                         except IndexError:
                             logging.error('failed to find {var}'.format(var=var_))
-                            raise ValueError('failed to find {var} in netCDF file'\
-                                    .format(var=var_))
+#                            raise ValueError('failed to find {var} in netCDF file'\
+#                                    .format(var=var_))
 
-#------------------- Not sure what this does --- obsolete? ---------
-# Leaving this bit in incase it breakes anything.
-#
-#
-#                            abrv_var_ = get_ctm_nc_var(var_)
-#                            arr += [ np.array( rootgrp[ abrv_var_ ] )]
-#                            if verbose:
-#                                print 'using {} instead of {}'.format( \
-#                                     abrv_var_, var_ )
-#---------------------------------------------------------------------
+                
+                            # If not found try an abreviation
+                            abrv_var_ = get_ctm_nc_var(var_)
+                            arr += [ np.array( rootgrp[ abrv_var_ ] )]
+                            if verbose:
+                                print 'using {} instead of {}'.format( \
+                                     abrv_var_, var_ )
 
                 # files are stored in NetCDF at GC scaling. 
                 # ( This is different to ctm.bpch, rm for back compatibility. )
