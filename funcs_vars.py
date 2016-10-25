@@ -1840,7 +1840,9 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
         'LO3_87LR48', 'LO3_87LR48', 
         'LISOPOLR86',  
         'LO3_50LR113', 
-        'LO3_50LR114'
+        'LO3_50LR114',
+        # final v3.0 runs
+        'LO3_65LR126'
         ]
         cerrs = [ \
         ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], \
@@ -1856,9 +1858,12 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
 #        ['LO3_50', 'LR114' ]
         # revserse LR tags also ( LO3_50 now redundant? ) - NO
         ['LR113', 'LO3_50' ], \
-        ['LR114', 'LO3_50' ]
+        ['LR114', 'LO3_50' ],
 #        ['LR113'], 
 #        ['LR114'], 
+        # final v3.0 runs
+        [ 'LR126', 'LO3_65' ],
+
         ]
 #        errs = ['LO3_36RD95' , 'ISOPNDPO3_50', 'ISOPNDLR40']
 #        cerrs = [ ['RD95'], ['PO3_50'], ['LR40'] ]
@@ -2396,12 +2401,13 @@ def get_tag_fam( tag ):
     'LR33':'Iodine', 'LR32':'Iodine',  'LR35':'Iodine',  'LR39':'Iodine', \
     # Tags for IX split
     'LR119': 'Iodine', 'LR118': 'Iodine', 'LR115': 'Iodine', 'LR117': 'Iodine',\
-    'LR116': 'Iodine', 'LR120': 'Iodine'
+    'LR116': 'Iodine', 'LR120': 'Iodine', 
     # Extra tags not in list?  - obsolete. 
     #  (these reactions are appearing due to lack of inclusion of iodine 
     # species in Ox family... )  - obsolete. 
 #    ,'RD19': 'iodine', 'RD37': 'iodine', 'RD01': 'iodine'   - obsolete. 
-
+    # final v3.0 tags
+    'LR126': 'NOy', 
     }
      
     return fam_d[tag]
