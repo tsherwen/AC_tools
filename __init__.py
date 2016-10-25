@@ -6,6 +6,13 @@ If you find missing documentation in any of this, please request a git push to g
 """
 
 import logging
+FORMAT = "%(levelname)8s - %(message)s   @---> %(filename)s:%(lineno)s  %(funcName)s()"
+logging.basicConfig(filename='AC_tools.log', filemode='w',level=logging.DEBUG,
+                format=FORMAT)  
+logging.getLogger().setLevel(logging.DEBUG)                                     
+
+
+
 #from beeprint import pp
 import numpy as np
 
