@@ -112,7 +112,7 @@ def get_surface_area(res=None,time=None, debug=False, wd=None):
         }
         fd = os.path.join( dwd , dir[res])
         logging.debug( "resolution = {res}, lookup directory = {fd}"\
-            .format(res=res, fd=fd))
+            (res=res, fd=fd))
     #    if debug:
     #        print fd, res
         wd = fd
@@ -164,12 +164,33 @@ def list_variables(wd=None):
     if wd==None:
         raise ValueError("Please specify a working dir")
 
-    ctm_nc = os.path.join(wd, 'ctm.nc')
-    if not os.path.isfile( ctm_nc ):
-        convert_to_netCDF( wd )
+    # Try listing all bpch variables in ctm.nc
+    try:
+        logging.info("Listing all variables in netCDF file")
+        ctm_nc = os.path.join(wd, 'ctm.nc')
+        if not os.path.isfile( ctm_nc ):
+            convert_to_netCDF( wd )
 
-    for var in Dataset( ctm_nc ).variables:
-        print var
+        
+        for var in Dataset( ctm_nc ).variables:
+            print var
+    except:
+        logging.info("No ctm.nc (bpch) data found")
+
+    # Try listing all hemco variables
+    try:
+        logging.info("Listing all variables in HEMCO files")
+        hemco_nc = os.path.join(wd, 'hemco.nc' )
+        if not os.path.isfile( hemco_nc ):
+            convert_to_netCDF( wd )
+        for var in Dataset( hemco_nc ).variables:
+            print var
+    except:
+        logging.info("No HEMCO data found")
+
+    # Try listing all variables form planeflight
+#    try:
+#        logging.info("Listing all variables in planeflight")
 
     return
         
@@ -877,7 +898,7 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
 #                    arr = [ arr[n]/get_unit_scaling( cubes[n].attributes['ctm_units'])
 #                             for n, var in enumerate( vars ) ]
 #            del cubes
-        print 'WARNING this approach has been removed due to time cost'
+        logging.error( 'WARNING this approach has been removed due to time cost')
         sys.exit( 0 )
 
     # Process extracted data to gamap GC format and return as numpy 
@@ -936,7 +957,6 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
 
     # Get res by comparing 1st 2 dims. against dict of GC dims.
     if r_res:
-        print arr.shape
         res=get_dims4res( r_dims=True, trop_limit=trop_limit, \
                     just2D=True )[arr.shape[:2]]
 
@@ -1080,8 +1100,7 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
 
     """
 
-    if debug:
-        print 'called calc surface area in grid'
+    logging.info('called calc surface area in grid')
 
     # Get latitudes and longitudes in grid    
     lon_e, lat_e, NIU = get_latlonalt4res( res=res, centre=False, debug=debug )    
