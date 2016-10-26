@@ -899,7 +899,9 @@ def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
     if isinstance( PHOTOPROCESS, type(None) ):
         PHOTOPROCESS = {
         '1.6' : 457, '1.6.2': 452 , '1.6.3': 461 , '1.7' : 467, '2.0': 555,  \
-        '3.0': 547
+        '3.0': 547, 
+        # placeholder for v4.0
+        '4.0': 547
         }[ver]
     
     fn =  'smv2.log'
@@ -1326,7 +1328,7 @@ def get_tag_details( wd, tag=None, PDs=None,  rdict=None, \
     # what is the number of the first photolysis reaction?
     if isinstance( PHOTOPROCESS, type(None) ):
         PHOTOPROCESS = {
-        '1.6' : 457,  '1.6.2': 452, '1.7' : 467, '2.0': 555, '3.0': 547
+        '1.6' : 457,  '1.6.2': 452, '1.7' : 467, '2.0': 555, '3.0': 547, '4.0': 547
         }[ver]
 
     # ---  get all reactions tags are active in smv.log    
@@ -1652,7 +1654,7 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',  \
         print 'PLO3_to_PD called for wd = ', wd
 
     versions = [ \
-    '1.3' ,'1.4' ,'1.5' , '1.6', '1.6.1','1.6.2', '1.6.3', '1.7', '2.0', '3.0' ]
+    '1.3' ,'1.4' ,'1.5' , '1.6', '1.6.1','1.6.2', '1.6.3', '1.7', '2.0', '3.0', '4.0' ]
     if any( [(ver ==i) for i in versions ]):
 
         if isinstance( wd, type(None) ):
