@@ -199,7 +199,7 @@ def list_variables(wd=None):
 # ----
 # 1.05 - Get Land map. 
 # ----
-def get_land_map(res='4x5', time=None, wd1=None,debug=False):
+def get_land_map(res='4x5', time=None, wd=None,debug=False):
     """ 
     Return land, water, and ice indices (LWI ) from GEOS-Chem with integers for Land (1) 
     and Water (0). Ice fraction is given as fractional values. 
