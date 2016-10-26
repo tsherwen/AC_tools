@@ -770,45 +770,40 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
     # Work with NetCDF. Convert ctm.bpch to NetCDF if not already done.
     if use_NetCDF:
 
-            # Check for compiled NetCDF file
-            # If not found, create NetCDF file from ctm.bpch files                
-            import os.path
-            fname = os.path.join(wd, 'ctm.nc')
-            if not os.path.isfile(fname):
-                from bpch2netCDF  import convert_to_netCDF
-                convert_to_netCDF( wd )
+        # Check for compiled NetCDF file
+        # If not found, create NetCDF file from ctm.bpch files                
+        import os.path
+        fname = os.path.join(wd, 'ctm.nc')
+        if not os.path.isfile(fname):
+            from bpch2netCDF  import convert_to_netCDF
+            convert_to_netCDF( wd )
 
-            logging.debug("Opening netCDF file {fname}".format(fname=fname))
-            # "open" NetCDF + extract requested variables as numpy arr.
+        logging.debug("Opening netCDF file {fname}".format(fname=fname))
+        # "open" NetCDF + extract requested variables as numpy arr.
 
 
-            netCDF_data = Dataset( fname, 'r' )
-            arr = []
-            for var in vars:
+        netCDF_data = Dataset( fname, 'r' )
+        arr = []
+        for var in vars:
+            try:
+                logging.debug("opening variabel {var}".format(var=var))
+                var_data =  netCDF_data.variables[var] 
+            except:
+                logging.warning("Variable {var} not found in netCDF")\
+                    .format(var=var)
+                logging.warning("Will attempt renaming")
+                abrv_var = get_ctm_nc_var( var )
                 try:
-                    logging.debug("opening variabel {var}".format(var=var))
-                    var_data = ( netCDF_data.variables[var] )
+                    var_data =  netCDF_data.varialbes[var] 
                 except:
-                    logging.warning("Variable {var} not found in netCDF")\
-                        .format(var=var)
-                    logging.warning("Will attempt renaming")
-                    abrv_var = get_ctm_nc_var( var )
-                    try:
-                        var_dara = ( netCDF_data.varialbes[var][:] )
-                    except:
-                        logging.error("Renamed variable {var} not found in netCDF")\
-                            .format(var=abrv_var)
+                    logging.error("Renamed variable {var} not found in netCDF")\
+                        .format(var=abrv_var)
 
-                if restore_zero_scaling:
-                    try:
-                        var_data[:] = var_data[:]/get_unit_scaling( var_data.ctm_units)
-                    except:
-                        logging.warning("Scaling not adjusted to previous approach")
 
-                arr.append(var_data[:])
 
-                
-#####--- bjn - re-wrote to make more understandable ---###
+
+####################################################################################                
+#####--- bjn - re-wrote (above) to make more understandable ---###
 #
 #            with Dataset( fname, 'r' ) as rootgrp:
 #                try:
@@ -840,8 +835,29 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
 #                                print 'using {} instead of {}'.format( \
 #                                     abrv_var_, var_ )
 #
+##################################################################################
+
+
 #                # files are stored in NetCDF at GC scaling. 
 #                # ( This is different to ctm.bpch, rm for back compatibility. )
+
+############################################################################
+#    # This is not in a working state currently - needs work
+            if restore_zero_scaling:
+                try:
+                    var_data = np.divide(var_data,get_unit_scaling(var_data.ctm_units))
+                except:
+                    logging.warning("Scaling not adjusted to previous approach")
+
+            arr.append(var_data[:])
+
+####--- The above re-write does not work so still using old version ---###
+
+# Temp fix for out of place code if true:
+#                arr.append(var_data[:]) # temp fix
+#        if True:# temp fix
+#                rootgrp = netCDF_data #temp fix
+#
 #                if restore_zero_scaling:
 #                    try:
 #                        arr =[ arr[n]/get_unit_scaling( rootgrp[i].ctm_units ) \
@@ -849,7 +865,6 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
 #                    except:
 #                        print 'WARNING: SCALING NOT ADJUSTED TO' + \
 #                            ' PREVIOUS APPROACH'
-#
 #############################################################################
 
 
