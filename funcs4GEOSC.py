@@ -112,7 +112,7 @@ def get_surface_area(res=None,time=None, debug=False, wd=None):
         }
         fd = os.path.join( dwd , dir[res])
         logging.debug( "resolution = {res}, lookup directory = {fd}"\
-            .format(res=res, fd=fd))
+            (res=res, fd=fd))
     #    if debug:
     #        print fd, res
         wd = fd
@@ -164,12 +164,33 @@ def list_variables(wd=None):
     if wd==None:
         raise ValueError("Please specify a working dir")
 
-    ctm_nc = os.path.join(wd, 'ctm.nc')
-    if not os.path.isfile( ctm_nc ):
-        convert_to_netCDF( wd )
+    # Try listing all bpch variables in ctm.nc
+    try:
+        logging.info("Listing all variables in netCDF file")
+        ctm_nc = os.path.join(wd, 'ctm.nc')
+        if not os.path.isfile( ctm_nc ):
+            convert_to_netCDF( wd )
 
-    for var in Dataset( ctm_nc ).variables:
-        print var
+        
+        for var in Dataset( ctm_nc ).variables:
+            print var
+    except:
+        logging.info("No ctm.nc (bpch) data found")
+
+    # Try listing all hemco variables
+    try:
+        logging.info("Listing all variables in HEMCO files")
+        hemco_nc = os.path.join(wd, 'hemco.nc' )
+        if not os.path.isfile( hemco_nc ):
+            convert_to_netCDF( wd )
+        for var in Dataset( hemco_nc ).variables:
+            print var
+    except:
+        logging.info("No HEMCO data found")
+
+    # Try listing all variables form planeflight
+#    try:
+#        logging.info("Listing all variables in planeflight")
 
     return
         
@@ -178,7 +199,7 @@ def list_variables(wd=None):
 # ----
 # 1.05 - Get Land map. 
 # ----
-def get_land_map(res='4x5', time=None, wd1=None,debug=False):
+def get_land_map(res='4x5', time=None, wd=None,debug=False):
     """ 
     Return land, water, and ice indices (LWI ) from GEOS-Chem with integers for Land (1) 
     and Water (0). Ice fraction is given as fractional values. 
@@ -749,45 +770,40 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
     # Work with NetCDF. Convert ctm.bpch to NetCDF if not already done.
     if use_NetCDF:
 
-            # Check for compiled NetCDF file
-            # If not found, create NetCDF file from ctm.bpch files                
-            import os.path
-            fname = os.path.join(wd, 'ctm.nc')
-            if not os.path.isfile(fname):
-                from bpch2netCDF  import convert_to_netCDF
-                convert_to_netCDF( wd )
+        # Check for compiled NetCDF file
+        # If not found, create NetCDF file from ctm.bpch files                
+        import os.path
+        fname = os.path.join(wd, 'ctm.nc')
+        if not os.path.isfile(fname):
+            from bpch2netCDF  import convert_to_netCDF
+            convert_to_netCDF( wd )
 
-            logging.debug("Opening netCDF file {fname}".format(fname=fname))
-            # "open" NetCDF + extract requested variables as numpy arr.
+        logging.debug("Opening netCDF file {fname}".format(fname=fname))
+        # "open" NetCDF + extract requested variables as numpy arr.
 
 
-            netCDF_data = Dataset( fname, 'r' )
-            arr = []
-            for var in vars:
+        netCDF_data = Dataset( fname, 'r' )
+        arr = []
+        for var in vars:
+            try:
+                logging.debug("opening variabel {var}".format(var=var))
+                var_data =  netCDF_data.variables[var] 
+            except:
+                logging.warning("Variable {var} not found in netCDF")\
+                    .format(var=var)
+                logging.warning("Will attempt renaming")
+                abrv_var = get_ctm_nc_var( var )
                 try:
-                    logging.debug("opening variabel {var}".format(var=var))
-                    var_data = ( netCDF_data.variables[var] )
+                    var_data =  netCDF_data.varialbes[var] 
                 except:
-                    logging.warning("Variable {var} not found in netCDF")\
-                        .format(var=var)
-                    logging.warning("Will attempt renaming")
-                    abrv_var = get_ctm_nc_var( var )
-                    try:
-                        var_dara = ( netCDF_data.varialbes[var][:] )
-                    except:
-                        logging.error("Renamed variable {var} not found in netCDF")\
-                            .format(var=abrv_var)
+                    logging.error("Renamed variable {var} not found in netCDF")\
+                        .format(var=abrv_var)
 
-                if restore_zero_scaling:
-                    try:
-                        var_data[:] = var_data[:]/get_unit_scaling( var_data.ctm_units)
-                    except:
-                        logging.warning("Scaling not adjusted to previous approach")
 
-                arr.append(var_data[:])
 
-                
-#####--- bjn - re-wrote to make more understandable ---###
+
+####################################################################################                
+#####--- bjn - re-wrote (above) to make more understandable ---###
 #
 #            with Dataset( fname, 'r' ) as rootgrp:
 #                try:
@@ -819,8 +835,29 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
 #                                print 'using {} instead of {}'.format( \
 #                                     abrv_var_, var_ )
 #
+##################################################################################
+
+
 #                # files are stored in NetCDF at GC scaling. 
 #                # ( This is different to ctm.bpch, rm for back compatibility. )
+
+############################################################################
+#    # This is not in a working state currently - needs work
+            if restore_zero_scaling:
+                try:
+                    var_data = np.divide(var_data,get_unit_scaling(var_data.ctm_units))
+                except:
+                    logging.warning("Scaling not adjusted to previous approach")
+
+            arr.append(var_data[:])
+
+####--- The above re-write does not work so still using old version ---###
+
+# Temp fix for out of place code if true:
+#                arr.append(var_data[:]) # temp fix
+#        if True:# temp fix
+#                rootgrp = netCDF_data #temp fix
+#
 #                if restore_zero_scaling:
 #                    try:
 #                        arr =[ arr[n]/get_unit_scaling( rootgrp[i].ctm_units ) \
@@ -828,7 +865,6 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
 #                    except:
 #                        print 'WARNING: SCALING NOT ADJUSTED TO' + \
 #                            ' PREVIOUS APPROACH'
-#
 #############################################################################
 
 
@@ -877,7 +913,7 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
 #                    arr = [ arr[n]/get_unit_scaling( cubes[n].attributes['ctm_units'])
 #                             for n, var in enumerate( vars ) ]
 #            del cubes
-        print 'WARNING this approach has been removed due to time cost'
+        logging.error( 'WARNING this approach has been removed due to time cost')
         sys.exit( 0 )
 
     # Process extracted data to gamap GC format and return as numpy 
@@ -936,7 +972,6 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
 
     # Get res by comparing 1st 2 dims. against dict of GC dims.
     if r_res:
-        print arr.shape
         res=get_dims4res( r_dims=True, trop_limit=trop_limit, \
                     just2D=True )[arr.shape[:2]]
 
@@ -1080,8 +1115,7 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
 
     """
 
-    if debug:
-        print 'called calc surface area in grid'
+    logging.info('called calc surface area in grid')
 
     # Get latitudes and longitudes in grid    
     lon_e, lat_e, NIU = get_latlonalt4res( res=res, centre=False, debug=debug )    
