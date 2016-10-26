@@ -35,10 +35,11 @@ def convert_to_netCDF(folder='none',filename='ctm.nc',\
     bpch_file_list: None - list the bpch files you want to use
     remake: False - Overwrite any old files
     """
+    logging.debug( "Convert to netCDF called")
 
     bpch_to_netCDF( folder, filename, bpch_file_list, remake)
 
-    hemco_to_netCDF( folder, hemco_file_list, remake)
+#    hemco_to_netCDF( folder, hemco_file_list, remake)
 
     return
 
@@ -125,12 +126,16 @@ def bpch_to_netCDF(folder='none', filename='ctm.nc',\
       bpch_files = file_list
 
    # Open the bpch files
-   print bpch_files
+   logging.debug( "The following bpch files were found:")
+   logging.debug( str(bpch_files) )
    bpch_data = datasets.load(bpch_files)
 
    # Save the netCDF file
 #   iris.fileformats.netcdf.save(data, output_file)
    datasets.save( bpch_data, output_file )
+
+   logging.info( "A netCDF file has been created with the name {ctm}".format(ctm=output_file)) 
+
    return
 
 def get_folder(folder):
