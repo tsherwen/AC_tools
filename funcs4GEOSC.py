@@ -70,7 +70,7 @@ from AC_tools.Scripts.bpch2netCDF import convert_to_netCDF
 # ----
 # 1.04 -Get surface area  ( m^2 )
 # ----
-def get_surface_area(res=None,time=None, debug=False, wd=None):
+def get_surface_area(res=None,time=None, debug=False, wd=None, updated=True):
     """ 
     Get_surface_area of grid boxes for a given resolution
 
@@ -95,31 +95,53 @@ def get_surface_area(res=None,time=None, debug=False, wd=None):
 
     print locals()
 
+
+##########################################################################
+# New code that uses local data files
     # if the wd has not been specified then use the previous runs
     if wd==None:
 
-        # What is dwd? 
-        # All of this might make sense to replace with example data?
-        dwd = os.path.join( get_dir('dwd'), '/misc_ref/')
-        logging.debug("dwd = " + str( dwd) )
-
-    #    dwd = get_dir( 'dwd') + '/misc_ref/'
-        dir = {
-        '4x5':'/LANDMAP_LWI_ctm',  \
-        '2x2.5': '/LANDMAP_ctm_2x25',  \
-        '0.5x0.666' :'LANDMAP_LWI_ctm_05x0666',  \
-        '0.25x0.3125' :'LANDMAP_LWI_ctm_025x03125',  \
-        }
-        fd = os.path.join( dwd , dir[res])
-        logging.debug( "resolution = {res}, lookup directory = {fd}"\
-            (res=res, fd=fd))
-    #    if debug:
-    #        print fd, res
-        wd = fd
+        # If using the updated data directories:
+        if updated:
+            # Get the data from the AC_tools/data dir
+            this_dir = os.path.split(__file__)[0]
+            data_dir = os.path.join( this_dir, "data/LM" )
+            dir_dict = {
+            '4x5':'LANDMAP_LWI_ctm',  \
+            '2x2.5': 'LANDMAP_ctm_2x25',  \
+            '0.5x0.666' :'LANDMAP_LWI_ctm_05x0666',  \
+            '0.25x0.3125' :'LANDMAP_LWI_ctm_025x03125',  \
+            }
+            data_dir = os.path.join(data_dir, dir_dict[res])
+            wd = data_dir
 
 
+        # old version to be removed when updated=True set as default input.
+        else:
 
-    logging.debug("Trying to get surface area from {wd}".format(wd=wd))
+
+            # What is dwd? 
+            # All of this might make sense to replace with example data?
+            dwd = os.path.join( get_dir('dwd'), '/misc_ref/')
+            logging.debug("dwd = " + str( dwd) )
+
+        #    dwd = get_dir( 'dwd') + '/misc_ref/'
+            dir = {
+            '4x5':'/LANDMAP_LWI_ctm',  \
+            '2x2.5': '/LANDMAP_ctm_2x25',  \
+            '0.5x0.666' :'LANDMAP_LWI_ctm_05x0666',  \
+            '0.25x0.3125' :'LANDMAP_LWI_ctm_025x03125',  \
+            }
+            fd = os.path.join( dwd , dir[res])
+            logging.debug( "resolution = {res}, lookup directory = {fd}"\
+                (res=res, fd=fd))
+        #    if debug:
+        #        print fd, res
+            wd = fd
+#### Old code that is still default ^^^
+##############################################################################
+
+        logging.debug("Trying to get surface area from {wd}".format(wd=wd))
     try:
         s_area = get_GC_output( wd, vars=['DXYP__DXYP'] ) 
     except ValueError:
@@ -199,10 +221,14 @@ def list_variables(wd=None):
 # ----
 # 1.05 - Get Land map. 
 # ----
-def get_land_map(res='4x5', time=None, wd=None,debug=False):
+def get_land_map(res='4x5', time=None, wd=None,debug=False, updated=False):
     """ 
     Return land, water, and ice indices (LWI ) from GEOS-Chem with integers for Land (1) 
     and Water (0). Ice fraction is given as fractional values. 
+
+    INPUTS:
+    res='4x5'   : Specify the resolution
+    time=None   : ?
 
 	NOTES:
 	 - This approach is inefficent and requires large files. Could this be improved with
