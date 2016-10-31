@@ -104,8 +104,8 @@ def get_surface_area(res=None,time=None, debug=False, wd=None, updated=True):
         # If using the updated data directories:
         if updated:
             # Get the data from the AC_tools/data dir
-            this_dir = os.path.split(__file__)[0]
-            data_dir = os.path.join( this_dir, "data/LM" )
+            AC_tools_dir = os.path.split(__file__)[0]
+            data_dir = os.path.join( AC_tools_dir, "data/LM" )
             dir_dict = {
             '4x5':'LANDMAP_LWI_ctm',  \
             '2x2.5': 'LANDMAP_ctm_2x25',  \
