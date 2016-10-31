@@ -22,7 +22,7 @@ except:
 
 def convert_to_netCDF(folder='none',filename='ctm.nc',\
                          bpch_file_list=None, remake=False,
-                         hemco_file_list=None):
+                         hemco_file_list=None, verbose=True):
     """
     Converts GEOS-Chem outputs to netCDF
     - bpch_to_netCDF
@@ -37,7 +37,7 @@ def convert_to_netCDF(folder='none',filename='ctm.nc',\
     """
     logging.debug( "Convert to netCDF called")
 
-    bpch_to_netCDF( folder, filename, bpch_file_list, remake)
+    bpch_to_netCDF( folder, filename, bpch_file_list, remake, verbose=True)
 
 #    hemco_to_netCDF( folder, hemco_file_list, remake)
 
@@ -90,7 +90,7 @@ def hemco_to_netCDF( folder, hemco_file_list, remake=False ):
     
  
 def bpch_to_netCDF(folder='none', filename='ctm.nc',\
-                    bpch_file_list=None, remake=False):
+                    bpch_file_list=None, remake=False, verbose=True):
 
    """    
     Converts GEOS-Chem ctm.bpch output file(s) to NetCDF
@@ -128,6 +128,8 @@ def bpch_to_netCDF(folder='none', filename='ctm.nc',\
    # Open the bpch files
    logging.debug( "The following bpch files were found:")
    logging.debug( str(bpch_files) )
+   if verbose:
+        print "Creating a netCDF file. This can take some time..."
    bpch_data = datasets.load(bpch_files)
 
    # Save the netCDF file
