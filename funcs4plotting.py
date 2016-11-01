@@ -3813,14 +3813,15 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         negative=False, positive=False, divergent=False, \
         sigfig_rounding_on_cb=2, buffer_cmap_upper=False, fixcb=None, nticks=10,  \
         verbose=True, debug=False ):
-    """ Create correct color map for values given array.
-        This function checks whether array contains just +ve or -ve or both 
-        then prescribe color map  accordingly
+    """ 
+    Create correct color map for values given array.
+    This function checks whether array contains just +ve or -ve or both 
+    then prescribe color map  accordingly
     
-        this function also will can adjust colormaps to fit a given set of
-        ticks
+    this function also will can adjust colormaps to fit a given set of
+    ticks
     """
-
+    # Manually override the continous colourbar choice
 #    cb='Blues' # Kludge. Force blues for colorbar... 
 #    cb='Reds' # Kludge. Force Reds for colorbar... 
 
