@@ -45,11 +45,11 @@ import gc
 
 # ---  This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
-from AC_tools.funcs_vars import *
-from AC_tools.funcs4generic import *
-from AC_tools.funcs4time import *
-from AC_tools.funcs4pf import *
-from AC_tools.funcs4GEOSC import * # wd2ctms, get_gc_res
+from funcs_vars import *
+from funcs4generic import *
+from funcs4time import *
+from funcs4pf import *
+from funcs4GEOSC import * # wd2ctms, get_gc_res
 
 # math
 from math import log10, floor
