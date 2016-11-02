@@ -100,7 +100,7 @@ def get_surface_area(res=None,time=None, debug=False, wd=None):
 
         # What is dwd? 
         # All of this might make sense to replace with example data?
-        dwd = os.path.join( get_dir('dwd'), '/misc_ref/')
+        dwd = os.path.join( get_dir('dwd'),  'misc_ref/' )
         logging.debug("dwd = " + str( dwd) )
 
     #    dwd = get_dir( 'dwd') + '/misc_ref/'
@@ -111,8 +111,9 @@ def get_surface_area(res=None,time=None, debug=False, wd=None):
         '0.25x0.3125' :'LANDMAP_LWI_ctm_025x03125',  \
         }
         fd = os.path.join( dwd , dir[res])
-        logging.debug( "resolution = {res}, lookup directory = {fd}"\
-            (res=res, fd=fd))
+
+        logging.debug( "resolution = {res}, lookup directory = {fd}".format( \
+            res=res, fd=fd) )
     #    if debug:
     #        print fd, res
         wd = fd
@@ -781,7 +782,6 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
         logging.debug("Opening netCDF file {fname}".format(fname=fname))
         # "open" NetCDF + extract requested variables as numpy arr.
 
-
         netCDF_data = Dataset( fname, 'r' )
         arr = []
         for var in vars:
@@ -998,14 +998,9 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
 
 
 # ----
-# 1.23 - Get  surface data from HDF of surface plane flight data
-# ---
-# REDUNDENT, mv'd to bottom 
-
-# ----
 # 1.24 - Get gc resolution from ctm.nc
 # ---
-def get_gc_res( wd ) :
+def get_gc_res( wd ):
     """
     Extract resolution of GEOS-Chem NetCDF
     """
