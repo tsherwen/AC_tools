@@ -218,10 +218,23 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, \
             debug=False ) :
     """ Converts a GEOS-Chem (GC) species/tracer into a PF tracer (TRA_##).
             takes TRA_## & returns GC ID or other wayround
+
+    INPUTS:
+    wd = Specify the wd to get the results from a run. 
+    res = Specify the resolution if wd not given ( e.g. '4x5')
+    invert = ()
+    debug = False (legacy debug, replaced by logging)
+    V_9_2, V_9_2_C = redundent oiption swicthes for previous GEOS-Chem versions
+    special_case = overide seclected species dictionary 
+
+    OUTPUT:
+    species name in GEOS-Chem tracer naming nomenclature 
+    (or entire directory if rtn_dict=True)
     NOTES:
      - Species have the same names in PF, but units are in molec/cm3, not 
        mixing ratio (v/v)
      -  Generic v10 and v11 need adding to this list
+
 
     """
     # select correct naming dictionary
@@ -231,7 +244,8 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, \
     '1.6.3': 'GCFP_d2TRA_all_1.6.3', # 1.6 + 2
     '1.7': 'GCFP_d2TRA_all_1.7',
     '2.0': 'GCFP_d2TRA_all_2.0',    
-    '3.0':  'GCFP_d2TRA_all_2.0' # Same as 2.0
+    '3.0':  'GCFP_d2TRA_all_2.0', # Same as 2.0
+    '4.0':  'GCFP_d2TRA_all_2.0' # Same as 2.0
     }[ver]
 
 #    special_case = 'EOH'
