@@ -24,3 +24,5 @@ monthly_run
 *.sh
 /Tests/test_files
 /Tests/__pycache__
+data/*
+data

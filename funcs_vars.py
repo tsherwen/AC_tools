@@ -4,13 +4,12 @@ Variable store/dictionarys for use in AC_Tools.
 
 Use help(<name of function>) to get details on a particular function. 
 
+
 NOTE(S):    
  - This code will be updated to use a user configuration apoach (*.rc file) shortly.
  - This module is underdevelopment vestigial/inefficient code is being removed/updated. 
  - Where external code is used credit is given.
 """
-
-
 
 # ----------------------------- Section 0 -----------------------------------
 # -------------- Required modules:
@@ -30,7 +29,7 @@ import numpy as np
 
 # --  This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
-from AC_tools.funcs4core import *
+from funcs4core import *
 
 # ----------------------------- Section 1 -----------------------------------
 # -------------- Planeflight variables
@@ -218,10 +217,23 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, \
             debug=False ) :
     """ Converts a GEOS-Chem (GC) species/tracer into a PF tracer (TRA_##).
             takes TRA_## & returns GC ID or other wayround
+
+    INPUTS:
+    wd = Specify the wd to get the results from a run. 
+    res = Specify the resolution if wd not given ( e.g. '4x5')
+    invert = ()
+    debug = False (legacy debug, replaced by logging)
+    V_9_2, V_9_2_C = redundent oiption swicthes for previous GEOS-Chem versions
+    special_case = overide seclected species dictionary 
+
+    OUTPUT:
+    species name in GEOS-Chem tracer naming nomenclature 
+    (or entire directory if rtn_dict=True)
     NOTES:
      - Species have the same names in PF, but units are in molec/cm3, not 
        mixing ratio (v/v)
      -  Generic v10 and v11 need adding to this list
+
 
     """
     # select correct naming dictionary
@@ -231,7 +243,8 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, \
     '1.6.3': 'GCFP_d2TRA_all_1.6.3', # 1.6 + 2
     '1.7': 'GCFP_d2TRA_all_1.7',
     '2.0': 'GCFP_d2TRA_all_2.0',    
-    '3.0':  'GCFP_d2TRA_all_2.0' # Same as 2.0
+    '3.0':  'GCFP_d2TRA_all_2.0', # Same as 2.0
+    '4.0':  'GCFP_d2TRA_all_2.0' # Same as 2.0
     }[ver]
 
 #    special_case = 'EOH'
@@ -900,7 +913,9 @@ def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
     if isinstance( PHOTOPROCESS, type(None) ):
         PHOTOPROCESS = {
         '1.6' : 457, '1.6.2': 452 , '1.6.3': 461 , '1.7' : 467, '2.0': 555,  \
-        '3.0': 547
+        '3.0': 547, 
+        # placeholder for v4.0
+        '4.0': 547
         }[ver]
     
     fn =  'smv2.log'
@@ -1327,7 +1342,7 @@ def get_tag_details( wd, tag=None, PDs=None,  rdict=None, \
     # what is the number of the first photolysis reaction?
     if isinstance( PHOTOPROCESS, type(None) ):
         PHOTOPROCESS = {
-        '1.6' : 457,  '1.6.2': 452, '1.7' : 467, '2.0': 555, '3.0': 547
+        '1.6' : 457,  '1.6.2': 452, '1.7' : 467, '2.0': 555, '3.0': 547, '4.0': 547
         }[ver]
 
     # ---  get all reactions tags are active in smv.log    
@@ -1653,7 +1668,7 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',  \
         print 'PLO3_to_PD called for wd = ', wd
 
     versions = [ \
-    '1.3' ,'1.4' ,'1.5' , '1.6', '1.6.1','1.6.2', '1.6.3', '1.7', '2.0', '3.0' ]
+    '1.3' ,'1.4' ,'1.5' , '1.6', '1.6.1','1.6.2', '1.6.3', '1.7', '2.0', '3.0', '4.0' ]
     if any( [(ver ==i) for i in versions ]):
 
         if isinstance( wd, type(None) ):
@@ -1841,7 +1856,9 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
         'LO3_87LR48', 'LO3_87LR48', 
         'LISOPOLR86',  
         'LO3_50LR113', 
-        'LO3_50LR114'
+        'LO3_50LR114',
+        # final v3.0 runs
+        'LO3_65LR126'
         ]
         cerrs = [ \
         ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], ['LO3_36', 'RD95'], \
@@ -1857,9 +1874,12 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
 #        ['LO3_50', 'LR114' ]
         # revserse LR tags also ( LO3_50 now redundant? ) - NO
         ['LR113', 'LO3_50' ], \
-        ['LR114', 'LO3_50' ]
+        ['LR114', 'LO3_50' ],
 #        ['LR113'], 
 #        ['LR114'], 
+        # final v3.0 runs
+        [ 'LR126', 'LO3_65' ],
+
         ]
 #        errs = ['LO3_36RD95' , 'ISOPNDPO3_50', 'ISOPNDLR40']
 #        cerrs = [ ['RD95'], ['PO3_50'], ['LR40'] ]
@@ -2397,12 +2417,13 @@ def get_tag_fam( tag ):
     'LR33':'Iodine', 'LR32':'Iodine',  'LR35':'Iodine',  'LR39':'Iodine', \
     # Tags for IX split
     'LR119': 'Iodine', 'LR118': 'Iodine', 'LR115': 'Iodine', 'LR117': 'Iodine',\
-    'LR116': 'Iodine', 'LR120': 'Iodine'
+    'LR116': 'Iodine', 'LR120': 'Iodine', 
     # Extra tags not in list?  - obsolete. 
     #  (these reactions are appearing due to lack of inclusion of iodine 
     # species in Ox family... )  - obsolete. 
 #    ,'RD19': 'iodine', 'RD37': 'iodine', 'RD01': 'iodine'   - obsolete. 
-
+    # final v3.0 tags
+    'LR126': 'NOy', 
     }
      
     return fam_d[tag]
