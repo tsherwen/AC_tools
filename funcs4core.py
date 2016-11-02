@@ -137,13 +137,19 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
             print dims
 
     # Dictionary of lon, lat (e.g. for emissions and 2D datasets)
+#    if just2D:
+#        vals =[]
+#        for i in dims.values():
+#            vals += [ ( i[0],i[1]) ]
+#        dims = dict( zip( dims.keys(), vals ) )
+#        if debug:
+#            print dims
+
     if just2D:
-        vals =[]
-        for i in dims.values():
-            vals += [ ( i[0],i[1]) ]
-        dims = dict( zip( dims.keys(), vals ) )
-        if debug:
-            print dims
+        _2Ddims = {}
+        for res in dims.keys():
+            _2Ddims[ res] = dims[res][0:2] 
+        dims = _2Ddims
 
     if r_dims:
         if invert==True:
