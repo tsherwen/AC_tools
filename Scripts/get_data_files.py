@@ -1,7 +1,7 @@
 # Downlaod the example files from an external source
 
 import os
-from urllib2 import urlopen
+from urllib2 import urlopen, HTTPError
 import logging
 
 
@@ -60,6 +60,13 @@ for _file in file_list:
             print "Download complete."
             logging.debug( new_filename+" downloaded.")
             new_file.close()
+        except HTTPError, error_code:
+            if error_code.code==404:
+                logging.error("{The following was not found on the server:")
+                logging.error("{url}".format(url=file_url))
+            else:
+                logging.error("Failed to get {url} with HTTP error {error_code}"\
+                        .format(url=file_url, error_code=error_code))
         except:
             logging.error("Failed to download {url}".format(url=file_url))
     
