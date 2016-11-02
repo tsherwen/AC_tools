@@ -743,6 +743,7 @@ def get_unit_scaling( units, scaleby=1 ):
     """ 
     Get scaling for a given unit string 
     """
+    logging.debug("Getting unit scaling for {units}".format(units=units))
     misc = 'K', 'm/s', 'unitless', 'kg' ,'m', 'm2','kg/m2/s', \
             'molec/cm2/s', 'mol/cm3/s',  'kg/s', 'hPa', 'atoms C/cm2/s' \
             'kg S', 'mb', 'atoms C/cm2/s', 'molec/cm3', 'v/v', 'cm/s', 's-1', \

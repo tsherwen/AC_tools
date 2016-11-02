@@ -9,7 +9,7 @@ slow = pytest.mark.skipif(
     reason="need --slow option to run"                                       
 )   
 
-test_file_dir = 'test_files'
+test_file_dir = '../data'
 
 #def setup_function(function):
 #    """                                                                                    
@@ -53,7 +53,7 @@ def test_convert_to_netCDF():
     logging.info("beginning test")
     # Recreate a ctm.nc file and confirm it is the same
     logging.debug("Creating the temp netCDF file")
-    convert_to_netCDF(folder=test_file_dir, bpch_file_list=['test.bpch'], remake=True)
+    convert_to_netCDF(folder=test_file_dir, bpch_file_list=['test.bpch'], remake=True, filename='test.nc')
     datafile = os.path.join(test_file_dir, 'ctm.nc')
     testfile = os.path.join(test_file_dir, 'test.nc')
 
@@ -61,7 +61,7 @@ def test_convert_to_netCDF():
     assert file_comparison(datafile, testfile), \
         'bpch converter failed to replicate the origional file.'
 
-#    os.remove(datafile)
+    os.remove(testfile)
     logging.info("test complete")
     return
 

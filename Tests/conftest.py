@@ -7,11 +7,13 @@ import logging
 import os
 import urllib2
 
-#aFORMAT = "[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"            
+#FORMAT = "[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"            
 FORMAT = "%(filename)s:%(lineno)s - %(funcName)s() : %(message)s"
 test_file_dir = 'test_files'                                                    
 
 logging.basicConfig(filename='test.log',level=logging.DEBUG, format=FORMAT)
+logging.getLogger().setLevel(logging.DEBUG)                                     
+
                                              
 
 

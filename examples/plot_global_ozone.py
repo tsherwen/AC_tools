@@ -1,10 +1,10 @@
 import AC_tools as AC
 
 # Download the example data if it is not already downloaded.
-from AC_tools.Scripts import get_example_files
+from AC_tools.Scripts import get_data_files
 
 # Specify the working directory
-wd = "example_data"
+wd = "../data"
 
 # Get the GeosChem species data from the wd
 my_data = AC.get_GC_output( wd, species='O3')
