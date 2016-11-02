@@ -4,13 +4,12 @@ Variable store/dictionarys for use in AC_Tools.
 
 Use help(<name of function>) to get details on a particular function. 
 
+
 NOTE(S):    
  - This code will be updated to use a user configuration apoach (*.rc file) shortly.
  - This module is underdevelopment vestigial/inefficient code is being removed/updated. 
  - Where external code is used credit is given.
 """
-
-
 
 # ----------------------------- Section 0 -----------------------------------
 # -------------- Required modules:

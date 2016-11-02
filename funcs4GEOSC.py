@@ -105,12 +105,13 @@ def get_surface_area(res=None,time=None, debug=False, wd=None):
 
     #    dwd = get_dir( 'dwd') + '/misc_ref/'
         dir = {
-        '4x5':'LANDMAP_LWI_ctm',  \
-        '2x2.5': 'LANDMAP_ctm_2x25',  \
+        '4x5':'/LANDMAP_LWI_ctm',  \
+        '2x2.5': '/LANDMAP_ctm_2x25',  \
         '0.5x0.666' :'LANDMAP_LWI_ctm_05x0666',  \
         '0.25x0.3125' :'LANDMAP_LWI_ctm_025x03125',  \
         }
         fd = os.path.join( dwd , dir[res])
+
         logging.debug( "resolution = {res}, lookup directory = {fd}".format( \
             res=res, fd=fd) )
     #    if debug:
@@ -989,6 +990,7 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
 #        return cubes.data
 
     # Return model resolution? 
+
     if r_res:
         return output, res
     else:
