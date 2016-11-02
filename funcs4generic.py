@@ -27,8 +27,8 @@ from math import radians, sin, cos, asin, sqrt, pi, atan2
 
 # --  This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
-from AC_tools.funcs4core import *
-from AC_tools.funcs_vars import *
+from funcs4core import *
+from funcs_vars import *
 
 
 # -------------------------- Section 7 -------------------------------

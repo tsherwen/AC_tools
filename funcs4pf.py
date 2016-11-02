@@ -26,15 +26,15 @@ import numpy as np
 
 # -- This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
-from AC_tools.funcs4core import *
-from AC_tools.funcs4generic import *
-from AC_tools.funcs4time import *
+from funcs4core import *
+from funcs4generic import *
+from funcs4time import *
 
 # -- Time functions
 import datetime as datetime
 
 # -- Variables
-from AC_tools.funcs_vars import *
+from funcs_vars import *
 
 # ------------------------------------------- Section 1 -------------------------------------------
 # -------------- Planeflight Setup tools

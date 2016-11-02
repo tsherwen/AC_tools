@@ -17,13 +17,13 @@ logging.getLogger().setLevel(logging.DEBUG)
 import numpy as np
 
 # We can use an import here so that submodules can be accessed easier.
-from AC_tools.funcs4GEOSC import *
-from AC_tools.funcs4core import *
-from AC_tools.funcs4generic import *
-from AC_tools.funcs4pf import *
-from AC_tools.funcs4time import *
-from AC_tools.funcs_vars import *
-from AC_tools.funcs4plotting import *
+from funcs4GEOSC import *
+from funcs4core import *
+from funcs4generic import *
+from funcs4pf import *
+from funcs4time import *
+from funcs_vars import *
+from funcs4plotting import *
 
 
 
