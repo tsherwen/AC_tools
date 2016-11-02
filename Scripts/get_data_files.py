@@ -4,6 +4,14 @@ import os
 from urllib2 import urlopen
 import logging
 
+
+if __name__=='__main__':
+      FORMAT = "%(levelname)8s - %(message)s   @---> %(filename)s:%(lineno)s  %(funcName)s()"
+      logging.basicConfig(filename='AC_tools.log', filemode='w',level=logging.DEBUG,  
+                       format=FORMAT)                                                  
+      logging.getLogger().setLevel(logging.DEBUG)  
+
+
 data_dir = "../data"
 data_url = "http://atmosviz1.york.ac.uk/~bn506/data/AC_tools/"
 
@@ -46,16 +54,16 @@ for _file in file_list:
         try:
             new_file = open(new_filename, 'wb')
             logging.debug("downloading from {url}".format(url=file_url))
+            print "Downloading file. This might take some time."
             file_data = urlopen( file_url ).read()
             new_file.write( file_data )
+            print "Download complete."
             logging.debug( new_filename+" downloaded.")
             new_file.close()
         except:
             logging.error("Failed to download {url}".format(url=file_url))
     
     
-    
-
     
 
 
