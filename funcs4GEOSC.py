@@ -70,7 +70,7 @@ from Scripts.bpch2netCDF import convert_to_netCDF
 # ----
 # 1.04 -Get surface area  ( m^2 )
 # ----
-def get_surface_area(res=None,time=None, debug=False, wd=None):
+def get_surface_area(res=None,time=None, debug=False, wd=None, updated=False):
     """ 
     Get_surface_area of grid boxes for a given resolution
 
@@ -100,17 +100,17 @@ def get_surface_area(res=None,time=None, debug=False, wd=None):
 
         # What is dwd? 
         # All of this might make sense to replace with example data?
-        dwd = os.path.join( get_dir('dwd'),  'misc_ref/' )
+        dwd = '../data/LM/'
         logging.debug("dwd = " + str( dwd) )
 
     #    dwd = get_dir( 'dwd') + '/misc_ref/'
         dir = {
         '4x5':'/LANDMAP_LWI_ctm',  \
-        '2x2.5': '/LANDMAP_ctm_2x25',  \
+        '2x2.5': '/LANDMAP_LWI_ctm_2x25',  \
         '0.5x0.666' :'LANDMAP_LWI_ctm_05x0666',  \
         '0.25x0.3125' :'LANDMAP_LWI_ctm_025x03125',  \
-        }
-        fd = os.path.join( dwd , dir[res])
+        }[res]
+        fd = dwd +dir
 
         logging.debug( "resolution = {res}, lookup directory = {fd}".format( \
             res=res, fd=fd) )
@@ -212,7 +212,7 @@ def get_land_map(res='4x5', time=None, wd=None,debug=False):
 
     if debug:
         print 'called get surface area, for ', res
-    dwd = get_dir( 'dwd') + '/misc_ref/'
+    dwd = '../data/LM/'
     dir = {
     '4x5':'/LANDMAP_LWI_ctm',  \
     '2x2.5': '/LANDMAP_LWI_ctm_2x25',  \
