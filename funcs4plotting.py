@@ -103,7 +103,8 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
 
 
     # Make sure the input data is usable and try to fix it if not.
-    assert len(arr.shape)==2, "input array should be 2D"
+    assert len(arr.shape)==2, "input array should be 2D. Got shape {shape}"\
+                .format(shape=arr.shape)
     if res=='4x5':
         if arr.shape==(46,72):
             pass
