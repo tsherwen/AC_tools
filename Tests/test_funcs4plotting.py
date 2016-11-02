@@ -27,8 +27,8 @@ def test_data():
 @slow
 def test_map_plot(test_data):
     logging.info("begining test")
-    map_plot( test_data[:,:,0] )
-    map_plot( test_data[:,:,0].T)
+    map_plot( test_data[:,:,0,0] )
+    map_plot( test_data[:,:,0,0].T)
     with pytest.raises(AssertionError):
         map_plot( test_data[0,:,:], wd=wd )
         map_plot( None )
@@ -39,7 +39,7 @@ def test_save_plot(test_data):
     # Change to the test_output dir)
 
     # Try the multiple plots
-    map_plot(test_data[:,:,0])
+    map_plot(test_data[:,:,0,0])
 
     save_plot()
     filename_0 = "myplot.png"
