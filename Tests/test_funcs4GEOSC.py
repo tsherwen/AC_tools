@@ -33,7 +33,7 @@ def test_get_land_map():
 
 def test_get_O3_burden():
     var = get_O3_burden(wd=wd)
-    assert (var == 10), "The O3 burden is wrong ({var})".format(var=var)
+    assert (round(var.sum(),0) == round(376875.15625,0)), "The O3 burden is wrong ({var})".format(var=var)
     return
 
 def test_get_air_mass_np():
