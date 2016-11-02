@@ -4,6 +4,12 @@ import pytest
 
 wd = '../data'
 
+slow = pytest.mark.skipif(                                                      
+     not pytest.config.getoption("--slow"),                                      
+     reason="need --slow option to run"                                          
+)                                                                               
+       
+
 def test_get_surface_area():
     arr = get_surface_area(wd=wd)
     assert isinstance( arr, np.ndarray), 'Surface area not a numpy array.'
@@ -22,6 +28,24 @@ def test_get_surface_area():
     # Warning, this only works for tomas as requires setting up stuff.
     # The setup should not be needed if wd is passed about.
 
+    return
+
+@slow
+def test_get_gc_res():
+
+    # Test we can get the geoschem resolution 
+
+    # More resolutions need to be added and tested.
+
+    _4x5_dir = os.path.join(wd, 'LM/LANDMAP_LWI_ctm_4x5')
+    _2x25_dir = os.path.join(wd, 'LM/LANDMAP_LWI_ctm_2x25')
+    _05x0666_dir = os.path.join(wd, 'LM/LANDMAP_LWI_ctm_05x0666')
+    _025x03125_dir = os.path.join(wd, 'LM/LANDMAP_LWI_ctm_025x03125')
+
+#    assert (get_gc_res( _4x5_dir ) == '4x5')
+    assert (get_gc_res( _2x25_dir ) == '2x2.5')
+    assert (get_gc_res( _05x0666_dir ) == '0.5x0.666')
+    assert (get_gc_res( _025x03125_dir ) == '0.25x0.3125')
     return
 
 def test_get_land_map():
