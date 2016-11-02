@@ -827,7 +827,6 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
 
 
 
-
 ####################################################################################                
 #####--- bjn - re-wrote (above) to make more understandable ---###
 #
@@ -980,21 +979,30 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
             if debug:
                 print 'post to roll axis: ', [i.shape for i in arr]
 
+        # --- loop variables post processing and force inclusions of time dim if applicable
+        need_time = ['IJ_AVG', 'GMAO', 'BXHGHT', 'TIME_TPS_']
+        for n, var in enumerate( vars ):
+            
+            # Add altitude dimension to 2D (lon, lat)
+            # a bug might occur for emission etc ( where lon, lat, time are dims )
+            if len((arr[n].shape)) == 2:
+                arr[n] =arr[n][...,None]
+
+            # ensure output for categories in need_time list have 4 dims
+            if any([(i in var) for i in need_time]) and (len(arr[n].shape) == 3):
+                arr[n] = np.expand_dims( arr[n], -1 )
+
+            # Convert type if dtype not float32 
+            # ( needed for some arrays e.g. air mass )
+            if dtype != np.float32:
+                arr[n] = arr[n].astype( dtype )
+
+        # --- concatenate
         # For multiple vars, concatenate to var, lon, lat, lat, time 
         if len(vars) >1:
             arr = np.concatenate( [ i[None,...] for i in arr ], axis=0 )
         else:
             arr =arr[0]
-            
-        # Add altitude dimension to 2D (lon, lat)
-        # a bug might occur for emission etc ( where lon, lat, time are dims )
-        if len((arr.shape)) == 2:
-            arr =arr[...,None]
-
-        # Convert type if dtype not float32 
-        # ( needed for some arrays e.g. air mass )
-        if dtype != np.float32:
-            arr = arr.astype( dtype )
 
     # Get res by comparing 1st 2 dims. against dict of GC dims.
     if r_res:
