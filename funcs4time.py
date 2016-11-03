@@ -17,6 +17,7 @@ import logging
 import numpy as np
 from time import mktime
 from pandas import DataFrame
+import pandas as pd
 
 # -- Time                                                                                           
 import time
@@ -148,7 +149,7 @@ def YYYYMMDD_HHMM_2_datetime( str1=None, str2=None, conbined=False,  \
         data = np.array( [str1,str2] )
         if debug:
             print data.shape, data[:5,:], [ type(i) for i in str1,str2 ]
-        df = DataFrame( data=data.T, columns=['YYYYMMDD', 'HHMM'] )
+        df = pd.DataFrame( data=data.T, columns=['YYYYMMDD', 'HHMM'] )
 
         # convert to datetime 
         dtime = DF_YYYYMMDD_HHMM_2_dt( df=df )
