@@ -39,7 +39,9 @@ from funcs4core import *
 # 1.01 - dictionary of variables used for planeflight_mod.F output
 # -------------
 def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
-    """ Dictionary store for planeflight names/tracers
+    """ 
+    Dictionary store for planeflight names/tracers
+
     NOTES:
       - UPDATED NEEDED: MORE DETAILED DESCRIPT.   
       - Why is this function not in funcs4pf?
@@ -212,10 +214,10 @@ def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
 # --------------
 # 1.02 - Translator for planeflight species to GEOS-Chem species
 # -------------
-def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, \
-            ver='1.7', special_case=None, invert=False, rtn_dict=False, \
-            debug=False ) :
-    """ Converts a GEOS-Chem (GC) species/tracer into a PF tracer (TRA_##).
+def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, ver='1.7', \
+        special_case=None, invert=False, rtn_dict=False, debug=False ) :
+    """ 
+    Converts a GEOS-Chem (GC) species/tracer into a PF tracer (TRA_##).
             takes TRA_## & returns GC ID or other wayround
 
     INPUTS:
@@ -293,12 +295,13 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, \
 # 4.01 - v9-2 species in input.geos from num
 # -------------    
 def num2spec( num=69, rtn_dict=False, invert=False, ver = '1.7' ):
-    """ Returns the tracer with a given tracer number in input.geos. Also works 
+    """ 
+    Returns the tracer with a given tracer number in input.geos. Also works 
     in reverse or returns whole dictionary to remove need to remake dictionary 
     for each call.
     NOTES:
-        (1) version number needed ( e.g. "Cl+Br+I" = 3.0, "1.7" = "Br+I",
-        (2) UPDATE NEEDED: basecase v9-2/v10 not currently included
+     - Version number needed ( e.g. "Cl+Br+I" = 3.0, "1.7" = "Br+I",
+     - UPDATE NEEDED: basecase v9-2/v10 not currently included
     """
     
     # --- Get dictionary of tracer numbers
@@ -329,8 +332,8 @@ def num2spec( num=69, rtn_dict=False, invert=False, ver = '1.7' ):
 # 4.02 - RMM (Mass) (g /mol) for species 
 # ------------- 
 def species_mass( spec ):
-    """ Function to return species mass ( in relative molecular mass ( RMM ) 
-        for given species
+    """ 
+    Function to return species mass ( in relative molecular mass ( RMM ) for given species
 
     Note(s): 
         (1) C3H5I == C2H5I (this is a vestigle typo, left in to allow for 
@@ -379,7 +382,7 @@ def species_mass( spec ):
 # 4.03 -  return the stoichiometry of Iodine in species
 # --------------
 def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
-            C=False, Br=False, Cl=False, S=False, ref_spec=None, debug=False ): 
+        C=False, Br=False, Cl=False, S=False, ref_spec=None, debug=False ): 
     """ 
     Returns unit equivalent of X ( e.g. I ) for a given species. 
         
