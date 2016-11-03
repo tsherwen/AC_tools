@@ -173,6 +173,11 @@ def list_variables(wd=None):
             convert_to_netCDF( wd )
 
         
+        print   """
+                -------------------------
+                ctm.nc variables: 
+                -------------------------
+                """
         for var in Dataset( ctm_nc ).variables:
             print var
     except:
@@ -184,6 +189,11 @@ def list_variables(wd=None):
         hemco_nc = os.path.join(wd, 'hemco.nc' )
         if not os.path.isfile( hemco_nc ):
             convert_to_netCDF( wd )
+        print   """ 
+                ---------------------
+                 hemco.nc variables:    
+                ---------------------
+                """
         for var in Dataset( hemco_nc ).variables:
             print var
     except:
@@ -693,6 +703,73 @@ def process_data4specs( specs=None, just_bcase_std=True, preindustrial=False, \
         rtn_vars += [specs ]
     return rtn_vars
 
+
+
+
+def get_HEMCO_output( wd=None, filename=None, vars=None, use_netCDF=True):
+    """
+    Data extractor for hemco files and folders. You can specify either a 
+    working dir or a file to get the data from.
+
+
+    INPUTS:
+    wd=None,        Working directory
+    filename=None,      hemco_file
+    vars=None,      List of variables
+
+    Output:
+    List of numpy arrays the size of the input vars list.
+    """
+
+    logging.info("Called get hemco output.")
+
+    # Allow single strings to be input instead of making it have to be a list.
+    if isinstance(vars, str):
+        vars = [vars]
+
+
+
+    if not wd==None:
+        logging.debug("Looking for hemco data in {wd}".format(wd=wd))
+
+        ### Need to confirm hemco file exsits before trying to open it..
+        fname = os.path.join(wd, "hemco.nc")
+
+        HEMCO_data = Dataset(fname, 'r')
+
+        arr = []
+        for var in vars:
+            try:
+                arr.append( HEMCO_data.variables[var][:] )
+            except:
+                logging.warning("Could not find {var} in {fname}"\
+                            .format(var=var, fname=fname))
+
+
+    elif not filename==None:
+
+        logging.debug("Looking for hemco data in {file}".format(file=filename))
+
+        HEMCO_data = Dataset(filename, 'r')
+        arr = []
+        for var in vars:
+            try:
+                arr.append( HEMCO_data.variables[var][:] )
+            except:
+                logging.warning("Could not find {var} in {fname}"\
+                            .format(var=var, fname=filename))
+
+    else:
+        logging.error("No wd of filename given to get_hemco_output!")
+        return
+ 
+    if len(arr)==1:
+        arr = arr[0]
+
+    return arr;
+
+
+
 # ----
 # 1.22 - Get var data for model run
 # ---
@@ -789,8 +866,8 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
                 logging.debug("opening variabel {var}".format(var=var))
                 var_data =  netCDF_data.variables[var] 
             except:
-                logging.warning("Variable {var} not found in netCDF")\
-                    .format(var=var)
+                logging.warning("Variable {var} not found in netCDF"\
+                    .format(var=var))
                 logging.warning("Will attempt renaming")
                 abrv_var = get_ctm_nc_var( var )
                 try:
