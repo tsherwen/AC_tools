@@ -92,7 +92,7 @@ def mk_NetCDF_of_pf_files( files, ncfilename=None, debug=False ):
             vars, sites = get_pf_headers( files[0], debug=debug )
 
             # Extract all points from file 
-            df, vars = pf_csv2pandas( file=file, vars=vars, epoch=True,\
+            df, vars = AC.pf_csv2pandas( file=file, vars=vars, epoch=True,\
                  r_vars=True )
             if debug:
                 print df.shape, df.columns
@@ -111,7 +111,7 @@ def mk_NetCDF_of_pf_files( files, ncfilename=None, debug=False ):
 
         else:
             # Extract all points from file 
-            df, vars = pf_csv2pandas( file=file, vars=vars, epoch=True, \
+            df, vars = AC.pf_csv2pandas( file=file, vars=vars, epoch=True, \
                 r_vars=True )
 
         # Open the file in append mode

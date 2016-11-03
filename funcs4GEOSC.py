@@ -87,23 +87,26 @@ def get_surface_area(res=None,time=None, debug=False, wd=None, updated=False):
         1day files with just DXYP / DXYP diagnostic ouptuted
      - back compatibility with PyGChem 0.2.0 is retained  
     """
+
     logging.info( "Getting the surface area" ) 
 
     if res==None and wd==None:
         res = ('4x5')
         logging.warning("No res or wd specified. Assuming 4x5.")
 
-    print locals()
+    logging.debug( locals() )
 
     # if the wd has not been specified then use the previous runs
     if wd==None:
 
-        # What is dwd? 
-        # All of this might make sense to replace with example data?
-        dwd = '../data/LM/'
+        # Get AC_tools location, then set example data folder location
+        import os
+        import inspect
+        filename = inspect.getframeinfo(inspect.currentframe()).filename
+        path = os.path.dirname(os.path.abspath(filename))
+        dwd = path+'/data/LM/'
         logging.debug("dwd = " + str( dwd) )
-
-    #    dwd = get_dir( 'dwd') + '/misc_ref/'
+        # Choose the correct directory for a given resolution
         dir = {
         '4x5':'LANDMAP_LWI_ctm',  \
         '2x2.5': 'LANDMAP_LWI_ctm_2x25',  \
@@ -114,8 +117,6 @@ def get_surface_area(res=None,time=None, debug=False, wd=None, updated=False):
 
         logging.debug( "resolution = {res}, lookup directory = {fd}".format( \
             res=res, fd=fd) )
-    #    if debug:
-    #        print fd, res
         wd = fd
 
 
@@ -132,12 +133,10 @@ def get_surface_area(res=None,time=None, debug=False, wd=None, updated=False):
 
             # extract diags
             first_time=True
-            if debug:
-                print diags
+            logging.debug( 'Diags: ', diags )
             while first_time:
                 for diag in diags:
-                    if debug:
-                        print diag.unit
+                    logging.debug( 'Diag unit: ', diag.unit )
                     s_area = diag.values
                 first_time=False
     except:
@@ -220,18 +219,23 @@ def get_land_map(res='4x5', time=None, wd=None,debug=False):
 	 on-line extract on inclusion of generic output for various resoltions as txt files? 
     """
 
-    if debug:
-        print 'called get surface area, for ', res
-    dwd = '../data/LM/'
+    logging.info( 'called get surface area, for ', res )
+    # Get AC_tools location, then set example data folder location
+    import os
+    import inspect
+    filename = inspect.getframeinfo(inspect.currentframe()).filename
+    path = os.path.dirname(os.path.abspath(filename))
+    dwd = path+'/data/LM/'
+    # choose the right directory for the data
     dir = {
-    '4x5':'/LANDMAP_LWI_ctm',  \
-    '2x2.5': '/LANDMAP_LWI_ctm_2x25',  \
+    '4x5':'LANDMAP_LWI_ctm',  \
+    '2x2.5': 'LANDMAP_LWI_ctm_2x25',  \
     '0.5x0.666' :'LANDMAP_LWI_ctm_05x0666',  \
     '0.25x0.3125' :'LANDMAP_LWI_ctm_025x03125',  \
-    }[res]
+        }[res]
     land_dir = dwd +dir
     if debug:
-        print land_file
+        logging.info( land_file )
 
     # retain backwards compatibility
     if pygchem.__version__ == '0.2.0':
@@ -244,16 +248,14 @@ def get_land_map(res='4x5', time=None, wd=None,debug=False):
             for diag in diags:
                 scalar = diag.values[:,:,:]
                 first_time=False
-                if debug:
-                    print diag.name ,'len(scalar)',len(scalar), 'type(scalar)',\
-                        type(scalar), 'diag.scale', diag.scale, 'scalar.shape',\
-                        scalar.shape,'diag.unit',diag.unit
+                logging.info( diag.name ,'len(scalar)',len(scalar), 'type(scalar)',\
+                    type(scalar), 'diag.scale', diag.scale, 'scalar.shape',\
+                    scalar.shape,'diag.unit',diag.unit )
                 landmap=scalar
 
     # use new pygchem (>0.3.0) approach
     else:
-        landmap = get_GC_output(  land_dir, species="LWI", \
-            category="LANDMAP")
+        landmap = get_GC_output( land_dir, species="LWI", category="LANDMAP")
 
     return landmap
 
