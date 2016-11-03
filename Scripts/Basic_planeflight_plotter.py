@@ -26,7 +26,7 @@ except: # Otherwise use path below
 
 # What years, months, days to plot?  (must be in list form) 
 # set day_to_use by adjusting range
-years_to_use, months_to_use= ['2005'], ['12']
+years_to_use, months_to_use= ['2016'], ['05', '06', '07']
 days_to_use  = [ "{0:0>2}".format(i)  for i in range(1, 31, 1) ]
 print years_to_use, months_to_use, days_to_use 
 
@@ -35,7 +35,8 @@ print years_to_use, months_to_use, days_to_use
 # must be as a list of strings
 #locations=['WE'] 
 #locations=['WEY'] 
-locations=['CVO'] 
+#locations=['CVO'] 
+locations=['BEI'] 
 print locations
 
 # Model version

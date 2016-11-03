@@ -4,6 +4,7 @@ import time
 import numpy as np
 import gc
 import datetime
+import AC_tools as AC
 
 debug=True
 specs = [ 'O3', 'NO2' , 'PAN', 'ALD2' ]
@@ -60,7 +61,7 @@ def extract_data_dates( spec='O3', file=None, dates_variable='time', \
     import datetime
 
 #    # <= Kludge: convert to tracer name used in NetCDF for extraction
-    from AC_tools.funcs_vars import what_species_am_i
+    from AC.funcs_vars import what_species_am_i
     pspec = what_species_am_i( input=spec, ver=ver, invert=True, debug=debug  )    
 
     with Dataset( file, 'r' ) as rootgrp:
@@ -125,7 +126,7 @@ def get_data_dates( spec='O3', dates_variable='time', \
           
     """
     import numpy as np
-    from AC_tools.funcs_vars import get_dir
+    from AC.funcs4core import get_dir
 
     # Set Directory ( comment out if using different earth0 user )
     wd = get_dir('npwd')
@@ -173,8 +174,8 @@ def get_data_dates( spec='O3', dates_variable='time', \
 def get_run_info( spec='O3', res='0.25x0.3125', region='EU', fname='', \
             scale=1, pcent=False, ClearFlo_unit=False ):
     """ get descriptive variables for run period ( e.g. res ) """
-    from AC_tools.funcs4core import get_latlonalt4res
-    from AC_tools.funcs_vars import tra_unit, latex_spec_name
+    from AC.funcs4core import get_latlonalt4res
+    from AC.funcs_vars import tra_unit, latex_spec_name
     
     # Set variables (e.g. res) or automation of variable setting here
 #    res = get_run_descriptors()
