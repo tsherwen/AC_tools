@@ -71,3 +71,16 @@ def test_get_GC_output():
     assert round(arr.sum(),6)==round(0.14242639,6), "The ozone budget doesnt seem correct({bud})".format(bud=arr.sum())
     return
 
+def test_get_HEMCO_output_for_WD():
+    arr = get_HEMCO_output(wd=wd, vars='ALD2_TOTAL')
+    assert isinstance( arr, np.ndarray), 'HEMCO output is not a numpy array'
+    assert round(arr.sum(),2)==round(2.50E-9,2), "The HEMCO output seems wrong"
+    return
+
+def test_get_HEMCO_output_for_file():
+    hemco_file = os.path.join(wd, 'HEMCO_Diagnostics.nc')
+    arr = get_HEMCO_output(filename=hemco_file, vars='ALD2_TOTAL')
+    assert isinstance( arr, np.ndarray), 'HEMCO output is not a numpy array'
+    assert round(arr.sum(),2)==round(2.50E-9,2), "The HEMOC output seem incorrect"
+    return
+
