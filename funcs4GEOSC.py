@@ -823,7 +823,7 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
     # Temporary fix for back compatibility: 
     # Convert gamap names ( species  + category ) to iris cube names
     # Just for use whilst updating functions written to use pygchem 0.2.0
-    if not any( [ isinstance(i, type(None) ) for i in species, category ] ):
+    if any( [ (not isinstance(i, type(None) )) for i in species, category ] ):
         # convert to Iris Cube name
         if (category == None) and ( vars ==  None ):
             category = "IJ-AVG-$"
@@ -842,10 +842,6 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
         # Get default settings for reader
         if isinstance(vars, type(None)):
             vars = [ 'IJ_AVG_S__O3'  ]
-
-#    # ensure wd has a leading '/'
-#    if wd[-1] != '/':
-#        wd +=  '/'
 
     # Work with NetCDF. Convert ctm.bpch to NetCDF if not already done.
     if use_NetCDF:
