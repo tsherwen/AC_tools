@@ -185,8 +185,8 @@ def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, \
     """
 
     # set save directory ( using default directory dictionary )
-    from funcs_vars import get_dir # Kludge
-    wd =get_dir('ppwd')
+    from funcs4core import get_dir 
+    wd = get_dir('ppwd')
 
     # Set pdf name
     if justHH and (not no_dstr):

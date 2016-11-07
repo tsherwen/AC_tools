@@ -17,7 +17,6 @@ import sys
 import logging
 import os
 
-
 # --------------                                                                                              
 # 1.01 - Store of dirs for earth0, atmosviz1, and tms mac                                                     
 # -------------                                                                                               
@@ -29,63 +28,61 @@ def get_dir( input, loc='earth0' ):
      - This function is not general enough to be transferrable.
      - Update to use $USER flag. 
     """
-
-    try:
-        case = { 
-        'Darwin-14.0.0-x86_64-i386-64bit' :1,
-        'Darwin-14.1.0-x86_64-i386-64bit':1 ,
-        'Darwin-14.3.0-x86_64-i386-64bit': 1, # updated ...
-        'Darwin-14.5.0-x86_64-i386-64bit': 1, # updated 15/08
-#        'Linux-3.0.101-0.46-default-x86_64-with-SuSE-13.1-x86_64':2,                                 
-        'Linux-3.0.101-0.47.52-default-x86_64-with-SuSE-11-x86_64' :2, 
-        'Linux-3.0.101-0.46-default-x86_64-with-SuSE-11-x86_64':2,  
-         # updated 15/12
-        'Linux-3.0.101-0.47.71-default-x86_64-with-SuSE-11-x86_64': 2,
-        'Darwin-15.6.0-x86_64-i386-64bit':2, 
-        # reverted on 15 03 10        
-        'Linux-3.2.0-56-generic-x86_64-with-debian-wheezy-sid':3
-        }[platform.platform()]
-    except:
-        print '!'*50,' PLATFORM NOT IN LIST: >{}<'.format( \
-            platform.platform()), '!'*50
-        sys.exit(0)
+    import getpass
+    import platform
+    host = platform.node()
+    user = getpass.getuser()
+    tms_users = [ 'Tomas', 'tomassherwen', 'ts551' ]
 
     # Mac setup                                                                                               
-    if case ==1 :
-        home = '/Users/Tomas/'
-        d = { 
-        'rwd'  :home+'PhD/Data/MUTD_iGEOS-Chem_output/',
+    if (host == 'tomasmbp13.york.ac.uk') or () :
+        home = '/Users/{}/'.format( user )
+        if user in tms_users:
+            d = { 
+        'rwd'  : home+'PhD/Data/MUTD_iGEOS-Chem_output/',
         'dwd'  :  home+'PhD/Data/' ,
         'npwd' : home+'PhD/Data/np_arrs/' ,
         'tpwd' : home+'GITHub/PhD_progs/' ,
         'ppwd' : home+'Pictures/'  
-        }
+            }
+            d = d[input]
+        else:
+            d = home
 
     # Earth0 setup                                                                                            
-    if case ==2 :
-        home =  '/work/home/ts551/'
-        d = { 
+    if host == 'earth0' :
+        home =  '/work/home/{}/'.format( user )
+        if user in tms_users:
+            d = { 
         'rwd'  : home +'data/all_model_simulations/iodine_runs/',
-        'dwd'  :  home +'data/',
-        'fwd' : home+ 'labbook/PhD_progs/d_fast-J_JX/data/',
-        'lwd'  :  home +'labbook/',
+        'dwd'  : home +'data/',
+        'fwd'  : home +'labbook/PhD_progs/d_fast-J_JX/data/',
+        'lwd'  : home +'labbook/',
         'npwd' : home +'data/np_arrs/',
         'tpwd' : home +'labbook/PhD_progs/' ,
         'ppwd' : home +'labbook/plots_images/'  
-        }
+            }
+            d = d[input]
+        else:
+            d = home
 
     # Atmosviz1 setup                                                                                         
-    if case ==3 :
-        home =  '/home/ts551/'
-        d = { 
+    if host == 'atmosviz1' :
+        home =  '/home/{}/'.format( user )
+        if user in tms_users:
+            d = { 
         'rwd'  : home +'data/model/',
         'dwd'  :  home +'data/',
         'lwd'  :  home +'labbook/',
         'npwd' : home +'data/np_arrs/',
         'tpwd' : home +'labbook/PhD_progs/'  
-        }
-    return d[input]
+            }
+            d = d[input]
+        else:
+            d = home
 
+    return d
+    
 # ----                                                                                                                                                        
 # 1.02 -  Get Latitude as GC grid box number in dimension                                                                                                                  
 # ----                                                                                                                                                        
