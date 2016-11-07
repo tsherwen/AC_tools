@@ -17,17 +17,16 @@ if not os.path.exists(out_dir):
     os.mkdir(out_dir)
 
 
-
 @pytest.fixture()
 def test_data():
     from ..funcs4GEOSC import get_GC_output 
     test_data = get_GC_output(wd, species='O3') 
     return test_data
 
-@slow
+
+# Leave the default plot in as not slow.
 def test_map_plot_default(test_data):
     print test_data.shape
-    logging.info("begining test")
     map_plot( test_data[:,:,0,0] )
     return
 
@@ -54,38 +53,51 @@ def test_map_plot_none():
     return
 
 @slow
-def test_save_plot(test_data):
-    # Change to the test_output dir)
-
-    # Try the multiple plots
+def test_save_plot_default(test_data):
     map_plot(test_data[:,:,0,0])
-
     save_plot()
-    filename_0 = "myplot.png"
+    filename = "myplot.png"
+    os.remove(filename)
+    return
 
+@slow
+def test_save_plot_with_name(test_data):
+    map_plot(test_data[:,:,0,0])
     save_plot(title="test_1")
-    filename_1 = "test_1.png"
+    filename = "test_1.png"
+    os.remove(filename)
+    return
 
-    save_plot(title="test_2", location=out_dir)
-    filename_2 = os.path.join(out_dir, "test_2.png")
 
+@slow
+def test_save_plot_in_folder(test_data):
+    map_plot(test_data[:,:,0,0])
     save_plot(title="test_3", location="new_folder")
-    filename_3 = os.path.join("new_folder", "test_3.png")
+    filename=os.path.join("new_folder", "test_3.png")
+    os.remove(filename)
+    os.rmdir("new_folder")
+    return
 
-    save_plot(title="test_4", location=out_dir, extensions=["pdf", "png"])
-    filename_4 = os.path.join(out_dir, "test_4.png")
-    filename_5 = os.path.join(out_dir, "test_4.pdf")
+
+@slow
+def test_save_plot_with_filetypes(test_data):
+    map_plot(test_data[:,:,0,0])
+    save_plot(title="test_4", extensions=["pdf", "png"])
+    filename = "test_4.png"
+    filename2 = "test_4.pdf"
+    os.remove(filename)
+    os.remove(filename2)
+    return
 
     # Test plot has been created, and then remove it"
-    filenames = [filename_0, filename_1, filename_2, 
-                filename_3, filename_4, filename_5]
-    for filename in filenames:
-        assert os.path.isfile( filename ), "Failed to create {file}".format(file=filename)
-        os.remove(filename)
+#    filenames = [filename_0, filename_1, filename_2, 
+#                filename_3, filename_4, filename_5]
+#    for filename in filenames:
+#        assert os.path.isfile( filename ), "Failed to create {file}".format(file=filename)
+#        os.remove(filename)
+#
+#    os.rmdir("new_folder")
 
-    os.rmdir("new_folder")
-
-    return
     
 
 
