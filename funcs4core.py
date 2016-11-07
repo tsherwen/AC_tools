@@ -163,7 +163,7 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
 # ----                                                                                                                                                        
 #  1.05 - Get grid values of lon, lat, and alt for a given resolution                                                                                                                         
 # ----                                                                                                                                                        
-def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
+def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
             dtype=None, wd=None, filename='ctm.nc',\
             lat_bounds=u'latitude_bnds', lon_bounds=u'longitude_bnds',\
             lon_var=u'longitude', lat_var=u'latitude', debug=False ):
@@ -178,12 +178,17 @@ def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
         correct resolution to fix this.
     """ 
     logging.info("Calling get_latlonalt4res")
-    logging.debug( locals() )
+#    logging.debug( locals() )
+
+    if res==None:
+        logging.warning("No resolution specified. Assuming 4x5!")
+        res='4x5'
+
     # Kludge. Update function to pass "wd" 
     # if model output directory ("wd") not provided use default directory
     if wd == None:
-        dwd = os.path.join(get_dir( 'dwd'), 'misc_ref/')
-
+        AC_tools_dir = os.path.dirname(__file__)
+        dwd = os.path.join(AC_tools_dir, 'data/LM')
         dir_dict = {
         '4x5':'LANDMAP_LWI_ctm',  \
         '2x2.5': 'LANDMAP_ctm_2x25',  \
@@ -194,12 +199,12 @@ def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
         '0.25x0.3125' :'LANDMAP_LWI_ctm_025x03125',  \
         # Need to add a 0.5x0.625!
         }
-        dir = dir_dict[res]
-        #wd = os.path.join(dwd, dir)
+        try:
+            dir = dir_dict[res]
+        except KeyError:
+            logging.error("{res} not a recognised resolution!".format(res=res))
+            raise KeyError
 
-        dwd = os.path.dirname(__file__)
-        print "dwd is:"
-        print dwd
         wd = os.path.join(dwd, dir)
     
         if (res=='1x1') or (res=='0.5x0.5'):
@@ -208,21 +213,28 @@ def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
             lon_var = 'lon'
             wd = '/work/data/GEOS/HEMCO/EMEP/v2015-03/'
 
-    if debug:
-        print res, centre, hPa, nest, type( res)
-        print wd+'/'+filename, res
+
+    # Ge the data file name
+    data_fname = os.path.join(wd, filename)
+    if not os.path.exists(data_fname):
+        logging.error("Could not find {fn}".format(fn=data_fname))
+        raise IOError, "Could not find {fn}".format(fn=data_fname)
+
+#    if debug:
+#        print res, centre, hPa, nest, type( res)
+#        print data_fname, res
 
     if centre:
         # Extract lat and lon from model output data file
-        with Dataset( os.path.join(wd, filename), 'r' ) as d:
-            lat = np.array( d[lat_var] )    
-            lon = np.array( d[lon_var] )        
+        with Dataset( data_fname, 'r' ) as d:
+            lat = np.array( data[lat_var] )    
+            lon = np.array( data[lon_var] )        
             
 
     # Get edge values
     if (not centre) and ( not any([(res==i) for i in '1x1', '0.5x0.5' ]) ):
         # Extract lat and lon from model output data file
-        with Dataset( wd+'/'+filename, 'r' ) as d:
+        with Dataset( data_fname, 'r' ) as d:
             lat = np.array( d[lat_bounds] )    
             lon = np.array( d[lon_bounds] )  
 
