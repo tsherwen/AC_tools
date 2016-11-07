@@ -123,7 +123,6 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
                 Should be (46,72). Got " + str(arr.shape))
         raise AssertionError, "Incorrect array shape for 4x5."
 
-    arr = arr.T
 
     # Mask for percent arrays containing invalid values ( to allow PDF save )
     if mask_invalids:
