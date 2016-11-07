@@ -25,12 +25,31 @@ def test_data():
     return test_data
 
 @slow
-def test_map_plot(test_data):
+def test_map_plot_default(test_data):
+    print test_data.shape
     logging.info("begining test")
     map_plot( test_data[:,:,0,0] )
+    return
+
+@slow
+def test_map_plot_transpose(test_data):
     map_plot( test_data[:,:,0,0].T)
+    return
+
+@slow
+def test_map_plot_wd(test_data):
+    map_plot( test_data[:,:,0,0], wd=wd )
+    return
+
+@slow
+def test_map_plot_wrong_shape(test_data):
     with pytest.raises(AssertionError):
-        map_plot( test_data[0,:,:], wd=wd )
+        map_plot( test_data[0,0,:,:] )
+    return
+
+@slow
+def test_map_plot_none():
+    with pytest.raises(AssertionError):
         map_plot( None )
     return
 
