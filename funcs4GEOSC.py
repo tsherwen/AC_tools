@@ -1105,6 +1105,8 @@ def get_gc_res( wd ):
     # compare with dictionary to get resoslution    
     dims = (len(lon),len(lat))
     res = get_dims4res( r_dims=True, just2D=True )[dims]
+    if res==None:
+        logging.error("Could not find resolution for run in {wd}".format(wd=wd))
 
     return res 
 
