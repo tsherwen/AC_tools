@@ -18,12 +18,17 @@ from matplotlib.colors import LogNorm
 from matplotlib.ticker import LogFormatter
 from matplotlib.ticker import NullFormatter
 from matplotlib.ticker import FuncFormatter
+from matplotlib.ticker import FormatStrFormatter
+from matplotlib.ticker import MultipleLocator
+from matplotlib import ticker
+import matplotlib.ticker
+# Probably not good to import this stuff all the possible ways...
+# Worth trying to remove some of this to streamline.
+
+
 import matplotlib.font_manager as font_manager
 import matplotlib.collections as mcoll
 import matplotlib.path as mpath
-import matplotlib.ticker
-from matplotlib import ticker
-from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib import cm
@@ -154,6 +159,8 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
             gclon_0, gclon_1 = [ get_gc_lon(i, res=res) for i in lon_0, lon_1 ]
             lon = lon[ gclon_0:gclon_1]
 
+
+
     # ----------------  Basemap setup  ----------------  
     # Grid/Mesh values
     x, y = np.meshgrid(lon,lat)
@@ -183,6 +190,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         }[case]
 
 
+    print "Only should see this once"
     # -------- colorbar variables...
     # Set cmap range I to limit poly, if not given cmap )
     fixcb_ = fixcb
@@ -192,17 +200,24 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
 
     if isinstance( cmap, type(None) ):
         # Set readable levels for cb, then use these to dictate cmap
-        if isinstance( lvls, type(None) ):
+        if lvls==None:
             lvls = get_human_readable_gradations( vmax=fixcb_[1],  \
                     vmin=fixcb_[0], nticks=nticks, \
                     sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
 
+        print "This should be in the middle"
+
         # Setup Colormap
         cmap, fixcb_buffered = get_colormap( np.array( fixcb_ ), \
                 nticks=nticks, fixcb=fixcb_, buffer_cmap_upper=True )
+        print "and this at the end."
         # Update colormap with buffer
         cmap = get_colormap( arr=np.array( [fixcb_buffered[0],  \
                                                     fixcb_buffered[1]] ) )
+
+    print "And see this once"
+
+
 
     # Allow function to operate without fixcb_buffered provided
     if isinstance( fixcb_buffered, type(None) ):
@@ -282,8 +297,8 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         # fix colorbar levels, then provide labels
         cb.set_ticks( tick_locs )
         # the format is not correctly being set... - do this manually instead
-        if not isinstance( format, type(None) ):
-            lvls = [ format % (i) for i in lvls ]
+#        if not isinstance( format, type(None) ):
+#            lvls = [ format % (i) for i in lvls ]
         cb.set_ticklabels( lvls )#, format=format )
 
 
@@ -3994,6 +4009,9 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
         verbose=True, debug=False ):
     """ 
     Get human readible gradations for ploting ( e.g. colorbars etc ). 
+    OUTPUT:
+    lvls: list of values where the ticks should be
+    ticks: list of strings to call the ticks in Sig figs.
     """
 
     logging.debug('get_human_readable_gradiations called with the following:')
@@ -4045,8 +4063,8 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
 
             
     # significant figure ( sig. fig. ) rounding func.
-#    round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
-    round_to_n = lambda x, n: get_sigfig(x,n)
+    round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
+#    round_to_n = lambda x, n: get_sigfig(x,n)
 
     # --- Get current gradations
 #    if debug:
@@ -4074,6 +4092,8 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
             lvls_diff = round_to_n( lvls[-3]-lvls[-4], \
                                 sigfig_rounding_on_cb_ticks)                                
 
+    print "levels difference = ", lvls_diff
+
     # ---  Round top of colorbar lvls, then count down from this
     # first get top numer rounded up to nearest 'lvls_diff'
     # caution, this may result in a number outside the cmap, 
@@ -4089,32 +4109,44 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
         # ( this method also fails if vmax<lvls_diff )
         vmax_rounded = vmax
 
-    if debug:
-        print 1, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
+#    if debug:
+#        print 1, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
 
     lvls = np.array([ vmax_rounded - lvls_diff*i \
             for i in range( nticks ) ][::-1])   
+
+    logging.debug("colorbar levels are: {lvls}".format(lvls=lvls))
+    print ("colorbar levels are: {lvls}".format(lvls=lvls))
     if debug:
         print lvls, len( lvls )
         print 2, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
 
     # ensure returned ticks are to a maximum of 2 sig figs  
     # ( this only works if all positive ) and are unique
-    try:
-        # Make sure the colorbar labels are not repeated
-        invalid = True
-        while invalid:
-            new_lvls = [ round_to_n( i, sigfig_rounding_on_cb_lvls) \
-                for i in lvls ]
-            if len( set(new_lvls) ) == len(lvls):
-                lvls = new_lvls
-                invalid=False
-            else: # Try with one more sig fig
-                sigfig_rounding_on_cb_lvls += 1
+#    try:
+#        # Make sure the colorbar labels are not repeated
+#        invalid = True
+#        while invalid:
+#            new_lvls = [ round_to_n( i, sigfig_rounding_on_cb_lvls) \
+#                for i in lvls ]
+#            if len( set(new_lvls) ) == len(lvls):
+#                lvls = new_lvls
+#                invalid=False
+#            else: # Try with one more sig fig
+#                sigfig_rounding_on_cb_lvls += 1
+#
+#    except:
+#        print 'WARNING: unable to round level values to {} sig figs'.format(\
+#                   sigfig_rounding_on_cb_lvls  )
 
-    except:
-        print 'WARNING: unable to round level values to {} sig figs'.format(\
-                   sigfig_rounding_on_cb_lvls  )
+    new_lvls = []
+    for level in lvls:
+        new_lvls.append(get_sigfig(level, sigfig_rounding_on_cb_lvls))
+
+    print new_lvls
+    lvls = new_lvls
+
+
     if debug:
         print 3, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
 
