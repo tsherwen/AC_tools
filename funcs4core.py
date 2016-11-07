@@ -15,6 +15,7 @@ from pandas import DataFrame
 import platform
 import sys
 import logging
+import os
 
 
 # --------------                                                                                              
@@ -181,18 +182,25 @@ def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
     # Kludge. Update function to pass "wd" 
     # if model output directory ("wd") not provided use default directory
     if wd == None:
-        dwd = get_dir( 'dwd') + '/misc_ref/'
-        dir = {
-        '4x5':'/LANDMAP_LWI_ctm',  \
-        '2x2.5': '/LANDMAP_ctm_2x25',  \
-        '1x1' : '/work/data/GEOS/HEMCO/EMEP/v2015-03/',\
+        dwd = os.path.join(get_dir( 'dwd'), 'misc_ref/')
+
+        dir_dict = {
+        '4x5':'LANDMAP_LWI_ctm',  \
+        '2x2.5': 'LANDMAP_ctm_2x25',  \
+        '1x1' : 'work/data/GEOS/HEMCO/EMEP/v2015-03/',\
         # Kludge, use 1x1 for 0.5x0.5 <= remove this
-        '0.5x0.5' :'/work/data/GEOS/HEMCO/EMEP/v2015-03/',\
+        '0.5x0.5' :'work/data/GEOS/HEMCO/EMEP/v2015-03/',\
         '0.5x0.666' :'LANDMAP_LWI_ctm_05x0666',  \
         '0.25x0.3125' :'LANDMAP_LWI_ctm_025x03125',  \
         # Need to add a 0.5x0.625!
-        }[res]
-        wd = dwd +dir
+        }
+        dir = dir_dict[res]
+        #wd = os.path.join(dwd, dir)
+
+        dwd = os.path.dirname(__file__)
+        print "dwd is:"
+        print dwd
+        wd = os.path.join(dwd, dir)
     
         if (res=='1x1') or (res=='0.5x0.5'):
             filename='EMEP.geos.1x1.nc'
@@ -206,7 +214,7 @@ def get_latlonalt4res( res='4x5', centre=True, hPa=False, nest=None, \
 
     if centre:
         # Extract lat and lon from model output data file
-        with Dataset( wd+'/'+filename, 'r' ) as d:
+        with Dataset( os.path.join(wd, filename), 'r' ) as d:
             lat = np.array( d[lat_var] )    
             lon = np.array( d[lon_var] )        
             
