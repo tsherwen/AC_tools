@@ -362,8 +362,8 @@ def readfile( files, location, years, months, days, plot_all_data=False,
     print 'Read {} pf.log files, contructed arary with dims.: {}'.format( \
         len(files), big.shape )
     if (len(files) == 0) or (big.shape == (0,) ):
-        print files, '<'*100, 'NO Planeflight.log* files read./Extacted,'\
-            +' please check dates', '>'*100
+        print files, '<'*100, 'No Planeflight.log* files read/extacted,'\
+            +' please check dates - dates recieved: ', years, months, days,'>'*100
         sys.exit(0)
     return big, names
 

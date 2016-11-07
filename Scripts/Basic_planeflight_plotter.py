@@ -26,7 +26,7 @@ except: # Otherwise use path below
 
 # What years, months, days to plot?  (must be in list form) 
 # set day_to_use by adjusting range
-years_to_use, months_to_use= ['2016'], ['05', '06', '07']
+years_to_use, months_to_use= ['2005'], ['05', '06', '07']
 days_to_use  = [ "{0:0>2}".format(i)  for i in range(1, 31, 1) ]
 print years_to_use, months_to_use, days_to_use 
 
@@ -34,10 +34,15 @@ print years_to_use, months_to_use, days_to_use
 # e.g. locations=['TX1','LA1'] # must be as a list of strings
 # must be as a list of strings
 #locations=['WE'] 
-#locations=['WEY'] 
+locations=['WEY'] 
 #locations=['CVO'] 
-locations=['BEI'] 
+#locations=['BEI'] 
 print locations
+
+# Scaling (e.g. pptv or ppbv )
+#units, scale = 'p.p.t.v.', 1E12
+#units, scale = 'p.p.b.v.', 1E9
+units, scale = 's$^{-1}$', 1
 
 # Model version
 ver='3.0'
@@ -55,7 +60,10 @@ fontsize = 10
 # -------------
 
 # Get species name in TRA_?? (planefligth output) form
-species_to_plot=[ AC.what_species_am_i( species_to_plot, ver=ver, invert=True ) ]
+if 'TRA' in species_to_plot:
+    species_to_plot=[ AC.what_species_am_i( species_to_plot, ver=ver, invert=True ) ]
+else:
+    species_to_plot=[species_to_plot]
 
 # setup figure
 fig = plt.figure(figsize=(15,6), dpi=80, facecolor='w', edgecolor='k')
@@ -71,12 +79,12 @@ for i,site in enumerate(locations):
     k=names.index(species_to_plot[0])
 
     # plot up extracted data
-    plt.plot(  AC.year_to_since_2006(model), model[:,k]*1e9*1E3,color=plt.cm.jet(1.*i/len(locations)),\
+    plt.plot(  AC.year_to_since_2006(model), model[:,k]*scale,color=plt.cm.jet(1.*i/len(locations)),\
         label='{0}'.format(locations[i])  )    
 
 # Beatify plot
-plt.xlabel('Time/ CV days', fontsize=fontsize)
-plt.ylabel('Conc./ p.p.t.v.', fontsize=fontsize)
+plt.xlabel('(CVAO days)', fontsize=fontsize)
+plt.ylabel('({})'.format( units ), fontsize=fontsize)
 plt.legend(loc='upper right',fontsize=fontsize)
 plt.grid(b=None, which='major', axis='both', alpha=0.3)
 plt.rcParams.update({'font.size': fontsize})
