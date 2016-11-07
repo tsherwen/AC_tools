@@ -35,7 +35,7 @@ def get_dir( input, loc='earth0' ):
     tms_users = [ 'Tomas', 'tomassherwen', 'ts551' ]
 
     # Mac setup                                                                                               
-    if (host == 'tomasmbp13.york.ac.uk') or () :
+    if (host == 'tomasmbp13.york.ac.uk') or ('Tomas-13-MBP') :
         home = '/Users/{}/'.format( user )
         if user in tms_users:
             d = { 
