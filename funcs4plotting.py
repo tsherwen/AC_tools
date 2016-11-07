@@ -104,11 +104,11 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     logging.info("map_plot called")
 
     # Find out what resolution we are using if not specified   
-    if (res==None): 
-        if not (wd==None):
+    if isinstance(res, type(None)):         
+        try: # Attempt to extract resolution from wd
             logging.debug("No resolution specified, getting from wd")
             res = get_gc_res(wd)
-        else:
+        except TypeError:  # Assume 4x5 resolution
             # Assume 4x5 resolution
             logging.warning('No resolution specified or found. Assuming 4x5')
             logging.warning('Try specifying the wd or manualy specifying the res')
@@ -736,6 +736,114 @@ def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
 
     if r_avgs:
         return avgs 
+
+# --------   
+# 1.07 - Diurnal plot
+# --------
+def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1,  \
+        bin_size=2/24.,widths=0.01, rmax=False, \
+        ls='-', color=None, fractional=False, diurnal=False, mean=True, \
+        xlabel = True, r_avgs=False, marker=None, label=None, \
+        markersize=1, title=None, f_size=10, units='ppbv', scale='linear', \
+        lw=1,lgnd_f_size=None, alpha=1, 
+        
+        time_resolution_str="%H:%M", 
+#        time_resolution_str="%H", 
+        debug=False ):
+    """ 
+    Creates a diurnal plot for given data and dates using pandas Dataframe
+
+    NOTES:
+     - Data and dates must be in numpy array form. 
+     - Dates must also be datetime.datetime objects 
+     - Adapted from David Hagen's example - https://www.davidhagan.me/articles?id=7
+    """
+     
+    # Form a dataFrame from input numpy arrays. 
+    df = pd.DataFrame( {'data':data}, index=dates )
+
+    # Add a time coluumn to group by (e.g. "%H:%M" for minuitse) 
+    df['Time'] = df.index.map(lambda x: x.strftime(time_resolution_str))
+
+    # Group by time resolution column
+    df = df.groupby('Time').describe().unstack()
+
+    # Convert X axis to strings
+#    print df
+    df.index = pd.to_datetime(df.index.astype(str))
+#    df.index = pd.to_datetime(df.index )#.astype(str))
+#    df.index = [ datetime.datetime( 2005, 1, 1, i ) for i in range(0, 24) ]
+    
+    # aesthetics
+    ls =[ls]*5
+    if posn> 4:
+        ls=get_ls( posn )
+    if color == None:
+        color=color_list(posn)[pos-1]
+    else:
+        color=color
+    if isinstance( lgnd_f_size, type(None)):
+        lgnd_f_size = f_size
+
+    # plot up mean
+#    ax.plot(df.index, df['data']['mean'], 'g', linewidth=2.0)
+#    print df
+    ax.plot(df.index, df['data']['mean'], color=color, linewidth=2.0)
+
+    # beautify
+    from matplotlib import dates as d
+    import datetime as dt    
+    ticks = ax.get_xticks()
+    ax.set_xticks(np.linspace(ticks[0], d.date2num(d.num2date(ticks[-1]) + dt.timedelta(hours=3)), 5))
+    ax.set_xticks(np.linspace(ticks[0], d.date2num(d.num2date(ticks[-1]) + dt.timedelta(hours=3)), 25), minor=True)
+    ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%I:%M %p'))
+
+    # Add quartiles
+    ax.plot(df.index, df['data']['75%'], color=color, alpha=.5)
+    ax.plot(df.index, df['data']['25%'], color=color, alpha=.5)    
+    
+    # And shade
+    try:
+#    if True:
+        ax.fill_between(df.index, df['data']['mean'], df['data']['75%'], alpha=.5, facecolor=color)
+        ax.fill_between(df.index, df['data']['mean'], df['data']['25%'], alpha=.5, facecolor=color)    
+    except:
+        logging.info( 'Failed to add percentile shading' )
+
+#    if mean:
+#    else:
+    
+    # Plot
+#    plt.plot( bins_used, y, color=color , label=label, linestyle=ls[pos-1], \
+#        alpha=alpha, marker=marker, lw=lw, ms=markersize )
+
+    # Beautify 
+#    ax.set_xticklabels( np.arange(0,24,1 )[::2]  )
+#    plt.xticks( np.arange(0,1,1/24. )[::2], fontsize=f_size )
+#    plt.xlim(0., 23/24.)
+
+#    if ymin != None:    
+#        plt.ylim( ymin, ymax )
+#    plt.yticks( fontsize=f_size*.75)
+#    plt.xticks( fontsize=f_size*.75)
+    if (title != None):
+        plt.title( title )
+    if xlabel:
+        plt.xlabel('Hour of day', fontsize=f_size*.75)
+    plt.ylabel('{}'.format(units), fontsize=f_size*.75)
+
+    # Apply legend to last plot
+#    if pos == posn:
+#        plt.legend( fontsize=lgnd_f_size )
+
+    # return max 
+#    if rmax :
+#        return np.ma.max( avgs )
+
+#    if r_avgs:
+#        return avgs 
+
+
 
 # --------   
 # 1.11 - Plot up Sonde data
