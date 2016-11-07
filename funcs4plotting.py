@@ -89,36 +89,41 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
      - shrink: colorbar size settings ( fractional shrink )    
     """
 
+    if arr==None:
+        logging.error("No data given to map_plot!")
+        raise AssertionError, "No data given to map_plot"
+    elif not len(arr.shape)==2:
+        logging.error("Input array should be 2D. Got shape {shape}"\
+                .format(shape=arr.shape))
+
     logging.info("map_plot called")
 
     # Find out what resolution we are using if not specified   
     if (res==None): 
         if not (wd==None):
+            logging.debug("No resolution specified, getting from wd")
             res = get_gc_res(wd)
         else:
-            logging.warning( 'Please provide res or wd. res needed for map_plot'  )
-    else:
-        # Assume 4x5 resolution
-        logging.warning('No resolution specified or found. Assuming 4x5')
-        logging.warning('Try specifying the wd or manualy specifying the res')
-        res='4x5'
-
-    print res
+            # Assume 4x5 resolution
+            logging.warning('No resolution specified or found. Assuming 4x5')
+            logging.warning('Try specifying the wd or manualy specifying the res')
+            res='4x5'
 
 
     # Make sure the input data is usable and try to fix it if not.
-    assert len(arr.shape)==2, "input array should be 2D. Got shape {shape}"\
-        .format(shape=arr.shape)
-    if res=='4x5':
-        if arr.shape==(46,72):
-            pass
-        elif arr.shape==(72,46):
-            arr = arr.T
-            logging.warning("Array was wrong shape and has been transposed!")
-        else:
-            logging.error("Array is the wrong shape. \
+    (res_lat, res_lon) = get_dims4res(res, just2D=True)
+
+    if arr.shape==(res_lon, res_lat):
+        pass
+    elif arr.shape==(res_lat, res_lon):
+        arr = arr.T
+        logging.warning("Array was wrong shape and has been transposed!")
+    else:
+        logging.error("Array is the wrong shape. \
                 Should be (46,72). Got " + str(arr.shape))
-            raise AssertionError, "Incorrect array shape for 4x5."
+        raise AssertionError, "Incorrect array shape for 4x5."
+
+    arr = arr.T
 
     # Mask for percent arrays containing invalid values ( to allow PDF save )
     if mask_invalids:
@@ -3992,31 +3997,62 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     Get human readible gradations for ploting ( e.g. colorbars etc ). 
     """
 
-    if debug:
-        print 'get_human_readable_gradations called: ', vmin, vmax, lvls
+    logging.debug('get_human_readable_gradiations called with the following:')
+    logging.debug('vmin = {vmin}, vmax = {vmax}, lvls = {lvls}'\
+            .format(vmin=vmin, vmax=vmax, lvls=lvls))
     
-    if isinstance( lvls, type(None) ):
+
+    if lvls==None:
         lvls = np.linspace( vmin, vmax, nticks, endpoint=True )
 
+#    verbose=True
     # --- Adjust graduations in colourbar to be human readable
     # in both min and max have absolute values less than 0, then sig figs +1
-    try:
-        if ( ( abs( int( vmin)) == 0) and (abs( int( vmax)) == 0) ):
-            if verbose:
-                print 'both vmin ({:.2E}), and vmax ({:.2E}) are <0'.format( \
-                    vmin, vmax )
-            sigfig_rounding_on_cb += 1
-    except np.ma.core.MaskError:
-        print 'Gotcha: numpy.ma.core.MaskError'
-        print lvls, vmin, vmax
+    # Find the amount of significant figures needed to show a difference
+    # between vmin and vmax.
+#    try:
+#        if ( ( abs( int( vmin)) == 0) and (abs( int( vmax)) == 0) ):
+#            sigfig_rounding_on_cb += 1
+#        logging.debug("Significant figures needed for plot is {sf}"\
+#                .format(sf=sigfig_rounding_on_cb))
+#        ### Delete this before commit!
+#        print ("Significant figures needed for plot is {sf}"\
+#                .format(sf=sigfig_rounding_on_cb))
+#    except np.ma.core.MaskError:
+#        print 'Gotcha: numpy.ma.core.MaskError'
+#        print lvls, vmin, vmax
+#
+
+
+    # bjn updated sigfig finder
+    # Use logs to find out sig figs needed
+    if vmin==vmax:
+        logging.error("There is no difference between vmin and vmax!")
+        raise ValueError, "There is no differecne between the min and max of the data"
+    if vmin==0 or vmax==0:
+        sig_figs_needed = 3
+    else:
+        log_diff = abs( np.log10(abs(vmax)) - np.log10(abs(vmin)) )
+        sig_figs_needed = int(np.ceil(abs(np.log10( log_diff ))))
+    print "log stats"
+    print vmax
+    print vmin
+    print sig_figs_needed
+
+    sigfig_rounding_on_cb_ticks = sig_figs_needed
+
+
+
+
             
     # significant figure ( sig. fig. ) rounding func.
-    round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
+#    round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
+    round_to_n = lambda x, n: get_sigfig(x,n)
 
     # --- Get current gradations
-    if debug:
-        print abs(lvls[-4])-abs(lvls[-3]), abs(lvls[-4])-abs(lvls[-3]), lvls,\
-                     sigfig_rounding_on_cb
+#    if debug:
+#        print abs(lvls[-4])-abs(lvls[-3]), abs(lvls[-4])-abs(lvls[-3]), lvls,\
+#                     sigfig_rounding_on_cb
     try:
         lvls_diff =[ round_to_n( abs( i-l[n+1] ), sigfig_rounding_on_cb_ticks) \
             for n, i in enumerate( l[:-1] ) ] 
