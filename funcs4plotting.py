@@ -94,7 +94,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
      - shrink: colorbar size settings ( fractional shrink )    
     """
 
-    if arr==None:
+    if isinstance(arr, type(None)):
         logging.error("No data given to map_plot!")
         raise AssertionError, "No data given to map_plot"
     elif not len(arr.shape)==2:
@@ -4047,10 +4047,6 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     else:
         log_diff = abs( np.log10(abs(vmax)) - np.log10(abs(vmin)) )
         sig_figs_needed = int(np.ceil(abs(np.log10( log_diff ))))
-    print "log stats"
-    print vmax
-    print vmin
-    print sig_figs_needed
 
     sigfig_rounding_on_cb_ticks = sig_figs_needed
 
@@ -4088,7 +4084,6 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
             lvls_diff = round_to_n( lvls[-3]-lvls[-4], \
                                 sigfig_rounding_on_cb_ticks)                                
 
-    print "levels difference = ", lvls_diff
 
     # ---  Round top of colorbar lvls, then count down from this
     # first get top numer rounded up to nearest 'lvls_diff'
@@ -4112,7 +4107,6 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
             for i in range( nticks ) ][::-1])   
 
     logging.debug("colorbar levels are: {lvls}".format(lvls=lvls))
-    print ("colorbar levels are: {lvls}".format(lvls=lvls))
     if debug:
         print lvls, len( lvls )
         print 2, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
@@ -4139,7 +4133,6 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     for level in lvls:
         new_lvls.append(get_sigfig(level, sigfig_rounding_on_cb_lvls))
 
-    print new_lvls
     lvls = new_lvls
 
 
