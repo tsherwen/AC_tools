@@ -190,7 +190,6 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         }[case]
 
 
-    print "Only should see this once"
     # -------- colorbar variables...
     # Set cmap range I to limit poly, if not given cmap )
     fixcb_ = fixcb
@@ -205,17 +204,14 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
                     vmin=fixcb_[0], nticks=nticks, \
                     sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
 
-        print "This should be in the middle"
 
         # Setup Colormap
         cmap, fixcb_buffered = get_colormap( np.array( fixcb_ ), \
                 nticks=nticks, fixcb=fixcb_, buffer_cmap_upper=True )
-        print "and this at the end."
         # Update colormap with buffer
         cmap = get_colormap( arr=np.array( [fixcb_buffered[0],  \
                                                     fixcb_buffered[1]] ) )
 
-    print "And see this once"
 
 
 
