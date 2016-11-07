@@ -39,7 +39,7 @@ def convert_to_netCDF(folder='none',filename='ctm.nc',\
 
     bpch_to_netCDF( folder, filename, bpch_file_list, remake, verbose=True)
 
-#    hemco_to_netCDF( folder, hemco_file_list, remake)
+    hemco_to_netCDF( folder, hemco_file_list, remake)
 
     return
 
