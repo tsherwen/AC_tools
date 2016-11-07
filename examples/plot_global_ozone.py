@@ -10,7 +10,7 @@ wd = "../data"
 my_data = AC.get_GC_output( wd, species='O3')
 
 # Get a 2d slice from the 3d array
-my_data = my_data[:,:,0]
+my_data = my_data[:,:,0,0]
 
 # Create the plot
 AC.map_plot( my_data)
