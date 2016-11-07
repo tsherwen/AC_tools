@@ -177,12 +177,14 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
     logging.info("Calling get_latlonalt4res")
 #    logging.debug( locals() )
 
+
     if res==None:
         logging.warning("No resolution specified. Assuming 4x5!")
         res='4x5'
 
-    # Kludge. Update function to pass "wd" 
-    # if model output directory ("wd") not provided use default directory
+
+# Kludge. Update function to pass "wd" 
+# if model output directory ("wd") not provided use default directory
     if wd == None:
         AC_tools_dir = os.path.dirname(__file__)
         dwd = os.path.join(AC_tools_dir, 'data/LM')
@@ -224,21 +226,28 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
     if centre:
         # Extract lat and lon from model output data file
         with Dataset( data_fname, 'r' ) as d:
-            lat = np.array( data[lat_var] )    
-            lon = np.array( data[lon_var] )        
+            lat = np.array( d[lat_var] )    
+            lon = np.array( d[lon_var] )        
             
 
     # Get edge values
     if (not centre) and ( not any([(res==i) for i in '1x1', '0.5x0.5' ]) ):
         # Extract lat and lon from model output data file
-        with Dataset( data_fname, 'r' ) as d:
-            lat = np.array( d[lat_bounds] )    
-            lon = np.array( d[lon_bounds] )  
+        try:
+            with Dataset( data_fname, 'r' ) as d:
+                lat = np.array( d[lat_bounds] )    
+                lon = np.array( d[lon_bounds] )  
 
-            # select lower edge of each bound, and final upper edge
-            lat = [i[0] for i in lat ]+[ lat[-1][1] ]
-            lon = [i[0] for i in lon ]+[ lon[-1][1] ]            
-            lat, lon = [np.array(i) for i in lat, lon ]
+                # select lower edge of each bound, and final upper edge
+                lat = [i[0] for i in lat ]+[ lat[-1][1] ]
+                lon = [i[0] for i in lon ]+[ lon[-1][1] ]            
+                lat, lon = [np.array(i) for i in lat, lon ]
+        except:
+            error = "Could not get {lat}, {lon} from {fn}"\
+                    .format(fn=data_fname,lat=lat_bounds,
+                            lon=lon_bounds)
+            logging.error(error)
+            raise IOError, error
 
     # Kludge - mannually give values for 1.0x1.0
     if res=='1x1':
