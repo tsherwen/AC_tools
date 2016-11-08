@@ -37,9 +37,16 @@ def convert_to_netCDF(folder='none',filename='ctm.nc',\
     """
     logging.debug( "Convert to netCDF called")
 
-    bpch_to_netCDF( folder, filename, bpch_file_list, remake, verbose=True)
-
-    hemco_to_netCDF( folder, hemco_file_list, remake)
+    try:
+        bpch_to_netCDF( folder, filename, bpch_file_list, remake, verbose=True)
+    except:
+        logging.error("Could not convert bpch to netCDF in {_dir}"\
+                .format(_dir=folder))
+    try:
+        hemco_to_netCDF( folder, hemco_file_list, remake)
+    except:
+        logging.warning("Could not convert hemco to netCDF in {_dir}"\
+                .format(_dir=folder))
 
     return
 
