@@ -732,21 +732,30 @@ def get_HEMCO_output( wd=None, filename=None, vars=None, use_netCDF=True):
 
 
     if not wd==None:
+        fname = os.path.join(wd, "hemco.nc")
+        if not os.path.isfile(fname):
+            from bpch2netCDF  import hemco_to_netCDF
+            hemco_to_netCDF( wd )
+            pass
+
+            
         logging.debug("Looking for hemco data in {wd}".format(wd=wd))
 
         ### Need to confirm hemco file exsits before trying to open it..
-        fname = os.path.join(wd, "hemco.nc")
+        try:
+            HEMCO_data = Dataset(fname, 'r')
 
-        HEMCO_data = Dataset(fname, 'r')
+            arr = []
+            for var in vars:
+                try:
+                    arr.append( HEMCO_data.variables[var][:] )
+                except:
+                    logging.warning("Could not find {var} in {fname}"\
+                                .format(var=var, fname=fname))
 
-        arr = []
-        for var in vars:
-            try:
-                arr.append( HEMCO_data.variables[var][:] )
-            except:
-                logging.warning("Could not find {var} in {fname}"\
-                            .format(var=var, fname=fname))
-
+        except:
+            logging.error("Could not open hemco data from {fn}"\
+                    .format(fn=fname))
 
     elif not filename==None:
 
