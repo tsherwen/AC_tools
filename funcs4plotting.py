@@ -130,6 +130,8 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         raise AssertionError, "Incorrect array shape for 4x5."
 
 
+    #### Add a invalid warning!
+
     # Mask for percent arrays containing invalid values ( to allow PDF save )
     if mask_invalids:
         arr = np.ma.masked_invalid( arr )
@@ -4148,32 +4150,33 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     # in both min and max have absolute values less than 0, then sig figs +1
     # Find the amount of significant figures needed to show a difference
     # between vmin and vmax.
-#    try:
-#        if ( ( abs( int( vmin)) == 0) and (abs( int( vmax)) == 0) ):
-#            sigfig_rounding_on_cb += 1
-#        logging.debug("Significant figures needed for plot is {sf}"\
-#                .format(sf=sigfig_rounding_on_cb))
-#        ### Delete this before commit!
-#        print ("Significant figures needed for plot is {sf}"\
-#                .format(sf=sigfig_rounding_on_cb))
-#    except np.ma.core.MaskError:
-#        print 'Gotcha: numpy.ma.core.MaskError'
-#        print lvls, vmin, vmax
-#
 
 
-    # bjn updated sigfig finder
-    # Use logs to find out sig figs needed
     if vmin==vmax:
         logging.error("There is no difference between vmin and vmax!")
         raise ValueError, "There is no differecne between the min and max of the data"
-    if vmin==0 or vmax==0:
-        sig_figs_needed = 3
-    else:
-        log_diff = abs( np.log10(abs(vmax)) - np.log10(abs(vmin)) )
-        sig_figs_needed = int(np.ceil(abs(np.log10( log_diff ))))
 
-    sigfig_rounding_on_cb_ticks = sig_figs_needed
+
+    try:
+        if ( ( abs( int( vmin)) == 0) and (abs( int( vmax)) == 0) ):
+            sigfig_rounding_on_cb += 1
+        logging.debug("Significant figures needed for plot is {sf}"\
+                .format(sf=sigfig_rounding_on_cb))
+    except np.ma.core.MaskError:
+        print 'Gotcha: numpy.ma.core.MaskError'
+        print lvls, vmin, vmax
+
+
+
+#    # bjn updated sigfig finder
+#    # Use logs to find out sig figs needed
+#    if vmin==0 or vmax==0:
+#        sig_figs_needed = 3
+#    else:
+#        log_diff = abs( np.log10(abs(vmax)) - np.log10(abs(vmin)) )
+#        sig_figs_needed = int(np.ceil(abs(np.log10( log_diff ))))
+#
+#    sigfig_rounding_on_cb_ticks = sig_figs_needed
 
 
 
