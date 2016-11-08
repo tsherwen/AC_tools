@@ -708,7 +708,7 @@ def process_data4specs( specs=None, just_bcase_std=True, preindustrial=False, \
 
 
 
-def get_HEMCO_output( wd=None, filename=None, vars=None, use_netCDF=True):
+def get_HEMCO_output( wd=None, files=None, vars=None, use_netCDF=True):
     """
     Data extractor for hemco files and folders. You can specify either a 
     working dir or a file to get the data from.
@@ -716,7 +716,7 @@ def get_HEMCO_output( wd=None, filename=None, vars=None, use_netCDF=True):
 
     INPUTS:
     wd=None,        Working directory
-    filename=None,      hemco_file
+    files=None,      hemco_file or file list
     vars=None,      List of variables
 
     Output:
@@ -729,13 +729,17 @@ def get_HEMCO_output( wd=None, filename=None, vars=None, use_netCDF=True):
     if isinstance(vars, str):
         vars = [vars]
 
+    # If a filename is supplied put it into a list.
+    if isinstance(files, str):
+        files = [files]
+
 
 
     if not wd==None:
         fname = os.path.join(wd, "hemco.nc")
         if not os.path.isfile(fname):
             from bpch2netCDF  import hemco_to_netCDF
-            hemco_to_netCDF( wd )
+            hemco_to_netCDF( wd, hemco_file_list = files )
             pass
 
             

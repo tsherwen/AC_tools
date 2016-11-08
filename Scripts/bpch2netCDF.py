@@ -76,7 +76,7 @@ def hemco_to_netCDF( folder, hemco_file_list=None, remake=False ):
     else:
       file_list = []
       for hemco_file in hemco_file_list:
-         full_path = os.path.join(folder, bpch_file)
+         full_path = os.path.join(folder, hemco_file)
          if not os.path.exists(full_path):
             logging.error(full_path + " could not be found")
             raise IOError("{path} could not be found".format(path=full_path))
