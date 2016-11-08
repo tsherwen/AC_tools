@@ -81,7 +81,8 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         extend='neither', degrade_resolution=False, discrete_cmap=False, \
         lon_0=None, lon_1=None, lat_0=None, lat_1=None, norm=None,\
         sigfig_rounding_on_cb=2, fixcb_buffered=None, ylabel=True, \
-        xlabel=True, wd=None, verbose=True, debug=False, **Kwargs):
+        xlabel=True, wd=None, verbose=True, debug=False, tight_layout=True,
+        **Kwargs):
     """ 
     Plots Global/regional 2D (lon, lat) slices. Takes a numpy array and the 
     resolution of the output. The plot extent is then set by this output.
@@ -290,8 +291,14 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         else:
             tick_locs = np.array( lvls ).copy()  
 
+        #make sure the ticks are numbers
+#        temp_tick_locs = []
+#        for i_tick in tick_locs:
+        tick_locs = [float(_tick) for _tick in tick_locs]
+
         # fix colorbar levels, then provide labels
-        cb.set_ticks( tick_locs )
+
+        cb.set_ticks( np.array(tick_locs) )
         # the format is not correctly being set... - do this manually instead
 #        if not isinstance( format, type(None) ):
 #            lvls = [ format % (i) for i in lvls ]
@@ -310,6 +317,10 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
 #            cb.update_ticks()
     # Add grid lines to the plot?
     plt.grid( grid )
+
+    if tight_layout==True:
+        plt.tight_layout()
+
     # Title?
     if not isinstance( title, type(None) ):
         plt.title(title, fontsize=f_size*1.5)
