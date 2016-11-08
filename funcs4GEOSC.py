@@ -708,7 +708,7 @@ def process_data4specs( specs=None, just_bcase_std=True, preindustrial=False, \
 
 
 
-def get_HEMCO_output( wd=None, files=None, vars=None, use_netCDF=True):
+def get_HEMCO_output( wd=None, files=None, filename=None, vars=None, use_netCDF=True):
     """
     Data extractor for hemco files and folders. You can specify either a 
     working dir or a file to get the data from.
@@ -731,6 +731,7 @@ def get_HEMCO_output( wd=None, files=None, vars=None, use_netCDF=True):
 
     # If a filename is supplied put it into a list.
     if isinstance(files, str):
+        filename=files
         files = [files]
 
 
