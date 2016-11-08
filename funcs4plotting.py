@@ -4118,6 +4118,12 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     ticks: list of strings to call the ticks in Sig figs.
     """
 
+    if not np.isfinite(vmin) or not np.isfinite(vmax):
+        cb_error ="Colourbar has a NaN in it. vmin={vmin}, vmax={vmax}"\
+                .format(vmin=vmin, vmax=vmax)
+        logging.error(cb_error)
+        raise ValueError, cb_error
+
     logging.debug('get_human_readable_gradiations called with the following:')
     logging.debug('vmin = {vmin}, vmax = {vmax}, lvls = {lvls}'\
             .format(vmin=vmin, vmax=vmax, lvls=lvls))
