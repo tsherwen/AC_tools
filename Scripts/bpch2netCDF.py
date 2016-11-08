@@ -43,7 +43,7 @@ def convert_to_netCDF(folder='none',filename='ctm.nc',\
 
     return
 
-def hemco_to_netCDF( folder, hemco_file_list, remake=False ):
+def hemco_to_netCDF( folder, hemco_file_list=None, remake=False ):
 
 
     from bpch2netCDF import get_folder
@@ -66,8 +66,19 @@ def hemco_to_netCDF( folder, hemco_file_list, remake=False ):
             if "restart" in filename:
                 hemco_files.remove(filename)
 
+    else:
+      file_list = []
+      for hemco_file in hemco_file_list:
+         full_path = os.path.join(folder, bpch_file)
+         if not os.path.exists(full_path):
+            logging.error(full_path + " could not be found")
+            raise IOError("{path} could not be found".format(path=full_path))
+         file_list.append(full_path)
+      hemco_files = file_list
+
     if len(hemco_files)==0:
-        logging.warning("No hemco diagnostic files found in wd")
+        logging.warning("No hemco diagnostic files found in {_dir}"\
+                .format(_dir=folder))
     else:
         logging.debug( "The following hemco files were found:")
         logging.debug( str(hemco_files) )
