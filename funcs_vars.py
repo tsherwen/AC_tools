@@ -38,13 +38,25 @@ from funcs4core import *
 # --------------
 # 1.01 - dictionary of variables used for planeflight_mod.F output
 # -------------
-def pf_var( input, ver='1.7', ntracers=85, JREAs=[] ):
+def pf_var( input, ver='1.7', ntracers=85 ):
     """ 
-    Dictionary store for planeflight names/tracers
+    Dictionary store for planeflight ("pf") names/tracers
 
-    NOTES:
-      - UPDATED NEEDED: MORE DETAILED DESCRIPT.   
-      - Why is this function not in funcs4pf?
+    Parameters
+    ----------
+    input (string): tracer name to convert from GEOS-Chem to pf nomenclature
+    ver (string): version number of halogen code (atop of GEOS-Chem)
+    ntracers (integer): number of tracers in a given version of GEOSchem
+    ntracers (integer): number of tracers in a given version of GEOSchem
+
+    Returns
+    -------
+    (string) of tracer/output variable in pf normenclature
+
+    Notes
+    -----
+     - UPDATED NEEDED: MORE DETAILED DESCRIPT.   
+     - Why is this function not in funcs4pf?
         
     """
     # planeflight variable lists
@@ -220,22 +232,25 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, ver='1.7', \
     Converts a GEOS-Chem (GC) species/tracer into a PF tracer (TRA_##).
             takes TRA_## & returns GC ID or other wayround
 
-    INPUTS:
-    wd = Specify the wd to get the results from a run. 
-    res = Specify the resolution if wd not given ( e.g. '4x5')
-    invert = ()
+    Parameters
+    ----------
+    wd (string): the wd to get the results from a run 
+    res (string): the resolution if wd not given ( e.g. '4x5')
+    invert (boolean): 
     debug = False (legacy debug, replaced by logging)
     V_9_2, V_9_2_C = redundent oiption swicthes for previous GEOS-Chem versions
     special_case = overide seclected species dictionary 
 
-    OUTPUT:
-    species name in GEOS-Chem tracer naming nomenclature 
-    (or entire directory if rtn_dict=True)
-    NOTES:
+    Returns
+    -------
+    (string) species name in GEOS-Chem tracer naming nomenclature (or entire directory 
+    if rtn_dict=True)
+
+    Notes
+    -----
      - Species have the same names in PF, but units are in molec/cm3, not 
        mixing ratio (v/v)
      -  Generic v10 and v11 need adding to this list
-
 
     """
     # select correct naming dictionary
@@ -296,12 +311,23 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, ver='1.7', \
 # -------------    
 def num2spec( num=69, rtn_dict=False, invert=False, ver = '1.7' ):
     """ 
-    Returns the tracer with a given tracer number in input.geos. Also works 
-    in reverse or returns whole dictionary to remove need to remake dictionary 
-    for each call.
-    NOTES:
+    Parameters
+    ----------
+    ver (str): Specify the wd to get the results from a run.
+    num (int): the resolution if wd not given (e.g. '4x5' )
+    rtn_dict (boolean): legacy debug option, replaced by python logging
+    invert (boolean): uses spec as the keys in the dictionary 
+
+    Returns
+    -------
+    (int) number of tracer in GEOS-Chem or dictionary of tracer names and indicies (dict)
+
+    Notes
+    -----
+     - Also works in reverse or returns whole dictionary to remove need to remake 
+    dictionary for each call.
      - Version number needed ( e.g. "Cl+Br+I" = 3.0, "1.7" = "Br+I",
-     - UPDATE NEEDED: basecase v9-2/v10 not currently included
+     - UPDATE NEEDED: basecase v9-2/v10 not currently included    
     """
     
     # --- Get dictionary of tracer numbers
@@ -335,9 +361,17 @@ def species_mass( spec ):
     """ 
     Function to return species mass ( in relative molecular mass ( RMM ) for given species
 
-    Note(s): 
-        (1) C3H5I == C2H5I (this is a vestigle typo, left in to allow for 
-        use of older model run data  )
+    Parameters
+    ----------
+    spec (str): species/tracer/variable name 
+
+    Returns
+    -------
+
+    Notes
+    -----
+     - C3H5I == C2H5I (this is a vestigle typo, left in to allow for 
+    use of older model run data  )
     """
     d = {
     'HIO3': 176.0, 'OCPO': 12.0, 'Br2': 160.0, 'OCPI': 12.0, 'O3': 48.0, \
@@ -384,18 +418,31 @@ def species_mass( spec ):
 def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         C=False, Br=False, Cl=False, S=False, ref_spec=None, debug=False ): 
     """ 
-    Returns unit equivalent of X ( e.g. I ) for a given species. 
-        
-    This can be automatically set by providing a reference species
-        
-    Notes:
+    Returns unit equivalent of X ( e.g. I ) for a given species. This can be automatically 
+    set by providing a reference species or by setting boolean input parametiers. 
+
+    Parameters
+    ----------
+    spec (str): species/tracer/variable name 
+    ref_spec (str): species which number of spec equiv. in is being sought
+    wd (str): Specify the wd to get the results from a run.
+    res (str): the resolution if wd not given (e.g. '4x5' )
+    debug (boolean): legacy debug option, replaced by python logging
+    IO, I, NO, OH, N, C, Br, Cl, S (boolean): reference species to use (defualt = I)
+    
+    Returns
+    -------
+    (float) number equivlent units of ref_spec in spec.
+
+    Notes
+    -----
      - Update Needed: re-write to take stioch species (e.g. OH, I instead of booleans )
      - asssume I == True as default
      - C3H5I == C2H5I 
         (this is a vestigle typo, left in to allow for use of older model runs )
      - aerosol cycling specs
     # 'LO3_36' : (2.0/3.0) , 'LO3_37' : (2.0/4.0),  # aersol loss rxns... 'LO3_37' isn't true loss, as I2O4 is regen. temp
-     - Aerosol loss rxns ( corrected stochio for Ox, adjsutment need for I )
+     - Aerosol loss rxns ( corrected stoichio for Ox, adjsutment need for I )
     """
     # If reference species provided automatically select family
     if not isinstance( ref_spec, type(None) ):
@@ -566,10 +613,26 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, \
     """ 
     Get appropirate unit for Tracer
 
-    NOTES:
+    Parameters
+    ----------
+    x (str): species/tracer/variable name 
+    adjustment (float): adjustment to give unit (+,- value etc )
+    scale (float): scaling factor for unit
+    adjust (boolean): set==True to adjust input.geos unit values to adjusted values
+    global_unit (boolean): set units to globally relevent ones
+    IUPAC_unit (boolean): set units to IUPAC uints
+    ClearFlo_unit (boolean): set units to those used in the ClearFlo campaign
+    debug (boolean): legacy debug option, replaced by python logging
+    
+    Returns
+    -------
+    units (str), adjustment to give units (float), and scaling for units (float)
+
+    Notes
+    -----
 	 - Is this redundent now with the species class?
-     -  "Appropirate" unit is taken from GEOS-Chem input.geos
-     -  Option to use IUPAC unit. ( set IUPAC_unit==True )
+     - "Appropirate" unit is taken from GEOS-Chem input.geos
+     - Option to use IUPAC unit. ( set IUPAC_unit==True )
     """
     tra_unit = {
     'OCPI': 'ppbv', 'OCPO': 'ppbv', 'PPN': 'ppbv', 'HIO3': 'pptv', \
@@ -758,6 +821,11 @@ def diagnosticname_gamap2iris( x  ):
 def get_unit_scaling( units, scaleby=1 ):
     """ 
     Get scaling for a given unit string 
+    Parameters
+    ----------
+    units (str): units  
+    scaleby (float): scaling factor for unit
+
     """
     logging.debug("Getting unit scaling for {units}".format(units=units))
     misc = 'K', 'm/s', 'unitless', 'kg' ,'m', 'm2','kg/m2/s', \
@@ -860,7 +928,16 @@ def get_ctm_nc_var( variable ):
     from *.dat file has failed. This function returns a category name + a 
     number value to refer to diagnostic ording in NetCDF.    
 
-    NOTES:
+    Parameters
+    ----------
+    variable (str): NetCDF variable within number suffix
+
+    Returns
+    -------
+    variable (str): NetCDF variable in GEOS-Chem output
+
+    Notes
+    -----
      - This is only called as a back up, and should only be used for test 
     ouput and not for production runs
 
@@ -879,9 +956,21 @@ def get_ctm_nc_var( variable ):
 # --------------
 # 5.02 - Store of  constants for use by funcs/progs
 # --------------
-def constants(input_x, rtn_dict=False, debug=False):
+def constants(input_x, rtn_dict=False ):
     """ 
     Dictionary storing commonly used constants 
+
+    Parameters
+    ----------
+    input_x (str): name of contant of interest
+    rtn_dict (boolean): retrun complete dictionary instead of single value
+
+    Returns
+    -------
+    value of constant (float) or dictionary on constants and values (dict)
+    
+    Notes
+    -----
     """
     con_dict ={
     'RMM_air' : ( .78*(2.*14.)+.22*(2.*16.) )  ,
@@ -902,13 +991,26 @@ def constants(input_x, rtn_dict=False, debug=False):
 # 6.01 - Extract reactions to form a dictionary of active reactions 
 # ------------- 
 def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
-            LaTeX=False, debug=False ):
+        LaTeX=False, debug=False ):
     """ 
     Build a dictionary reaction of reaction details from smv.log.
     This can be used as an external call to analyse other prod/loss 
     reactions through smvgear  
 
-    NOTES:
+    Parameters
+    ----------
+    wd (str): Specify the wd to get the results from a run.
+    debug (boolean): legacy debug option, replaced by python logging
+    PHOTOPROCESS (str): smvgear index of 1st photochemical reaction
+    LaTeX (boolean): convert species to LaTeX style formatting
+    ver (str): The GEOS-Chem halogen version that is being used
+
+    Returns
+    -------
+    (dict) dictionary of active reactions in smvgear output
+
+    Notes
+    -----
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
     will make it redundent and therefore this is not being maintained. 
     """
@@ -983,7 +1085,18 @@ def rxns_in_pl( wd, spec='LOX', debug=False ):
     """ 
     Extract reactions tracked by p/l family in smvgear
 
-    NOTES:
+    Parameters
+    ----------
+    wd (str): Specify the wd to get the results from a run.
+    debug (boolean): legacy debug option, replaced by python logging
+    spec (str): prod-loss variable name (from input.geos)
+
+    Returns
+    -------
+    (list) reaction in production/loss family
+
+    Notes
+    -----
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
     will make it redundent and therefore this is not being maintained. 
     """
@@ -1032,9 +1145,22 @@ def rxn4pl( pls, wd='example/example', rdict=None, reduce_size=True, \
     """ 
     Get information on reaction in smvgear from a provide reaction tag 
 
-    NOTES:
+    Parameters
+    ----------
+    wd (str): Specify the wd to get the results from a run.
+    ver (str): The GEOS-Chem halogen version that is being used
+    debug (boolean): legacy debug option, replaced by python logging
+    spec (str): prod-loss variable name (from input.geos)
+    rdict (dict): dictionary of prod-loss reaction (made by rxn_dict_from_smvlog)
+
+    Returns
+    -------
+    (list) reaction in production/loss family
+
+    Notes
+    -----
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
-    will make it redundent and therefore this is not being maintained. 
+    will make it redundent and therefore this is not being maintained.  
     """
 
     # ---  Get Dict of reaction detail
@@ -1070,7 +1196,28 @@ def rxn4pl( pls, wd='example/example', rdict=None, reduce_size=True, \
 # ------------- 
 def get_indicies_4_fam( tags, fam=False, IO_BrOx2=False, rtnspecs=False,
          NOy_as_HOx=True, Include_Chlorine=False, debug=False ):
-    """ Return indicies (in list form) for in a given family """
+    """ 
+    Return indicies (in list form) for in a given family 
+
+    Parameters
+    ----------
+    tags (list): list of tags(str) from globchem.dat
+    fam (boolean): also return which family the tag belongs to
+    IO_BrOx2 (boolean): include an addtion tracer for XO+XO reactions?
+    Include_Chlorine (boolean): include an extra tracer for ClO+XO
+    NOy_as_HOx (Boolean): include NOy losses in HOx family.
+    debug (boolean): legacy debug option, replaced by python logging
+    rtnspecs(boolean): return tags as part of function output
+
+    Returns
+    -------
+    (list) or indices for globche.dat/prod and loss tags    
+
+    Notes
+    -----
+     - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
+    will make it redundent and therefore this is not being maintained.  
+    """
     # assign family
 #    famsn = [ 'Photolysis','HOx','NOy' ,'Bromine', 'Iodine' ]
     if Include_Chlorine:
@@ -1084,7 +1231,7 @@ def get_indicies_4_fam( tags, fam=False, IO_BrOx2=False, rtnspecs=False,
     if NOy_as_HOx:
         fams = [x if (x!='NOy') else 'HOx' for x in fams]
 
-    # Create dictionary from tags and fam assignment
+    # Create dictionary from tags and fam assignment    
     fd = dict(zip(tags, fams) )
 
 
@@ -1131,6 +1278,21 @@ def get_indicies_4_fam( tags, fam=False, IO_BrOx2=False, rtnspecs=False,
 def get_p_l_tags( rxns, debug=False):
     """ 
     Get p/l tags for a given smvgear reaction 
+
+    Parameters
+    ----------
+    rxns (list): list of rxn numbers(int) from smvgear
+    debug (boolean): legacy debug option, replaced by python logging
+
+    Returns
+    -------
+    (list) of tags for globchem.dat/prod and loss tags    
+
+    Notes
+    -----
+     - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
+    will make it redundent and therefore this is not being maintained.  
+
     """
 
     # (PD??, RD??, LO3_??, PO3_??, LR??)
@@ -1151,12 +1313,23 @@ def get_p_l_tags( rxns, debug=False):
 # -------------
 # 6.06 - extract reactions tracked by prod loss diag in input.geos
 # ------------- 
-def p_l_species_input_geos( wd, ver='1.7', 
-            rm_multiple_tagged_rxs=False, debug=False ):
+def p_l_species_input_geos( wd, ver='1.7', rm_multiple_tagged_rxs=False, debug=False ):
     """ 
     Extract prod/loss species (input.geos) and reaction tags (globchem.dat) 
 
-    NOTES:
+    Parameters
+    ----------
+    wd (str): Specify the wd to get the results from a run.
+    debug (boolean): legacy debug option, replaced by python logging
+    ver (str): The GEOS-Chem halogen version that is being used
+    rm_multiple_tagged_rxs(boolean): only return one tag per rxn.
+
+    Returns
+    -------
+    (list) globchem.dat tags and prod/loss ("PD") vars from input.geos
+
+    Notes
+    -----
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
     will make it redundent and therefore this is not being maintained. 
     """
@@ -1220,7 +1393,8 @@ def tags_from_smvlog( wd ): #, spec='LOX' ):
     """  
     Get all active p/l tags in smvgear ( from smv2.log )
 
-    NOTES:
+    Notes
+    -----
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
     will make it redundent and therefore this is not being maintained.          
     """
@@ -1254,7 +1428,8 @@ def PDs_from_smvlog( wd, spec='LOX' ):
     """  
     Get all active PDs tags in smvgear ( from smv2.log ) 
 
-    NOTES:
+    Notes
+    -----
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
     will make it redundent and therefore this is not being maintained.
     """
@@ -1291,7 +1466,8 @@ def rxns4tag( tag, rdict=None, ver='1.7', wd=None ):
     """ 
     Get a list of all reactions with a given p/l tag 
 
-    NOTES:
+    Notes
+    -----
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
     will make it redundent and therefore this is not being maintained.
     """
@@ -1330,14 +1506,14 @@ def rxns4tag( tag, rdict=None, ver='1.7', wd=None ):
 # -------------
 # 6.10 - get details for a given tag
 # ------------- 
-def get_tag_details( wd, tag=None, PDs=None,  rdict=None, \
-            PHOTOPROCESS=None, ver='1.7', LaTeX=False, print_details=False, \
-            debug=False ):
+def get_tag_details( wd, tag=None, PDs=None,  rdict=None, PHOTOPROCESS=None, ver='1.7',\
+        LaTeX=False, print_details=False, debug=False ):
     """ 
     Retriveve prod/loss tag details from smv.log
         ( rxn number + reaction description)
 
-    NOTES:
+    Notes
+    -----
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
     will make it redundent and therefore this is not being maintained.
     """
@@ -1384,12 +1560,13 @@ def get_tag_details( wd, tag=None, PDs=None,  rdict=None, \
 # -------------
 # 6.11 - Takes a reaction number add gives the Ox Coe
 # ------------- 
-def get_rxn_Coe(wd, num, tag, nums=None, rxns=None, tags=None, \
-            Coe=None, spec='LOX', ver='1.6', debug=False):
+def get_rxn_Coe(wd, num, tag, nums=None, rxns=None, tags=None, Coe=None, spec='LOX', \
+        ver='1.6', debug=False):
     """ 
     Retrieve given reaction coefficient for smvgear (from smv2.log)
 
-    NOTES:
+    Notes
+    -----
      - This is no longer the case. However, previously if using dev. 
     Iy scheme, then the listed values from fuction Ox_in_species() will be used. 
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
@@ -1500,13 +1677,13 @@ def rm_ClBrI_het_loss( spec_l=None, r_=None, fam=None, debug=False):
 # --------------
 # 6.14 - Get OH reactants from reaction number dictionary
 # -------------
-def get_pldict_reactants( pl_dict=None, only_rtn_tracers=True, \
-            rm_OH=True, rm_Cl=True, tags=None, \
-            debug=False ):
+def get_pldict_reactants( pl_dict=None, only_rtn_tracers=True, rm_OH=True, rm_Cl=True,\
+        tags=None, debug=False ):
     """ 
     Get reactant from smv2.log dictionary 
 
-    NOTE: 
+    Notes
+    -----
      - some reactants are not tracers ( see list: non_TRAs )  
     ( to remove these set only_rtn_tracers=True )
      - to remove OH from reactant list set rm_OH=True
@@ -1552,8 +1729,8 @@ def get_pldict_reactants( pl_dict=None, only_rtn_tracers=True, \
 # 6.14 - 
 # -------------
 def get_adjustment4tags( tags, PDs=None, pl_dict=None, ver='1.6', \
-            verbose=False, wd=None, Include_Chlorine=False, IO_BrOx2=False, \
-            debug=False):
+        verbose=False, wd=None, Include_Chlorine=False, IO_BrOx2=False, \
+        debug=False):
     """  
     Get coefficent for rxn tag from smv2.log using the provided family
     and adjusts the reaction tag to unity.
@@ -1564,7 +1741,8 @@ def get_adjustment4tags( tags, PDs=None, pl_dict=None, ver='1.6', \
     This function is a cousin to "get_rxn_Coe", but takes rxn tags as arguements 
     and adjusts a tag to unity. 
 
-    NOTE(s):
+    Notes
+    -----
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
     will make it redundent and therefore this is not being maintained.    """
         
@@ -1628,9 +1806,10 @@ def adjust2half4crossover( tag='LO3_24', ):
     """ 
     Consider half the value for halogen cross-over reaction tags. 
         This allows for the tags to be included once per family 
-    NOTE(s):
-     - This function is redundent (and no longer in use?)
 
+    Notes
+    -----
+     - This function is redundent (and no longer in use?)
     """
     
     d = {
@@ -1658,11 +1837,12 @@ def adjust2half4crossover( tag='LO3_24', ):
 # --------------
 # 2.01 - Convert Production/Loss RD IDs for O3 to PD## for input.geos/tracer.dat linked files
 # -------------
-def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',  \
-            verbose=False, debug=False): 
+def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5', verbose=False, debug=False): 
     """ 
     Converts globchem.dat tracer to PD/LD from prod/loss diag in input.geos
-    NOTES:
+
+    Notes
+    -----
      - 'fp' option is now obselete. 
      - UPDATED NEEDED: MORE DETAILED DESCRIPT.    
     """
@@ -1701,13 +1881,14 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5',  \
 # -------------
 # 2.02 - Uses functions to build a dictionary for a given family of loss
 # ------------- 
-def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', \
-        rm_redundent_ClBrI_tags=False, debug=False):
+def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', rm_redundent_ClBrI_tags=False,\
+        debug=False):
     """ 
     Get reaction IDs for each rxn. in spec (p/l, e.g. LOX). This is the driver for 
     the prod/loss programmes 
 
-    NOTES:
+    Notes
+    -----
      - UPDATED NEEDED: MORE DETAILED DESCRIPT.
     """
     if debug:
@@ -1808,12 +1989,12 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', \
 # -------------
 # 2.03 - Get prod loss reactions for a given family.
 # ------------- 
-def prod_loss_4_spec( wd, fam, all_clean=True, \
-        ver='1.7', debug=False ):
+def prod_loss_4_spec( wd, fam, all_clean=True, ver='1.7', debug=False ):
     """ 
     Retrieve reaction numbers for family of tags
     
-    NOTES
+    Notes
+    -----
      - coefficecents ("Coe") returned are for the family (e.g LOX)
     within a reaciton. ( aka not for the tag )
      -  UPDATED NEEDED: MORE DETAILED DESCRIPT.
@@ -1942,6 +2123,9 @@ def prod_loss_4_spec( wd, fam, all_clean=True, \
 def latex_spec_name(input_x, debug=False):
     """ 
     Formatted ( Latex ) strings for species and analysis  
+
+    Notes
+    -----
     REDUNDENT: now using class structure ( see species instance ) 
     """
     spec_dict = {
@@ -2047,7 +2231,8 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     Data arranged: LON, LAT, ALT 
     ( LON in deg E, LAT in deg N, ALT in metres a.s.l. )
 
-    Notes:
+    Notes
+    -----
      - double up? ( with 5.02 ?? )
      - Now use Class of GEO_site in preference to this func?
      - UPDATE NEEDED: move this to func_vars4obs    
@@ -2113,9 +2298,12 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
 # 7.06 - Get Locations of observations (lats, lons, alts ) for given sites
 # --------------
 def get_obs_loc(loc, debug=False):
-    """ Dictionary to store groups of locations for automated analysis 
-    NOTES:
-        - UPDATE NEEDED: move this to func_vars4obs    
+    """ 
+    Dictionary to store groups of locations for automated analysis 
+
+    Notes
+    -----
+     - UPDATE NEEDED: move this to func_vars4obs    
     """
     d = {  
     'Denmark' :[ 
@@ -2135,7 +2323,7 @@ def get_obs_loc(loc, debug=False):
     'Penlee'    : [[50.3214], [-4.1858]],\
     'Penlee_M2' :[[49.7795272], [-2.0229414]], \
     'Penlee_M3' :[[49.8370764,], [-5.3652425]], \
-    'Penlee_M4' :[[50.25], [-4.15]], \
+    'Penlee_M4' :[[5], [-4.15]], \
     'Penlee_M5' :[[50.25], [-0.85]], \
     'Penlee_M6' :[[50.25], [-7.05]], \
     'Mace_head_M3' :[[53.209003], [ -10.846408 ]], \
@@ -2154,7 +2342,8 @@ def sonde_STNs():
     """ 
     Dictionary of WOUDC sonde location variables 
 
-    NOTES:
+    Notes
+    -----
      - redundent. Now using NetCDF meta data online
      - UPDATE NEEDED: move this to func_vars4obs    
     """
@@ -2282,11 +2471,12 @@ def sonde_STNs():
 # ----
 #  7.08 - returns  (lat, lon, alt (press), timezone (UTC) ) for a given site
 # ----
-def gaw_2_loc(site,  f =  'GLOBAL_SURFACE_O3_2006_2012.nc' ):
+def gaw_2_loc( site, f='GLOBAL_SURFACE_O3_2006_2012.nc' ):
     """ 
     Extract GAW site locations for a given site. 
     
-    NOTE:
+    Notes
+    -----
      - Also stores non GAW sites ( obs)
      - UPDATE NEEDED: move this to func_vars4obs    
      - Another file is availible with just GAW sites:
@@ -2326,7 +2516,8 @@ def get_NO2_phot_REA_XXX( ver='1.6', debug=False ):
     """ 
     Returns the NO2 photolysis reaction number depending on iGC version
 
-	NOTES:
+    Notes
+    -----:
 	 - This is a halogen run specific function
     """
 
@@ -2369,7 +2560,16 @@ def get_tag_fam( tag ):
     Return family of a given reaction tag ( e.g. Ox loss family ). This is 
     just a manually constructed dictionary/assignment list
 
-    NOTES:
+    Parameters
+    ----------
+    tag (str): species/tracer/variable name 
+
+    Returns
+    -------
+    (str) family of tag
+
+    Notes
+    -----
      - Ox loss familes
      - addition for GC paranox Kludge 
     ( in v9-2 (patched), but removed in v10? )
@@ -2439,7 +2639,16 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     General Dictionary to manage common variables used by GC 
     analysis programmes.  
 
-    Note(s): 
+    Parameters
+    ----------
+    input_x (str): species/tracer/variable/etc name 
+
+    Returns
+    -------
+    values (e.g. list) from dictionary store
+
+    Notes
+    -----
      - A lot of this dictionary is vestigial. consider removing entirely? 
         or moving to redundent section
      - Variables includes:
@@ -2795,10 +3004,14 @@ def p_l_unity(rxn, debug=False):
     Converts all coefficents for OX tracers to unity. 
     (just time Coe by output )
 
-    This allows for automatic adjustment of smv2.log values.
+    Parameters
+    ----------
+    rxn (str): species/tracer/variable/rxn tag name 
 
-    NOTE:
-        - All values ion the dictionary are present in Ox_in_species
+    Notes
+    -----  
+     - This allows for automatic adjustment of smv2.log values.
+     - All values ion the dictionary are present in Ox_in_species
     """
     p_l_dict = {
 #    'LR24': 1.0, 'LR25': 1.0, 'LR26': 1.0, 'LR27': 1.0, 'LR20': 1.0, \
@@ -2828,7 +3041,18 @@ def Ox_in_species(in_=None, rxns=False, keys=False):
     """ 
     Returns units of OX in species/reaction
 
-    NOTE:
+    Parameters
+    ----------
+    in_ (str): species/tracer/variable name 
+    rxns(boolean): use reaction dictionary
+    keys(boolean): return keys rather than values
+
+    Returns
+    -------
+    ref_spec (str) reference species for a given family
+
+    Notes
+    -----  
      - This is an old approach. Update approach takes online coefficents from smv2.log 
      - This approach is still valid for older tag with coefficens.     
     ( However, all future tags should contain no coefficient making this function redudent )
@@ -2882,7 +3106,17 @@ def Ox_in_species(in_=None, rxns=False, keys=False):
 def get_ref_spec( spec='LIOx' ):
     """ 
     Store of reference species for families. 
-    
+
+    Parameters
+    ----------
+    spec (str): species/tracer/variable name 
+
+    Returns
+    -------
+    ref_spec (str) reference species for a given family
+
+    Notes
+    -----    
     This is for use in conbination  with functions that calculate relative values 
     (e.g. in units of Ox, I, etc)
     """

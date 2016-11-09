@@ -70,19 +70,22 @@ from Scripts.bpch2netCDF import convert_to_netCDF
 # ----
 # 1.04 -Get surface area  ( m^2 )
 # ----
-def get_surface_area(res=None,time=None, debug=False, wd=None, updated=False):
+def get_surface_area(res=None, wd=None, debug=False):
     """ 
     Get_surface_area of grid boxes for a given resolution
 
-    INPUTS:
-    wd=None (Specify the wd to get the results from a run.)
-    res='4x5' (Specify the resolution if wd not given.)
-    time=None (Not used atall = Probably legacy? bjn)
-    debug=False (legacy debug, replaced by logging)
-    OUTPUTS:
-    s_area (2d numpy array of surface area per gridbox)    
+    Parameters
+    ----------
+    wd (str): Specify the wd to get the results from a run.
+    res (str): the resolution if wd not given (e.g. '4x5' )
+    debug (boolean): legacy debug option, replaced by python logging
 
-    NOTE(s):
+    Returns
+    -------
+    (array) 2D surface area of grid boxes for a given resolution
+
+    Notes
+    -----
 	 - this function accesses previsouly run GEOS-Chem 
         1day files with just DXYP / DXYP diagnostic ouptuted
      - back compatibility with PyGChem 0.2.0 is retained  
@@ -1135,7 +1138,7 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
 
         Credit: Bob Yantosca
         Original docs from ( grid_mod ):
-            !======================================================================
+    !======================================================================
     ! Compute grid box surface areas (algorithm from old "input.f")
     !
     ! The surface area of a grid box is derived as follows:
@@ -1254,7 +1257,14 @@ def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
     """  
     Return array of family in mols of X ( e.g. Cl, Br, I, N ) equiv. in mol/mol.  
 
-	NOTES:
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    Notes
+    -----
 	 - Is this function just a double up of fam_data_extractor? 
 	 (which is more up to date)
     """
