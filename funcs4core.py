@@ -58,10 +58,10 @@ def get_dir( input, loc='earth0' ):
             d = { 
         'rwd'  : home +'data/all_model_simulations/iodine_runs/',
         'dwd'  : home +'data/',
-        'fwd'  : home +'labbook/PhD_progs/d_fast-J_JX/data/',
+        'fwd'  : home +'labbook/Python_progs/d_fast-J_JX/data/',
         'lwd'  : home +'labbook/',
         'npwd' : home +'data/np_arrs/',
-        'tpwd' : home +'labbook/PhD_progs/' ,
+        'tpwd' : home +'labbook/Python_progs/' ,
         'ppwd' : home +'labbook/plots_images/'  
             }
             d = d[input]
@@ -112,17 +112,21 @@ def get_gc_lon(lon, res='4x5', wd=None, debug=False):
 # --------                                                                                          
 def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
         just2D=False, debug=False):
-    """ Get dimension of GEOS-Chem output for given resolution """
+    """ 
+    Get dimension of GEOS-Chem output for given resolution 
+    """
 
     # Dictionary of max dimensions of standard GEOS-Chem output
     dims = {
-    '4x5' :  (72,46,47), 
-    '2x2.5':(144,91,47) , 
-    '1x1' :  (360,181,47), 
-    '0.5x0.5' :  (720,361,47), 
-    '0.5x0.666':(121,81,47) ,
-    '0.25x0.3125':(177, 115, 47),
-    '0.5x0.625':(145,133,47),
+    '4x5'            : (72,46,47), 
+    '2x2.5'          : (144,91,47), 
+    '1x1'            : (360,181,47), 
+    '0.5x0.5'        : (720,361,47), 
+    '0.5x0.666'      : (121,81,47),
+    '0.25x0.3125'    : (177, 115, 47), # EU - update to be '0.25x0.3125_EU' for consistancy?
+    '0.25x0.3125_CH' : (225, 161, 47), 
+    '0.25x0.3125_WA' : (145, 89, 47), 
+    '0.5x0.625'      : (145,133,47),
     }
     if debug:
         print dims
@@ -165,28 +169,42 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
 def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
             dtype=None, wd=None, filename='ctm.nc',\
             lat_bounds=u'latitude_bnds', lon_bounds=u'longitude_bnds',\
-            lon_var=u'longitude', lat_var=u'latitude', debug=False ):
-    """ Return lon, lat, and alt for a given resolution. 
-        This function uses an updated version of gchem's variable 
-        dictionaries 
-    
-    NOTE:
-        - This function replaces most use dictionaries from "gchemgrid"
-        - The update to using ctm.nc files has cause an bug linked to the lat 
-        and lon variabe retrival. Just update to passing a wd with output at the 
-        correct resolution to fix this.
+            lon_var=u'longitude', lat_var=u'latitude', 
+#            lon_var=u'lon', lat_var=u'lat', 
+            debug=False ):
+    """ 
+    Get lon, lat, and alt for a given model resolution. 
+
+    Parameters
+    ----------
+    wd (str): Specify the wd to get the results from a run.
+    res (str): the resolution if wd not given (e.g. '4x5' )
+    debug (boolean): legacy debug option, replaced by python logging
+    lon_var, lat_var (str): variables names for lon and lat in the NetCDF 
+    lon_bounds, lat_bounds (str): variables names for lon and lat bounds in the NetCDF 
+    filename (str): name of NetCDF to use
+    dtype (type): type for which data is return as, e.g. np.float64
+    nest (str): manual override for retruned variables - vestigle?
+    hPa (boolean): return altitudes in units of hPa, instead of km
+
+    Returns
+    -------
+    (list) variables for lon, lat, alt as arrays
+
+    Notes
+    -----
+     - This function uses an updated version of gchem's variable dictionaries 
+     - This function replaces most use dictionaries from "gchemgrid"
+     - The update to using ctm.nc files has cause an bug linked to the lat 
+     and lon variabe retrival. Just update to passing a wd with output at the 
+     correct resolution to fix this.
     """ 
     logging.info("Calling get_latlonalt4res")
-#    logging.debug( locals() )
-
 
     if res==None:
         logging.warning("No resolution specified. Assuming 4x5!")
         res='4x5'
 
-
-# Kludge. Update function to pass "wd" 
-# if model output directory ("wd") not provided use default directory
     if wd == None:
         AC_tools_dir = os.path.dirname(__file__)
         dwd = os.path.join(AC_tools_dir, 'data/LM')
@@ -198,6 +216,8 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
         '0.5x0.5' :'work/data/GEOS/HEMCO/EMEP/v2015-03/',\
         '0.5x0.666' :'LANDMAP_LWI_ctm_05x0666',  \
         '0.25x0.3125' :'LANDMAP_LWI_ctm_025x03125',  \
+        '0.25x0.3125_CH' :'LANDMAP_LWI_ctm_025x03125_CH',  \
+        '0.25x0.3125_WA' :'LANDMAP_LWI_ctm_025x03125_WA',  \
         # Need to add a 0.5x0.625!
         }
         try:
@@ -205,7 +225,6 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
         except KeyError:
             logging.error("{res} not a recognised resolution!".format(res=res))
             raise KeyError
-
         wd = os.path.join(dwd, dir)
     
         if (res=='1x1') or (res=='0.5x0.5'):
@@ -214,16 +233,11 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
             lon_var = 'lon'
             wd = '/work/data/GEOS/HEMCO/EMEP/v2015-03/'
 
-
     # Ge the data file name
     data_fname = os.path.join(wd, filename)
     if not os.path.exists(data_fname):
         logging.error("Could not find {fn}".format(fn=data_fname))
         raise IOError, "Could not find {fn}".format(fn=data_fname)
-
-#    if debug:
-#        print res, centre, hPa, nest, type( res)
-#        print data_fname, res
 
     if centre:
         # Extract lat and lon from model output data file
@@ -251,7 +265,16 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
             logging.error(error)
             raise IOError, error
 
-    # Kludge - mannually give values for 1.0x1.0
+    # Kludge - manually give values for 0.25x0.3125_CH
+#    if res=='0.25x0.3125_CH':
+#        if centre:
+#        lat = np.arange(15., 55.+.25, .25)
+#        lon = np.arange(70, 140.+.3125, .3125)   
+#        else:
+#            lat = np.array( [-90]+list(np.arange(-89-0.5, 90+.5, 1))+[90] )
+#            lon = np.arange(-180-0.5, 180+.5, 1)
+
+    # Kludge - manually give values for 1.0x1.0
     if res=='1x1':
         if centre:
             lat = np.arange(-90, 90+1, 1)
@@ -260,7 +283,7 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
             lat = np.array( [-90]+list(np.arange(-89-0.5, 90+.5, 1))+[90] )
             lon = np.arange(-180-0.5, 180+.5, 1)
 
-    # Kludge - mannually give values for 0.5x0.5
+    # Kludge - manually give values for 0.5x0.5
     if res=='0.5x0.5':
         if centre:
             lat = np.array( [-90]+list(np.arange(-89, 90, .5))+[90] )

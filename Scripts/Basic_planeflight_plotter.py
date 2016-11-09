@@ -40,9 +40,9 @@ locations=['WEY']
 print locations
 
 # Scaling (e.g. pptv or ppbv )
-#units, scale = 'p.p.t.v.', 1E12
+units, scale = 'p.p.t.v.', 1E12
 #units, scale = 'p.p.b.v.', 1E9
-units, scale = 's$^{-1}$', 1
+#units, scale = 's$^{-1}$', 1
 
 # Model version
 ver='3.0'
@@ -60,10 +60,10 @@ fontsize = 10
 # -------------
 
 # Get species name in TRA_?? (planefligth output) form
-if 'TRA' in species_to_plot:
-    species_to_plot=[ AC.what_species_am_i( species_to_plot, ver=ver, invert=True ) ]
-else:
-    species_to_plot=[species_to_plot]
+#if 'TRA' in species_to_plot:
+species_to_plot=[ AC.what_species_am_i( species_to_plot, ver=ver, invert=True ) ]
+#else:
+#    species_to_plot=[species_to_plot]
 
 # setup figure
 fig = plt.figure(figsize=(15,6), dpi=80, facecolor='w', edgecolor='k')
