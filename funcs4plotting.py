@@ -81,7 +81,7 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
         extend='neither', degrade_resolution=False, discrete_cmap=False, \
         lon_0=None, lon_1=None, lat_0=None, lat_1=None, norm=None,\
         sigfig_rounding_on_cb=2, fixcb_buffered=None, ylabel=True, \
-        xlabel=True, wd=None, verbose=True, debug=False, tight_layout=True,
+        xlabel=True, wd=None, verbose=True, debug=False, 
         **Kwargs):
     """ 
     Plots Global/regional 2D (lon, lat) slices. Takes a numpy array and the 
@@ -320,11 +320,18 @@ def map_plot( arr, return_m=False, grid=False, gc_grid=False, centre=False,\
     # Add grid lines to the plot?
     plt.grid( grid )
 
-    if tight_layout==True:
-        plt.tight_layout()
-
     # Title?
+    max_title_len=30
     if not isinstance( title, type(None) ):
+        # Check if the title is too long and if not split it over lines
+        if len(title)>max_title_len:
+            print "tile takes up multiple lines. Splitting over lines now."
+            import textwrap
+            title="\n".join(textwrap.wrap(title,max_title_len))
+            print title
+            # Adjust the top of the plot by 0.05 for every line the title takes
+#            plt.subplots_adjust(top=1-0.05*(len(title)%max_title_len))
+
         plt.title(title, fontsize=f_size*1.5)
     # Setup list of return variables
     return_l = [ plt ] 
@@ -4416,7 +4423,7 @@ def show_plot():
     plt.show()
     return
 
-def save_plot(title="myplot", location=os.getcwd(),  extensions=['png']):
+def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=True):
     """
     Save a plot to disk.
     Inputs:
@@ -4426,6 +4433,9 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png']):
     Outputs:
     None
     """
+
+#    if tight:
+#        plt.tight_layout()
 
     if not os.path.isdir(location):
         os.mkdir(location)
