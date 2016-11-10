@@ -686,8 +686,12 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, \
     # extra tag "species" for  easy of processing 
     'PD421' : 'molec cm$^{-3}$ s$^{-1}$'
     } 
-    units = tra_unit[x]
-
+    try:
+        units = tra_unit[x]
+    except KeyError:
+        logging.info('provided species/tracer ({}) not in unit dictionary'.format(x))
+        sys.exit()
+    
     # Adjust to appropriate scale for pf analysis 
     if adjust:
         spec_2_pptv = GC_var('spec_2_pptv')

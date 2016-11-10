@@ -123,9 +123,9 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
     '1x1'            : (360,181,47), 
     '0.5x0.5'        : (720,361,47), 
     '0.5x0.666'      : (121,81,47),
-    '0.25x0.3125'    : (177, 115, 47), # EU - update to be '0.25x0.3125_EU' for consistancy?
-    '0.25x0.3125_CH' : (225, 161, 47), 
-    '0.25x0.3125_WA' : (145, 89, 47), 
+    '0.25x0.3125'    : (177,115,47), # tms - update to be '0.25x0.3125_EU' for consistancy?
+    '0.25x0.3125_CH' : (225,161,47), 
+    '0.25x0.3125_WA' : (145,89,47), 
     '0.5x0.625'      : (145,133,47),
     }
     if debug:

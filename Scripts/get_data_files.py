@@ -26,6 +26,8 @@ file_list = [
 "tracerinfo.dat",
 "LM/LANDMAP_LWI_ctm/ctm.nc",
 "LM/LANDMAP_LWI_ctm_025x03125/ctm.nc",
+"LM/LANDMAP_LWI_ctm_025x03125_CH/ctm.nc",
+"LM/LANDMAP_LWI_ctm_025x03125_WA/ctm.nc",
 "LM/LANDMAP_LWI_ctm_05x0666/ctm.nc",
 "LM/LANDMAP_LWI_ctm_2x25/ctm.nc",
 ]

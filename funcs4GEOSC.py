@@ -792,34 +792,44 @@ def get_HEMCO_output( wd=None, files=None, filename=None, vars=None, use_netCDF=
 # ----
 # 1.22 - Get var data for model run
 # ---
-def get_GC_output( wd, vars=None, species=None, category=None, \
-            r_cubes=False, r_res=False, restore_zero_scaling=True, \
-            r_list=False, trop_limit=False, dtype=np.float32, use_NetCDF=True, \
-            verbose=False, debug=False):
+def get_GC_output( wd, vars=None, species=None, category=None, r_cubes=False, \
+        r_res=False, restore_zero_scaling=True, r_list=False, trop_limit=False, \
+        dtype=np.float32, use_NetCDF=True, verbose=False, debug=False):
     """ 
     Data extractor for GEOS-Chem using PyGChem (>= 0.3.0 ). ctm.bpch files are extracted 
     for a given directory, with only the specific category and species returned. This can 
     either be as a Iris Cube (retaining metadata) or as a numpy array.
         
-    ARGUMENTS:
-     - vars(list): variables to extract (in NetCDF form, e.g. IJ_AVG_S__CO)
+    Parameters
+    ----------
+    vars (list): variables to extract (in NetCDF form, e.g. ['IJ_AVG_S__CO'])
      ( alterately provide a single species and category through named input variables )
-     - r_cubes (Boolean): To return Iris Cubes, set to True
-     - r_res (Boolean): To return resolution of model NetCDF set to True
-     - restore_zero_scaling(Boolean): restores scale to ctm.bpch standard (e.g. v/v not pptv)
-     - trop_limit(boolean): limit to "chemical troposphere" (level 38 of model)
-     - dtype: type of variable to be returned 
-     - use_NetCDF(boolean)
-     
-     NOTES:
-      - Credit for PyGChem: Ben Bovy - https://github.com/benbovy/PyGChem
-      - Examples and use of pygchem is discussed on Ben Bovy's GITHib 
+    species (str): species/tracer/variable (gamap) name 
+    category (str): diagnostic category (gamap) name 
+    r_cubes (boolean): To return Iris Cubes, set to True
+    r_res (boolean): To return resolution of model NetCDF set to True
+    r_list (boolean): To return data as list of arrays rather than a single array
+    restore_zero_scaling(Boolean): restores scale to ctm.bpch standard (e.g. v/v not pptv)
+    trop_limit(boolean): limit to "chemical troposphere" (level 38 of model)
+    dtype (type): type of variable to be returned 
+    use_NetCDF(boolean): set==True to use NetCDF rather than iris cube of output
+    verbose (boolean): legacy debug option, replaced by python logging
+    debug (boolean): legacy debug option, replaced by python logging
+
+    Returns
+    -------
+    (np.array) of requested output or object of data (iris cube)
+
+    Notes
+    -----
+     - Credit for PyGChem: Ben Bovy - https://github.com/benbovy/PyGChem
+     - Examples and use of pygchem is discussed on Ben Bovy's GITHib 
      ( https://github.com/benbovy/PyGChem_examples/blob/master/Tutorials/Datasets.ipynb )
-      - This replaces the now defunct AC_tools functions: open_ctm_bpch and get_gc_data_np
-      - For simplicity use variable names (species, category) as used in 
+     - This replaces the now defunct AC_tools functions: open_ctm_bpch and get_gc_data_np
+     - For simplicity use variable names (species, category) as used in 
       the iris cube ( e.g. IJ_AVG_S__CO). if variable is unknown, just 
       print full dataset extracted to screen to see active diagnostics. 
-      - Species and category variables are maintained ( and translated ) to allow for 
+     - Species and category variables are maintained ( and translated ) to allow for 
       backwards compatibility with functions written for pygchem version 0.2.0
     """
 
@@ -830,16 +840,13 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
     logging.info("Called get_GC_output")
     logging.debug("get_GC_output inputs:")
     logging.debug(locals())
-    
-    if debug:
-        if not isinstance( vars, type(None) ):
-            print 'Opening >{}<, for var: >{}<'.format( wd, ','.join(vars) ) + \
-                '(additional) gamap variables provided: >{}< + >{}<'.format( \
-                category, species )
+        
+    if not isinstance( vars, type(None) ):
+        logging.info( 'Opening >{}<, for var: >{}<'.format(wd,','.join(vars)) + \
+            '(extra) gamap variables provided: >{}< + >{}<'.format(category,species) )
                 
-    # Temporary fix for back compatibility: 
-    # Convert gamap names ( species  + category ) to iris cube names
-    # Just for use whilst updating functions written to use pygchem 0.2.0
+    # Also option to use gamap names ( species  + category ) to and func converts these 
+    # to iris cube names
     if any( [ (not isinstance(i, type(None) )) for i in species, category ] ):
         # convert to Iris Cube name
         if (category == None) and ( vars ==  None ):
@@ -873,24 +880,22 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
 
         logging.debug("Opening netCDF file {fname}".format(fname=fname))
         # "open" NetCDF + extract requested variables as numpy arr.
-
         netCDF_data = Dataset( fname, 'r' )
         arr = []
         for var in vars:
             try:
-                logging.debug("opening variabel {var}".format(var=var))
-                var_data =  netCDF_data.variables[var] 
+                logging.debug("opening variable {var}".format(var=var))
+                var_data = netCDF_data.variables[var] 
             except:
                 logging.warning("Variable {var} not found in netCDF"\
                     .format(var=var))
                 logging.warning("Will attempt renaming")
                 abrv_var = get_ctm_nc_var( var )
                 try:
-                    var_data =  netCDF_data.varialbes[var] 
-                except:
+                    var_data = netCDF_data.varialbes[var] 
+                except KeyError:
                     logging.error("Renamed variable {var} not found in netCDF")\
                         .format(var=abrv_var)
-
 
 
 ####################################################################################                
@@ -1016,34 +1021,39 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
 
         # Convert to GC standard 4D fmt. - lon, lat, alt, time 
         if len((arr[0].shape)) == 4:
-            if debug:
-                print 'prior to roll axis: ', [i.shape for i in arr]
+            logging.info('prior to roll axis: ', [i.shape for i in arr] )
             arr = [np.rollaxis(i,0, 4) for i in arr]
-            if debug:
-                print 'post roll axis: ', [i.shape for i in arr]
+            logging.info( 'post roll axis: ', [i.shape for i in arr] )
 
         # Convert to GC standard 3D fmt. - lon, lat, time   
         # two reasons why 3D (  missing time dim  or  missing alt dim ) 
         # <= update, there must be a better gotcha than this... 
         if ( (len((arr[0].shape)) == 3 ) \
             # '4x5'
-            and  ( (72, 46, 47) != arr[0].shape ) \
-            and ( (72, 46, 38) != arr[0].shape ) \
+            and ( (72,46,47) != arr[0].shape ) \
+            and ( (72,46,38) != arr[0].shape ) \
             # '2x2.5'
-            and  ( (144, 91, 47) != arr[0].shape ) \
-            and ( (144, 91, 38) != arr[0].shape ) \
+            and ( (144,91,47) != arr[0].shape ) \
+            and ( (144,91,38) != arr[0].shape ) \
             # '0.25x0.3125':
-            and ( (177, 115, 47) != arr[0].shape ) \
-            and ( (177, 115, 38) != arr[0].shape )  \
-            # '0.5x0.666'
-            and  ( (121, 81, 47) != arr[0].shape ) \
-            and ( (121, 81, 38) != arr[0].shape ) ):
-
-            if debug:
-                print 'prior to roll axis: ', [i.shape for i in arr]
+            and ( (177,115,47) != arr[0].shape ) \
+            and ( (177,115,38) != arr[0].shape ) \
+            # '0.25x0.3125_CH':
+            and ( (225,161,47) != arr[0].shape ) \
+            and ( (225,161,38) != arr[0].shape ) \
+            # '0.25x0.3125_WA':
+            and ( (145,89,47) != arr[0].shape ) \
+            and ( (145,89,38) != arr[0].shape ) \
+            # '0.25x0.3125_WA':
+            and ( (145,133,47) != arr[0].shape ) \
+            and ( (145,133,38) != arr[0].shape ) \
+            # '0.5x0.625' - SA grid
+            and ( (121,81,47) != arr[0].shape ) \
+            and ( (121,81,38) != arr[0].shape ) ):
+                
+            logging.info( 'prior to roll axis: ', [i.shape for i in arr] )
             arr = [np.rollaxis(i,0, 3) for i in arr]
-            if debug:
-                print 'post to roll axis: ', [i.shape for i in arr]
+            logging.info( 'post to roll axis: ', [i.shape for i in arr] )
 
         # --- loop variables post processing and force inclusions of time dim if applicable
         need_time = ['IJ_AVG', 'GMAO', 'BXHGHT', 'TIME_TPS_']
@@ -1072,8 +1082,12 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
 
     # Get res by comparing 1st 2 dims. against dict of GC dims.
     if r_res:
-        res=get_dims4res( r_dims=True, trop_limit=trop_limit, \
-                    just2D=True )[arr.shape[:2]]
+        try:
+            res=get_dims4res( r_dims=True, trop_limit=trop_limit, \
+                just2D=True )[arr.shape[:2]]
+        except KeyError:
+            logging.info('resolution/array shape ({}) not in dictionary:'.format(arr.shape))
+            sys.exit()
 
     if r_list:
         # Make sure returned type is list of arrays
@@ -1090,7 +1104,6 @@ def get_GC_output( wd, vars=None, species=None, category=None, \
 #        return cubes.data
 
     # Return model resolution? 
-
     if r_res:
         return output, res
     else:
