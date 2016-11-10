@@ -22,7 +22,8 @@ except:
 
 def convert_to_netCDF(folder='none',filename='ctm.nc',\
                          bpch_file_list=None, remake=False,
-                         hemco_file_list=None, verbose=True):
+                         hemco_file_list=None, verbose=True,
+                         bpch_file_type="*.ctm.nc"):
     """
     Converts GEOS-Chem outputs to netCDF
     - bpch_to_netCDF
@@ -37,16 +38,18 @@ def convert_to_netCDF(folder='none',filename='ctm.nc',\
     """
     logging.debug( "Convert to netCDF called")
 
-    try:
-        bpch_to_netCDF( folder, filename, bpch_file_list, remake, verbose=True)
-    except:
-        logging.error("Could not convert bpch to netCDF in {_dir}"\
-                .format(_dir=folder))
-    try:
-        hemco_to_netCDF( folder, hemco_file_list, remake)
-    except:
-        logging.warning("Could not convert hemco to netCDF in {_dir}"\
-                .format(_dir=folder))
+#    try:
+    bpch_to_netCDF( folder=folder, filename=filename, 
+            bpch_file_list=bpch_file_list, remake=remake, 
+            file_type = bpch_file_type, verbose=verbose)
+#    except:
+#        logging.error("Could not convert bpch to netCDF in {_dir}"\
+#                .format(_dir=folder))
+#    try:
+#        hemco_to_netCDF( folder, hemco_file_list, remake)
+#    except:
+#        logging.warning("Could not convert hemco to netCDF in {_dir}"\
+#                .format(_dir=folder))
 
     return
 
@@ -107,12 +110,18 @@ def hemco_to_netCDF( folder, hemco_file_list=None, remake=False ):
 
     
  
-def bpch_to_netCDF(folder='none', filename='ctm.nc',\
-                    bpch_file_list=None, remake=False, verbose=True):
+def bpch_to_netCDF(folder='none', filename='ctm.nc',
+                    bpch_file_list=None, remake=False,
+                    filetype="*.ctm.bpch", verbose=False,
+                    **kwargs):
 
    """    
     Converts GEOS-Chem ctm.bpch output file(s) to NetCDF
    """   
+
+
+
+
    # Check if file already exists and warn about remaking
    from bpch2netCDF import get_folder
    folder = get_folder(folder)
@@ -124,24 +133,25 @@ def bpch_to_netCDF(folder='none', filename='ctm.nc',\
            logging.warning(output_file + ' already exists. Not recreating.')
            return
        
-   # By default look inside the folder for any files
+   # Look for files if file list is not provided.
    if bpch_file_list==None:
-       bpch_files = glob.glob( folder + '/*.bpch*' )
+       logging.debug("Searching for the following bpch filetype: {filetype}"\
+                .format(filetype=filetype))
+       bpch_files = glob.glob( folder + '/' + filetype )
        if len(bpch_files) == 0:
-          bpch_files = glob.glob( folder + '/*trac_avg*' )
-          if len(bpch_files) == 0:
-               logging.error("No bpch files found in "+folder)
-               raise IOError(folder + " contains no bpch files.")
-   # Confirm the specified bpch files are there.
+           logging.error("No bpch files found in "+folder)
+           raise IOError(folder + " contains no bpch files.")
+
+   # use the specified files.
    else:
-      file_list = []
-      for bpch_file in bpch_file_list:
+       file_list = []
+       for bpch_file in bpch_file_list:
          full_path = folder + '/' + bpch_file
          if not os.path.exists(full_path):
             logging.error(full_path + " could not be found")
             raise IOError("Full path could not be found")
          file_list.append(full_path)
-      bpch_files = file_list
+       bpch_files = file_list
 
    # Open the bpch files
    logging.debug( "The following bpch files were found:")
@@ -153,9 +163,7 @@ def bpch_to_netCDF(folder='none', filename='ctm.nc',\
    # Save the netCDF file
 #   iris.fileformats.netcdf.save(data, output_file)
    datasets.save( bpch_data, output_file )
-
    logging.info( "A netCDF file has been created with the name {ctm}".format(ctm=output_file)) 
-
    return
 
 def get_folder(folder):
