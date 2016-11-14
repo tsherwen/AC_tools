@@ -18,16 +18,10 @@ def test_get_surface_area():
 
     # TO-DO
     # Test without passing a wd. Requires a data source. current implementation of this is a bit cludgey.
-    arr = get_surface_area(updated=True)
+    arr = get_surface_area()
     assert isinstance( arr, np.ndarray), 'Surface area not a numpy array.'
     assert (len(arr.shape)==3), 'Surface area does not have 2 dimensions.'
     
-#    arr = get_surface_area(updated=True)
-#    assert isinstance( arr, np.ndarray), 'Surface area not a numpy array.'
-#    assert (len(arr.shape)==3), 'Surface area does not have 2 dimensions.'
-    # Warning, this only works for tomas as requires setting up stuff.
-    # The setup should not be needed if wd is passed about.
-
     return
 
 @slow
