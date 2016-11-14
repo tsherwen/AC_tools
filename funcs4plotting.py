@@ -80,7 +80,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
         extend='neither', degrade_resolution=False, discrete_cmap=False, \
         lon_0=None, lon_1=None, lat_0=None, lat_1=None, norm=None,\
         sigfig_rounding_on_cb=2, fixcb_buffered=None, ylabel=True, \
-        xlabel=True, wd=None, verbose=True, debug=False, 
+        xlabel=True, wd=None, verbose=True, debug=False, tight_layout=False, \
         **Kwargs):
     """ 
     Plots Global/regional 2D (lon, lat) slices.  
@@ -235,10 +235,9 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 
     if isinstance( cmap, type(None) ):
         # Set readable levels for cb, then use these to dictate cmap
-        if isinstance( lvls, type(None ):
-            lvls = get_human_readable_gradations( vmax=fixcb_[1],  \
-                    vmin=fixcb_[0], nticks=nticks, \
-                    sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
+        if isinstance( lvls, type(None) ):
+            lvls = get_human_readable_gradations( vmax=fixcb_[1], vmin=fixcb_[0], \
+                nticks=nticks, sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
 
         # Setup Colormap
         cmap, fixcb_buffered = get_colormap( np.array( fixcb_ ), \
