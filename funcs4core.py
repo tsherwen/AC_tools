@@ -210,7 +210,7 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
         dwd = os.path.join(AC_tools_dir, 'data/LM')
         dir_dict = {
         '4x5':'LANDMAP_LWI_ctm',  \
-        '2x2.5': 'LANDMAP_ctm_2x25',  \
+        '2x2.5': 'LANDMAP_LWI_ctm_2x25',  \
         '1x1' : 'work/data/GEOS/HEMCO/EMEP/v2015-03/',\
         # Kludge, use 1x1 for 0.5x0.5 <= remove this
         '0.5x0.5' :'work/data/GEOS/HEMCO/EMEP/v2015-03/',\
