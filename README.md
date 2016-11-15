@@ -10,11 +10,24 @@ seperately.
  
 e.g. 
 
+```python
 import AC_tools as AC
 
 AC.get_GC_output()
+```
+
 
 Example analysis code for GEOS-Chem using AC_tools is available in the 
 scripts folder.
 
 For more infomation, please visit the wiki: https://github.com/tsherwen/AC_tools/wiki
+
+
+INSTALL
+=======
+
+```bash
+mkdir -p $HOME/python
+cd $HOME/python
+git clone https://github.com/tsherwen/AC_tools/
+```
