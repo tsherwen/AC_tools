@@ -272,20 +272,18 @@ def get_air_mass_np( ctm_f=None, wd=None, times=None, trop_limit=True,\
     """ 
     Get array of air mass in kg 
     """
-    logging.info( 'called get air mass')
+    logging.info( 'called get air mass' )
 
     # retain PyGChem 0.2.0 version for back compatibility
     if pygchem.__version__ == '0.2.0':
         diagnostics = ctm_f.filter( name='AD', category="BXHGHT-$",time=times )
-        if debug:
-            print diagnostics
+        logging.debug( diagnostics )
         for diag in diagnostics:
             # Extract data
             scalar = np.array( diag.values[:,:,:] )[...,None]              
-            if debug:
-                print diag.name ,'len(scalar)',len(scalar), 'type(scalar)',\
-                    type(scalar), 'diag.scale', diag.scale, 'scalar.shape', \
-                    scalar.shape,'diag.unit', diag.unit
+            logging.debug(diag.name ,'len(scalar)',len(scalar), 'type(scalar)',\
+                type(scalar), 'diag.scale', diag.scale, 'scalar.shape', \
+                scalar.shape,'diag.unit', diag.unit )
             try:
                 arr = np.concatenate( (np_scalar, scalar), axis=3 )
             except NameError:
@@ -297,11 +295,10 @@ def get_air_mass_np( ctm_f=None, wd=None, times=None, trop_limit=True,\
     # Or use PyGChem 0.3.0 approach
     else:
         # Get air mass in kg
-        arr = get_GC_output( wd=wd, vars=['BXHGHT_S__AD'], \
-                            trop_limit=trop_limit, dtype=np.float64)
+        arr = get_GC_output( wd=wd, vars=['BXHGHT_S__AD'], trop_limit=trop_limit, \
+            dtype=np.float64)
 
-        if debug:
-            print 'arr' , type(arr), len(arr), arr.shape
+        logging.debug( 'arr' , type(arr), len(arr), arr.shape )
     return arr
 
 # --------------
@@ -860,7 +857,7 @@ def get_GC_output( wd, vars=None, species=None, category=None, r_cubes=False, \
 
         # setup var for Iris Cube, then remove known rm. chars.
         var = category+'__'+species
-        vars=  [ var.replace('-', '_').replace('$', 'S') ]
+        vars = [ var.replace('-', '_').replace('$', 'S') ]
 
     else:
         # Get default settings for reader
@@ -890,12 +887,12 @@ def get_GC_output( wd, vars=None, species=None, category=None, r_cubes=False, \
                 logging.warning("Variable {var} not found in netCDF"\
                     .format(var=var))
                 logging.warning("Will attempt renaming")
-                abrv_var = get_ctm_nc_var( var )
                 try:
+                    abrv_var = get_ctm_nc_var( var )
                     var_data = netCDF_data.varialbes[var] 
                 except KeyError:
-                    logging.error("Renamed variable {var} not found in netCDF")\
-                        .format(var=abrv_var)
+                    logging.error("Renamed variable {var} not found in netCDF"\
+                        .format(var=var) )
 
 
 ####################################################################################                
@@ -1021,9 +1018,9 @@ def get_GC_output( wd, vars=None, species=None, category=None, r_cubes=False, \
 
         # Convert to GC standard 4D fmt. - lon, lat, alt, time 
         if len((arr[0].shape)) == 4:
-            logging.info('prior to roll axis: ', [i.shape for i in arr] )
+            logging.info('prior to roll axis: {}'.format(*[i.shape for i in arr]) )
             arr = [np.rollaxis(i,0, 4) for i in arr]
-            logging.info( 'post roll axis: ', [i.shape for i in arr] )
+            logging.info( 'post roll axis: {}'.format(*[i.shape for i in arr]) )
 
         # Convert to GC standard 3D fmt. - lon, lat, time   
         # two reasons why 3D (  missing time dim  or  missing alt dim ) 
@@ -1051,9 +1048,9 @@ def get_GC_output( wd, vars=None, species=None, category=None, r_cubes=False, \
             and ( (121,81,47) != arr[0].shape ) \
             and ( (121,81,38) != arr[0].shape ) ):
                 
-            logging.info( 'prior to roll axis: ', [i.shape for i in arr] )
+            logging.info( 'prior to roll axis: ', [str(i.shape) for i in arr] )
             arr = [np.rollaxis(i,0, 3) for i in arr]
-            logging.info( 'post to roll axis: ', [i.shape for i in arr] )
+            logging.info( 'post to roll axis: ', [str(i.shape) for i in arr] )
 
         # --- loop variables post processing and force inclusions of time dim if applicable
         need_time = ['IJ_AVG', 'GMAO', 'BXHGHT', 'TIME_TPS_']
@@ -1321,12 +1318,12 @@ def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
     else: # Just extract v/v 
         arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ],
             trop_limit=trop_limit, r_list=True ) 
-    print [ i.shape for i in arr], len( arr), np.sum( arr ), specs
+    logging.debug( [ i.shape for i in arr], len( arr), np.sum( arr ), specs )
 
     # Adjust to stiochmetry  ( Vars )
     arr = [ arr[n]*spec_stoich(i, ref_spec=fam) \
         for n,i in enumerate( specs) ]
-    print [ i.shape for i in arr], len( arr), np.sum( arr ), specs
+    logging.debug( [ i.shape for i in arr], len( arr), np.sum( arr ), specs )
 
     # Sum over stiochmertically adjusted list of specs
     arr = np.array( arr ).sum(axis=0)
@@ -1340,9 +1337,8 @@ def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
 # ----
 # 1.27 - Convert v/v array to DU array 
 # ---
-def convert_v_v_2_DU( arr, wd=None, \
-     a_m=None, trop_limit=True, s_area=None, molecs=None, \
-    verbose=True, debug=False):
+def convert_v_v_2_DU( arr, wd=None, a_m=None, trop_limit=True, s_area=None, \
+        molecs=None, verbose=True, debug=False):
     """ 
     Convert a 4D array of v/v for species (or family) to  DU
     """
@@ -1362,18 +1358,15 @@ def convert_v_v_2_DU( arr, wd=None, \
 
     # Molecules O3 in trop. summed
     DUarrs = arr*molecs
-    if debug:
-        print [ ( i.shape, i.sum() ) for i in [DUarrs, s_area] ]
+    logging.debug( [ (i.shape, i.sum()) for i in [DUarrs, s_area] ])
     # sum over altitude in 4D array ( lon, lat, alt, time )
     DUarrs = DUarrs.sum(axis=-2)
-    if debug:
-        print [ ( i.shape, i.sum() ) for i in [DUarrs, s_area] ]
+    logging.debug( [ (i.shape, i.sum()) for i in [DUarrs, s_area] ])
 
     # adjust to per unit area ( cm3 ) 
     DUarrs =  DUarrs/ s_area
 
-    if debug:
-        print [ ( i.shape, i.sum() ) for i in DUarrs, tmp_s_area,s_area  ]
+    logging.debug( [ (i.shape, i.sum()) for i in DUarrs, tmp_s_area,s_area] )
 
     # convert to DU   
     DUarrs = DUarrs/constants('mol2DU')
@@ -3554,17 +3547,21 @@ def np2chronological_fromctm( ctms, arr, debug=False ):
     """ 
     Ensure np array is in chronological order 
 
-    ARGUMENTS:
-     - ctms is a list of ctm files 
-    (from pyghcem ver <3.0 approach of passing bpch objects)     
-     - arr is a numpy array with the final dimension being time
+    Parameters
+    ----------
+    ctms (list):  list of ctm files (read by PyGChem v2.0)
+    arr (np.array): arr to order, with the final dimension being time
+
+    Returns
+    -------
+    (np.array)
+
     """
+    logging.info( 'np2chronological_fromctm called' )
 
     # get datetimes for month and sort chron.
     dts = [ get_gc_datetime(ctm ) for ctm in ctms ]
-
-    if debug:
-        print 'before', dts, len(dts )
+    logging.debug( 'before', dts, len(dts ) )
 
     # if multiple months within ctm file
     if len(dts) > 1:
@@ -3575,13 +3572,10 @@ def np2chronological_fromctm( ctms, arr, debug=False ):
     sdts = sorted(dts)
     if sdts != sorted(dts):
         print 'sorted in chronological order of np in np2chronological_fromctm'
-        if debug:
-            print 'after',dts, sdts, len(sdts)
+        logging.debug( 'after',dts, sdts, len(sdts) )
 
     # Get indicies for sorted list and return chronological list
     ind = [dts.index(i) for i in sdts ]
-    if debug:
-        print 2, ind
 
     return np.concatenate( [arr[...,i][...,None] for i in ind ], axis =3)
 
@@ -3593,44 +3587,54 @@ def np2chronological_fromctm( ctms, arr, debug=False ):
 # --------------
 # 2.09 - Get tropospheric Burden - 
 # -------------
-# Redundent - mv'd to bottom of this module
 def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
         Iodine=False, all_data=True, total_atmos=False , res='4x5',  \
         trop_limit=True, debug=False ):
-    """ REDUNDENT - Get Trosposheric burden. If requested (total_atmos=False)
-        limit arrays to "chemical troposphere"  (level 38) and boxes that are in 
-        the troposphere removed by multiplication of "time in troposphere"
-        diagnostic
-    NOTE(s):
-     - use get_gc_burden instead 
+    """  
+    Get Trosposheric burden. 
+    
+    Parameters
+    ----------
+    a_m (np.array): 4D array of air mass
+    all_data (boolean): return complete 4D array 
+    ctm (file object): PyGChem (v2.0) opened ctm.bpch file  - vestigle 
+    debug (boolean): legacy debug option, replaced by python logging
+    res (str): the resolution if wd not given (e.g. '4x5' )
+    t_p (np.array): fractional time a grid box has spent in tropospehre
+    trop_limit (boolean): limit 4D arrays to troposphere 
+    total_atmos (boolean): return whole atmosphere or just troposphere?
+    spec (str): species/tracer/variable name 
+    wd (str): Specify the wd to get the results from a run.
+
+    Returns
+    -------
+    (np.array) species burden in Gg
     """
     logging.info('get_trop_burden called')
 
     # Get variables online if not provided
     if not isinstance(a_m, np.ndarray):
-        a_m = get_air_mass_np( ctm_f=ctm, wd=wd, \
-            trop_limit=trop_limit, debug=debug )
+        a_m = get_air_mass_np( ctm_f=ctm, wd=wd, trop_limit=trop_limit, \
+            debug=debug )
     if not isinstance(t_p, np.ndarray):
         # Retain PyGChem 0.2.0 approach for back compatibility
         if pygchem.__version__ == '0.2.0':
-            t_p = get_gc_data_np( ctm=ctm, spec='TIMETROP', \
+            t_p = get_gc_data_np( ctm=ctm, spec='TIMETROP',
                 category='TIME-TPS', debug=debug)
         else:
             t_p = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], \
-                            trop_limit=trop_limit  ) 
+                trop_limit=trop_limit) 
 
     # Retain PyGChem 0.2.0 approach for back compatibility
     if pygchem.__version__ == '0.2.0':            
         ar = get_gc_data_np( ctm, spec, debug=debug )[:,:,:38,:]
     else:
-        ar = get_GC_output( wd, vars=['IJ_AVG_S__'+ spec], \
-                            trop_limit=trop_limit  ) 
-    if debug:
-        print [i.shape for i in ar, t_p, a_m ]
+        ar = get_GC_output( wd, vars=['IJ_AVG_S__'+ spec], trop_limit=trop_limit) 
+    logging.debug( [i.shape for i in ar, t_p, a_m ] )
 
     # v/v * (mass total of air (kg)/ 1E3 (converted kg to g))  = moles of tracer
     ar = ar* ( a_m*1E3 / constants( 'RMM_air')) 
-    if (Iodine):
+    if Iodine:
         # convert moles to mass (* RMM) , then to Gg 
         ar = ar * float( species_mass('I') ) * spec_stoich(spec) /1E9 
     else:
@@ -3653,49 +3657,57 @@ def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
 # --------------
 # 2.25 - Get O3 Burden
 # -------------
-# REDUNDENT - mv'd to bottom of module        
-def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None, \
-            ctm_f=False, trop_limit=True, all_data=False, annual_mean=True, \
-            debug=False ):
-    """ Get O3 burden in CTM output 
+def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None, ctm_f=False, 
+        trop_limit=True, all_data=False, annual_mean=True, debug=False ):
+    """ 
+    Get O3 burden in CTM output 
 
-    NOTES:
-     - all_data and annual_mean give the same result
-     -  REDUNDENT? - this functionality is replicated in the get_burden 
-     function, but it is still in use for automated output stat procsssing... 
-     therefore retain for back compatibility 
+    Parameters
+    ----------
+    wd (str): Specify the wd to get the results from a run.
+    spec (str): species/tracer/variable name 
+    O3_arr (np.array): 4D array of O3 concentration (v/v)
+    t_p (np.array): 4D array of (fractional) time a grid box has spent in tropospehre
+    a_m (np.array): 4D array of air mass
+    trop_limit (boolean): limit 4D arrays to troposphere 
+    all_data (boolean): return complete 4D array 
+    annual_mean (boolean): take average of time dimension (variable name assumes 12 months)
+    debug (boolean): legacy debug option, replaced by python logging
+    ctm_f (file object): PyGChem (v2.0) opened ctm.bpch file  - vestigle 
+
+    Returns
+    -------
+    (np.array) O3 burden in Gg
     """
     # extract arrays not provided from wd
     if not isinstance(a_m, np.ndarray):
-        print 'Getting a_m in get_O3_burden'
+        logging.info( 'WARNING: Getting a_m in get_O3_burden (inefficient)')
         if pygchem.__version__ == '0.2.0':
             a_m = get_air_mass_np( ctm_f, debug=debug )[:,:,:38,:]
 
-        # use update pygchem
+        # use updated pygchem
         else:
-            a_m = get_GC_output( wd, vars=['BXHGHT_S__AD'], 
-                trop_limit=trop_limit) 
+            a_m = get_GC_output( wd, vars=['BXHGHT_S__AD'], trop_limit=trop_limit) 
 
     if not isinstance(t_p, np.ndarray):
-        print 'Getting t_p in get_O3_burden'
+        logging.info('WARNING: Getting t_p in get_O3_burden (inefficient)')
         if pygchem.__version__ == '0.2.0':
-            t_p = get_gc_data_np( ctm_f, spec='TIMETROP', \
-                category='TIME-TPS', debug=debug)[:,:,:38,:]
+            t_p = get_gc_data_np( ctm_f, spec='TIMETROP', category='TIME-TPS', \
+                debug=debug)[:,:,:38,:]
 
         # use update pygchem
         else:
-            t_p = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], \
-                trop_limit=trop_limit ) 
+            t_p = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], trop_limit=trop_limit ) 
             
     if not isinstance(O3_arr, np.ndarray):
-        print 'Getting O3_arr in get_O3_burden'
+        logging.info('WARNING: Getting O3_arr in get_O3_burden (inefficient)')
         if pygchem.__version__ == '0.2.0':
             ar = get_gc_data_np( ctm_f, 'O3', debug=debug )[:,:,:38,:]
         else:
-            ar  = get_GC_output( wd, species='O3' )[:,:,:38,:]
+            ar = get_GC_output( wd, species='O3' )[:,:,:38,:]
             
     else:
-        ar  =  O3_arr[:,:,:38,:]
+        ar = O3_arr[:,:,:38,:]
 
     # v/v * (mass total of air (kg)/ 1E3 (converted kg to g))  = moles of tracer
     ar = ar * ( a_m[:,:,:38,:]*1E3 / constants( 'RMM_air') ) 
