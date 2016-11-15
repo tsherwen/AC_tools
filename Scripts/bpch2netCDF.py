@@ -54,7 +54,14 @@ def convert_to_netCDF(folder='none',filename='ctm.nc',\
     return
 
 def hemco_to_netCDF( folder, hemco_file_list=None, remake=False ):
+    """
+    Conbine HEMCO diagnostic output files to a single NetCDF file.
 
+    Parameters
+    ----------
+    remake (boolean): overwrite existing NetCDF file
+
+    """
 
     from bpch2netCDF import get_folder
     folder = get_folder(folder)
@@ -110,17 +117,26 @@ def hemco_to_netCDF( folder, hemco_file_list=None, remake=False ):
 
     
  
-def bpch_to_netCDF(folder='none', filename='ctm.nc',
-                    bpch_file_list=None, remake=False,
-                    filetype="*.ctm.bpch", verbose=False,
-                    **kwargs):
+def bpch_to_netCDF(folder='none', filename='ctm.nc', bpch_file_list=None, remake=False, \
+        filetype="*ctm.bpch*", verbose=False, **kwargs):
 
    """    
-    Converts GEOS-Chem ctm.bpch output file(s) to NetCDF
+   Converts GEOS-Chem ctm.bpch output file(s) to NetCDF
+
+   Parameters
+   ----------
+   folder (str): working directory for data files
+   filename (str): name to give created NetCDF
+   bpch_file_list (list): list of files to convert 
+   remake (boolean): overwrite existing NetCDF file
+   filetype (str): string with wildcards to match filenames ( e.g. *ctm.bpch*,*ts*bpch* )
+   verbose (boolean): print (minor) logging to screen
+   
+   Returns
+   -------
+   (None) saves a NetCDF file to disk
+
    """   
-
-
-
 
    # Check if file already exists and warn about remaking
    from bpch2netCDF import get_folder
