@@ -236,7 +236,7 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, ver='1.7', \
     ----------
     wd (string): the wd to get the results from a run 
     res (string): the resolution if wd not given ( e.g. '4x5')
-    invert (boolean): 
+    invert (boolean): invert dictionary keys and values
     debug = False (legacy debug, replaced by logging)
     V_9_2, V_9_2_C = redundent oiption swicthes for previous GEOS-Chem versions
     special_case = overide seclected species dictionary 
@@ -607,9 +607,8 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
 # --------------
 #  4.07 - Returns tracers unit and scale (if requested)
 # --------------
-def tra_unit(x, scale=False, adjustment=False, adjust=True, \
-            global_unit=False, ClearFlo_unit=False, IUPAC_unit=False, \
-            debug=False ):
+def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,\
+        ClearFlo_unit=False, IUPAC_unit=False, debug=False ):
     """ 
     Get appropirate unit for Tracer
 

@@ -26,7 +26,9 @@ def get_dir( input, loc='earth0' ):
     """
     Retrieves directories within structure on a given platform
         ( e.g. York computer (earth0), Mac, Old cluster (atmosviz1... etc)  )
-    NOTES:
+
+    Notes
+    -----
      - This function is not general enough to be transferrable.
      - Update to use $USER flag. 
     """
@@ -88,22 +90,46 @@ def get_dir( input, loc='earth0' ):
 # ----                                                                                                                                                        
 # 1.02 -  Get Latitude as GC grid box number in dimension                                                                                                                  
 # ----                                                                                                                                                        
-def get_gc_lat(lat, res='4x5', wd=None, debug=False):
+def get_gc_lat(lat, res='4x5', wd=None, filename='ctm.nc', debug=False):
     """ 
     Get index of lat for given resolution 
+
+    Parameters
+    ----------
+    lat (float): latitude to convert
+    wd (str): the directory to search for file in
+    filename (Str): name of NetCDF file (e.g. ctm.nc or ts_ctm.nc)
+    res (str): the resolution if wd not given (e.g. '4x5' )
+    debug (boolean): legacy debug option, replaced by python logging
+
+    Returns
+    -------
+    (float)
     """
-    NIU, lat_c, NIU = get_latlonalt4res( res=res, wd=wd )
+    NIU, lat_c, NIU = get_latlonalt4res( res=res, wd=wd, filename=filename )
     del NIU
     return find_nearest_value( lat_c, lat )
 
 # ----                                                                                                                                                        
 # 1.03 -  Get Longitude as GC grid box number in dimension                                                                                                       
 # ----                                                                                                                                                        
-def get_gc_lon(lon, res='4x5', wd=None, debug=False):
+def get_gc_lon(lon, res='4x5', wd=None, filename='ctm.nc', debug=False):
     """ 
     Get index of lon for given resolution 
+
+    Parameters
+    ----------
+    lon (float): longitude to convert
+    wd (str): the directory to search for file in
+    filename (Str): name of NetCDF file (e.g. ctm.nc or ts_ctm.nc)
+    res (str): the resolution if wd not given (e.g. '4x5' )
+    debug (boolean): legacy debug option, replaced by python logging
+
+    Returns
+    -------
+    (float)
     """
-    lon_c, NIU, NIU = get_latlonalt4res( res=res, wd=wd )
+    lon_c, NIU, NIU = get_latlonalt4res( res=res, wd=wd, filename=filename )
     del NIU
     return find_nearest_value( lon_c, lon )
 
@@ -114,6 +140,18 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
         just2D=False, debug=False):
     """ 
     Get dimension of GEOS-Chem output for given resolution 
+
+    Parameters
+    ----------
+    invert (boolean): invert dictionary keys and values
+    trop_limit (boolean): limit 4D arrays to troposphere     
+    r_dims (boolean): return dicionary of dimensions
+    just2D (boolean): just return horizontal dimensions 
+    debug (boolean): legacy debug option, replaced by python logging
+
+    Returns
+    -------
+    (tuple)
     """
 
     # Dictionary of max dimensions of standard GEOS-Chem output
@@ -167,11 +205,11 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
 #  1.05 - Get grid values of lon, lat, and alt for a given resolution                                                                                                                         
 # ----                                                                                                                                                        
 def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
-            dtype=None, wd=None, filename='ctm.nc',\
-            lat_bounds=u'latitude_bnds', lon_bounds=u'longitude_bnds',\
-            lon_var=u'longitude', lat_var=u'latitude', 
-#            lon_var=u'lon', lat_var=u'lat', 
-            debug=False ):
+        dtype=None, wd=None, filename='ctm.nc', \
+        lat_bounds=u'latitude_bnds', lon_bounds=u'longitude_bnds',\
+        lon_var=u'longitude', lat_var=u'latitude', \
+#        lon_var=u'lon', lat_var=u'lat', 
+        debug=False ):
     """ 
     Get lon, lat, and alt for a given model resolution. 
 
@@ -201,11 +239,11 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
     """ 
     logging.info("Calling get_latlonalt4res")
 
-    if res==None:
+    if isinstance( res, type(None) ):
         logging.warning("No resolution specified. Assuming 4x5!")
         res='4x5'
 
-    if wd == None:
+    if isinstance( wd, type(None) ):
         AC_tools_dir = os.path.dirname(__file__)
         dwd = os.path.join(AC_tools_dir, 'data/LM')
         dir_dict = {
@@ -233,7 +271,7 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
             lon_var = 'lon'
             wd = '/work/data/GEOS/HEMCO/EMEP/v2015-03/'
 
-    # Ge the data file name
+    # Get the data file name
     data_fname = os.path.join(wd, filename)
     if not os.path.exists(data_fname):
         logging.error("Could not find {fn}".format(fn=data_fname))
@@ -247,7 +285,8 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
             
 
     # Get edge values
-    if (not centre) and ( not any([(res==i) for i in '1x1', '0.5x0.5' ]) ):
+    exception_res = ('1x1', '0.5x0.5')
+    if (not centre) and (res not in exception_res):
         # Extract lat and lon from model output data file
         try:
             with Dataset( data_fname, 'r' ) as d:
@@ -309,18 +348,28 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
 
     if debug:
         print lon, lat, alt
-    rtn_list =  lon, lat, alt 
+    rtn_list = lon, lat, alt 
     if not isinstance( dtype, type( None ) ):
         return [ i.astype( dtype ) for i in rtn_list ]
     else:
-        return  rtn_list
+        return rtn_list
 
 # --------------
 # 1.06 - Convert from hPa to km or vice versa.
 # -------------
 def hPa_to_Km(input, reverse=False, debug=False):
-    """ hPa/km convertor
-        Set "reverse" to True to convert Km to hPa 
+    """ 
+    hPa/km convertor
+
+    Parameters
+    ----------
+    input (list): list of values (float) to convert
+    reverse (boolean): Set "reverse" to True to convert Km to hPa 
+    debug (boolean): legacy debug option, replaced by python logging
+
+    Returns
+    -------
+    (list)
     """
     if reverse:
          return [ np.exp(  np.float(i) /-7.6)*1013. for i in input ]
@@ -333,11 +382,14 @@ def hPa_to_Km(input, reverse=False, debug=False):
 def find_nearest_value( array, value ):
     """ 
     Find nearest point. 
-    
-    NOTEs:
-     - Adapted from (credit:) HappyLeapSecond's Stackoverflow answer.  
-    ( http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array )
+
+    Parameters
+    ----------
+    arrary (np.array): 1D array in which to search for nearest value
+    value (float): value to search array for closest point
     """
+    # Adapted from (credit:) HappyLeapSecond's Stackoverflow answer. 
+    # ( http://stackoverflow.com/questions/2566412/  )
     idx = (np.abs(array-value)).argmin()
     return idx
 
@@ -374,31 +426,21 @@ def iGEOSChem_ver(wd, verbose=True, debug=False):
 # -------------                                                                                                                                      
 def gchemgrid(input=None, rtn_dict=False, debug=False):
     """
-    GeosChem grid lookup table.
-    
-    Can give the latitude, longitude or altitude positions of geoschem in units to 
-    convert from model units. Returns a numpy array.
+    GeosChem grid lookup table. Can give the latitude, longitude or altitude 
+    positions of geoschem in units to convert from model units. 
 
-    Example:
-    gchemgrid('c_lon_4x5')
-    [-180, -175, -170 ,..., 175, 180]
+    Parameters
+    ----------
+    rtn_dict (boolean): return the lookup dictionary instead
+    debug (boolean): legacy debug option, replaced by python logging
 
-    ARGUEMENTS:
-     - rtn_dict=False : return the lookup dictionary instead of only a numpy array.
-     - debug=False : Prints extra infromaiton in the function for debugging.
-    NOTES:
-     - If the array begins with a 'c' then this denotes the center position of the gridbox.
-    'e' denotes the edge.
-     -  The following arrays ara available:
-    c_lon_4x5, e_lon_4x5, c_lat_4x5, e_lat_4x5, 
-    e_eta_geos5_r, e_km_geos5_r, e_hpa_geos5_r, 
-    c_eta_geos5_r, c_km_geos5_r, c_hpa_geos5_r, 
-    """
+    Returns
+    -------
+    (np.array)
 
-    if ((input==None) and (rtn_dict==False)):
-        raise KeyError('gchemgrid requires an input or rtn_dict=True')
-
-    """
+    Notes
+    -----
+    - Detail from original reposotiroy adapted from:
     Updated to dictionary from gchemgrid (credit: Gerrit Kuhlmann ) with 
     additional grid adds 
 
@@ -421,9 +463,11 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    """           
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.    
+    """
 
+    if ((input==None) and (rtn_dict==False)):
+        raise KeyError('gchemgrid requires an input or rtn_dict=True')
     d = {
     # 4x5                                                                                        
    'c_lon_4x5' : np.arange(-180, 175+5, 5) ,
