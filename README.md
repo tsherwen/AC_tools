@@ -29,5 +29,5 @@ INSTALL
 ```bash
 mkdir -p $HOME/python
 cd $HOME/python
-git clone https://github.com/tsherwen/AC_tools/
+git clone --recursive https://github.com/tsherwen/AC_tools/
 ```
