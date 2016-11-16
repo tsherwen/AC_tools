@@ -20,23 +20,28 @@ try:
 except:
   import pygchem.datafields as datasets
 
-def convert_to_netCDF(folder='none',filename='ctm.nc',\
-                         bpch_file_list=None, remake=False,
-                         hemco_file_list=None, verbose=True,
-                         bpch_file_type="*.ctm.nc"):
+def convert_to_netCDF(folder=None,filename='ctm.nc', bpch_file_list=None, \
+        remake=False, hemco_file_list=None, verbose=True, \
+        bpch_file_type="*.ctm.nc"):
     """
     Converts GEOS-Chem outputs to netCDF
+
+    Parameters
+    ----------
+    folder (str): specify the folder you want to use - defaults to cwd
+    filename (str):  specific the netCDF filename you want to use
+    bpch_file_list (list): list the bpch files you want to use
+    remake (boolean): Overwrite any old files (default=False)
+
+    Notes
+    -----
+    Setup for:
     - bpch_to_netCDF
     - hemco_to_netCDF
     - planeflight_to_netCDF
-
-    INPUTS:
-    folder: none - specify the folder you want to use - defaults to cwd
-    filename: ctm.nc - specift the netCDF filename you want to use
-    bpch_file_list: None - list the bpch files you want to use
-    remake: False - Overwrite any old files
     """
-    logging.debug( "Convert to netCDF called")
+    logging.debug( "Convert to netCDF called with folder={},".format(folder)+ \
+        " bpch_file_type={}/filename={}".format(bpch_file_type, filename) )
 
 #    try:
     bpch_to_netCDF( folder=folder, filename=filename, 
@@ -117,8 +122,8 @@ def hemco_to_netCDF( folder, hemco_file_list=None, remake=False ):
 
     
  
-def bpch_to_netCDF(folder='none', filename='ctm.nc', bpch_file_list=None, remake=False, \
-        filetype="*ctm.bpch*", verbose=False, **kwargs):
+def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None, \
+        remake=False, filetype="*ctm.bpch*", verbose=False, **kwargs):
 
    """    
    Converts GEOS-Chem ctm.bpch output file(s) to NetCDF
@@ -129,7 +134,8 @@ def bpch_to_netCDF(folder='none', filename='ctm.nc', bpch_file_list=None, remake
    filename (str): name to give created NetCDF
    bpch_file_list (list): list of files to convert 
    remake (boolean): overwrite existing NetCDF file
-   filetype (str): string with wildcards to match filenames ( e.g. *ctm.bpch*,*ts*bpch* )
+   filetype (str): string with wildcards to match filenames 
+   ( e.g. *ctm.bpch*,*ts*bpch* )
    verbose (boolean): print (minor) logging to screen
    
    Returns
@@ -150,7 +156,7 @@ def bpch_to_netCDF(folder='none', filename='ctm.nc', bpch_file_list=None, remake
            return
        
    # Look for files if file list is not provided.
-   if bpch_file_list==None:
+   if isinstance( bpch_file_list, type(None) ):
        logging.debug("Searching for the following bpch filetype: {filetype}"\
                 .format(filetype=filetype))
        bpch_files = glob.glob( folder + '/' + filetype )
@@ -186,7 +192,7 @@ def get_folder(folder):
    """
     Get name of folder that contains ctm.bpch data from command line 
    """
-   if folder=='none':
+   if isinstance( folder, type(None) ):
       # getting the folder location from system argument
       if len(sys.argv)<=1:
          logging.warning( "No folder location specified for the data")

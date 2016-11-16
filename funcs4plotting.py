@@ -4334,12 +4334,15 @@ def get_input_vars(debug=False):
     """ 
     Get input from command line arguments 
     
-    ARGUEMENTS: 
-     - spec, filename, category, start date , end date  
-    NOTES:
-     - Needs update to description
-    """
+    Parameters
+    ----------
+    debug (boolean): legacy debug option, replaced by python logging
 
+    Returns
+    -------
+    (list): spec(str), filename(str), category(str), start date(tuple), 
+    end date  (tuple)
+    """
     # If working directory (wd) provided, use command line arguments
     try:
         wd = sys.argv[1]
@@ -4435,12 +4438,17 @@ def show_plot():
 def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=True):
     """
     Save a plot to disk.
-    Inputs:
-    title=myplot (String)
-    location=None (String of directory to save output)
-    extensions=['png'] (List of strings of file extensions.)
-    Outputs:
-    None
+
+    Parameters
+    ----------
+    title (str): plot title
+    location (str): String of directory to save output
+    extensions (list):  List of strings of file extensions. (e.g. ['png'])
+    tight (boolean): use tight layout - redundent?
+
+    Returns
+    -------
+    (None)
     """
 
 #    if tight:

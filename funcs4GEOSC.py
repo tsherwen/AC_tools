@@ -1110,15 +1110,25 @@ def get_GC_output( wd, vars=None, species=None, category=None, r_cubes=False, \
 # ----
 # 1.24 - Get gc resolution from ctm.nc
 # ---
-def get_gc_res( wd ):
+def get_gc_res( wd, filename='ctm.nc' ):
     """
     Extract resolution of GEOS-Chem NetCDF
+
+    Parameters
+    ----------
+    filename (Str): name of NetCDF file (e.g. ctm.nc or ts_ctm.nc)
+    wd (str): the directory to search for file in
+
+    Returns
+    -------
+    (str)
+
     """
     # create NetCDf if not created.
-    fname = wd+ '/ctm.nc'
+    fname = wd+ '/'+filename
     if not os.path.isfile(fname):
         from bpch2netCDF  import convert_to_netCDF
-        convert_to_netCDF( wd )
+        convert_to_netCDF( wd, filename=filename )
 
     # "open" NetCDF + extract time
     with Dataset( fname, 'r' ) as rootgrp:
@@ -1130,7 +1140,7 @@ def get_gc_res( wd ):
     # compare with dictionary to get resoslution    
     dims = (len(lon),len(lat))
     res = get_dims4res( r_dims=True, just2D=True )[dims]
-    if res==None:
+    if isinstance(res, type(None)):
         logging.error("Could not find resolution for run in {wd}".format(wd=wd))
 
     return res 
@@ -1635,26 +1645,38 @@ def get_gc_months(ctm_f=None, wd=None, verbose=False, debug=False):
 # 2.07 - Get gc datetime
 # -----
 def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
-            verbose=False, debug=False):
+        filename='ctm.nc', verbose=False, debug=False):
     """ 
     Return list of dates in datetime output from CTM output 
-    """
 
+    Parameters
+    ----------
+    cat (str): GAMAP species category
+    ctm_f (file object): PyGChem (v2.0) opened ctm.bpch file  - vestigle 
+    debug (boolean): legacy debug option, replaced by python logging
+    filename (Str): name of NetCDF file (e.g. ctm.nc or ts_ctm.nc)
+    spec (str): species/tracer/variable name 
+    ver (str): The GEOS-Chem halogen version that is being used
+    wd (str): Specify the wd to get the results from a run.
+
+    Returns
+    -------
+    (list) 
+
+    Notes
+    -----
+    """
+    logging.info( 'get_gc_datetime called @: {} with file: {}'.format( wd, \
+        filename) )
     # REDUNDENT - retain for backwards compatibility
     if pygchem.__version__ == '0.2.0':
         d  = ctm_f.filter(name=spec, category=cat)
-        if debug:
-            print '>'*30,d
-            print '>.'*15, sorted(d)
-        return [ i.times for i in d ]
+        logging.debug( d, sorted(d), '{}'.format(*[ i.times for i in d ]) )
 
     # Extract datetime from cube    
     else:
-        if debug:
-            print  '>'*5, wd, glob.glob( wd+ '/*ctm*' )
-
         # create NetCDf if not created.
-        fname = wd+ '/ctm.nc'
+        fname = wd+ '/'+filename
         if not os.path.isfile(fname):
             from bpch2netCDF  import convert_to_netCDF
             convert_to_netCDF( wd )
@@ -1669,9 +1691,8 @@ def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
                     'hours since %Y-%m-%d %H:%M:%S' )
             starttime = time2datetime( [starttime] )[0]
             dates = np.array(dates) 
+        logging.info( 'file start date: {}'.format(starttime) )
 
-        if debug:
-            print starttime
 
         # allow for single date output <= is there a better gotcha than this?
         if len(dates.shape)== 0 :
@@ -1679,8 +1700,7 @@ def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
 
         # convert to date time
         dates = [ add_hrs( starttime, i ) for i in dates ]
-        if debug:
-            print dates
+        logging.debug( dates )
         
         # return datetime objects
         return dates
@@ -1694,7 +1714,6 @@ def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
 # 2.09 - Get tropospheric Burden - 
 # -------------
 # Redundent - mv'd to bottom of this module
-
 
 
 # --------------
@@ -3272,8 +3291,7 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
         vol = get_volume_np( ctm_f=ctm_f, s_area=s_area, wd=wd, res=res,\
              debug=debug )
         logging.info( 'WARNING: extracting volume online - inefficent' )
-    if debug:
-        logging.debug( [ (i.sum(), i.shape) for i in ars ] )
+    logging.debug( [ (i.sum(), i.shape) for i in ars ] )
 
     # --- loop spec ars
     for n, arr in enumerate( ars ):
@@ -3285,7 +3303,6 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
         if month_eq:
             day_adjust = d_adjust( months, years)
             ars[n] = arr * day_adjust
-
     logging.debug( [ (i.sum(), i.shape) for i in ars ] )
 
     # only consider troposphere ( update this to use mask4troposphere )
