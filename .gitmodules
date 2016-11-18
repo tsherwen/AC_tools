@@ -1,3 +1,3 @@
-[submodule "Scripts/monthly-run"]
-	path = Scripts/monthly-run
-	url = https://github.com/bn506/monthly-run.git
+[submodule "Scripts/monthly_run"]
+	path = Scripts/monthly_run
+	url = https://github.com/wacl-york/monthly_run.git
