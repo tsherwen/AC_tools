@@ -470,10 +470,9 @@ def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, \
 # 1.21 - Process species for given arrays to (v/v) in respective scale + DU
 # ---
 def process_data4specs( specs=None, just_bcase_std=True, preindustrial=False, \
-            just_bcase_no_hal=False, res='4x5', ver='1.6', diff=True, \
-            pcent=True, tight_constraints=True, trop_limit=True, \
-            NOy_family=False, Bry_family=False, Iy_family=False, \
-            rtn_specs=False, debug=False ): 
+        just_bcase_no_hal=False, res='4x5', ver='1.6', diff=True, pcent=True, \
+        tight_constraints=True, trop_limit=True, NOy_family=False, \
+        Bry_family=False, Iy_family=False, rtn_specs=False, debug=False ): 
     """ 
     Return species values in v/v and DU. Also return datetimes for CTM output and time in 
     troposphere diagnostics  
@@ -1048,9 +1047,9 @@ def get_GC_output( wd, vars=None, species=None, category=None, r_cubes=False, \
             and ( (121,81,47) != arr[0].shape ) \
             and ( (121,81,38) != arr[0].shape ) ):
                 
-            logging.info( 'prior to roll axis: ', [str(i.shape) for i in arr] )
+            logging.info('prior roll axis: '.format(*[str(i.shape) for i in arr]))
             arr = [np.rollaxis(i,0, 3) for i in arr]
-            logging.info( 'post to roll axis: ', [str(i.shape) for i in arr] )
+            logging.info('post roll axis: '.format(*[str(i.shape) for i in arr]))
 
         # --- loop variables post processing and force inclusions of time dim if applicable
         need_time = ['IJ_AVG', 'GMAO', 'BXHGHT', 'TIME_TPS_']
@@ -2131,17 +2130,33 @@ def loc_is_water_grid_box( lat, lon, res='4x5' ):
 # 2.18 - Get dry dep for given spec
 # -------------   
 def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
-                years=None, res='4x5', vol=None, debug=False, \
-                trop_limit=True, Iodine=False):
+        years=None, res='4x5', vol=None, trop_limit=True, Iodine=False, \
+        debug=False ):
     """ 
     Get array of dry deposition values for a given species
 
-    NOTES:
+    Parameters
+    ----------
+    trop_limit (boolean): limit 4D arrays to troposphere     
+    ctm_f (file object): PyGChem (v2.0) opened ctm.bpch file  - vestigle 
+    wd (str): the directory to search for file ctm output file in
+    vol (array): volumne contained in each grid box (cm^-3)
+    years, months (list): list of years and months in model output file
+    res (str): GEOS-Chem output configuration resolution ( '4x5' etc... )
+    spec (str): species/tracer/variable name 
+    Iodine (boolean): Return in terms of unit iodine mass
+    debug (boolean): legacy debug option, replaced by python logging    
+
+    Returns
+    -------
+    (array)
+
+    Notes
+    -----
      - Values are returned as a spatial arry with a time dimension 
     (e.g. shape= (72, 46, 12) )
     """
-    if debug:
-        print 'spec dep called for: ', spec
+    logging.info( 'spec dep called for: ', spec )
 
     # Get surface area if not provided
     if not isinstance(s_area, np.ndarray):
@@ -2153,17 +2168,15 @@ def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
             debug=debug) 
     else:
         df = get_GC_output( wd, category='DRYD-FLX', species=spec+'df' )
-
-    if debug:
-        print '*'*10,[( i.shape, np.sum(i), np.mean(i)) for i in [df] ], len(df)
+    logging.debug( 'df (len=={}) descrp: {}'.format( len(df), \
+        *[str( i.shape, i.sum(), i.mean()) for i in [df] ]) )
 
     # Convert to Gg "Ox" (Gg X /s)
-    df = molec_cm2_s_2_Gg_Ox_np( df, spec, s_area=s_area, \
-                Iodine=Iodine, res=res, debug=debug ) 
-
-    if debug:
-        print '0'*20, [( i.shape, np.sum(i), np.mean(i)) for i in [df]], len(df)
-
+    df = molec_cm2_s_2_Gg_Ox_np( df, spec, s_area=s_area, Iodine=Iodine, \
+        res=res, debug=debug ) 
+    logging.debug( 'df (len=={}) descrp: {}'.format( len(df), \
+        *[str( i.shape, i.sum(), i.mean()) for i in [df] ]) )
+        
     if isinstance( months, type(None) ):
         months = get_gc_months( ctm_f=ctm_f, wd=wd )
     if isinstance( years, type(None) ):
