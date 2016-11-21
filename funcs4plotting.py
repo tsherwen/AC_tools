@@ -14,30 +14,11 @@ NOTE(S):
 
 # -- Plotting                                                                                       
 from mpl_toolkits.basemap import Basemap
-from matplotlib.colors import LogNorm
-from matplotlib.ticker import LogFormatter
-from matplotlib.ticker import NullFormatter
-from matplotlib.ticker import FuncFormatter
-from matplotlib.ticker import FormatStrFormatter
-from matplotlib.ticker import MultipleLocator
-from matplotlib import ticker
-import matplotlib.ticker
-# Probably not good to import this stuff all the possible ways...
-# Worth trying to remove some of this to streamline.
-
-
-import matplotlib.font_manager as font_manager
-import matplotlib.collections as mcoll
-import matplotlib.path as mpath
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-from matplotlib import cm
-from matplotlib.collections import LineCollection
 from pylab import setp
 import functools
 import matplotlib
-from mpl_toolkits.axes_grid1 import AxesGrid
-from mpl_toolkits.mplot3d import Axes3D
 
 # -- Time                                                                                           
 import time
@@ -203,7 +184,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     # Grid/Mesh values
     x, y = np.meshgrid(lon,lat)
     # Set existing axis to current if axis provided
-    if not isinstance( ax, type( None ) ):
+    if not isinstance(ax, type(None)):
         plt.sca( ax )
  
     # ---- Setup map ("m") using Basemap
@@ -213,7 +194,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     # Process data to grid
     x, y = np.meshgrid( *m(lon, lat) )
     # reduce plotted region for nested grids/subregion plots
-    if (set_window):
+    if set_window:
         plt.xlim( lon_0, lon_1)
         plt.ylim( lat_0, lat_1 )
     else:
@@ -233,9 +214,9 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     if isinstance( fixcb_, type(None) ) or isinstance( cmap, type(None) ):
         fixcb_ = np.array( [ (i.min(), i.max()) for i in [arr ] ][0] )
 
-    if isinstance( cmap, type(None) ):
+    if isinstance(cmap, type(None)):
         # Set readable levels for cb, then use these to dictate cmap
-        if isinstance( lvls, type(None) ):
+        if isinstance(lvls, type(None)):
             lvls = get_human_readable_gradations( vmax=fixcb_[1], vmin=fixcb_[0], \
                 nticks=nticks, sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
 
@@ -262,7 +243,8 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     
     # --------------  Linear plots -------------------------------
     # standard plot 
-    if any( [ (case==i) for i in 3, 9 ] ):
+    linear_cases = [3,9]
+    if case in linear_cases:
         if debug:
             print fixcb_, arr.shape, [ len(i) for i in lon, lat ], norm, cmap
         poly = m.pcolor( lon, lat, arr, cmap=cmap, norm=norm, alpha=alpha, \
@@ -290,7 +272,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     if no_cb:
         pass
     else:
-        if isinstance( cb, type(None) ):
+        if isinstance(cb, type(None)):
             # if linear plot without fixcb set, then define here
             ax = plt.gca()
 
@@ -300,7 +282,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
         for t in cb.ax.get_yticklabels():
             t.set_fontsize(f_size)
 
-        if not isinstance( units, type(None) ):
+        if not isinstance(units, type(None)):
             cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)  
 
         # Special treatment for log colorbars
@@ -953,7 +935,7 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
             press = [ myround(i,100) for i in press ][::-1]
             ax2.set_yticks( press[::10] )
             ax2.set_yticklabels( press[::10] )
-            majorFormatter = FormatStrFormatter('%d')
+            majorFormatter = mpl.ticker.FormatStrFormatter('%d')
             ax2.yaxis.set_minor_formatter( majorFormatter )                        
             ax2.set_ylabel( 'Press. (hPa)', fontsize = f_size*.75)
             ax2.invert_yaxis()
@@ -1457,7 +1439,7 @@ def north_pole_surface_plot( arr, return_m=False, grid=True, centre=False, \
 
     # Set number of ticks
         if set_cb_ticks:
-            tick_locator = ticker.MaxNLocator(nticks=nticks)
+            tick_locator = mpl.ticker.MaxNLocator(nticks=nticks)
             cb.locator = tick_locator
             cb.update_ticks()
 
@@ -1562,7 +1544,7 @@ def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False,
     # Set number of ticks
     if  (not no_cb):
         if set_cb_ticks:
-            tick_locator = ticker.MaxNLocator(nticks=nticks)
+            tick_locator = mpl.ticker.MaxNLocator(nticks=nticks)
             cb.locator = tick_locator
             cb.update_ticks()
 
@@ -2160,8 +2142,9 @@ def scatter_3D_cube( data, dims=None, res='2x2.5', fig=None, everyother=1, inter
     """
     Make a 3D scatter cube of given 3D array
     """
-    if debug:
-        print data.shape
+    logging.debug('scatter_3D_cube called with input data shape: ', data.shape)
+
+    from mpl_toolkits.mplot3d import Axes3D
 
     if isinstance( dims, type(None) ):
         lon, lat, alt = get_latlonalt4res( res=res ) 
@@ -2174,7 +2157,7 @@ def scatter_3D_cube( data, dims=None, res='2x2.5', fig=None, everyother=1, inter
     cmap = plt.cm.get_cmap(cm)
     if isinstance( fig, type(None) ):
         fig = plt.figure(1)
-    fig.clf()
+    fig.clf()    
     ax = Axes3D(fig)
     ax.scatter(X,Y,Z, c=data, cmap=cmap)
 
@@ -2244,12 +2227,12 @@ def get_seasonal_plot( arr, fixcb=None, fig=None, f_size=15, \
 # -------------
 def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
         left= 0.1, width=0.60, bottom=0.1, height=0.60, widthII=0.2, \
-        fit = 0.02, binwidth=0.1, Trend_line = False, cmap=cm.gnuplot2, \
+        fit = 0.02, binwidth=0.1, Trend_line = False, cmap=plt.cm.gnuplot2, \
         X_title='X title', Y_title='Y title', f_size=5 , line121=False ):
     """ Plots a X vs. Y histogram """
 
     # Use hist code 
-    nullfmt = NullFormatter()         # no labels
+    nullfmt = mpl.ticker.NullFormatter()         # no labels
 
     # start with a rectangular Figure
     if isinstance( fig, type(None) ):
@@ -2594,12 +2577,61 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
         dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, title=None, \
         window=False, interval=1, ylabel=True, cb='CMRmap_r', width=0.015,\
-        orientation='vertical', rotatecbunits='vertical', title_y=1, title_x=0.5, \
-        no_cb=True, return_m=False, log=False, wd=None, resolution='c', \
-        lat_min = None, lat_max=None, lon_min=None, lon_max=None, \
-        xlabel=True, limit_window=False,  verbose=False, debug=False ):
-    """ Creates a "standard" spatial plot with acceptable ascethics. Customise 
-    with a range of arguements provide during the call to function. 
+        orientation='vertical', rotatecbunits='vertical', title_y=1, \
+        title_x=0.5, no_cb=True, return_m=False, log=False, wd=None, \
+        resolution='c', lat_min = None, lat_max=None, lon_min=None, \
+        lon_max=None, xlabel=True, limit_window=False,  \
+        verbose=False, debug=False ):
+    """ 
+    Wrapper for map_plot - Creates a "standard" spatial plot with acceptable 
+    ascethics. Customise with a range of arguements provide during the call 
+    to function. 
+
+    Parameters
+    ----------
+    adjust_window (int): amount of array entries to remove the edges of array 
+    alhpa (float): transparency of plotter data
+    arr (np.array): input (2D) array
+    case (str or int): case for type of plot (vestigle: use log=True of False (default))
+    cmap (str): force colormap selection by providing name 
+    centre (boolean): use centre points of lon/lat grid points for mapping data surface
+    drawcountries (boolean): add countries to basemap?
+    debug (boolean): legacy debug option, replaced by python logging
+    degrade_resolution (boolean): reduce resolution of underlay map detail
+    discrete_cmap (boolean): use a discrete instead of conitunous colorbar map
+    everyother (int): use "everyother" axis tick (e.g. 3=use every 3rd)
+    f_size (float): fontsise
+    fixcb (np.array): minimium and maximum to fix colourbar
+    fixcb_buffered (array): minimium and maximum to fix colourbar, with buffer space 
+    format (str): format string for colorbar formating
+    grid (boolean): apply a grid over surface plot?
+    extend (str): colorbar format settings ( 'both', 'min', 'both' ... )
+    interval (int): x/y tick interval in multiples of 15 degrees lat/lon
+    lvls (list): manually provide levels for colorbar
+    log (boolean): use a log scale for the plot and colorbar
+    no_cb (boolean): include a coloubar?
+    norm (norm object): normalisation to use for colourbar and array
+    nticks (int): number of ticks on colorbar
+    mask_invalids (boolean): mask invalid numbers (to allow saving to PDF)
+    res (str): GEOS-Chem output configuration resolution ( '4x5' etc... )
+    resolution (str): basemasp resolution settings ( 'c' = coarse, 'f' = fine ...  )
+    rotatecbunits (str): orientation of colourbar units
+    shrink (boolean): colorbar size settings ( fractional shrink )
+    set_window (boolean): set the limits of the plotted data (lon_0, lon_1, lat_0, lat_1)
+    (for nested boundary conditions )
+    sigfig_rounding_on_cb (int): significant figure rounding to use for colourbar
+    set_cb_ticks (boolean): mannually set colorbar ticks? (vestigle)     
+    title (str): plot title (deafult is ==None, therefore no title)
+    tight_layout (boolean): use use tight lyaout for figure
+    ylabel, xlabel (boolean): label x/y axis?
+    units (str): units of given data for plot title 
+    verbose (boolean): legacy debug option, replaced by python logging
+    wd (str): Specify the wd to get the results from a run.
+    window (boolean): use window plot settings (fewer axis labels/resolution of map)
+
+    Returns
+    -------
+    optionally returns basemap (return_m==True) and colorbar (no_cb!=True) object 
 
     NOTES:
         Provide an 3D array of lon, lat, and alt
@@ -3507,7 +3539,7 @@ def get_ls(num):
 # --------   
 # 4.21 - takes time in troposphere diagnostic array (46, 47) overlayes 
 # --------
-def greyoutstrat( fig,  arr, axn=[1,1,1], ax=None, cmap=cm.bone_r, \
+def greyoutstrat( fig,  arr, axn=[1,1,1], ax=None, cmap=plt.cm.bone_r, \
         res='4x5', rasterized=True, debug=False):
     """ 
     Grey out stratosphere in existing zonal plot. 
@@ -3662,43 +3694,44 @@ def annotate_gc_grid(ax, res='4x5', f_size=6.5, loc_list=[ [-9999,-9999] ],
 # --------
 # 4.31 - Function for centering colorbar
 # --------
-def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, \
-            upper=1,start_center=0.5, stop=1.0, maintain_scaling=True,\
-            arr=None, name='shiftedcmap', npoints=257, \
-            verbose=True, debug=False ):
+def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, upper=1, \
+        start_center=0.5, stop=1.0, maintain_scaling=True, arr=None, \
+        name='shiftedcmap', npoints=257, verbose=True, debug=False ):
     """ 
-    adapted from stackoverflow to allow for maintaining scaling: 
+    ORGINAL DESCRIPTION: Function to offset the "center" of a colormap. Useful 
+    for data with a negative min and positive max and you want the middle of 
+    the colormap's dynamic range to be at zero. 
+    
+    Parameters
+    ----------
+    cmap (colormap): The matplotlib colormap to be altered
+    start (float): Offset from lowest point in the colormap's range.
+        Defaults to 0.0 (no lower ofset). Should be between 0.0 and `midpoint`.
+    midpoint (float): The new center of the colormap. Defaults to 0.5 
+    (no shift). Should be between 0.0 and 1.0. In general, this should be
+    1 - vmax/(vmax + abs(vmin)). For example if your data range from -15.0 to
+    +5.0 and you want the center of the colormap at 0.0, `midpoint` should be 
+    set to  1 - 5/(5 + 15)) or 0.75
+    stop (float): Offset from highets point in the colormap's range. Defaults 
+    to 1.0 (no upper ofset). Should be between `midpoint` and 1.0.
+
+    Returns
+    -------
+    (colormap)
+
+    Notes
+    -----
+     - adapted from stackoverflow to allow for maintaining scaling: 
     original: "http://stackoverflow.com/questions/7404116/defining-the-  \
     midpoint-of-a-colormap-in-matplotlib "
-    
-    ORGINAL DESCRIPTION:
-    Function to offset the "center" of a colormap. Useful for
-    data with a negative min and positive max and you want the
-    middle of the colormap's dynamic range to be at zero
-
-    Input
-    -----
-      cmap : The matplotlib colormap to be altered
-      start : Offset from lowest point in the colormap's range.
-          Defaults to 0.0 (no lower ofset). Should be between
-          0.0 and `midpoint`.
-      midpoint : The new center of the colormap. Defaults to 
-          0.5 (no shift). Should be between 0.0 and 1.0. In
-          general, this should be  1 - vmax/(vmax + abs(vmin))
-          For example if your data range from -15.0 to +5.0 and
-          you want the center of the colormap at 0.0, `midpoint`
-          should be set to  1 - 5/(5 + 15)) or 0.75
-      stop : Offset from highets point in the colormap's range.
-          Defaults to 1.0 (no upper ofset). Should be between
-          `midpoint` and 1.0.
     """ 
     if maintain_scaling:
-        # cut off extra colorbar above point to shift maxoum too... 
+        # Cut off extra colorbar above point to shift maxoum too... 
         vmin, vmax= arr.min(), arr.max()
 
-        # symetric range
+        # Symetric range
         eq_range = max(  abs(vmin), abs(vmax) ) *2 
-        # actual range
+        # Actual range
         act_range = abs( vmin ) +abs( vmax  )
         cut_off = act_range/eq_range
 
@@ -3712,18 +3745,17 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, \
             cmap = matplotlib.colors.LinearSegmentedColormap.from_list(\
                 'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=lower, \
                 b=upper ), cmap(np.linspace(lower, upper, npoints)))
-
-            if verbose:
-                print 'maintain scale: ', [float(i) for i in list( [ eq_range,\
-                    act_range, vmin, vmax, abs(vmin), abs(vmax), cut_off, \
-                    start_center, lower, upper, midpoint, start, stop] )  ]
+            logging.debug( 'maintain scale for vars: {}'.format( \
+                *[str(float(i)) for i in list([ eq_range, act_range, vmin, \
+                vmax, abs(vmin), abs(vmax), cut_off, start_center, lower, \
+                upper, midpoint, start, stop])] ) )
     cdict = { 'red': [], 'green': [], 'blue': [], 'alpha': [] }
 
-    # regular index to compute the colors
+    # Regular index to compute the colors
     reg_index = np.hstack([ np.linspace(start, start_center, 128, \
         endpoint=False), np.linspace(start_center, stop, 129, endpoint=True)  ])
     
-    # shifted index to match the data
+    # Shifted index to match the data
     shift_index = np.hstack([ np.linspace(0.0, midpoint, 128, endpoint=False), \
         np.linspace(midpoint, 1.0, 129, endpoint=True) ])
 
@@ -3745,15 +3777,45 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, \
 # --------
 def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
         orientation='vertical', f_size=20, rotatecbunits='vertical', nticks=10, \
-        extend='neither', norm=None, log=False,  format=None, cmap=None,\
+        extend='neither', norm=None, log=False, format=None, cmap=None,\
         vmin=0, vmax=10, cb_ax=None, ticklocation='auto', extendfrac=None, \
         sigfig_rounding_on_cb=2, lvls=None, discrete_cmap=False, boundaries=None, \
         verbose=True, debug=False ):
     """ 
-    Create Colorbar. 
-    NOTES:
-    - This allows for avoidance of basemap's issues with  spacing definitions when 
-    conbining with colorbar objects within a plot 
+    Create Colorbar based on recieved parameters.
+
+    Parameters
+    ----------
+    fig (figure instance): figure to add colorbar to
+    cb_ax (axis instance): axis for colorbar
+    ticklocation (str): how to set tick locations (e.g. 'auto')
+    units (str): label for colorbar
+    rotatecbunits (str): rotation of colorbar units
+    left, bottom, width, height (float): location to place colorbar
+    orientation (str): orientation of colorbar
+    f_size (float): font size
+    nticks (int): number of ticks on colorbar
+    extend (str): colorbar format settings ( 'both', 'min', 'both' ... )
+    norm (norm object): normalisation to use for colourbar 
+    log (boolean): use log scale for colorbar
+    format (str): format string for colorbar tick formating
+    cmap (str): colormap instance 
+    vmin, vmax (float): miminium and maximum of colorbar 
+    extendfrac (float): fraction by which to extend "pointers" on colorbar
+    sigfig_rounding_on_cb (int): significant figure rounding to use for colourbar
+    lvls (list): manually provide levels for colorbar
+    boundaries (list):  manually provide levels for discrete colorbar
+    discrete_cmap (boolean): use a discrete instead of conitunous colorbar map
+    verbose (boolean): legacy debug option, replaced by python logging
+    debug (boolean): legacy debug option, replaced by python logging
+
+    Returns
+    -------
+
+    Notes
+    -----
+     - This function allows for avoidance of basemap's issues with spacing 
+    definitions when conbining with colorbar objects within a plot 
     """
     if debug:
         print 'mk_cb called with: ', norm, vmin, vmax, log, lvls
@@ -3942,14 +4004,39 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         sigfig_rounding_on_cb=2, buffer_cmap_upper=False, fixcb=None, nticks=10,  \
         verbose=True, debug=False ):
     """ 
-    Create correct color map for values given array.
-    This function checks whether array contains just +ve or -ve or both 
-    then prescribe color map  accordingly
+    Create *correct* colormap by checking if it contains just +ve or -ve or 
+    both then prescribing color map accordingly.
+
+    Parameters
+    ----------
+    arr (array): array of values to assess colourbar from
+    center_zero (boolean): make sure (divergent) colorbar centered around zero
+    minval, maxval (float): values to restrict 'gnuplot2' to
+    npoints (int): number of points in colormap
+    cb (str): name of colorbar string
+    maintain_scaling (boolean): maintain scaling within colormap when centering
+    negative (boolean): force colormap to be sequential negative (==True)
+    positive (boolean): force colormap to be sequential positive (==True)
+    divergent (boolean): force colormap to be divergent (==True)
+    sigfig_rounding_on_cb (int): number of sig. figs. to round colourbar ticks
+    buffer_cmap_upper (boolea): make sure colorbar has space for maxiumium val.
+    fixcb (array): lower and upper values to fix colourmap to.
+    nticks (int): number of ticks to use for colorbar
+    verbose (boolean): legacy debug option, replaced by python logging
+    debug (boolean): legacy debug option, replaced by python logging    
+
+    Returns
+    -------
+    (colormap instance)
     
-    NOTEs:
+    Notes
+    -----
      - this function also will can adjust colormaps to fit a given set of ticks
     """
-
+    # Mannual fix maintain scaling to False
+    maintain_scaling=False
+    
+    logging.info( 'get_colormap called' )
     # Manually override colourbar?
 #    cb='Blues' # Kludge. 
 #    cb='Reds' # Kludge. 
@@ -3969,26 +4056,21 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         # Gotcha - make sure max(lvls)  not increased > 0        
         if (max(lvls) <= 0) and ( not (arr.max() < 0 ) ):
             arr = np.array(  [ arr[0], 0 ] )
-            
         
     # make sure array has a mask
-    if debug:
-        print arr, [ ( i.min(), i.max() ) for i in [arr] ]
-        print '>'*5, ('ask' not in str( type( arr ) )), type( arr )
+    logging.debug( "arr min and max vals: {}, {} - arr type: {}".format( \
+        str(arr.min()), str(arr.max()), type(arr)) )
     if 'ask' not in str(type( arr ) ):
         arr = np.ma.array(arr) 
-#        s_mask = arr.mask
-        
-    if debug:
-        print '>'*5, ('ask' not in str( type( arr ) )), type( arr )
+#        s_mask = arr.mask        
+    logging.debug( 'arr type (post mask check) {}:'.format(type(arr)) )
     
     # If postive/negative not given, check if +ve/-ve
-    if not any( np.array([ positive, negative ]) ):
-        if debug:
-            print 'Testing if arr is +ve/-ve, for arr with min' +\
-                '{} and max {}'.format( arr.min(), arr.max() )
+    if (positive) or (negative):
+        logging.debug( 'Testing if arr is +ve/-ve, for arr with min' +\
+            '{} and max {}'.format( arr.min(), arr.max() ) )
 
-        # --- sequential
+        # --- sequential ?
         # negative?
         arr.mask =False
         arr.mask[arr<=0]=True
@@ -4001,17 +4083,16 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         if arr.mask.all():
             positive = True
 
-    #  reverse colourbar if negative
+    # Reverse colourbar if negative
     if negative:
         if cb == 'CMRmap_r':
             cb = cb[:-2]
         else:
             cb = cb+'_r'
-
-    if verbose:
-        logging.info( 'cmap is: >{}< & data is:'.format( cb ))
-        logging.info( '< postive == {}, negative == {}, divergent == {} >'.format(  \
-            positive, negative, (( not positive) and (not negative)) ))
+    # log colorbar details
+    logging.info( 'cmap is: >{}< & data is:'.format( cb ))
+    logging.info( '< postive == {}, negative == {}, divergent == {} >'.format(\
+        positive, negative, (( not positive) and (not negative)) ))
 
     # load color map
     cmap = plt.get_cmap( cb )
@@ -4029,15 +4110,17 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
 
     # --- divergent
     if ( ( not positive) and (not negative) ) or divergent:
-        if debug:
-            print 'diverging data? =={}, for values range: '.format( True ),
+        logging.debug('Data is divergent' )
         arr.mask = False
         cmap = plt.cm.RdBu_r
 #        cmap = plt.cm.Spectral
         # Centre color bar around zero
         if center_zero:
-            vmin, vmax = arr.min(), arr.max()
-            print 1-vmax/(vmax + abs(vmin)), vmin, vmax
+            vmin, vmax = arr.min(), arr.max() 
+            if buffer_cmap_upper:
+                pass
+            logging.debug('vals. for mid point {}, min {}, max {}'.format(\
+                str(1-vmax/(vmax + abs(vmin))), str(vmin), str(vmax)) )
             cmap = shiftedColorMap(cmap, midpoint=1-vmax/(vmax + abs(vmin)), \
                 maintain_scaling=maintain_scaling, arr=arr, name='shifted', \
                 verbose=verbose, debug=debug )
@@ -4049,8 +4132,8 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
 
 #    arr.mask = s_mask
 
-    if debug:
-        print cb, center_zero                  
+    logging.debug('colorbar used: {} (center_zero=={})'.format(cb, center_zero))
+
     if buffer_cmap_upper:
         return cmap, fixcb_
     else:
@@ -4119,7 +4202,7 @@ def colorline( x, y, z=None, cmap=plt.get_cmap('copper'),  \
     # convert x and y into indices    
     segments = make_segments(x, y)
 
-    lc = mcoll.LineCollection(segments, array=z, cmap=cmap, norm=norm,
+    lc = mpl.collections.LineCollection(segments, array=z, cmap=cmap, norm=norm,
                               linewidth=linewidth, alpha=alpha)
 
     if isinstance( ax, type(None) ):                              
@@ -4158,7 +4241,7 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
             .format(vmin=vmin, vmax=vmax, lvls=lvls))
     
 
-    if lvls==None:
+    if isinstance(lvls, type(None)):
         lvls = np.linspace( vmin, vmax, nticks, endpoint=True )
 
 #    verbose=True
@@ -4170,7 +4253,7 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
 
     if vmin==vmax:
         logging.error("There is no difference between vmin and vmax!")
-        raise ValueError, "There is no differecne between the min and max of the data"
+        raise ValueError, "There is no difference between the min and max of the data"
 
 
     try:
