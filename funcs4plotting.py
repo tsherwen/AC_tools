@@ -57,7 +57,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
         format='%.2f', adjust_window=0, f_size=20, alpha=1, log=False, \
         set_window=False, res=None, ax=None, case='default', units=None, \
         drawcountries=True,  set_cb_ticks=True, title=None, lvls=None,  \
-        interval=1, resolution='c', shrink=0.4, window=False, everyother=1,\
+        interval=15, resolution='c', shrink=0.4, window=False, everyother=1,\
         extend='neither', degrade_resolution=False, discrete_cmap=False, \
         lon_0=None, lon_1=None, lat_0=None, lat_1=None, norm=None,\
         sigfig_rounding_on_cb=2, fixcb_buffered=None, ylabel=True, \
@@ -85,7 +85,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     format (str): format string for colorbar formating
     grid (boolean): apply a grid over surface plot?
     extend (str): colorbar format settings ( 'both', 'min', 'both' ... )
-    interval (int): x/y tick interval in multiples of 15 degrees lat/lon
+    interval (int): x/y tick interval in degrees lat/lon (default=15)
     lvls (list): manually provide levels for colorbar
     log (boolean): use a log scale for the plot and colorbar
     no_cb (boolean): include a coloubar?
@@ -155,7 +155,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 
     # --- Window plot settings
     if window:
-        interval = 2   # double interval size 
+        interval = 30   # double interval size 
         degrade_resolution=True
     if  res == '0.5x0.666':
         interval,  adjust_window, resolution,shrink  =0.5, 3, 'f', 0.6
@@ -258,6 +258,14 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
         if no_cb:
             pass
         else:
+            # Ben re-write to compartmentalise the lvls generation.
+            # lvls = get_cb_lvls( min, max, num=nticks, style=log )
+            # Wha
+
+
+####################################################################################################
+            # Old version is here
+####################################################################################################
             # Get logarithmically spaced integers
             lvls = np.logspace( np.log10(fixcb[0]), np.log10(fixcb[1]), num=nticks)
             # Normalise to Log space
@@ -266,6 +274,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 	        # Create colourbar instance
             cb = plt.colorbar(poly, ax=m.ax, ticks=lvls, format=format, shrink=shrink, \
                 alpha=alpha, norm=norm, extend='min')
+####################################################################################################
         logging.debug(np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), lvls)
 
     # ----------------  Colorbars  ----------------  
@@ -354,7 +363,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 # 1.02 - Zonal plot - log or linear
 # --------
 def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=37, \
-        format='%.2f', interval=None, no_cb=False, units=None, shrink=0.4, alpha=1, \
+        format='%.2f', interval=15, no_cb=False, units=None, shrink=0.4, alpha=1, \
         res='4x5', window=False, cmap=None, log=False, fixcb=None, fixcb_buffered=None, \
         xlimit =None, rotatecbunits='horizontal', extend='neither', ylabel=True, cb=None,\
         lvls=None, sigfig_rounding_on_cb=2, nticks=10, norm=None, set_window=False, \
@@ -380,7 +389,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
     fig (figure instance): matplotlib figure instance
     format (str): format string for colorbar formating
     extend (str): colorbar format settings ( 'both', 'min', 'both' ... )
-    interval (int): x/y tick interval in multiples of 15 degrees lat/lon
+    interval (int): x/y tick interval in degrees lat/lon (default=15)
     lvls (list): manually provide levels for colorbar
     log (boolean): use a log scale for the plot and colorbar
     no_cb (boolean): include a coloubar?
@@ -442,10 +451,10 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
     # Plot settings for window plots
     if window:
         if isinstance( interval, type(None) ):
-            interval = 3
+            interval = 45
     else:
-        interval = 1
-    parallels = np.arange(-90,91,15*interval)
+        interval = 15
+    parallels = np.arange(-90,91,interval)
 
     # Is array reduced to chemistry computed troposphere? - if so limit alt
     if len(arr[0,:] ) != 38:
@@ -560,7 +569,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
 
     if trop_limit:
         ax.set_ylim( 0, 18 )
-    if interval != 1:
+    if interval != 15:
         ax.set_yticks( ax.get_yticks()[::interval] ) 
     # Setup X axis
     ax.set_xticks( parallels ) 
@@ -3954,7 +3963,7 @@ def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
 # 4.36 - Create base map for plotting
 # --------
 def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
-        everyother=1, f_size=10, interval=1, axis_titles=False, \
+        everyother=1, f_size=10, interval=15, axis_titles=False, \
         show_grid=True, drawcountries=False, ylabel=True, xlabel=True ):
     """ 
     Creates a basemap object. 
@@ -3970,11 +3979,11 @@ def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
         plt.xlabel('Longitude',fontsize = f_size*.75)
     if (res == '0.5x0.666') or drawcountries :
         m.drawcountries()
-    parallels = np.arange(-90,91,15*interval)
-    meridians = np.arange(-180,181,30*interval)
+    parallels = np.arange(-90,91,interval)
+    meridians = np.arange(-180,181,2*interval)
     if (res == '0.25x0.3125') :
-        parallels = np.arange(-90,91,15*interval/3  ) 
-        meridians = np.arange(-180,181,30*interval/3) 
+        parallels = np.arange(-90,91,interval/3  ) 
+        meridians = np.arange(-180,181,2*interval/3) 
 
     # use small font size for greater the runs with more axis labele
     f_size = f_size*.75
