@@ -161,8 +161,8 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
         case = {
                 1: 'IO',
                 2: 'limit_to_1_2',
-                3: 'default'
-                4: 'log'
+                3: 'default',
+                4: 'log',
                 }[case]
 
     if case=="IO":
