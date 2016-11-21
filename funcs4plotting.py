@@ -345,17 +345,17 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 #        # Turn tick locations into floats
 #        tick_locs = [float(_tick) for _tick in tick_locs]
 
-        cb.set_ticks( np.array(tick_locs) )
+#        cb.set_ticks( np.array(tick_locs) )
         # the format is not correctly being set... - do this manually instead
 #        if not isinstance( format, type(None) ):
 #            lvls = [ format % (i) for i in lvls ]
-        cb.set_ticklabels( lvls )#, format=format )
+#        cb.set_ticklabels( lvls )#, format=format )
 
 ####################################################################################################
 
     if case==9 or default:
         vmin=fixcb_[0]
-        vmax=fixcv_[1]
+        vmax=fixcb_[1]
 
     if log:
         norm=LogNorm(vmin=fixcb_[0], vmax=fixcb_[1], cmap=cmap)
