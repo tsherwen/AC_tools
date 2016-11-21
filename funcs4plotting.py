@@ -4518,6 +4518,14 @@ def show_plot():
     plt.show()
     return
 
+def close_plot():
+    """
+    Wrapper for plt.close(). Use to close the plots and free from memory.
+    """
+    plt.close()
+    return
+
+
 def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=True):
     """
     Save a plot to disk.
