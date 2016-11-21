@@ -122,7 +122,8 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     elif not len(arr.shape)==2:
         logging.error("Input array should be 2D. Got shape {shape}"\
             .format(shape=arr.shape))
-    logging.info("map_plot called")
+    logging.info("map_plot called (array shape={}, res={})".format( \
+        arr.shape, res) )
 
     # Find out what resolution we are using if not specified   
     if isinstance(res, type(None)):         
@@ -2636,12 +2637,10 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     NOTES:
         Provide an 3D array of lon, lat, and alt
     """
-    if verbose:
-        print 'plot_spatial_figure called, with shape {}, fixcb: {}'.format(\
-                arr.shape,  fixcb)+', min: {}, max:{}'.format( arr.min(), \
-                arr.max()  )
-        print '@ surface, min: {} and max: {}'.format( \
-                arr[...,0].min(), arr[...,0].max() )
+    logging.info( 'plot_spatial_figure called, with shape {}, fixcb: {}'.format(\
+        arr.shape,  fixcb)+', min: {}, max:{}'.format( arr.min(), arr.max()) )
+    logging.debug('@ surface, min: {} and max: {}'.format( arr[...,0].min(), \
+        arr[...,0].max()))
 
     # setup fig if not provided
     if isinstance( fig, type(None) ):
@@ -2684,26 +2683,23 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     if discrete_cmap:
         cmap, norm = mk_discrete_cmap( nticks=nticks,\
                 vmin=fixcb[0], vmax=fixcb[1], cmap=cmap )
-
-    if debug:
-        print  [ (i.min(), i.max(), i.mean()) for i in [ arr[...,0] ] ]
+    logging.debug( 'array min, max, mean='.format(  \
+        *[ str((i.min(), i.max(), i.mean())) for i in [arr[...,0]]]) )
     
     # Plot up
     plt_vars = map_plot( arr[...,0].T, format=format, cmap=cmap, ax=ax, \
-                    fixcb=fixcb, return_m=return_m, log=log, window=window, \
-                    no_cb=True, norm=norm, f_size=f_size*.75,  res=res, wd=wd, \
-                    fixcb_buffered=fixcb_buffered, interval=interval,\
-                    resolution=resolution, \
-                    xlabel=xlabel, ylabel=ylabel, verbose=verbose, debug=debug )
+        fixcb=fixcb, return_m=return_m, log=log, window=window, no_cb=True, 
+        norm=norm, f_size=f_size*.75,  res=res, wd=wd, resolution=resolution,\
+        fixcb_buffered=fixcb_buffered, interval=interval, xlabel=xlabel, \
+        ylabel=ylabel, verbose=verbose, debug=debug )
 
     # if title != None, add to plot
-    if not isinstance( title, type(None) ):
-
+    if not isinstance(title, type(None)):
         try:
             ax.annotate( title , xy=(title_x, title_y), \
                 textcoords='axes fraction', fontsize=f_size)
         except:
-            print 'WARNING! - using plt, not axis, for annotation of title'
+            logging.info('WARNING! using plt, not axis, for title annotation')
             plt.title( title, fontsize=f_size, y=title_y )
 #            plt.text(0.5, title_y, title, fontsize=f_size )        
 
@@ -2716,7 +2712,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         ax.set_ylim( lat_min, lat_max )
 
     # Manually Add colorbar
-    print '1'*300, orientation
+    logging.debug( 'colorbar orientation:', orientation )
     if no_cb:
         if orientation == 'vertical':
             width = width/2
@@ -4014,12 +4010,12 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
     minval, maxval (float): values to restrict 'gnuplot2' to
     npoints (int): number of points in colormap
     cb (str): name of colorbar string
-    maintain_scaling (boolean): maintain scaling within colormap when centering
+    maintain_scaling (boolean): maintain scaling for range in color change
     negative (boolean): force colormap to be sequential negative (==True)
     positive (boolean): force colormap to be sequential positive (==True)
     divergent (boolean): force colormap to be divergent (==True)
     sigfig_rounding_on_cb (int): number of sig. figs. to round colourbar ticks
-    buffer_cmap_upper (boolea): make sure colorbar has space for maxiumium val.
+    buffer_cmap_upper (boolean): make sure colorbar has space for maxiumium val.
     fixcb (array): lower and upper values to fix colourmap to.
     nticks (int): number of ticks to use for colorbar
     verbose (boolean): legacy debug option, replaced by python logging
@@ -4034,7 +4030,7 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
      - this function also will can adjust colormaps to fit a given set of ticks
     """
     # Mannual fix maintain scaling to False
-    maintain_scaling=False
+    maintain_scaling=True
     
     logging.info( 'get_colormap called' )
     # Manually override colourbar?
@@ -4066,7 +4062,7 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
     logging.debug( 'arr type (post mask check) {}:'.format(type(arr)) )
     
     # If postive/negative not given, check if +ve/-ve
-    if (positive) or (negative):
+    if (not positive) or (not negative):
         logging.debug( 'Testing if arr is +ve/-ve, for arr with min' +\
             '{} and max {}'.format( arr.min(), arr.max() ) )
 
@@ -4082,7 +4078,7 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         arr.mask[arr>=0]=True
         if arr.mask.all():
             positive = True
-
+    
     # Reverse colourbar if negative
     if negative:
         if cb == 'CMRmap_r':

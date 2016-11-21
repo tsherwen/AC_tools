@@ -237,7 +237,7 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
      and lon variabe retrival. Just update to passing a wd with output at the 
      correct resolution to fix this.
     """ 
-    logging.info("Calling get_latlonalt4res")
+    logging.info("Calling get_latlonalt4res for res={}".format(res) )
 
     if isinstance( res, type(None) ):
         logging.warning("No resolution specified. Assuming 4x5!")
@@ -465,8 +465,9 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.    
     """
+    logging.info('gchemgrid called for:{} (rtn_dict={})'.format(input,rtn_dict))
 
-    if ((input==None) and (rtn_dict==False)):
+    if isinstance(input, type(None)) and (rtn_dict==False):
         raise KeyError('gchemgrid requires an input or rtn_dict=True')
     d = {
     # 4x5                                                                                        
@@ -589,9 +590,6 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
             2.86400000e+00,   1.13400000e+00,   4.14000000e-01,
             1.39000000e-01,   3.80000000e-02]) ,
     }
-    if debug:
-        print 'gchemgrid called'
-    logging.debug('gchemgrid called')
 
     if rtn_dict:
         return d
