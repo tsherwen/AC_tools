@@ -280,128 +280,133 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 #                    nticks=nticks, cmap=cmap )
 #        else:
 #            cmap, norm = mk_discrete_cmap( vmin=fixcb[0], vmax=fixcb[1], \
-#                    nticks=nticks, cmap=cmap 
-    
+#                    nticks=nticks, cmap=cmap )
+
+    NEW_VERSION=False
+
+    if not NEW_VERSION:
 ####################################################################################################
             # Old version is here
 ####################################################################################################
-    # --------------  Linear plots -------------------------------
-    # standard plot 
-#    linear_cases = ["default",9]
-#    if case==9 or default:
-#        if debug:
-#            print fixcb_, arr.shape, [ len(i) for i in lon, lat ], norm, cmap
-#        poly = m.pcolor( lon, lat, arr, cmap=cmap, norm=norm, alpha=alpha, \
-#            vmin=fixcb_[0], vmax=fixcb_[1]  )
+        # --------------  Linear plots -------------------------------
+        # standard plot 
+        linear_cases = ["default",9]
+        if case==9 or default:
+            if debug:
+                print fixcb_, arr.shape, [ len(i) for i in lon, lat ], norm, cmap
+            poly = m.pcolor( lon, lat, arr, cmap=cmap, norm=norm, alpha=alpha, \
+                vmin=fixcb_[0], vmax=fixcb_[1]  )
 
-    # -----------------  Log plots --------------------------------
-#    if log: # l
-#        poly = m.pcolor(lon, lat, arr, norm=LogNorm(vmin=fixcb_[0], vmax=fixcb_[1]), \
-#            cmap=cmap)
+        # -----------------  Log plots --------------------------------
+        if log: # l
+            poly = m.pcolor(lon, lat, arr, norm=LogNorm(vmin=fixcb_[0], vmax=fixcb_[1]), \
+                cmap=cmap)
 
-#        if no_cb:
-#            pass
-#        else:
+            if no_cb:
+                pass
+            else:
 
 
-            # Get logarithmically spaced integers
-#            lvls = np.logspace( np.log10(fixcb[0]), np.log10(fixcb[1]), num=nticks)
-            # Normalise to Log space
-#            norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
+                # Get logarithmically spaced integers
+                lvls = np.logspace( np.log10(fixcb[0]), np.log10(fixcb[1]), num=nticks)
+                # Normalise to Log space
+                norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
 
-	        # Create colourbar instance
-#            cb = plt.colorbar(poly, ax=m.ax, ticks=lvls, format=format, shrink=shrink, \
-#                alpha=alpha, norm=norm, extend='min')
-#        logging.debug(np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), lvls)
+                    # Create colourbar instance
+                cb = plt.colorbar(poly, ax=m.ax, ticks=lvls, format=format, shrink=shrink, \
+                    alpha=alpha, norm=norm, extend='min')
+            logging.debug(np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), lvls)
 
-    # ----------------  Colorbars  ----------------  
-#    if not no_cb:
-#        if isinstance(cb, type(None)):
-            # if linear plot without fixcb set, then define here
-#            ax = plt.gca()
+        # ----------------  Colorbars  ----------------  
+        if not no_cb:
+            if isinstance(cb, type(None)):
+                # if linear plot without fixcb set, then define here
+                ax = plt.gca()
 
-        # Create colourbar instance
-#        cb = plt.colorbar( poly, ax=ax, shrink=shrink, alpha=alpha, extend=extend )
-        # set ylabel tick properties
-#        for t in cb.ax.get_yticklabels():
-#            t.set_fontsize(f_size)
+            # Create colourbar instance
+            cb = plt.colorbar( poly, ax=ax, shrink=shrink, alpha=alpha, extend=extend )
+            # set ylabel tick properties
+            for t in cb.ax.get_yticklabels():
+                t.set_fontsize(f_size)
 
-#        if not isinstance(units, type(None)):
-#            cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)  
+            if not isinstance(units, type(None)):
+                cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)  
 
-#        # Special treatment for log colorbars
-#        if log :    
-#            round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
-#            tick_locs = [ float('{:.2g}'.format( t )) for t in lvls ]
-#            # for asectics, round colorbar labels to sig figs given
-#            for n, lvl in enumerate( lvls ):
-#                try:
-#                    lvls[n] = round_to_n( lvl, sigfig_rounding_on_cb)
-#                except:
-#                    lvls[n] = lvl
-#        else:
-#            tick_locs = np.array( lvls ).copy()  
+            # Special treatment for log colorbars
+            if log :    
+                round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
+                tick_locs = [ float('{:.2g}'.format( t )) for t in lvls ]
+                # for asectics, round colorbar labels to sig figs given
+                for n, lvl in enumerate( lvls ):
+                    try:
+                        lvls[n] = round_to_n( lvl, sigfig_rounding_on_cb)
+                    except:
+                        lvls[n] = lvl
+            else:
+                tick_locs = np.array( lvls ).copy()  
 
-#        # Turn tick locations into floats
-#        tick_locs = [float(_tick) for _tick in tick_locs]
+            # Turn tick locations into floats
+            tick_locs = [float(_tick) for _tick in tick_locs]
 
-#        cb.set_ticks( np.array(tick_locs) )
-        # the format is not correctly being set... - do this manually instead
-#        if not isinstance( format, type(None) ):
-#            lvls = [ format % (i) for i in lvls ]
-#        cb.set_ticklabels( lvls )#, format=format )
+            cb.set_ticks( np.array(tick_locs) )
+            # the format is not correctly being set... - do this manually instead
+            if not isinstance( format, type(None) ):
+                lvls = [ format % (i) for i in lvls ]
+            cb.set_ticklabels( lvls )#, format=format )
 
 ####################################################################################################
 
-    if case==9 or default:
-        vmin=fixcb_[0]
-        vmax=fixcb_[1]
+    if NEW_VERSION:
 
-    if log:
-        norm=LogNorm(vmin=fixcb_[0], vmax=fixcb_[1], cmap=cmap)
-        lvls = np.logspace( np.log10(fixcb[0]), np.log10(fixcb[1]), num=nticks)
-        # Normalise to Log space
-        norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
-        extend='min'
-        ticks=lvls
-        ax=m.ax
+        if case==9 or default:
+            vmin=fixcb_[0]
+            vmax=fixcb_[1]
 
-        rount_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n-1))
-        tick_locs = [ float('{:.2g}'.format( t )) for t in lvls ]
-        # for asectics, round colorbar labels to sig figs given
-        for n, lvl in enumerate( lvls ):
-            try:
-                lvls[n] = round_to_n( lvl, sigfig_rounding_on_cb)
-            except:
-                lvls[n] = lvl
-    else:
-        tick_locs = np.array( lvls ).copy()  
+        if log:
+            norm=LogNorm(vmin=fixcb_[0], vmax=fixcb_[1], cmap=cmap)
+            lvls = np.logspace( np.log10(fixcb[0]), np.log10(fixcb[1]), num=nticks)
+            # Normalise to Log space
+            norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
+            extend='min'
+            ticks=lvls
+            ax=m.ax
 
-    # Turn tick locations into floats.
-    tick_locs = [float(_tick) for _tick in tick_locs]
+            rount_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n-1))
+            tick_locs = [ float('{:.2g}'.format( t )) for t in lvls ]
+            # for asectics, round colorbar labels to sig figs given
+            for n, lvl in enumerate( lvls ):
+                try:
+                    lvls[n] = round_to_n( lvl, sigfig_rounding_on_cb)
+                except:
+                    lvls[n] = lvl
+        else:
+            tick_locs = np.array( lvls ).copy()  
 
-    # Create the colormap
-    poly = m.pcolor(lon, lat, arr, norm=norm, vmax=vmax, vmin=vmin,
-            cmap=cmap, alpha=alpha)
+        # Turn tick locations into floats.
+        tick_locs = [float(_tick) for _tick in tick_locs]
 
-    # Add the colorbar if needed.
-    if not no_cb:
-        #if linear plot without fixcb set, then define here
-        if isinstance(cb, type(None)):
-            ax = plt.gca()
+        # Create the colormap
+        poly = m.pcolor(lon, lat, arr, norm=norm, vmax=vmax, vmin=vmin,
+                cmap=cmap, alpha=alpha)
 
-        cb = plt.colorbar(poly, ax=ax, ticks=lvls, format=format,
-                shrink=shrink, alpha=alpha, norm=norm, extend=extend)
+        # Add the colorbar if needed.
+        if not no_cb:
+            #if linear plot without fixcb set, then define here
+            if isinstance(cb, type(None)):
+                ax = plt.gca()
 
-        # Set ylabel tick properties
-        cb.ax.tick_params(labelsize=f_size)
+            cb = plt.colorbar(poly, ax=ax, ticks=lvls, format=format,
+                    shrink=shrink, alpha=alpha, norm=norm, extend=extend)
 
-        # Set ylabel units:
-        if not isinstance(units, type(None)):
-            cb.ax.set_ylabel( units, rotation=rotatecbunits, labelpad=f_size)
+            # Set ylabel tick properties
+            cb.ax.tick_params(labelsize=f_size)
 
-        cb.set_ticks (np.array(tick_locs) )
-        cb.set_ticklabels( lvls )
+            # Set ylabel units:
+            if not isinstance(units, type(None)):
+                cb.ax.set_ylabel( units, rotation=rotatecbunits, labelpad=f_size)
+
+            cb.set_ticks (np.array(tick_locs) )
+            cb.set_ticklabels( lvls )
 
 
 
