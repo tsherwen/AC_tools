@@ -298,7 +298,7 @@ def get_air_mass_np( ctm_f=None, wd=None, times=None, trop_limit=True,\
         arr = get_GC_output( wd=wd, vars=['BXHGHT_S__AD'], trop_limit=trop_limit, \
             dtype=np.float64)
 
-        logging.debug( 'arr' , type(arr), len(arr), arr.shape )
+        logging.debug( 'arr type={}, shape={}'.format( type(arr), arr.shape ))
     return arr
 
 # --------------
@@ -3750,6 +3750,34 @@ def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None, ctm_f=Fal
     else:
         return ar.mean(axis=3 )
 
+
+def get_2D_arr_weighted_by_X( arr, spec=None, res='4x5', print_values=False, \
+        s_area=None):
+    """
+    Get weighted average 2D value by another array (e.g. area weighted 
+
+    Parameters
+    ----------
+    arr (array): 2D array to average weighted by 2nd'y array (s_area)
+    res (str): the resolution if wd not given (e.g. '4x5' )
+    print_values (boolean): print calculated values
+    s_area (array): array of areas of grid boxes (could be any variable)
+    spec (str): species/tracer/variable name 
+    
+    Returns
+    -------
+    (float)
+    """
+    # Get surface area if not provided
+    if isinstance( None, type(None) ):
+        s_area = AC.get_surface_area( res )[...,0]  # m2 land map
+    # Calculate average and area weighted average
+    area_weighted_avg = ( arr*s_area ).sum()/ s_area.sum() 
+    if print_values:
+        print 'mean surface {} conc {}'.format(spec, arr.mean() ) 
+        print 'area weighted mean surface {} conc {}'.format( \
+            spec, area_weighted_avg )
+    return area_weighted_avg
 
 
 # --------------------------------------------------------------------------
