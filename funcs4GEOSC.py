@@ -222,7 +222,7 @@ def get_land_map(res='4x5', time=None, wd=None,debug=False):
 	 on-line extract on inclusion of generic output for various resoltions as txt files? 
     """
 
-    logging.info( 'called get surface area, for ', res )
+    logging.info( 'called get surface area, for {}'.format(res) )
     # Get AC_tools location, then set example data folder location
     import os
     import inspect
@@ -558,63 +558,53 @@ def process_data4specs( specs=None, just_bcase_std=True, preindustrial=False, \
         # convert to np arrays
         Vars, molecs, t_ps = [ np.ma.concatenate([ii[...,None] for ii in i], \
             axis=-1) for i in Vars, molecs, t_ps ]
-        print [i.shape for i in Vars, molecs, t_ps ]
+        logging.debug( *[i.shape for i in Vars, molecs, t_ps ] )
 
         # restore to shape used for previous analysis 
         molecs, t_ps= [ np.rollaxis( i, -1, 0 ) for i in molecs, t_ps ]
-        print [i.shape for i in Vars, molecs, t_ps ]
+        logging.debug( 'prior to roll', *[i.shape for i in Vars, molecs, t_ps ])
         Vars=np.rollaxis( Vars, -1, -5 )
-        print [i.shape for i in Vars, molecs, t_ps ]
+        logging.debug( 'post roll', *[i.shape for i in Vars, molecs, t_ps ])
 
-    if debug:
-        print [ ( i.shape, i.sum() ) for i in Vars, molecs, t_ps ]
+    logging.debug( *[ ( i.shape, i.sum() ) for i in Vars, molecs, t_ps ] )
     
     # apply tight constraints to troposphere? ( 
     if tight_constraints:
         t_ps = np.ma.masked_where( t_ps != 1, t_ps )
+    logging.debug( *[ ( i.shape, i.sum() ) for i in Vars, molecs, t_ps ] )
 
-    if debug:
-        print [ ( i.shape, i.sum() ) for i in Vars, molecs, t_ps ]
 #    Vars, molecs = [ i*t_ps[None,...] for i in Vars, molecs ]
     # remove stratospheric values
     Vars = Vars*t_ps[None,...] 
     molecs  =  (molecs*t_ps)[None,...]
-
-    if debug:
-        print [ ( i.shape, i.sum() ) for i in Vars, molecs, t_ps ]
+    logging.debug( *[ ( i.shape, i.sum() ) for i in Vars, molecs, t_ps ] )
     
     # Get DU values for each array (2D not 3D )
     # molecules O3 in trop. summed
     DUarrs = Vars*molecs
-    if debug:
-        print [ ( i.shape, i.sum() ) for i in [DUarrs] ]
+    logging.debug( *[ ( i.shape, i.sum() ) for i in [DUarrs] ] )
     DUarrs = DUarrs.sum(axis=-2)
     # Kludge back to 4D  ( this is due to the conversion to NetCDF for 0.3.0 )
     DUarrs=DUarrs[...,None,:]
 
-    if debug:
-        print [ ( i.shape, i.sum() ) for i in [DUarrs] ]
+    logging.debug( [ ( i.shape, i.sum() ) for i in [DUarrs] ] )
 
     # adjust to per unit area ( cm3 ) 
     tmp_s_area = s_area[None, None,...]
     tmp_s_area = tmp_s_area[...,None,None] 
     DUarrs =  DUarrs/ tmp_s_area
-
-    if debug:
-        print [ ( i.shape, i.sum() ) for i in DUarrs, tmp_s_area,s_area  ]
+    logging.debug( *[ (i.shape, i.sum()) for i in DUarrs, tmp_s_area, s_area ])
 
     # convert to DU   
     DUarrs = DUarrs/constants('mol2DU')
+    logging.debug( *[ (i.shape, i.sum()) for i in DUarrs, tmp_s_area, s_area ])
 
-    if debug:
-        print [ ( i.shape, i.sum() ) for i in DUarrs, tmp_s_area,s_area  ]
-
-    if debug:
-        for n in range( len(specs) ):
-            for nn in range(2):
-                print n,nn
-                print '!'*30, (DUarrs[n,nn,...]*tmp_s_area[0,0,...]).sum()/  \
-                    tmp_s_area[0,0,...].sum()
+#    if debug:
+#        for n in range( len(specs) ):
+#            for nn in range(2):
+#                print n,nn
+#                print '!'*30, (DUarrs[n,nn,...]*tmp_s_area[0,0,...]).sum()/  \
+#                    tmp_s_area[0,0,...].sum()
 
     # ---  Add familys to arrays by conbination of tracers
     # Shape of Vars, DUarrs = [(65, 2, 72, 46, 38, 12), (65, 2, 72, 46, 1, 12)]
@@ -627,9 +617,8 @@ def process_data4specs( specs=None, just_bcase_std=True, preindustrial=False, \
         fam_specs = GC_var( d[fam] )
         # Kludge - only consider the specs available in the NetCDF
         fam_specs = [i for i in fam_specs if (i in specs) ]
-
-        print '!1.1'*200, [ i.shape for i in Vars, DUarrs], fam, d[fam], \
-            fam_specs
+        logging.debug( [ i.shape for i in Vars, DUarrs], fam, d[fam], \
+            fam_specs )
     
         #  find indices and conctruct dictionary
         fam_specs = [(i,n) for n,i in enumerate( specs ) if ( i in fam_specs ) ]
@@ -643,12 +632,12 @@ def process_data4specs( specs=None, just_bcase_std=True, preindustrial=False, \
                 for i in fam_specs.keys() ]
         
         # sum species in family and add to returned array ( Vars )
-        print np.array( [np.array(i) for i in fam] ).shape
+        logging.debug( np.array( [np.array(i) for i in fam] ).shape )
         fam = np.ma.array( fam ).sum(axis=0)[None,...]
-        print [i.shape for i in fam, Vars ]
+        logging.debug( *[i.shape for i in fam, Vars ] )
         Vars = np.ma.concatenate( (Vars, fam) , axis=0 )
 
-        print '!1.2'*200, [ i.shape for i in Vars, DUarrs]
+        logging.debug( *[ i.shape for i in Vars, DUarrs] )
         del fam
 
         # sum species in family and add to returned array ( DUarrs )
@@ -657,15 +646,14 @@ def process_data4specs( specs=None, just_bcase_std=True, preindustrial=False, \
 
         # sum species in family and add to returned array ( DUarrs )
         fam = np.ma.array( fam ).sum(axis=0)[None,...]
-        print [i.shape for i in fam, DUarrs ]
+        logging.debug( *[ i.shape for i in Vars, DUarrs] )
         DUarrs = np.ma.concatenate( (DUarrs, fam) , axis=0 )
-
-        print '!1.3'*200, [ i.shape for i in Vars, DUarrs]
+        logging.debug( *[ i.shape for i in Vars, DUarrs] )
         del fam
 
         return Vars, DUarrs, specs
 
-    print '!0'*200, [ i.shape for i in Vars, DUarrs]    
+    logging.debug( *[ i.shape for i in Vars, DUarrs] )
 
     if NOy_family:
         Vars, DUarrs, specs = add_family2arrays(  fam='NOy', N=True,\
@@ -676,7 +664,7 @@ def process_data4specs( specs=None, just_bcase_std=True, preindustrial=False, \
     if Iy_family:
         Vars, DUarrs, specs = add_family2arrays(  fam='Iy', I=True, \
                     Vars=Vars, DUarrs=DUarrs, specs=specs )
-    print '!2'*200, [ i.shape for i in Vars, DUarrs]
+    logging.debug( *[ i.shape for i in Vars, DUarrs] )
 
     # consider difference in v/v and DU
     if diff:
@@ -693,7 +681,7 @@ def process_data4specs( specs=None, just_bcase_std=True, preindustrial=False, \
     else:
         Vars = Vars[:,1,...] 
         DUarrs = DUarrs[:,1,...]
-    print [i.shape for i in DUarrs, Vars ]
+    logging.debug( *[ i.shape for i in Vars, DUarrs] )
 
     # Close/remove memory finished with
     del molecs, tmp_s_area, wds, titles
@@ -2156,7 +2144,7 @@ def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
      - Values are returned as a spatial arry with a time dimension 
     (e.g. shape= (72, 46, 12) )
     """
-    logging.info( 'spec dep called for: ', spec )
+    logging.info( 'spec dep called for: {}'.format(spec) )
 
     # Get surface area if not provided
     if not isinstance(s_area, np.ndarray):
@@ -2169,17 +2157,17 @@ def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
     else:
         df = get_GC_output( wd, category='DRYD-FLX', species=spec+'df' )
     logging.debug( 'df (len=={}) descrp: {}'.format( len(df), \
-        *[str( i.shape, i.sum(), i.mean()) for i in [df] ]) )
+        *[ str(ii) for ii in [(i.shape, i.sum(), i.mean()) for i in [df] ]]) )
 
     # Convert to Gg "Ox" (Gg X /s)
     df = molec_cm2_s_2_Gg_Ox_np( df, spec, s_area=s_area, Iodine=Iodine, \
         res=res, debug=debug ) 
     logging.debug( 'df (len=={}) descrp: {}'.format( len(df), \
-        *[str( i.shape, i.sum(), i.mean()) for i in [df] ]) )
+        *[ str(ii) for ii in [(i.shape, i.sum(), i.mean()) for i in [df] ]]) )
         
-    if isinstance( months, type(None) ):
+    if isinstance(months, type(None)):
         months = get_gc_months( ctm_f=ctm_f, wd=wd )
-    if isinstance( years, type(None) ):
+    if isinstance(years, type(None)):
         years = get_gc_years( ctm_f=ctm_f, wd=wd, set_=False )
 
     # Adjust time dimension (to per month)
@@ -3158,9 +3146,9 @@ def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
     """
     logging.info( 'mask4troposphere called for arr of shape: {},'.format( \
             ars[0].shape)  )
-    logging.debug('mask4troposphere - with multiply method?=', multiply_method, \
-        ',use_time_in_trop=', use_time_in_trop, 'type(t_lvl): ', \
-        type(t_lvl), 'type(t_ps): ', type(t_ps) )
+    logging.debug('mask4troposphere - with multiply method?={}' + \
+        ',use_time_in_trop={}, type of t_lvl&t_ps:{}&{}'.format( \
+        multiply_method, use_time_in_trop, type(t_lvl), type(t_ps) )  )
 
     # --- Get time tropopause diagnostic (if not given as argument)
     if not isinstance(t_ps, np.ndarray) and use_time_in_trop: 
@@ -3410,6 +3398,34 @@ def prt_2D_vals_by_region( specs=None, res='4x5', arrs=None, prt_pcent=False, \
             # save to csv
             df.to_csv( csv_title )
 
+
+def get_2D_arr_weighted_by_X( arr, spec=None, res='4x5', print_values=False, \
+        s_area=None):
+    """
+    Get weighted average 2D value by another array (e.g. area weighted 
+
+    Parameters
+    ----------
+    arr (array): 2D array to average weighted by 2nd'y array (s_area)
+    res (str): the resolution if wd not given (e.g. '4x5' )
+    print_values (boolean): print calculated values
+    s_area (array): array of areas of grid boxes (could be any variable)
+    spec (str): species/tracer/variable name 
+    
+    Returns
+    -------
+    (float)
+    """
+    # Get surface area if not provided
+    if isinstance( None, type(None) ):
+        s_area = AC.get_surface_area( res )[...,0]  # m2 land map
+    # Calculate average and area weighted average
+    area_weighted_avg = ( arr*s_area ).sum()/ s_area.sum() 
+    if print_values:
+        print 'mean surface {} conc {}'.format(spec, arr.mean() ) 
+        print 'area weighted mean surface {} conc {}'.format( \
+            spec, area_weighted_avg )
+    return area_weighted_avg
 
 
 
@@ -3751,33 +3767,6 @@ def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None, ctm_f=Fal
         return ar.mean(axis=3 )
 
 
-def get_2D_arr_weighted_by_X( arr, spec=None, res='4x5', print_values=False, \
-        s_area=None):
-    """
-    Get weighted average 2D value by another array (e.g. area weighted 
-
-    Parameters
-    ----------
-    arr (array): 2D array to average weighted by 2nd'y array (s_area)
-    res (str): the resolution if wd not given (e.g. '4x5' )
-    print_values (boolean): print calculated values
-    s_area (array): array of areas of grid boxes (could be any variable)
-    spec (str): species/tracer/variable name 
-    
-    Returns
-    -------
-    (float)
-    """
-    # Get surface area if not provided
-    if isinstance( None, type(None) ):
-        s_area = AC.get_surface_area( res )[...,0]  # m2 land map
-    # Calculate average and area weighted average
-    area_weighted_avg = ( arr*s_area ).sum()/ s_area.sum() 
-    if print_values:
-        print 'mean surface {} conc {}'.format(spec, arr.mean() ) 
-        print 'area weighted mean surface {} conc {}'.format( \
-            spec, area_weighted_avg )
-    return area_weighted_avg
 
 
 # --------------------------------------------------------------------------

@@ -757,8 +757,7 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1,  \
         ls='-', color=None, fractional=False, diurnal=False, mean=True, \
         xlabel = True, r_avgs=False, marker=None, label=None, \
         markersize=1, title=None, f_size=10, units='ppbv', scale='linear', \
-        lw=1,lgnd_f_size=None, alpha=1, 
-        
+        lw=1,lgnd_f_size=None, alpha=1, rotatexlabel=45,
         time_resolution_str="%H:%M", 
 #        time_resolution_str="%H", 
         debug=False ):
@@ -806,9 +805,17 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1,  \
     from matplotlib import dates as d
     import datetime as dt    
     ticks = ax.get_xticks()
-    ax.set_xticks(np.linspace(ticks[0], d.date2num(d.num2date(ticks[-1]) + dt.timedelta(hours=3)), 5))
-    ax.set_xticks(np.linspace(ticks[0], d.date2num(d.num2date(ticks[-1]) + dt.timedelta(hours=3)), 25), minor=True)
-    ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%I:%M %p'))
+#    print ticks 
+#    exit()
+#    ax.set_xticks(np.linspace(ticks[0], d.date2num(d.num2date(ticks[-1]) + dt.timedelta(hours=3)), 5))
+#    ax.set_xticks(np.linspace(ticks[0], d.date2num(d.num2date(ticks[-1]) + dt.timedelta(hours=3)), 25), minor=True)
+#    ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%I:%M %p'))
+    xlabels = [ datetime.datetime(2016, 11, 30, i ) for i in range(1,24 )[1::4] ]
+    ax.set_xticks( [d.date2num(i) for i in xlabels] )
+#    ax.set_xticks(ticks[1::2])
+#    ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H') )
+    ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%I%p') )
+    plt.xticks( rotation=rotatexlabel )
 
     # Add quartiles
     ax.plot(df.index, df['data']['75%'], color=color, alpha=.5)
@@ -2068,7 +2075,7 @@ def PDF_obs_vs_mod( ax, dates, data, f_size=20, pos=0, posn=1,  \
 def X_Y_scatter( x, y, z=None, fig=None, ax=None, vmin=None, vmax=None, \
         left= 0.1, width=0.60, bottom=0.1, height=0.60, widthII=0.2,  \
         lim2std=10,trendline=True, f_size=20, lw=10, title=None, \
-        line121=True, Trend_line=True, X_title=None, Y_title=None ):
+        line121=True, X_title=None, Y_title=None ):
     """ 
     Plot up a X Y scatter plot of x vs. y 
     """
@@ -2228,7 +2235,7 @@ def get_seasonal_plot( arr, fixcb=None, fig=None, f_size=15, \
 # -------------
 def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
         left= 0.1, width=0.60, bottom=0.1, height=0.60, widthII=0.2, \
-        fit = 0.02, binwidth=0.1, Trend_line = False, cmap=plt.cm.gnuplot2, \
+        fit = 0.02, binwidth=0.1, cmap=plt.cm.gnuplot2, \
         X_title='X title', Y_title='Y title', f_size=5 , line121=False ):
     """ Plots a X vs. Y histogram """
 
@@ -4030,7 +4037,7 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
      - this function also will can adjust colormaps to fit a given set of ticks
     """
     # Mannual fix maintain scaling to False
-    maintain_scaling=True
+#    maintain_scaling=False
     
     logging.info( 'get_colormap called' )
     # Manually override colourbar?
@@ -4513,14 +4520,6 @@ def show_plot():
     """
     plt.show()
     return
-
-def close_plot():
-    """
-    Wrapper for plt.close(). Use to close the plots and free from memory.
-    """
-    plt.close()
-    return
-
 
 def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=True):
     """

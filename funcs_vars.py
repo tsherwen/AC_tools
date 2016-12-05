@@ -834,18 +834,17 @@ def get_unit_scaling( units, scaleby=1 ):
     misc = 'K', 'm/s', 'unitless', 'kg' ,'m', 'm2','kg/m2/s', \
             'molec/cm2/s', 'mol/cm3/s',  'kg/s', 'hPa', 'atoms C/cm2/s' \
             'kg S', 'mb', 'atoms C/cm2/s', 'molec/cm3', 'v/v', 'cm/s', 's-1', \
-            'molec/m3'
+            'molec/m3', 'W/m2'
 
     # parts per trillion
-    if any( [ (units ==  i) for i in 'pptv', 'pptC' ]):
+    if any( [ (units ==  i) for i in 'pptv', 'pptC', 'ppt' ]):
         scaleby = 1E12
     # parts per billion
-    elif any( [ (units ==  i) for i in 'ppbv', 'ppbC' ]):
+    elif any( [ (units ==  i) for i in 'ppbv', 'ppbC', 'ppb' ]):
         scaleby = 1E9
     elif any( [units ==i for i in misc ] ):
         scaleby = 1
-    else:
-        print 'WARNING: This unit is not in unit lists: ', units
+        logging.debug('WARNING: {} is not in unit lists: '.format(units) )
     return scaleby
 
 # --------   
@@ -1004,7 +1003,7 @@ def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
     ----------
     wd (str): Specify the wd to get the results from a run.
     debug (boolean): legacy debug option, replaced by python logging
-    PHOTOPROCESS (str): smvgear index of 1st photochemical reaction
+    PHOTOPROCESS (int): smvgear index of 1st photochemical reaction
     LaTeX (boolean): convert species to LaTeX style formatting
     ver (str): The GEOS-Chem halogen version that is being used
 
