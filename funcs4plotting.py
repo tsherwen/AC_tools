@@ -4039,7 +4039,7 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
     # Mannual fix maintain scaling to False
 #    maintain_scaling=False
     
-    logging.info( 'get_colormap called' )
+    logging.info( 'get_colormap called with fixcb={}'.format(str(fixcb)) )
     # Manually override colourbar?
 #    cb='Blues' # Kludge. 
 #    cb='Reds' # Kludge. 
@@ -4242,7 +4242,6 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     logging.debug('get_human_readable_gradiations called with the following:')
     logging.debug('vmin = {vmin}, vmax = {vmax}, lvls = {lvls}'\
             .format(vmin=vmin, vmax=vmax, lvls=lvls))
-    
 
     if isinstance(lvls, type(None)):
         lvls = np.linspace( vmin, vmax, nticks, endpoint=True )
@@ -4337,9 +4336,9 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
             for i in range( nticks ) ][::-1])   
 
     logging.debug("colorbar levels are: {lvls}".format(lvls=lvls))
-    if debug:
-        print lvls, len( lvls )
-        print 2, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
+#    if debug:
+#        print lvls, len( lvls )
+#        print 2, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
 
     # ensure returned ticks are to a maximum of 2 sig figs  
     # ( this only works if all positive ) and are unique
@@ -4365,9 +4364,19 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
 
     lvls = new_lvls
 
+#    if any([ (type(i) == str) for i in lvls] ):
+#        logging.debug('WARNING str in list of levels, tmp conversion to float'+
+#         ' - This is due to error in get_sigfig - seting "0.0" to float' )
+#        for n, i in enumerate( lvls ):
+#            if i == '0.0':
+#                lvls[n] = 0.0
 
-    if debug:
-        print 3, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
+
+#    if debug:
+#        print 3, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
+#    print [(i, type(i)) for i in vmin, vmax ], lvls
+#    print [(i, type(i)) for i in lvls ]
+
 
     if rtn_lvls_diff:
         return lvls, lvls_diff

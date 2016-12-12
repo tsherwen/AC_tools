@@ -93,14 +93,14 @@ def get_surface_area(res=None, wd=None, debug=False):
 
     logging.info( "Getting the surface area" ) 
 
-    if res==None and wd==None:
+    if isinstance( res, type(None)) and isinstance( wd, type(None)):
         res = ('4x5')
         logging.warning("No res or wd specified. Assuming 4x5.")
 
     logging.debug( locals() )
 
     # if the wd has not been specified then use the previous runs
-    if wd==None:
+    if isinstance( wd, type(None)):
 
         # Get AC_tools location, then set example data folder location
         import os
@@ -152,19 +152,22 @@ def list_variables(wd=None):
     """
     Show a list of variables in a wd that we can get at.
 
-    INPUTS:
+    Parameters
+    ----------
     wd=None (Specify the working directory)
 
-    OUTPUTS:
+    Returns
+    -------
     prints a list of variables.
 
-    #Note
+    Notes
+    -------
     Only currently prints variables in the ctm.nc
     Should be expanded to include planeflight and HEMCO
     """
 
     logging.info("Listing variables in {wd}".format(wd=wd))
-    if wd==None:
+    if isinstance( wd, type(None)):
         raise ValueError("Please specify a working dir")
 
     # Try listing all bpch variables in ctm.nc
@@ -3418,7 +3421,7 @@ def get_2D_arr_weighted_by_X( arr, spec=None, res='4x5', print_values=False, \
     """
     # Get surface area if not provided
     if isinstance( None, type(None) ):
-        s_area = AC.get_surface_area( res )[...,0]  # m2 land map
+        s_area = get_surface_area( res )[...,0]  # m2 land map
     # Calculate average and area weighted average
     area_weighted_avg = ( arr*s_area ).sum()/ s_area.sum() 
     if print_values:

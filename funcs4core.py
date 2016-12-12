@@ -620,7 +620,7 @@ def get_sigfig( x, p=3 ):
     x = float(x)
 
     if x == 0.:
-        return "0." + "0"*(p-1)
+        return float("0." + "0"*(p-1))
 
     out = []
 
