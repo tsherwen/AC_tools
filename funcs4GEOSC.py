@@ -1458,7 +1458,8 @@ def get_STRAT_TROP_exchange_from_geos_log( fn=None, ver='3.0', \
          and end ("================") of section. 
      - file name (fn) is assumed to include directory as well as name
     """
-    logging.info( 'get_STRAT_TROP_exchange_from_geos_log called for: ', fn)
+    logging.info( 'get_STRAT_TROP_exchange_from_geos_log called for: '.format(\
+        fn) )
 
     # --- Open the file
     file_ =  open( fn, 'rb' )    
@@ -1493,35 +1494,23 @@ def get_STRAT_TROP_exchange_from_geos_log( fn=None, ver='3.0', \
     # What data range is this?
     date_range = lines[3]
     # split into columns
-    print '1>'*100, lines, headers    
     lines = [ i.split() for i in lines[6:] ]
-    # only consider lines with colons in 
-#    lines = [i for i in lines if (len(i)> 2) ]
-#    lines = [i for i in lines if (':' in i[0]) ]
-    
-    # remove colon
-    print '2>'*100, lines, headers
-    print len( lines)
-    if len(lines) >103:
-        lines = lines[:103]
-    print '3>'*100, lines, headers, len(lines)
+    # - Kludge to remove double up in file read. 
+#    if len(lines) >103:
+#        lines = lines[:103]
         
-#    sys.exit()
     TRAs = [ i[0].split(':')[0] for i in lines  ]
     # loop columns and extract data
     vars = []
-    if debug:
-        print headers, date_range, lines
+    logging.debug( 'headers= {}, date range={}'.format( headers, date_range ))#, lines )
     # Extract data as floats by header 
     vars = [ [ float( i[n+1]) for i in lines ] for n in range( len(headers)-1) ]
     # make a DataFrame of the output
-    if debug:
-        print [ len(i) for i in vars ]
+    logging.debug( 'vars:{}'.format([ str(len(i)) for i in vars ]) )
     d = dict( zip(headers[1:], vars) )
     df = pd.DataFrame(  d, index=TRAs )
     if rtn_Tg_per_yr:
         df = df['= [Tg a-1]' ]
-
     if rtn_date:
         return df, date_range
     else:
