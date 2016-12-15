@@ -433,8 +433,9 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
     if set_window:
         arr = arr[ get_gc_lat(lat_0, res=res):get_gc_lat(lat_1, res=res), :]
         lat = lat[ get_gc_lat(lat_0, res=res):get_gc_lat(lat_1, res=res) ]
-    logging.debug( 'output post set_window: ', arr.shape, [ len(i) for i in lon,lat,alt],\
-         res, [ (i.mean(), i.min(), i.max()) for i in [ arr[: ,:c_off]  ] ] )
+    logging.debug( 'output post set_window: ', arr.shape, \
+        [ len(i) for i in lon,lat,alt], res,  \
+        [ (i.mean(), i.min(), i.max()) for i in [ arr[: ,:c_off]  ] ] )
     min, max = [ (i.min(), i.max()) for i in [ arr[: ,:c_off]  ] ][0] 
 
     # Limit cb to top of (GEOS-Chem chemical) troposphere

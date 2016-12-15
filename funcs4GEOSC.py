@@ -1458,6 +1458,8 @@ def get_STRAT_TROP_exchange_from_geos_log( fn=None, ver='3.0', \
          and end ("================") of section. 
      - file name (fn) is assumed to include directory as well as name
     """
+    logging.info( 'get_STRAT_TROP_exchange_from_geos_log called for: ', fn)
+
     # --- Open the file
     file_ =  open( fn, 'rb' )    
 
@@ -1491,8 +1493,20 @@ def get_STRAT_TROP_exchange_from_geos_log( fn=None, ver='3.0', \
     # What data range is this?
     date_range = lines[3]
     # split into columns
+    print '1>'*100, lines, headers    
     lines = [ i.split() for i in lines[6:] ]
+    # only consider lines with colons in 
+#    lines = [i for i in lines if (len(i)> 2) ]
+#    lines = [i for i in lines if (':' in i[0]) ]
+    
     # remove colon
+    print '2>'*100, lines, headers
+    print len( lines)
+    if len(lines) >103:
+        lines = lines[:103]
+    print '3>'*100, lines, headers, len(lines)
+        
+#    sys.exit()
     TRAs = [ i[0].split(':')[0] for i in lines  ]
     # loop columns and extract data
     vars = []
