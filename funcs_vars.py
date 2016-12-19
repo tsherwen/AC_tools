@@ -359,7 +359,8 @@ def num2spec( num=69, rtn_dict=False, invert=False, ver = '1.7' ):
 # ------------- 
 def species_mass( spec ):
     """ 
-    Function to return species mass ( in relative molecular mass ( RMM ) for given species
+    Function to return species mass ( in relative molecular mass ( RMM ) 
+    for given species in g/mol
 
     Parameters
     ----------
@@ -664,7 +665,7 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,\
     'MO2': 'pptv', 'NOy':'ppbv','EOH': 'ppbv' , 'CO':'ppbv', 'CH4':'ppbv', \
     'TSKIN':'K', 'GMAO_TEMP': 'K', 'GMAO_VWND' :'m/s',\
     'GMAO_UWND': 'm/s', 'RO2': 'pptv', 'U10M':'m/s','V10M': 'm/s' ,\
-     'PRESS': 'hPa', 'CH2OO':'pptv', 'Bry':'ppbv', 'NOx': 'ppbv', 
+     'PRESS': 'hPa', 'CH2OO':'pptv', 'Bry':'ppbv', 'NOx': 'ppbv', 'HOx':'HOx',
     # Extra ClearFlo compounds
     u'acetylene': 'pptv', u'propene': 'pptv', u'Napthalene': 'pptv', \
     u'Styrene': 'pptv', u'1,3-butadiene': 'pptv', u'1,2-butadiene': 'pptv', \
@@ -2188,12 +2189,12 @@ def latex_spec_name(input_x, debug=False):
     'CH2OO':'CH$_{2}$OO', 'Sulfate': 'Sulfate', 'VOCs': 'VOCs', \
     'GMAO_ABSH' : 'Absolute humidity', 'GMAO_SURF': 'Aerosol surface area', \
     'GMAO_PSFC': 'Surface pressure', 
-    # Family Names
+    # Family/group species/tracer Names
     'N_specs':u'NO$_{\\rm y}$', 'NOy':u'NO$_{\\rm y}$', 
      'Bry':u'Br$_{\\rm y}$', 'Cly':u'Cl$_{\\rm y}$',  \
     'N_specs_no_I': u'NO$_{\\rm y}$ exc. iodine', 
     'NOx':u'NO$_{\\rm x}$', 'HOx':u'HO$_{\\rm x}$',\
-    'SOx':u'SO$_{\\rm x}$', \
+    'SOx':u'SO$_{\\rm x}$','PM2.5': 'PM2.5', \
     # typos
     'CH2BR2':'CH$_{2}$Br$_{2}$',\
     # Cly names
@@ -2205,7 +2206,7 @@ def latex_spec_name(input_x, debug=False):
     'CHCl3': 'CHCl$_{3}$', 
     # Bry names 
     'BrSALC': 'Br- on SALC', 'BrSALA': 'Br- on SALA',
-            }
+    }
     return spec_dict[input_x]
     
 
@@ -2269,7 +2270,7 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'LEI_AUG' :  ( -1.127311, 52.619823, 0 ),
     'LEI_MAR' :  ( -1.127311, 52.619823, 0 ),
     'LEI' :  ( -1.127311, 52.619823, 0 ),
-    # --- Europ sites
+    # --- Europe sites
     'DZK' :  ( 4.5000, 52.299999237, 4 ),
     # --- O3 preindustrial
     'MON' :  ( 2.338333, 48.822222,  75+5 ), 
@@ -2289,7 +2290,9 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'TOK' : (139.0, 35.0, 0), # Tokyo 
     'VIE' : (16.0, 48.0, 0), # Vienna 
     'PDM' : (0.0, 43.0, 1000), # Pic du midi 
-    #
+    # ---  Misc
+    'MAC' : ( -10.846408, 53.209003, 0 ) # Mace Head.
+    
     }
     if rtn_dict:
         return loc_dict

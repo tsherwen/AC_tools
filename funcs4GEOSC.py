@@ -1693,7 +1693,7 @@ def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
 
         # convert to date time
         dates = [ add_hrs( starttime, i ) for i in dates ]
-        logging.debug( dates )
+        logging.debug( '1st date dates {}'.format(dates[:10])  )
         
         # return datetime objects
         return dates
@@ -2063,8 +2063,11 @@ def get_volume_np(ctm_f=None, box_height=None, s_area=None, res='4x5', \
             box_height =  get_gc_data_np(ctm_f, 'BXHEIGHT',\
                 category="BXHGHT-$", debug=debug)  # ( m )
         else:
-            box_height = get_GC_output( wd=wd, vars=['BXHGHT_S__BXHEIGHT'], \
-                debug=debug )
+            try:
+                box_height = get_GC_output( wd=wd, vars=['BXHGHT_S__BXHEIGHT'], \
+                    debug=debug )
+            except:
+                logging.info( 'WARNING: Using ref. file for BXHEIGHT' )
 
             # Gotcha for single (None) time dimension output:
             # <= improve this - this only works for 4x5 resolution
@@ -2075,8 +2078,7 @@ def get_volume_np(ctm_f=None, box_height=None, s_area=None, res='4x5', \
     if not isinstance(s_area, np.ndarray):
         # m2 land map                                                
         s_area = get_surface_area(res=res)[...,None] 
-        if debug:
-            print '**'*100, s_area.shape
+        logging.info('WARNING - inefficent online extraction of s_area')
 
     # Gotcha for 2D s_area array 
     if len( s_area.shape) == 2:
@@ -2088,9 +2090,8 @@ def get_volume_np(ctm_f=None, box_height=None, s_area=None, res='4x5', \
     if trop_limit:
         volume =  volume[...,:38,:]
     
-    if debug:
-        print  'box_height' , box_height.shape , 's_area' , s_area.shape,\
-             'volume', volume.shape
+    logging.debug('shapes for box_height={}, s_area={}, volume{}'.format( \
+        box_height.shape, s_area.shape, volume.shape ) )
     return volume
 
 # --------------
@@ -2849,7 +2850,7 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
 # 2.41 - Extract data by family for a given wd
 # -------------   
 def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
-        annual_mean=True, t_ps=None, a_m=None, vol=None, \
+        annual_mean=True, t_ps=None, a_m=None, vol=None, res='4x5', \
         title=None, rtn_list=False, use_time_in_trop=True, multiply_method=True, \
         rtn_specs=False, verbose=False, debug=False ):
     """ 
@@ -2903,13 +2904,19 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
         arr = get_GC_output( wd=wd, vars=['CHEM_L_S__'+spec], \
             trop_limit=trop_limit )
 
+    # --- HO2 ( in v/v  )
+    if fam == 'HO2' :
+        spec = 'HO2'
+        arr = get_GC_output( wd=wd, vars=['CHEM_L_S__'+spec], \
+            trop_limit=trop_limit )
+
     # --- HOX 
     if fam == 'HOx' :
         # OH ( in molec/cm3 )
         arr = get_GC_output( wd=wd, vars=['CHEM_L_S__'+'OH'], \
             trop_limit=trop_limit )
         # Convert OH to  v/v 
-        arr = convert_v_v_2_molec_cm3( arr, a_m=a_m, vol=vol )
+        arr = convert_v_v_2_molec_cm3( arr, a_m=a_m, vol=vol, wd=wd, res=res )
         # Get HO2 
         arr2 = get_GC_output( wd=wd, vars=['CHEM_L_S__'+'HO2'], \
             trop_limit=trop_limit )
@@ -3066,6 +3073,101 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
         return arr, specs
     else:
         return arr
+# --------------
+# X.XX - Extract data from *ts*bpch* files (e.g. hourly surface data)
+# -------------  
+def fam_data_extractor4ts_bpch_files( spec='NOy', wd=None, 
+        filename=None, stioch4fam=[] ):
+    """
+    Driver to extract data requested ( as families have differing diagnostic units)
+    
+    ARGUMENTS:
+     - fam: "family" to extract ( e.g. NOy, NOx, POx, CH4 loss rate, ... )
+     - res: resolution of the model input (e.g. 4x5, 2x2.5 )  
+     - rtn_specs (boolean): return list of species extracted?
+     - title: run title, ignore if not using halogen code
+     - ver: GEOSChem version with halogens (default = 3.0), ignore if not using halogen code
+
+    NOTES:
+     - to return species as list ( not fully implimented ) set rtn_list=True
+     - to return species extract, set  rtn_species=True
+     - this function should be used in preference to other bulk output extractors 
+      in this module.
+    """
+
+    # --- Nitrogen Oxides NOx ( NO + NO2)
+    non_IJ_AVG_specs = ['HOx', 'POX']
+    if spec in non_IJ_AVG_specs :
+        # --- OH ( in molec/cm3 )
+#        if fam == 'OH' :
+#           spec = 'OH'
+#            arr = get_GC_output( wd=wd, vars=['CHEM_L_S__'+spec], \
+#                trop_limit=trop_limit )
+        # --- HOX 
+#        if fam == 'HOx' :
+
+        print 'NOT SETUP!!! for non_IG_AVG_specs'
+        sys.exit()
+
+
+    else:
+        # get specs to extract 
+        # ---  NO + NO2 ( NOx )    
+        if spec == 'NOx' :
+            # Select species in family
+            specs = [ 'NO2', 'NO' ] 
+#        scale = 1E12
+#        units, scale = tra_unit(specs[0], IUPAC_unit=True, scale=True)
+        # ---  Inorganic nitrogen ( NOy )
+        elif spec == 'NOy' :
+            specs = GC_var('N_specs' )
+            # get stiochiometry
+            stioch4fam = [ spec_stoich(i, ref_spec='N') \
+                 for n,i in enumerate( specs ) ]
+        # ---  Inorganic iodine ( Cly )
+        elif spec == 'Cly' :
+            specs = GC_var('Cly' )
+            # get stiochiometry
+            stioch4fam = [ spec_stoich(i, ref_spec='Cl') \
+                 for n,i in enumerate( specs ) ]
+        # ---  Inorganic iodine ( Iy )
+        elif spec == 'Iy' :
+            specs = GC_var('Iy' )
+            # get stiochiometry
+            stioch4fam = [ spec_stoich(i, ref_spec='I') \
+             for n,i in enumerate( specs ) ]
+        # --- total nitrate TNO3 ( NO3 + NIT + NITs )    
+        elif spec == 'TNO3' :
+            # Select species in family
+            specs = [ 'HNO3', 'NIT', 'NITs' ] 
+        # --- Try just extracting the provided species 
+        else:
+            specs = [spec]
+
+        # Get output for all speices
+        data_l = []
+        # "Open" NetCDF ... Metadata... 
+        with Dataset( wd+'/'+filename, 'r') as rootgrp:
+           for fam_spec in specs:
+                # Extract
+                data_ = rootgrp['IJ_AVG_S__'+fam_spec]
+                print 'Extracted data:', data_
+                print 'data shape: ', data_.shape
+                # extract units - WARNING assuming same for all species 
+                units = data_.ctm_units
+                # save extracted data to list
+                data_l += [ data_[:] ]
+
+        # Add stiochmetric scaling for species if applicable (from stioch4fam)
+        if len(stioch4fam) > 0:
+            data_l = [i*stioch4fam[n] for n, i in enumerate(data_l) ]
+
+        # Sum family...
+        data = np.array( data_l )
+        data = data.sum( axis=0) #* scale
+        logging.debug('Shape for array:{}, units={}'.format( data.shape, units))
+
+        return data, units
 
 # --------------
 # 2.42 - Convert v/v to molec/cm3

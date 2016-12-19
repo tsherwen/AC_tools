@@ -19,6 +19,7 @@ import matplotlib as mpl
 from pylab import setp
 import functools
 import matplotlib
+#import seaborn as sns
 
 # -- Time                                                                                           
 import time
@@ -800,7 +801,10 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1,  \
     # plot up mean
 #    ax.plot(df.index, df['data']['mean'], 'g', linewidth=2.0)
 #    print df
-    ax.plot(df.index, df['data']['mean'], color=color, linewidth=2.0)
+    stat2plot='mean'        
+#    stat2plot='50%'
+
+    ax.plot(df.index, df['data'][stat2plot], color=color, linewidth=2.0)
 
     # beautify
     from matplotlib import dates as d
@@ -825,8 +829,9 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1,  \
     # And shade
     try:
 #    if True:
-        ax.fill_between(df.index, df['data']['mean'], df['data']['75%'], alpha=.5, facecolor=color)
-        ax.fill_between(df.index, df['data']['mean'], df['data']['25%'], alpha=.5, facecolor=color)    
+        ax.fill_between(df.index, df['data'][stat2plot], df['data']['75%'], alpha=.5, facecolor=color)
+        ax.fill_between(df.index, df['data'][stat2plot], df['data']['25%'], alpha=.5, facecolor=color)    
+        
     except:
         logging.info( 'Failed to add percentile shading' )
 

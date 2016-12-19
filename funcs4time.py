@@ -495,8 +495,7 @@ def DF_YYYYMMDD_HHMM_2_dt(df, date_header='YYYYMMDD',
      # ( go via integer for dates, to ensure no floating zeros appear )
     df['Datetime'] = df[date_header].astype(int).astype(str) + \
                                     df[time_header].astype(str) 
-    if debug:
-        logging.debug( df['Datetime'][:10] )
+    logging.debug('1st 10 dates: '.format(logging.debug( df['Datetime'][:10])))
     df['Datetime']  = pd.to_datetime( df['Datetime'], format='%Y%m%d%H%M' )
             
     # remove stated variables.
