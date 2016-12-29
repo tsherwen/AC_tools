@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 """ 
 Generic plotting functions for timeseries/multi-dimensional output.
 
@@ -750,7 +751,7 @@ def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
 
     if r_avgs:
         return avgs 
-
+    
 # --------   
 # 1.07 - Diurnal plot
 # --------
@@ -760,7 +761,7 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1,  \
         xlabel = True, r_avgs=False, marker=None, label=None, \
         markersize=1, title=None, f_size=10, units='ppbv', scale='linear', \
         lw=1,lgnd_f_size=None, alpha=1, rotatexlabel=45,
-        time_resolution_str="%H:%M", 
+        time_resolution_str="%H:%M", stat2plot='mean', 
 #        time_resolution_str="%H", 
         debug=False ):
     """ 
@@ -799,11 +800,8 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1,  \
         lgnd_f_size = f_size
 
     # plot up mean
-#    ax.plot(df.index, df['data']['mean'], 'g', linewidth=2.0)
-#    print df
-    stat2plot='mean'        
-#    stat2plot='50%'
-
+    if stat2plot == 'median':
+        stat2plot='50%'
     ax.plot(df.index, df['data'][stat2plot], color=color, linewidth=2.0)
 
     # beautify
@@ -2771,15 +2769,16 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
     NOTES:
      -  
     """
-
-    if verbose:
-        print 'plot_zonal_figure called ', region, arr.shape, log, units, pdf, \
+    all_str = 'plot_zonal_figure called ', region, arr.shape, log, units, pdf, \
             show, arr.min(), arr.max()
+    logging.info( all_str )
+    if verbose:
+        print all_str
 
     # If lon, lat, alt array provided then take mean of lon
     if any( [arr.shape[0] ==i for i in 72, 144, 121, 177] ):
 #        arr = arr.mean(axis=0)
-        arr = molec_weighted_avg( arr, weight_lon=True, \
+        arr = molec_weighted_avg( arr, weight_lon=True, res=res, \
             trop_limit=trop_limit, rm_strat=False, wd=wd) 
 
     # Create figure if not provided

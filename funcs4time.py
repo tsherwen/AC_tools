@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 """ 
 Time processing functions for use with GEOS-Chem/Data analysis. 
 
@@ -552,6 +553,105 @@ def dt_days_a2b( a, b, period=1, debug=False ) :
     if debug:
         print dates[0], dates[-1]
     return dates
+
+# --------------
+# X.XX - Select just nighttime values from an array. 
+# -------------
+def get_nighttime_values( dates=None, data=None, select_nighttime=True,\
+        select_daytime=False,
+        daybreak=datetime.datetime(1970,01,01,06), 
+        dayend=datetime.datetime(1970,01,01,18) ):
+    """
+    Calculate nighttime values using dates array and pandas
+    """
+    # use dataframe to map daytime boolean 
+    df = pd.DataFrame( np.array(dates) )
+    print df
+    df.columns = ['Datetime']
+    # function to generate boolean for daytime
+    def is_daytime( input, daybreak=daybreak, dayend=dayend ):
+        """
+        Takes datetime.datetime and retruns True (boolean) if daytime
+        """
+        daytime=False
+        # after daybreak
+        if (input.hour >= daybreak.hour):
+            daytime = True
+        # ... and after nightfall
+        if (input.hour > dayend.hour):
+            daytime = False
+        return daytime 
+    df['ind'] = df.index.values
+    df['daytime'] = df['Datetime'].map( is_daytime )
+    # just select nighttime or daytime 
+    if select_nighttime: 
+        df = df[ df['daytime'] == False ]           
+    if select_daytime: # select daytime 
+        df = df[ df['daytime'] == True ]           
+
+    # Select just indexed values 
+    data = np.array(data)[ df['ind'].values, ...  ]
+    dates = np.array(dates)[ df['ind'].values ]
+    
+    return data, dates
+
+def get_daily_maximum( dates=None, data=None ):
+    """
+    Calculate daily maximum values using dates array and pandas
+    """
+    # Use dataframe to hold dates and name column datetime
+    df = pd.DataFrame( np.array(dates) )
+    df.columns = ['Datetime']
+
+    # Add column of index numbers to allow for later indexing... 
+    df['ind'] = df.index.values            
+
+    # Add column for days
+    def convert_datetime2days(input):
+        return datetime.datetime(*input.timetuple()[:3]) 
+    df['days'] = df['Datetime'].map(convert_datetime2days)
+
+    # --- loop days 
+    daily_max_data = []
+    # make sure data is a numpy array
+    data = np.array(data)
+    for day in sorted(set( df['days']) ):
+
+        print day, df['days'][:5]
+        # select data for day
+        a_day_ind = df[ df['days'] == day ]
+        # select data for day
+        a_day_data = data[a_day_ind['ind'].values, ... ]
+        print [i.shape for i in a_day_data, a_day_ind, data ]
+        # get daily maximum
+        daily_max_data += [ a_day_data.max(axis=0) ]
+
+    # Get average daily maximum
+    avg_data = np.array( daily_max_data ).mean( axis=0 )   
+    
+    return avg_data
+
+def get_8hr_rolling_mean( df ):
+    """
+    Get 8 hour rolling mean of pandas dataframe/series. 
+    """
+
+    # loop columns if Dataframe
+    dfs = []
+    try:
+        for col in df.columns:
+         # apply mean
+            dfs += [ df[col].rolling(window=8,center=False).mean() ]
+    # our just process values if Series    
+    except AttributeError: 
+        df = df.rolling(window=8,center=False).mean() 
+
+    #  combine dataframes
+    if len(dfs) > 1:
+        # concatenate
+        df = pd.concat(dfs, axis=1)
+        
+    return df
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------

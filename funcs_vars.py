@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 """
 Variable store/dictionarys for use in AC_Tools.
 
@@ -666,6 +667,7 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,\
     'TSKIN':'K', 'GMAO_TEMP': 'K', 'GMAO_VWND' :'m/s',\
     'GMAO_UWND': 'm/s', 'RO2': 'pptv', 'U10M':'m/s','V10M': 'm/s' ,\
      'PRESS': 'hPa', 'CH2OO':'pptv', 'Bry':'ppbv', 'NOx': 'ppbv', 'HOx':'HOx',
+     'VOC': 'ppbC',
     # Extra ClearFlo compounds
     u'acetylene': 'pptv', u'propene': 'pptv', u'Napthalene': 'pptv', \
     u'Styrene': 'pptv', u'1,3-butadiene': 'pptv', u'1,2-butadiene': 'pptv', \
@@ -2192,9 +2194,9 @@ def latex_spec_name(input_x, debug=False):
     # Family/group species/tracer Names
     'N_specs':u'NO$_{\\rm y}$', 'NOy':u'NO$_{\\rm y}$', 
      'Bry':u'Br$_{\\rm y}$', 'Cly':u'Cl$_{\\rm y}$',  \
-    'N_specs_no_I': u'NO$_{\\rm y}$ exc. iodine', 
-    'NOx':u'NO$_{\\rm x}$', 'HOx':u'HO$_{\\rm x}$',\
-    'SOx':u'SO$_{\\rm x}$','PM2.5': 'PM2.5', \
+    'N_specs_no_I': u'NO$_{\\rm y}$ exc. iodine', 'TSO4': 'TSO4',
+    'NOx':u'NO$_{\\rm x}$', 'HOx':u'HO$_{\\rm x}$', 'TNO3': 'TNO3', \
+    'SOx':u'SO$_{\\rm x}$','PM2.5': 'PM$_{2.5}$', 'VOC': 'VOC', \
     # typos
     'CH2BR2':'CH$_{2}$Br$_{2}$',\
     # Cly names

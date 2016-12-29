@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 """ 
 Generic functions for use with output from GEOS-Chem's planeflight module.
 

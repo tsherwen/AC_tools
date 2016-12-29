@@ -1,6 +1,8 @@
 #!/usr/bin/python
-""" Core functions used to be used by all function levels of 
-    GEOS-Chem/Data analysis in AC_Tools 
+# -*- coding: utf-8 -*-
+""" 
+Core functions used to be used by all function levels of 
+GEOS-Chem/Data analysis in AC_Tools 
 
 NOTES: 
  - user specific functions need to be migrated to a seperate fuction
