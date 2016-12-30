@@ -3204,42 +3204,43 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
         alt_text_x=.15, alt_text_y=0.75, alt_text=None, ncol=1, pcent=False,  \
         stacked=False, verbose=False, debug=False):
     """ 
-    Produce a stacked plot (by X axis) for values in Y array. 
+    Make a stacked plot (by X axis) for values in Y array. 
 
-    INPUTS:
-     - X must be a list of numpy arrays 
-     - Y must be a numpy array
+    Parameters
+    -------
+    X (list): list of numpy arrays to plot as X
+    Y (array): must be a numpy array use use as Y
+
+    Returns
+    -------
+    (None)
     
-    NOTE:
+    Notes
+    -----
      - MPL only contains a stackplot function for Y axis, this function is 
     based on that code  
     (https://github.com/matplotlib/matplotlib/blob/3ae7c2a32ddd9809552315458da1dd70afec1b15/lib/matplotlib/stackplot.py )
-
     """
-
-    if debug:
-        print 'X_stackplot called, with X[0] shape {}'.format( X[0].shape )
+    logging.info('X_stackplot called, with X[0] shape {}'.format( X[0].shape ))
 
     # --- fig and ax provided? Otherwise create these... 
     if isinstance( fig, type(None) ):
         fig = plt.figure( figsize=(8,8), dpi=dpi, facecolor='w', \
             edgecolor='k')
-        if debug:
-            print 'Creating figure'
+        logging.debug('Creating figure' )
 
     if isinstance( ax, type(None) ):
         ax = fig.add_subplot( 1,1,1  )
-        if debug:
-            print 'Creating ax'
-    if debug:
-        print zip( labels, [ colors[:len(labels)] ] )
-        print zip( labels,  [np.sum(i) for i in X] )
+        logging.debug('Creating ax' )
+    logging.debug( '{}'.format( zip( labels, [np.sum(i) for i in X] ) )  )
 
     # --- stack arrays if not stacked... 
     if isinstance( X, np.ndarray ):
         X = np.ma.atleast_2d( X )
+        logging.debug('Array passed has been made at least 2D if nessesary')
     else:
         X = np.ma.column_stack( X )
+        logging.debug('WARNING - Stacking X data, X shape={}'.format( X.shape))
     # Assume data passed has not been 'stacked', so stack it here.
 #    if stacked:
 #        stack =  X
@@ -3266,10 +3267,12 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
     # Get list of colors
     if isinstance( colors, type(None) ):
         colors = color_list( len(stack[0,:]) )
+    logging.debug( '{}'.format( zip( labels, [ colors[:len(labels)] ] ) ))
 
     # Color between x = 0 and the first array.
-    if debug:
-        print stack[:, 0]
+    logging.debug( '{}'.format(stack[:, 0]) )
+    logging.debug( 'len colors={}, labels={}, stack={}'.format( 
+        *[len(i) for i in colors, labels, stack[0, :] ]) )
     r =[]
     r += [ ax.fill_betweenx( Y, first_line, stack[:, 0],
                                color=colors[0], 

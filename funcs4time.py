@@ -634,6 +634,14 @@ def get_daily_maximum( dates=None, data=None ):
 def get_8hr_rolling_mean( df ):
     """
     Get 8 hour rolling mean of pandas dataframe/series. 
+
+    Parameters
+    -------
+    df (DataFrame)    
+
+    Returns
+    -------
+    (DataFrame)    
     """
 
     # loop columns if Dataframe

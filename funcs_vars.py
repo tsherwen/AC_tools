@@ -2193,9 +2193,9 @@ def latex_spec_name(input_x, debug=False):
     'GMAO_PSFC': 'Surface pressure', 
     # Family/group species/tracer Names
     'N_specs':u'NO$_{\\rm y}$', 'NOy':u'NO$_{\\rm y}$', 
-     'Bry':u'Br$_{\\rm y}$', 'Cly':u'Cl$_{\\rm y}$',  \
-    'N_specs_no_I': u'NO$_{\\rm y}$ exc. iodine', 'TSO4': 'TSO4',
-    'NOx':u'NO$_{\\rm x}$', 'HOx':u'HO$_{\\rm x}$', 'TNO3': 'TNO3', \
+    'Bry':u'Br$_{\\rm y}$', 'Cly':u'Cl$_{\\rm y}$', 'NIT+NITs':'NIT+NITs',  \
+    'N_specs_no_I': u'NO$_{\\rm y}$ exc. iodine', 'TSO4': 'TSO$_4$',
+    'NOx':u'NO$_{\\rm x}$', 'HOx':u'HO$_{\\rm x}$', 'TNO3': 'TNO$_3$', \
     'SOx':u'SO$_{\\rm x}$','PM2.5': 'PM$_{2.5}$', 'VOC': 'VOC', \
     # typos
     'CH2BR2':'CH$_{2}$Br$_{2}$',\
@@ -2293,8 +2293,8 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'VIE' : (16.0, 48.0, 0), # Vienna 
     'PDM' : (0.0, 43.0, 1000), # Pic du midi 
     # ---  Misc
-    'MAC' : ( -10.846408, 53.209003, 0 ) # Mace Head.
-    
+#    'MAC' : ( -10.846408, 53.209003, 0 ) # Mace Head.
+    'MAC' : ( -9.9039169999999999, 53.326443999999995, 0 ) # Mace Head.
     }
     if rtn_dict:
         return loc_dict
@@ -2846,7 +2846,8 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'NO3', 'HNO2', 'IONO', 'IONO2', 'INO'],
     'NOy' : [
     'NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4',\
-    'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN',\
+#    'NH3', 'NH4', 
+    'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN',\
     'NO3', 'HNO2', 'IONO', 'IONO2', 'INO', 'ClNO2', 'ClNO3'],
     'N_specs_no_I'  :  [
     'NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4', \

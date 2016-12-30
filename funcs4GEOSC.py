@@ -2984,11 +2984,12 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
     # --- NOy
     if fam == 'NOy' :
         # Select species in family
-        specs = GC_var('N_specs' )
-        if ver == '3.0':
-            if not any( [ (title != i) for i in 'NOHAL', 'BROMINE' ]):
-                specs  += ['ClNO2', 'ClNO3'] 
-            
+#        specs = GC_var('N_specs' )
+#        if (ver == '3.0') or (ver == '4.0') :
+#            if not any( [ (title != i) for i in 'NOHAL', 'BROMINE' ]):
+#                specs  += ['ClNO2', 'ClNO3'] 
+        specs = GC_var('NOy' )
+
 #        units, scale = tra_unit(specs[0], IUPAC_unit=True, scale=True)
         scale =1E12
         # Extract data
@@ -3167,7 +3168,7 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
     if debug and (not rtn_list):
         print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in [arr ] ]    
 
-    # Take annual mean?
+    # Take average (mean) over time? (if annual_mean==True)
     if annual_mean:
         if rtn_list:
             arr = [ i.mean( axis=-1 ) for i in arr ]
@@ -3299,6 +3300,10 @@ def fam_data_extractor4ts_bpch_files( spec='NOy', wd=None,
         elif spec == 'TNO3' :
             # Select species in family
             specs = [ 'HNO3', 'NIT', 'NITs' ] 
+        # --- nitrate aerosol ( NIT + NITs )    
+        elif spec == 'NIT+NITs' :
+            # Select species in family
+            specs = [ 'NIT', 'NITs' ] 
         # --- total sulfate ( SO4, SO4s )
         elif spec == 'TSO4' :
             # Select species in family
@@ -3588,7 +3593,9 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
     Convert molec/cm3/s to g/grid box. This is used for converting prod/loss 
     output units.
 
-    ARGUMENTS:
+
+    Parameters
+    -------
      - s_area: Surface array (array of values in metres)
      - vol: volumne of grid boxes
      - specs: list of species (Prod loss variaables from input.geos)
@@ -3599,8 +3606,13 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
      ( (boolean) options for this include using multiply_method and use_time_in_trop )
      - conbine_ars (boolean): return arrays as a single array? 
      - month_eq (boolean): convert units to monthly equiivlents.
-     
-    NOTES:
+
+    Returns
+    -------
+    (array) of (list) of arrays if conbine_ars==True
+
+    Notes
+    -----
      - re-write of molec_cm3_s_2_Gg_Ox_np for clarity/split functionaltity
      - units of g/month can also be returned if month_eq=True
      - All functions that use "get_pl_in_Gg" should be updated to use this
@@ -3609,9 +3621,9 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
     """
     logging.info( 'convert_molec_cm3_s_2_g_X_s called' )
     # --- Extract core model variables not provide
-    if not isinstance(months, list):
+    if (not isinstance(months, list)) and month_eq:
         months = get_gc_months( ctm_f, wd=wd )
-    if not isinstance(years, list):
+    if (not isinstance(years, list)) and month_eq:
         years  = get_gc_years( ctm_f=ctm_f, wd=wd, set_=False )
     if isinstance( s_area, np.ndarray):
         s_area = get_surface_area( res=res, debug=debug )
