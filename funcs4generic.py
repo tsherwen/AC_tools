@@ -764,7 +764,7 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
         if use_multiply_method:    
             return m.mask * land_unmasked( res )
         else:
-            land_unmasked_ = mask_all_but( 'Land', mask3D=True, \
+            land_unmasked_ = mask_all_but( 'Land', mask3D=True, res=res, \
                 use_multiply_method=False, trop_limit=trop_limit )
 
             # MBL unmasked 
@@ -1499,13 +1499,19 @@ def get_ODR(x=None, y=None):
     mydata = scipy.odr.Data(x, y)
     
     # Instantiate ODR with your data, model and initial parameter estimate.:
-    myodr = ODR(mydata, linear, beta0=[1., 2.])
+#    myodr = scipy.odr.ODR(mydata, linear, beta0=[1., 2.])
+    myodr = scipy.odr.ODR(mydata, linear, [0., 1.],  maxit = 10000 )
     
     # Run the fit.:
     myoutput = myodr.run()
 
     # Examine output.:
     myoutput.pprint()
+    
+    return myoutput
+
+       
+
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------

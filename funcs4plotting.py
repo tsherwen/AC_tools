@@ -41,7 +41,8 @@ from funcs4GEOSC import * # wd2ctms, get_gc_res
 
 # math
 from math import log10, floor
-
+import numpy as np
+import scipy
 # colormaps - Additional maps from Eric Sofen
 #from option_c import test_cm as cmc
 #from option_d import test_cm as cmd
@@ -4567,6 +4568,9 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=T
         plt.savefig( filename )
         logging.info("Plot saved to {location}".format(location=filename))
     return
+
+
+ 
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------

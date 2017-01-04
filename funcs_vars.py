@@ -531,7 +531,9 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         'LR73' : 1.0, 
         # Note: stoichometry is for **GAS** phase Br (aka not SSA )
         # ( Aka JT03s == Br2 ( ==2 ), but one is BrSALA/BrSALC therefore =1)
-        'JT03s' : 1.0, 'JT04s' :1.0, 'JT05s': 1.0
+        'JT03s' : 1.0, 'JT04s' :1.0, 'JT05s': 1.0, 
+        # BrCl from HOBr or hv
+        'JT02s' : 1.0, 'JT08':1.0
         }
     elif Cl:
         d= {
@@ -543,6 +545,12 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
          'LR62': 3.0, 'LR107': 3.0, 
          'LR74' : 1.0, 'LR106':1.0, 'LR103': 1.0, 
          'LR75' : 2.0, 'LR105': 2.0, 'LR104' : 2.0, 
+        # BrCl from HOBr or hv
+        'JT02s' : 1.0, 'JT08':1.0,
+        # ICl  (assuming 0.85:0.15 )
+        'RD59': 0.15, 'RD92': 0.15, 'RD63': 0.15,
+        # N2O5+SSA=>ClNO2
+        'LR114': 1.0
         }
     elif Cl:
         d= {
@@ -666,8 +674,8 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,\
     'MO2': 'pptv', 'NOy':'ppbv','EOH': 'ppbv' , 'CO':'ppbv', 'CH4':'ppbv', \
     'TSKIN':'K', 'GMAO_TEMP': 'K', 'GMAO_VWND' :'m/s',\
     'GMAO_UWND': 'm/s', 'RO2': 'pptv', 'U10M':'m/s','V10M': 'm/s' ,\
-     'PRESS': 'hPa', 'CH2OO':'pptv', 'Bry':'ppbv', 'NOx': 'ppbv', 'HOx':'HOx',
-     'VOC': 'ppbC',
+    'PRESS': 'hPa', 'CH2OO':'pptv', 'Bry':'ppbv', 'NOx': 'ppbv', 'HOx':'HOx',
+    'VOC': 'ppbC','TNO3': 'ppbv', 
     # Extra ClearFlo compounds
     u'acetylene': 'pptv', u'propene': 'pptv', u'Napthalene': 'pptv', \
     u'Styrene': 'pptv', u'1,3-butadiene': 'pptv', u'1,2-butadiene': 'pptv', \
@@ -2980,7 +2988,7 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'PO3_01', 'RD07', 'LR9', 'LR62', 'LR37', 'LR73', 'LR19', 'LO3_79', \
     'RD15', 'PO3_68', 'RD06', 'LO3_80', 'LR83', 'LR80', 'LR99', \
 	# LR125 is the tag for ALD2 (hash out for runs without this tag)
-    'LR125'
+#    'LR125'
     ], 
     # not outputted by p/l ( but should be) : 'PO3_103', 'PO3_104', 'PO3_105', 
     # 'PO3_10'

@@ -2643,7 +2643,7 @@ def molec_weighted_avg( arr, wd=None, ctm_f=None, vol=None, t_p=None, n_air=None
             molecs.sum(axis=LAT_axis).sum(axis=LON_axis)
   
     else: # weight whole array to give single number
-            return (arr *molecs).sum()/molecs.sum()
+        return (arr *molecs).sum()/molecs.sum()
 
 
 
@@ -2949,7 +2949,7 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
         spec = 'OH'
         arr = get_GC_output( wd=wd, vars=['CHEM_L_S__'+spec], \
             trop_limit=trop_limit )
-#        units = 'molec. cm$^{-3}$'
+        units = 'molec. cm$^{-3}$'
 
     # --- HO2 ( in v/v  )
     if fam == 'HO2' :
@@ -3152,6 +3152,24 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
             arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
             arr = arr.sum( axis=-1) * scale
         units = 'ug m${^-3}$'
+    # --- NOy
+    if fam == 'TNO3' :
+        # Select species in family
+        specs = ['HNO3', 'NIT', 'NITs']
+
+        # Extract data
+        arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ], \
+                    trop_limit=trop_limit, r_list=True  )
+        # Adjust to stoichiometry
+        arr = [ arr[n]*spec_stoich(i, ref_spec='N') \
+             for n,i in enumerate( specs ) ]
+                
+        if debug:
+            print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in arr  ]
+        if not rtn_list:
+            arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
+            arr = arr.sum( axis=-1) 
+        units = 'nmol mol${^-1}$'
 
     if debug and (not rtn_list):
         print [ ( i.shape, i.min(), i.max(), i.mean() ) for i in [arr ] ]    
@@ -3184,27 +3202,46 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
         return arr
 
 
-def convert_tracers2PM25( ars=[], specs=[] ):
+def convert_tracers2PM25( ars=[], specs=[], region='Europe' ):
     """
     Aproximate PM2.5 from PM2.5 ratios 
     for details see GEOS-Chem wiki:
     http://wiki.seas.harvard.edu/geos-chem/index.php/Particulate_matter_in_GEOS-Chem#PM2.5_in_the_1-yr_benchmark_plots
     """
     # - Convert to PM2.5 ('ug m$^{-3}$')
-    # Note. above list does not contain gas-phase species 
-    PM25_convertion_factor = {
-    'NH4'  : 1.33, 
-    'NIT'  : 1.33, 
-    'SO4'  : 1.33, 
-    'BCPI' : 1.00, # no scaling 
-    'BCPO' : 1.00, # no scaling 
-    'OCPI' : 1.16*2.1, 
-    'OCPO' : 1.16*2.1,
-    'DST1' : 1.00, # no scaling 
-    'DST2' : 0.38,    
-    'SALA' : 1.86,
-    # Other species
-    }
+    # Note. below list does not contain SOA species 
+    if region == 'USA':
+        PM25_convertion_factor = {
+        'NH4'  : 1.33, 
+        'NIT'  : 1.33, 
+        'SO4'  : 1.33, 
+        'BCPI' : 1.00, # no scaling 
+        'BCPO' : 1.00, # no scaling 
+        'OCPI' : 1.16*2.1, 
+        'OCPO' : 2.1,
+        'DST1' : 1.00, # no scaling 
+        'DST2' : 0.38,    
+        'SALA' : 1.86,
+        # Other species
+        }
+    elif region == 'Europe':
+        PM25_convertion_factor = {
+        'NH4'  : 1.51, 
+        'NIT'  : 1.51, 
+        'SO4'  : 1.51, 
+        'BCPI' : 1.00, # no scaling 
+        'BCPO' : 1.00, # no scaling 
+        'OCPI' : 1.24*2.1, 
+        'OCPO' : 2.1,
+        'DST1' : 1.00, # no scaling 
+        'DST2' : 0.38,    
+        'SALA' : 2.42,
+        # Other species
+        }
+    else:
+        print 'ERROR - Region not in list - please set availibe region!!'
+        sys.exit()
+        
     # RMM
     RMM_air = constants('RMM_air') # g/mol
     # assume standard air density
@@ -3229,6 +3266,8 @@ def convert_tracers2PM25( ars=[], specs=[] ):
         ars[n]*scale*PM25_convertion_factor[spec]
 
     return ars
+
+
 
     
     
@@ -3280,7 +3319,7 @@ def fam_data_extractor4ts_bpch_files( spec='NOy', wd=None,
 #        units, scale = tra_unit(specs[0], IUPAC_unit=True, scale=True)
         # ---  Inorganic nitrogen ( NOy )
         elif spec == 'NOy' :
-            specs = GC_var('N_specs' )
+            specs = GC_var('NOy' )
             # get stiochiometry
             stioch4fam = [ spec_stoich(i, ref_spec='N') \
                  for n,i in enumerate( specs ) ]
@@ -3596,16 +3635,16 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
 
     Parameters
     -------
-     - s_area: Surface array (array of values in metres)
-     - vol: volumne of grid boxes
-     - specs: list of species (Prod loss variaables from input.geos)
-     - integer values for months ("months") and years ("years")
-     - t_ps: time in the troposphere diganostic ( float values 0 to 1 )
-     - trop_limit: limit output to "chemical troposphere" (level 38 )
-     - rm_strat (boolean): mask out stratosphere
+    s_area (array): Surface array (array of values in metres)
+    vol (array): volumne of grid boxes
+    specs (list): species (Prod loss variaables from input.geos)
+    months (list) and years (list): list of integer values for
+    t_ps (array): time in the troposphere diganostic ( float values 0 to 1 )
+    trop_limit (boolean): limit output to "chemical troposphere" (level 38 )
+    rm_strat (boolean): mask out stratosphere
      ( (boolean) options for this include using multiply_method and use_time_in_trop )
-     - conbine_ars (boolean): return arrays as a single array? 
-     - month_eq (boolean): convert units to monthly equiivlents.
+    conbine_ars (boolean): return arrays as a single array? 
+    month_eq (boolean): convert units to monthly equiivlents.
 
     Returns
     -------
