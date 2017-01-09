@@ -2164,9 +2164,9 @@ def latex_spec_name(input_x, debug=False):
     'R4N2':'$\geq$C4 alkylnitrates','PRPE':'$\geq$C3 alkenes', \
     'C3H8':'C$_{3}$H$_{8}$','CH2O':'CH$_{2}$O', \
     'C2H6':'C$_{2}$H$_{6}$', 'MP':'CH$_{3}$OOH', 'SO2':'SO$_{2}$',\
-    'SO4':'SO$_{4}$','SO4s':'SO$_{4}$ on SSA', \
-    'MSA':'CH$_{4}$SO$_{3}$','NH3':'NH$_{3}$', 'NH4': 'NH$_{4}$', \
-    'NIT': 'InOrg N', 'NITs': 'InOrg N on SSA', 'BCPI':'BCPI', \
+    'SO4':'SO$_4^{2-}$','SO4s':'SO$_4^{2-}$ on SSA', \
+    'MSA':'CH$_{4}$SO$_{3}$','NH3':'NH$_{3}$', 'NH4': 'NH$_4^+$', \
+    'NIT': 'NO$_3^{-}$', 'NITs': 'NO$_3^{-}$ on SSA', 'BCPI':'BCPI', \
     'OCPI':'OCPI', 'BCPO':'BCPO','OCPO':'OCPO', 'DST1':'DST1', \
     'DST2':'DST2','DST3':'DST3','DST4':'DST4','SALA':'SALA', \
     'SALC':'SALC',  'HBr':'HBr', 'BrNO2': 'BrNO$_{2}$', \
@@ -2205,6 +2205,7 @@ def latex_spec_name(input_x, debug=False):
     'N_specs_no_I': u'NO$_{\\rm y}$ exc. iodine', 'TSO4': 'TSO$_4$',
     'NOx':u'NO$_{\\rm x}$', 'HOx':u'HO$_{\\rm x}$', 'TNO3': 'TNO$_3$', \
     'SOx':u'SO$_{\\rm x}$','PM2.5': 'PM$_{2.5}$', 'VOC': 'VOC', \
+    'NIT+NH4+SO4': 'NO$_3^{-}$+NH$_4^+$+SO$_4^{2-}$', 
     # typos
     'CH2BR2':'CH$_{2}$Br$_{2}$',\
     # Cly names

@@ -3343,6 +3343,10 @@ def fam_data_extractor4ts_bpch_files( spec='NOy', wd=None,
         elif spec == 'NIT+NITs' :
             # Select species in family
             specs = [ 'NIT', 'NITs' ] 
+        # --- anthropogenic aerosol ( NIT + NH4 + SO4 )    
+        elif spec == 'NIT+NH4+SO4' :
+            # Select species in family
+            specs = [ 'NIT', 'NH4', 'SO4' ] 
         # --- total sulfate ( SO4, SO4s )
         elif spec == 'TSO4' :
             # Select species in family
@@ -3363,6 +3367,7 @@ def fam_data_extractor4ts_bpch_files( spec='NOy', wd=None,
         with Dataset( wd+'/'+filename, 'r') as rootgrp:
            for fam_spec in specs:
                 # Extract
+                print "Extracting spec='{}'".format( fam_spec )
                 data_ = rootgrp['IJ_AVG_S__'+fam_spec]
                 print 'Extracted data:', data_
                 print 'data shape: ', data_.shape
