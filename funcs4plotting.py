@@ -721,7 +721,7 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None,
 #    df.index = [ datetime.datetime( 2005, 1, 1, i ) for i in range(0, 24) ]
     
     # --- Aesthetics
-    if isinstnace(color, type(None):
+    if isinstance(color, type(None)):
         color=color_list(posn)[pos-1]
     # lengend font size
     if isinstance( lgnd_f_size, type(None)):
@@ -2058,7 +2058,8 @@ def scatter_3D_cube( data, dims=None, res='2x2.5', fig=None, everyother=1, inter
     """
     Make a 3D scatter cube of given 3D array
     """
-    logging.debug('scatter_3D_cube called with input data shape: ', data.shape)
+    logging.debug('scatter_3D_cube called with input data shape: {}'.format(\
+        data.shape) )
 
     from mpl_toolkits.mplot3d import Axes3D
 

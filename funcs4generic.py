@@ -712,6 +712,23 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
     with conditions (lower and upper bounds) set by given cases for
     MBL, UT, FT 
 
+    Parameters
+    -------
+    sect (Str): section of the atmosphere of interest (e.g. MBL, UT...)
+    hPa (array): array for pressures ( in hPa)
+    MBL (boolean): apply a mask for the marine boundary layer
+    res (str): the resolution of required output/input arrays (e.g. '4x5' )
+    use_multiply_method (boolean): Create arrays of ones and zeros
+    trop_limit (boolean): limit 3D arrays to troposphere     
+    debug (boolean): legacy debug option, replaced by python logging
+    verbose (boolean): legacy debug option, replaced by python logging
+    extra_mask (str): name of additional region (e.g. ocean) to mask
+    M_all (boolean): apply oceanic masking to all regions 
+    
+    Returns
+    -------
+    (np.ma.mask)
+
     NOTES:
      - originally written to generate masks for mulitplication 
     (i.e. use_multiply_method = True ), but can also be use to make 
@@ -724,8 +741,8 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
 
     # Get atmospheric region as case defining lower and upper bounds
     cases = { 
-      'BL': [1200., 900.], 'MBL': [1200., 900.], 'FT': [ 900., 350. ]         \
-     , 'UT': [ 350., 75.], 'All' : [ 1200., 75.]
+    'BL': [1200., 900.], 'MBL': [1200., 900.], 'FT': [ 900., 350. ],  \
+    'UT': [ 350., 75.], 'All' : [ 1200., 75.]
     }
     l, h = cases[ sect ] 
 
@@ -733,9 +750,9 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
     m=np.ones( get_dims4res(res) )
     m[ (hPa >=l) ] = 0
     m[ (hPa <h) ] = 0
-    if debug:
-        print sect, l, h, [ [np.ma.min(i), np.ma.max(i),   \
-                    np.ma.mean(i), np.ma.sum(i), i.shape ] for i in [ m  ] ]
+    logging.debug( 'Sect={}, l={}, h={}'.format(sect, l, h) )
+    logging.debug( '{}'.format( \
+        *[ [i.min(), i.max(), i.mean(), i.sum(), i.shape] for i in [m] ]) )
 
     # Mask off the 'sect' area that still equals 1
     m = np.ma.masked_equal(m, 1 )
@@ -1126,6 +1143,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     'Irish Sea' : 24, 
     'Europe' : 25, 
     'EU' : 25, 
+#    'Surface BL': 26, 
     }[region]
 
 
@@ -1189,6 +1207,8 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
 
         if case == 25:
             mask = get_EU_unmasked( res=res )
+#        if case == 26:
+#            mask = get_2D_BL_unmasked( res=res )
 
         # Invert mask to leave exception unmasked if used to multiply
         mask = np.logical_not(mask)
@@ -1254,6 +1274,9 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
             mask = get_unmasked_irish_sea( res=res )
         if case == 25:
             mask = get_EU_unmasked( res=res )
+#        if case == 26:
+#            mask = get_2D_BL_unmasked( res=res )
+
 
     logging.debug( 'prior to setting dimensions: {}'.format(mask.shape) )
 
