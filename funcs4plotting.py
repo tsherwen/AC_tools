@@ -667,24 +667,44 @@ def diurnal_boxplot(fig, ax,  dates, data, pos=1, posn =1,  bin_size=2/24.,\
 # --------   
 # 1.07 - Diurnal plot
 # --------
-def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1,  \
-        bin_size=2/24.,widths=0.01, rmax=False, \
-        ls='-', color=None, fractional=False, diurnal=False, mean=True, \
-        xlabel=True, ylabel=True, r_avgs=False, marker=None, label=None, \
-        markersize=1, title=None, f_size=10, units='ppbv', scale='linear', \
-        lw=1,lgnd_f_size=None, alpha=1, rotatexlabel=45,
-        time_resolution_str="%H:%M", stat2plot='mean', 
-#        time_resolution_str="%H", 
-        debug=False ):
+def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, 
+        xlabel=True, ylabel=True, label=None, title=None, f_size=10, 
+        units='ppbv',lgnd_f_size=None, alpha=0.5, rotatexlabel=45, 
+        loc='upper right', time_resolution_str="%H:%M", stat2plot='mean', 
+        legend=False, debug=False ):
     """ 
     Creates a diurnal plot for given data and dates using pandas Dataframe
 
-    NOTES:
-     - Data and dates must be in numpy array form. 
-     - Dates must also be datetime.datetime objects 
+    Parameters
+    -------
+    data (array): numpy array of data 
+    dates (numpy array of datetime.datetime): dates to use for x axis 
+    fig (fig instance)
+    ax (ax instance)
+    stat2plot (str): stat (e.g. mean or medium) to use for main line
+    xlabel, ylabel (str): label for axis?
+    label (str): label for input data
+    units (str): unites to label
+    time_resolution_str (str): time string to reduce dataframe by
+    legend (boolean): add a legend?
+    title (str): title for plot
+    color (str/hex etc): color for line
+    f_size (float): fontsize
+    lgnd_f_size (float): fontsize for legend
+    loc (str): location for legend
+    rotatexlabel (numnber/str): rotation of x axis labels 
+    pos, posn (int): vestigle(!) location indices for window plots
+
+    Returns
+    -------
+    (None)
+
+    Notes
+    -----
      - Adapted from David Hagen's example - https://www.davidhagan.me/articles?id=7
     """
-     
+    
+    # ---  process input data
     # Form a dataFrame from input numpy arrays. 
     df = pd.DataFrame( {'data':data}, index=dates )
 
@@ -700,91 +720,54 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1,  \
 #    df.index = pd.to_datetime(df.index )#.astype(str))
 #    df.index = [ datetime.datetime( 2005, 1, 1, i ) for i in range(0, 24) ]
     
-    # aesthetics
-    ls =[ls]*5
-    if posn> 4:
-        ls=get_ls( posn )
-    if color == None:
+    # --- Aesthetics
+    if isinstnace(color, type(None):
         color=color_list(posn)[pos-1]
-    else:
-        color=color
+    # lengend font size
     if isinstance( lgnd_f_size, type(None)):
         lgnd_f_size = f_size
 
-    # plot up mean
+    # --- Plot up average line (median or mean)
     if stat2plot == 'median':
         stat2plot='50%'
-    ax.plot(df.index, df['data'][stat2plot], color=color, linewidth=2.0)
-
-    # beautify
-#    from matplotlib import dates as d
-#    import datetime as dt    
-#    ticks = ax.get_xticks()
-#    print ticks 
-#    exit()
-#    ax.set_xticks(np.linspace(ticks[0], d.date2num(d.num2date(ticks[-1]) + dt.timedelta(hours=3)), 5))
-#    ax.set_xticks(np.linspace(ticks[0], d.date2num(d.num2date(ticks[-1]) + dt.timedelta(hours=3)), 25), minor=True)
-#    ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%I:%M %p'))
-#    xlabels = [ datetime.datetime(2016, 11, 30, i ) for i in range(1,24 )[1::4] ]
-#    print xlabels
-#    print [ d.date2num(i) for i in xlabels ] 
-#    ax.set_xticks( [d.date2num(i) for i in xlabels] )
-#    ax.set_xticks(ticks[1::2])
-#    ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H') )
-#    ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%I%p') )
+    ax.plot(df.index, df['data'][stat2plot], color=color, linewidth=2.0, \
+        label=label)
 
     # Add quartiles
-    ax.plot(df.index, df['data']['75%'], color=color, alpha=.5)
-    ax.plot(df.index, df['data']['25%'], color=color, alpha=.5)    
+    ax.plot(df.index, df['data']['75%'], color=color, alpha=alpha)
+    ax.plot(df.index, df['data']['25%'], color=color, alpha=alpha)    
     
-    # And shade
+    # And shading for quartiles 
     try:
-#    if True:
-        ax.fill_between(df.index, df['data'][stat2plot], df['data']['75%'], alpha=.5, facecolor=color)
-        ax.fill_between(df.index, df['data'][stat2plot], df['data']['25%'], alpha=.5, facecolor=color)    
+        ax.fill_between(df.index, df['data'][stat2plot], df['data']['75%'], 
+            alpha=alpha, facecolor=color)
+        ax.fill_between(df.index, df['data'][stat2plot], df['data']['25%'], 
+            alpha=alpha, facecolor=color)    
         
     except:
         logging.info( 'Failed to add percentile shading' )
 
-
-    # Beautify 
-#    ax.set_xticklabels( np.arange(0,24,1 )[::2]  )
-#    plt.xticks( np.arange(0,1,1/24. )[::2], fontsize=f_size )
-#    plt.xlim(0., 23/24.)
-
-#    if ymin != None:    
-#        plt.ylim( ymin, ymax )
-#    plt.yticks( fontsize=f_size*.75)
-#    plt.xticks( fontsize=f_size*.75)
+    # --- Beautify 
+    # title?
     if (title != None):
         plt.title( title )
+    # axis labels?
     if xlabel:
-        plt.xlabel('Hour of day', fontsize=f_size*.75)
+        plt.xlabel('Hour of day', fontsize=f_size )#*.75)
         # Add hourly ticks if labeling xaxis 
-        plt.xticks( rotation=rotatexlabel, fontsize=f_size*.75 )
+        plt.xticks( rotation=rotatexlabel, fontsize=f_size )#*.75 )
         ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H') )
-
     else:
         ax_tmp = ax_tmp = plt.gca()
         ax_tmp.tick_params( axis='x', which='both', labelbottom='off')
-
     if ylabel:
-        plt.ylabel('{}'.format(units), fontsize=f_size*.75)
+        plt.ylabel('{}'.format(units), fontsize=f_size)#*.75)
     else:
         ax_tmp = ax_tmp = plt.gca()
-#        ax_tmp.tick_params( axis='y', which='both', labelleft='off')
         
-    # Apply legend to last plot
-#    if pos == posn:
-#        plt.legend( fontsize=lgnd_f_size )
-
-    # return max 
-#    if rmax :
-#        return np.ma.max( avgs )
-
-#    if r_avgs:
-#        return avgs 
-
+    # Add legend?
+    if legend:
+        plt.legend( fontsize=lgnd_f_size, loc=loc )
 
 
 # --------   
@@ -1216,7 +1199,7 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         lw=1,ls='-', color=None, start_month=7, end_month=7, \
         boxplot=True, showmeans=False, alt_text=None, r_plt=False, \
         unitrotation=45, color_by_z=False, fig=None,  xlabel=True, \
-        second_title='', positive=None, debug=False ):
+        second_title='', add_dates2title=True, positive=None, debug=False ):
     """ 
     Plot up month timeseries of values. Requires data, and dates in numpy 
     array form. Dates must be as datetime.datetime objects. 
@@ -1264,12 +1247,14 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
 
     # Beatify plot
     if not isinstance( title, type(None) ):
-        plt.title( title + ' for {}-{} {}'.format( num2month(start_month),\
-            num2month(end_month), second_title  ) )
+        if add_dates2title:
+            title += ' for {}-{} {}'.format( num2month(start_month),\
+                num2month(end_month), second_title  )
+        plt.title( title)
     if not isinstance( alt_text, type(None) ):
         plt.figtext(x=0.05,y=0.85, s=alt_text, fontsize=f_size*.75 )
     if not isinstance( ylabel, type(None) ):
-        plt.ylabel( ylabel )
+        plt.ylabel( ylabel, fontsize=f_size*.75 )
     if legend:
         plt.legend( fontsize=f_size*.75, loc=loc )
 
