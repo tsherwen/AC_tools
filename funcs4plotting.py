@@ -667,99 +667,10 @@ def diurnal_boxplot(fig, ax,  dates, data, pos=1, posn =1,  bin_size=2/24.,\
 # --------   
 # 1.07 - Diurnal plot
 # --------
-def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
-        bin_size=2/24.,widths=0.01, rmax=False, \
-        ls='-', color=None, fractional=False, diurnal=False, mean=True, \
-        xlabel = True, r_avgs=False, marker=None, label=None, \
-        markersize=1, title=None, f_size=10, units='ppbv', scale='linear', \
-        lw=1,lgnd_f_size=None, alpha=1, debug=False ):
-    """ 
-    Creates a diurnal plot for given data and dates. 
-
-    NOTES:
-     - Data and dates must be in numpy array form. 
-     - Dates must also be datetime.datetime objects 
-     """
-
-    # Convert datetime to fractional day <= set this to map on array at once?
-    dates = np.array( [ get_day_fraction(i) for i in dates ] )
-
-    # asectics
-    ls =[ls]*5
-    if posn> 4:
-        ls=get_ls( posn )
-    if color == None:
-        color=color_list(posn)[pos-1]
-    else:
-        color=color
-    if isinstance( lgnd_f_size, type(None)):
-        lgnd_f_size = f_size
-    
-    # Bin data
-    binned, bins_used = bin_data( data, dates, bin_size, debug=debug )
-
-    # Take average of hourly binned data.
-    if mean:
-        avgs = np.ma.array([np.ma.mean(i) for i in binned]  )
-    else:
-        avgs = np.ma.array([np.ma.median(i) for i in binned]  )
-    avg = np.ma.mean( avgs )
-    max_ = np.ma.max( avgs )
-#    print avgs, avg, np.ma.max( avgs )
-    
-    if fractional:
-#        y = ( avgs - np.ma.max( avgs )  )  / avgs *100
-#        y = ( avgs - np.ma.max( avgs )  )  / avg *100
-        y = ( avgs - np.ma.max( avgs )  )  / max_*100
-        print 'test'*100, avg, max_, avgs
-
-        ymin, ymax =  -0.15, 0.025 
-        ymin, ymax =  [i*100 for i in ymin, ymax ]
-        units = '%'
-    elif diurnal:        
-        y =  avgs - np.ma.max( avgs )
-        ymin, ymax =  -3.5 , 0.5
-    else:
-        y = avgs
-        ymin, ymax =  None, None#27, 37
-    
-    # Plot
-    plt.plot( bins_used, y, color=color , label=label, linestyle=ls[pos-1], \
-        alpha=alpha, marker=marker, lw=lw, ms=markersize )
-
-    # Beautify 
-    ax.set_xticklabels( np.arange(0,24,1 )[::2]  )
-    plt.xticks( np.arange(0,1,1/24. )[::2], fontsize=f_size )
-    plt.xlim(0., 23/24.)
-
-    if ymin != None:    
-        plt.ylim( ymin, ymax )
-    plt.yticks( fontsize=f_size*.75)
-    plt.xticks( fontsize=f_size*.75)
-    if (title != None):
-        plt.title( title )
-    if xlabel:
-        plt.xlabel('Hour of day', fontsize=f_size*.75)
-    plt.ylabel('{}'.format(units), fontsize=f_size*.75)
-
-    # Apply legend to last plot
-    if pos == posn:
-        plt.legend( fontsize=lgnd_f_size )
-
-    # return max 
-    if rmax :
-        return np.ma.max( avgs )
-
-    if r_avgs:
-        return avgs 
-    
-# --------   
-# 1.07 - Diurnal plot
-# --------
 def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1,  \
         bin_size=2/24.,widths=0.01, rmax=False, \
         ls='-', color=None, fractional=False, diurnal=False, mean=True, \
-        xlabel = True, r_avgs=False, marker=None, label=None, \
+        xlabel=True, ylabel=True, r_avgs=False, marker=None, label=None, \
         markersize=1, title=None, f_size=10, units='ppbv', scale='linear', \
         lw=1,lgnd_f_size=None, alpha=1, rotatexlabel=45,
         time_resolution_str="%H:%M", stat2plot='mean', 
@@ -806,20 +717,21 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1,  \
     ax.plot(df.index, df['data'][stat2plot], color=color, linewidth=2.0)
 
     # beautify
-    from matplotlib import dates as d
-    import datetime as dt    
-    ticks = ax.get_xticks()
+#    from matplotlib import dates as d
+#    import datetime as dt    
+#    ticks = ax.get_xticks()
 #    print ticks 
 #    exit()
 #    ax.set_xticks(np.linspace(ticks[0], d.date2num(d.num2date(ticks[-1]) + dt.timedelta(hours=3)), 5))
 #    ax.set_xticks(np.linspace(ticks[0], d.date2num(d.num2date(ticks[-1]) + dt.timedelta(hours=3)), 25), minor=True)
 #    ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%I:%M %p'))
-    xlabels = [ datetime.datetime(2016, 11, 30, i ) for i in range(1,24 )[1::4] ]
-    ax.set_xticks( [d.date2num(i) for i in xlabels] )
+#    xlabels = [ datetime.datetime(2016, 11, 30, i ) for i in range(1,24 )[1::4] ]
+#    print xlabels
+#    print [ d.date2num(i) for i in xlabels ] 
+#    ax.set_xticks( [d.date2num(i) for i in xlabels] )
 #    ax.set_xticks(ticks[1::2])
 #    ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H') )
-    ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%I%p') )
-    plt.xticks( rotation=rotatexlabel )
+#    ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%I%p') )
 
     # Add quartiles
     ax.plot(df.index, df['data']['75%'], color=color, alpha=.5)
@@ -834,12 +746,6 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1,  \
     except:
         logging.info( 'Failed to add percentile shading' )
 
-#    if mean:
-#    else:
-    
-    # Plot
-#    plt.plot( bins_used, y, color=color , label=label, linestyle=ls[pos-1], \
-#        alpha=alpha, marker=marker, lw=lw, ms=markersize )
 
     # Beautify 
 #    ax.set_xticklabels( np.arange(0,24,1 )[::2]  )
@@ -854,8 +760,20 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1,  \
         plt.title( title )
     if xlabel:
         plt.xlabel('Hour of day', fontsize=f_size*.75)
-    plt.ylabel('{}'.format(units), fontsize=f_size*.75)
+        # Add hourly ticks if labeling xaxis 
+        plt.xticks( rotation=rotatexlabel, fontsize=f_size*.75 )
+        ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H') )
 
+    else:
+        ax_tmp = ax_tmp = plt.gca()
+        ax_tmp.tick_params( axis='x', which='both', labelbottom='off')
+
+    if ylabel:
+        plt.ylabel('{}'.format(units), fontsize=f_size*.75)
+    else:
+        ax_tmp = ax_tmp = plt.gca()
+#        ax_tmp.tick_params( axis='y', which='both', labelleft='off')
+        
     # Apply legend to last plot
 #    if pos == posn:
 #        plt.legend( fontsize=lgnd_f_size )
@@ -4582,3 +4500,97 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=T
 # NOTE(s): 
 # (1) These are retained even though they are redundant for back compatibility
 # (2) It is not advised to use these. 
+
+
+# --------   
+# 1.07 - Diurnal plot
+# --------
+def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
+        bin_size=2/24.,widths=0.01, rmax=False, \
+        ls='-', color=None, fractional=False, diurnal=False, mean=True, \
+        xlabel=True, r_avgs=False, marker=None, label=None, \
+        markersize=1, title=None, f_size=10, units='ppbv', scale='linear', \
+        lw=1,lgnd_f_size=None, alpha=1, debug=False ):
+    """ 
+    REDUNDENT!  (use diurnal_plot_df instead)
+     Creates a diurnal plot for given data and dates. 
+    
+
+    NOTES:
+     - Data and dates must be in numpy array form. 
+     - Dates must also be datetime.datetime objects 
+
+     """
+
+    # Convert datetime to fractional day <= set this to map on array at once?
+    dates = np.array( [ get_day_fraction(i) for i in dates ] )
+
+    # asectics
+    ls =[ls]*5
+    if posn> 4:
+        ls=get_ls( posn )
+    if color == None:
+        color=color_list(posn)[pos-1]
+    else:
+        color=color
+    if isinstance( lgnd_f_size, type(None)):
+        lgnd_f_size = f_size
+    
+    # Bin data
+    binned, bins_used = bin_data( data, dates, bin_size, debug=debug )
+
+    # Take average of hourly binned data.
+    if mean:
+        avgs = np.ma.array([np.ma.mean(i) for i in binned]  )
+    else:
+        avgs = np.ma.array([np.ma.median(i) for i in binned]  )
+    avg = np.ma.mean( avgs )
+    max_ = np.ma.max( avgs )
+#    print avgs, avg, np.ma.max( avgs )
+    
+    if fractional:
+#        y = ( avgs - np.ma.max( avgs )  )  / avgs *100
+#        y = ( avgs - np.ma.max( avgs )  )  / avg *100
+        y = ( avgs - np.ma.max( avgs )  )  / max_*100
+        print 'test'*100, avg, max_, avgs
+
+        ymin, ymax =  -0.15, 0.025 
+        ymin, ymax =  [i*100 for i in ymin, ymax ]
+        units = '%'
+    elif diurnal:        
+        y =  avgs - np.ma.max( avgs )
+        ymin, ymax =  -3.5 , 0.5
+    else:
+        y = avgs
+        ymin, ymax =  None, None#27, 37
+    
+    # Plot
+    plt.plot( bins_used, y, color=color , label=label, linestyle=ls[pos-1], \
+        alpha=alpha, marker=marker, lw=lw, ms=markersize )
+
+    # Beautify 
+    ax.set_xticklabels( np.arange(0,24,1 )[::2]  )
+    plt.xticks( np.arange(0,1,1/24. )[::2], fontsize=f_size )
+    plt.xlim(0., 23/24.)
+
+    if ymin != None:    
+        plt.ylim( ymin, ymax )
+    plt.yticks( fontsize=f_size*.75)
+    plt.xticks( fontsize=f_size*.75)
+    if (title != None):
+        plt.title( title )
+    if xlabel:
+        plt.xlabel('Hour of day', fontsize=f_size*.75)
+    plt.ylabel('{}'.format(units), fontsize=f_size*.75)
+
+    # Apply legend to last plot
+    if pos == posn:
+        plt.legend( fontsize=lgnd_f_size )
+
+    # return max 
+    if rmax :
+        return np.ma.max( avgs )
+
+    if r_avgs:
+        return avgs 
+    
