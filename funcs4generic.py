@@ -1037,7 +1037,7 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
 
     if masks=='trop_regions':
         mtitles = [ 'BL','FT',  'UT'] 
-        maskes = [  mask_3D(hPa, i,M_all=M_all, res=res )[:,:,:38]  \
+        maskes = [  mask_3D(hPa, i, M_all=M_all, MBL=False, res=res )[:,:,:38]  \
             for i in  mtitles ]
         # Also create print strings...    
         npstr ='{:<15}'*len(maskes)

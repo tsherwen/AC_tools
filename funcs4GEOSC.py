@@ -66,7 +66,6 @@ from Scripts.bpch2netCDF import convert_to_netCDF
 # -------------- Model Data Extractors
 #
 
-
     
 # ----
 # 1.04 -Get surface area  ( m^2 )
@@ -2382,7 +2381,7 @@ def get_DU_mean(s_area=None, a_m=None, t_p=None, O3_arr=None, \
 # 2.26 - Get Prod / loss for O3
 # -------------
 def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
-        wd=None, year_eq=True, res='4x5', debug=False):
+        wd=None, year_eq=True, res='4x5', return_as_int_sum=False, debug=False):
     """ 
     Get production and loss terms for O3 from prod/loss diagnostic 
 
@@ -2437,7 +2436,11 @@ def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
         # NEEDS UPDATE - update troposphere removal method?
         arrs = [ (arr*t_p).mean(axis=3) for arr in arrs ] 
         # Return list of two integers
-        return [ int(np.ma.masked_invalid(i).sum()/1E3) for i in arrs ] # Tg
+        arrs = [ np.ma.masked_invalid(i) for i in arrs ]
+        if return_as_int_sum:
+            return [ int(i.sum()/1E3) for i in arrs ] # Tg
+        else:
+            return [ i/1E3 for i in arrs ] # Tg
 
 
 # --------------

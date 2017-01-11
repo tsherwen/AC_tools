@@ -671,7 +671,7 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None,
         xlabel=True, ylabel=True, label=None, title=None, f_size=10, 
         units='ppbv',lgnd_f_size=None, alpha=0.5, rotatexlabel=45, 
         loc='upper right', time_resolution_str="%H:%M", stat2plot='mean', 
-        legend=False, debug=False ):
+        legend=False, ylim=None, debug=False ):
     """ 
     Creates a diurnal plot for given data and dates using pandas Dataframe
 
@@ -694,6 +694,7 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None,
     loc (str): location for legend
     rotatexlabel (numnber/str): rotation of x axis labels 
     pos, posn (int): vestigle(!) location indices for window plots
+    ylim (list): min and max y axis limit
 
     Returns
     -------
@@ -769,6 +770,8 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None,
     if legend:
         plt.legend( fontsize=lgnd_f_size, loc=loc )
 
+    if not isinstance(ylim, type(None)):
+        plt.ylim(ylim)
 
 # --------   
 # 1.11 - Plot up Sonde data
