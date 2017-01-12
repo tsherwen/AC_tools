@@ -66,7 +66,6 @@ from Scripts.bpch2netCDF import convert_to_netCDF
 # -------------- Model Data Extractors
 #
 
-    
 # ----
 # 1.04 -Get surface area  ( m^2 )
 # ----
@@ -146,6 +145,9 @@ def get_surface_area(res=None, wd=None, debug=False):
 
     return s_area
 
+# ----
+# X.XX 
+# ----
 def list_variables(wd=None):
     """
     Show a list of variables in a wd that we can get at.
@@ -208,8 +210,6 @@ def list_variables(wd=None):
 
     return
         
-    
-
 # ----
 # 1.05 - Get Land map. 
 # ----
@@ -263,13 +263,11 @@ def get_land_map(res='4x5', time=None, wd=None,debug=False):
 
     return landmap
 
-
-
-# --------------
+# ----
 # 1.07 - get air mass (4D) np.array in kg
-# ------------- 
+# ----
 def get_air_mass_np( ctm_f=None, wd=None, times=None, trop_limit=True,\
-            debug=False ):
+        debug=False ):
     """ 
     Get array of air mass in kg 
     """
@@ -302,9 +300,9 @@ def get_air_mass_np( ctm_f=None, wd=None, times=None, trop_limit=True,\
         logging.debug( 'arr type={}, shape={}'.format( type(arr), arr.shape ))
     return arr
 
-# --------------
-# 1.08 - Get OH mean value - [1e5 molec/cm3]
-# -------------
+# ----
+# X.XX - Get OH mean value - [1e5 molec/cm3]
+# ----
 def get_OH_mean( wd, debug=False ):
     """ 
     Get mean OH concentration (1e5 molec/cm3) from geos.log files
@@ -327,9 +325,9 @@ def get_OH_mean( wd, debug=False ):
                     z += [ float(line.split()[3] ) ]
     return np.mean(z)
 
-# --------------
-# 1.0X - Get CH4 mean value - v/v
-# -------------
+# ----
+# X.XX - Get CH4 mean value - v/v
+# ----
 def get_CH4_mean( wd, rtn_global_mean=True, rtn_avg_3D_concs=False, \
         res='4x5', debug=False ):
     """ 
@@ -365,7 +363,7 @@ def get_CH4_mean( wd, rtn_global_mean=True, rtn_avg_3D_concs=False, \
 
 # ----
 # 1.14 - Extract OH and HO2 for a given ctm.bpch file
-# ---
+# ----
 def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, \
             wd=None, HOx_weight=False, res='4x5', scale=1E5, trop_limit=True, \
              molec_weight=True, time_averaged=True, debug=False ):
@@ -469,7 +467,7 @@ def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, \
 
 # ----
 # 1.21 - Process species for given arrays to (v/v) in respective scale + DU
-# ---
+# ----
 def process_data4specs( specs=None, just_bcase_std=True, preindustrial=False, \
         just_bcase_no_hal=False, res='4x5', ver='1.6', diff=True, pcent=True, \
         tight_constraints=True, trop_limit=True, NOy_family=False, \
@@ -693,10 +691,11 @@ def process_data4specs( specs=None, just_bcase_std=True, preindustrial=False, \
         rtn_vars += [specs ]
     return rtn_vars
 
-
-
-
-def get_HEMCO_output( wd=None, files=None, filename=None, vars=None, use_netCDF=True):
+# ----
+# X.XX
+# ----
+def get_HEMCO_output( wd=None, files=None, filename=None, vars=None, \
+        use_netCDF=True):
     """
     Data extractor for hemco files and folders. You can specify either a 
     working dir or a file to get the data from.
@@ -772,11 +771,9 @@ def get_HEMCO_output( wd=None, files=None, filename=None, vars=None, use_netCDF=
 
     return arr;
 
-
-
 # ----
 # 1.22 - Get var data for model run
-# ---
+# ----
 def get_GC_output( wd, vars=None, species=None, category=None, r_cubes=False, \
         r_res=False, restore_zero_scaling=True, r_list=False, trop_limit=False, \
         dtype=np.float32, use_NetCDF=True, verbose=False, debug=False):
@@ -1094,7 +1091,6 @@ def get_GC_output( wd, vars=None, species=None, category=None, r_cubes=False, \
     else:
         return output
 
-
 # ----
 # 1.24 - Get gc resolution from ctm.nc
 # ---
@@ -1258,7 +1254,7 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
 
 # ----
 # 1.26 - Process species for given family arrays to (v/v)
-# ---
+# ----
 def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
     trop_limit=True, N=False, I=False, Cl=False, Br=False, t_ps=None, a_m=None,\
     vol=None, verbose=True, rm_strat=False, debug=False ):
@@ -1337,7 +1333,7 @@ def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
 
 # ----
 # 1.27 - Convert v/v array to DU array 
-# ---
+# ----
 def convert_v_v_2_DU( arr, wd=None, a_m=None, trop_limit=True, s_area=None, \
         molecs=None, verbose=True, debug=False):
     """ 
@@ -1376,7 +1372,7 @@ def convert_v_v_2_DU( arr, wd=None, a_m=None, trop_limit=True, s_area=None, \
     
 # ----
 # 1.28 - Get common GC diagnostic arrays 
-# ---   
+# ---- 
 def get_common_GC_vars( wd=None, trop_limit=True, res='4x5', \
         verbose=True, debug=False):
     """  
@@ -1402,7 +1398,7 @@ def get_common_GC_vars( wd=None, trop_limit=True, res='4x5', \
 
 # ----
 # 1.29 - Get 3D CH4 concentrations
-# ---   
+# ----
 def get_CH4_3D_concenctrations( z, res='4x5', trop_limit=True, debug=False ):
     """ 
     Takes monthly ( or any equllay spaced output) CH4 concentrations from geos.log 
@@ -1447,7 +1443,7 @@ def get_CH4_3D_concenctrations( z, res='4x5', trop_limit=True, debug=False ):
 
 # ----
 # 1.30 - Get Strat-Trop exchange (from geos.log files )
-# ---  
+# ----
 def get_STRAT_TROP_exchange_from_geos_log( fn=None, ver='3.0', \
         rtn_date=False, rtn_Tg_per_yr=True, verbose=False, debug=False ):
     """ 
@@ -1519,7 +1515,7 @@ def get_STRAT_TROP_exchange_from_geos_log( fn=None, ver='3.0', \
 
 # ----
 # 1.30 - Get Wind direction from U and V vectors 
-# ---  
+# ----  
 def get_mod_WIND_dir(  sdate=datetime.datetime(2012, 8, 1, 0 ), \
             edate = datetime.datetime(2012, 8, 8, 0 ), loc='KEN', \
             scale=1, adjustby=0, period = 'summer', \
@@ -1564,9 +1560,9 @@ def get_mod_WIND_dir(  sdate=datetime.datetime(2012, 8, 1, 0 ), \
 # -------------- Data Processing tools/drivers
 #
 
-# --------   
+# ----
 # 2.01 - Retrieve model resolution
-# --------
+# ----
 def mod_res(wd, spec='O3', fn='ctm.bpch', debug=False):
     """ 
     Extract model resolution
@@ -1599,7 +1595,7 @@ def mod_res(wd, spec='O3', fn='ctm.bpch', debug=False):
 
 # ----
 # 2.03 - get GC years
-# -----
+# ----
 def get_gc_years(ctm_f=None, wd=None, set_=True, debug=False):
     """ 
     Return list of years in CTM output 
@@ -1621,7 +1617,7 @@ def get_gc_years(ctm_f=None, wd=None, set_=True, debug=False):
 
 # ----
 # 2.04 - get GC months
-# -----
+# ----
 def get_gc_months(ctm_f=None, wd=None, verbose=False, debug=False):
     """ 
     Return list of months in CTM output 
@@ -1637,7 +1633,7 @@ def get_gc_months(ctm_f=None, wd=None, verbose=False, debug=False):
 
 # ----
 # 2.07 - Get gc datetime
-# -----
+# ----
 def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
         filename='ctm.nc', verbose=False, debug=False):
     """ 
@@ -1699,20 +1695,9 @@ def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
         # return datetime objects
         return dates
     
-# -------------
-# 2.08 - Work out iGEOS-Chem version 
-# ------------- 
-# NOTE: moved to funcs4core ... 
-
-# --------------
-# 2.09 - Get tropospheric Burden - 
-# -------------
-# Redundent - mv'd to bottom of this module
-
-
-# --------------
+# ----
 # 2.11 - Get Emission of species in Gg
-# -------------
+# ----
 def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
             molec_cm2_s=False, nmonl_m2_d=False, kg_m2_s=False, \
             monthly=False, months=None, s_area=None, res='4x5', \
@@ -1789,15 +1774,15 @@ def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
 
     return arr_
 
-# --------
+# ----
 # 2.12 - Get CH4 Lifetime in years
-# --------
+# ----
 def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
-            vol=None, a_m=None, t_ps=None, K=None, t_lvl=None, n_air=None, \
-            years=None, months=None, monthly=False, trop_limit=True, \
-            use_OH_from_geos_log=False, average_value=True, LCH4_Cl=None,  \
-            use_time_in_trop=True, masktrop=False, include_Cl_ox=False, \
-            verbose=True, debug=False ):
+        vol=None, a_m=None, t_ps=None, K=None, t_lvl=None, n_air=None, \
+        years=None, months=None, monthly=False, trop_limit=True, \
+        use_OH_from_geos_log=False, average_value=True, LCH4_Cl=None,  \
+        use_time_in_trop=True, masktrop=False, include_Cl_ox=False, \
+        verbose=True, debug=False ):
     """ 
     Get amtospheric methane (CH4) lifetime by calculating loss rate against OH.
     
@@ -2001,9 +1986,9 @@ def get_LWI(lon, lat, res='4x5',debug=False):
     LWI=get_land_map(res, res=res)
     return LWI[lon,lat,0]
     
-# -------------- 
+# ----
 # 2.14 - get_gc_alt  ( KM => box num )   
-# -------------
+# ----
 def get_gc_alt(alt):
     """ 
     Return index of nearest altitude (km ) of GEOS-Chem box 
@@ -2011,9 +1996,9 @@ def get_gc_alt(alt):
     alt_c = gchemgrid('c_km_geos5_r')
     return find_nearest( alt_c, alt )
 
-# --------------
+# ----
 # 2.15 - species arrary (4D) in v/v to Gg  I/ O3/Species
-# ------------- 
+# ----
 def species_v_v_to_Gg(arr, spec, a_m=None, Iodine=True, All =False, \
         Ox=False, ctm_f=None, wd=None, debug=False):
     """ 
@@ -2048,9 +2033,9 @@ def species_v_v_to_Gg(arr, spec, a_m=None, Iodine=True, All =False, \
         arr = ( ( arr * moles )  * (species_mass( spec  )) ) /1E9 
     return arr
 
-# --------------
+# ----
 # 2.16 - retrive volume for geos chem run ( in cm3 )
-# -------------
+# ----
 def get_volume_np(ctm_f=None, box_height=None, s_area=None, res='4x5', \
         wd=None, trop_limit=False, debug=False):
     """ 
@@ -2098,9 +2083,9 @@ def get_volume_np(ctm_f=None, box_height=None, s_area=None, res='4x5', \
         box_height.shape, s_area.shape, volume.shape ) )
     return volume
 
-# --------------
+# ----
 # 2.17 - Test is grid box for a given lat and lon is over water
-# ------------- 
+# ----
 def loc_is_water_grid_box( lat, lon, res='4x5' ):
     """ 
     Return Boolean for if grid box is water or not 
@@ -2125,9 +2110,9 @@ def loc_is_water_grid_box( lat, lon, res='4x5' ):
             booll = [ bool ]
     return booll
 
-# --------------  
+# ----
 # 2.18 - Get dry dep for given spec
-# -------------   
+# ----
 def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
         years=None, res='4x5', vol=None, trop_limit=True, Iodine=False, \
         use_method_assuming_monthly_output=True, 
@@ -2194,13 +2179,9 @@ def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
 
     return df
 
-# --------------  
-# 2.19 - Land map - REDUNDENT
-# -------------   
-
-# --------------
+# ----
 # 2.20 - Gg Ox yr^-1 from individual PORL-L$ rxns ([molec/cm3/s] )
-# -------------
+# ----
 def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None, \
         Iodine=False, I=False, IO=False, months=None, years=None, wd=None, \
         year_eq=True, month_eq=False, spec=None, res='4x5',debug=False ):
@@ -2254,9 +2235,9 @@ def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None, \
         print 'arr', arr.shape , 'vol', vol.shape
     return arr
 
-# --------------
+# ----
 # 2.21 - Gg Ox yr^-1 from induvial spec (2D array - dry dep)  ( ([molec/cm2/s] ) to Gg X (or Gg X / s if not year_eq. )
-# -------------
+# ----
 def molec_cm2_s_2_Gg_Ox_np( arr, spec='O3', s_area=None, ctm_f=None, \
         Iodine=False, res='4x5', year_eq=False, debug=False):
     """ 
@@ -2309,18 +2290,9 @@ def molec_cm2_s_2_Gg_Ox_np( arr, spec='O3', s_area=None, ctm_f=None, \
         print 'arr', arr.shape
     return arr
 
-# --------------
-# 2.22 - Get Dry dep - rm as redundent.
-# -------------
- 
-# --------------  
-# 2.23 - Get run data for a given GC run - 
-# -------------   
-# Not generic enough for module - mv'd to bottom 
-
-# --------------
+# ----
 # 2.24 - Get DU mean value
-# -------------
+# ----
 def get_DU_mean(s_area=None, a_m=None, t_p=None, O3_arr=None, \
             ctm_f=False, area_weight=True, res='4x5', debug=False ):
     """ 
@@ -2371,15 +2343,9 @@ def get_DU_mean(s_area=None, a_m=None, t_p=None, O3_arr=None, \
         arr = np.sum(arr * s_area)/np.sum(s_area)    # weight by area
     return arr
 
-# --------------
-# 2.25 - Get O3 Burden
-# -------------
-# REDUNDENT - mv'd to bottom of module
-
-
-# --------------
+# ----
 # 2.26 - Get Prod / loss for O3
-# -------------
+# ----
 def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
         wd=None, year_eq=True, res='4x5', return_as_int_sum=False, debug=False):
     """ 
@@ -2443,9 +2409,9 @@ def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
             return [ i/1E3 for i in arrs ] # Tg
 
 
-# --------------
+# ----
 # 2.28 - Get wet dep
-# -------------
+# ----
 def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
         scale=1E9, s_area=None, res='4x5', wd=None, specs=None, \
         Iodine=False, all_wdep=False, sep_rxn=False, ref_spec=None, \
@@ -2556,12 +2522,6 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
         return np.concatenate( [ i[...,None] /scale \
                         for i in dep_w ], axis=-1 ).sum(axis=-1 )
 
-
-# --------
-# 2.31 - Vol weighted array average value
-# --------
-# REDUNDENT 
-
 # ----
 # 2.32 - molecule weighted array average value
 # ----
@@ -2648,29 +2608,11 @@ def molec_weighted_avg( arr, wd=None, ctm_f=None, vol=None, t_p=None, n_air=None
     else: # weight whole array to give single number
         return (arr *molecs).sum()/molecs.sum()
 
-
-
-# --------------
-# 2.35 - Get Tropospheric Ox loss routes as list of arrays, + model resolution (res)
-# -------------
-# Not generic enough for module - mv'd to bottom 
-
-# --------------
-# 2.36 - Split Tropospheric Ox loss routes 
-# -------------
-# Not generic enough for module - mv'd to bottom 
-
-# --------------
-# 2.37 - Return only dry/wet dep variaibles aloocated within model output arrays
-# -------------       
-# Redundant
-
-
-# --------------
+# ----
 # 2.38 - split 4D ( lon, lat, alt, time) output by season
-# -------------       
+# ----     
 def split_4D_array_into_seasons( arr, annual_plus_seasons=True, \
-            debug=False ):
+        debug=False ):
     """ 
     Split 4D ( lon, lat, alt, time) output by season, then take 
     average of the seasons 
@@ -2712,11 +2654,11 @@ def split_4D_array_into_seasons( arr, annual_plus_seasons=True, \
     # return list array averaged by season 
     return ars, seasons
 
-# --------------
+# ----
 # 2.39 - Convert v/v to ng/m^3
-# -------------     
+# ----   
 def convert_v_v2ngm3( arr, wd=None, spec='AERI', trop_limit=True, \
-            s_area=None, vol=None, a_m=None, res='4x5', debug=False ):
+        s_area=None, vol=None, a_m=None, res='4x5', debug=False ):
     """ 
     Take v/v array for a species, and conver this to mass loading
     units used as standard are ng/m3
@@ -2752,9 +2694,9 @@ def convert_v_v2ngm3( arr, wd=None, spec='AERI', trop_limit=True, \
     
     return arr
     
-# --------------
+# ----
 # 2.40 - Print weighted array 
-# -------------   
+# ----  
 def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
         region='All', monthly=False, mask3D=True, trop_limit=True, \
         prt_by_3D_region=False, hPa=None, wd=None, \
@@ -2886,9 +2828,9 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
             print npstr.format( s,  *vars )
 
 
-# --------------
+# ----
 # 2.41 - Extract data by family for a given wd
-# -------------   
+# ----  
 def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
         annual_mean=True, t_ps=None, a_m=None, vol=None, res='4x5', \
         title=None, rtn_list=False, use_time_in_trop=True, multiply_method=True, \
@@ -3204,7 +3146,9 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
     else:
         return arr
 
-
+# ----
+# X.XX - 
+# ----
 def convert_tracers2PM25( ars=[], specs=[], region='Europe' ):
     """
     Aproximate PM2.5 from PM2.5 ratios 
@@ -3270,13 +3214,9 @@ def convert_tracers2PM25( ars=[], specs=[], region='Europe' ):
 
     return ars
 
-
-
-    
-    
-# --------------
+# ----
 # X.XX - Extract 2D data from *ts*bpch* files (e.g. hourly surface data)
-# -------------  
+# ----
 def fam_data_extractor4ts_bpch_files( spec='NOy', wd=None, 
         filename=None,  ):
     """
@@ -3396,9 +3336,9 @@ def fam_data_extractor4ts_bpch_files( spec='NOy', wd=None,
 
         return data, units
 
-# --------------
+# ----
 # X.XX - Extract timeseries data from *ts*bpch* files (e.g. hourly surface data)
-# -------------  
+# ----
 def get_LOC_df_from_NetCDF(site='WEY', spec='O3', wd=None, res=None, \
         filename='ts_ctm.nc'):
     """
@@ -3439,9 +3379,9 @@ def get_LOC_df_from_NetCDF(site='WEY', spec='O3', wd=None, res=None, \
 
     return df
 
-# --------------
+# ----
 # 2.42 - Convert v/v to molec/cm3
-# -------------   
+# ----   
 def convert_v_v_2_molec_cm3( arr=None, wd=None, vol=None, a_m=None, \
         mols=None, res='4x5', trop_limit=True, debug=False):
     """ 
@@ -3488,9 +3428,9 @@ def convert_v_v_2_molec_cm3( arr=None, wd=None, vol=None, a_m=None, \
     
     return arr
 
-# --------------
+# ----
 # 2.43 - Mask non tropospheric boxes of 4D array
-# -------------   
+# ----  
 def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
         t_lvl=None, masks4stratosphere=False, use_time_in_trop=True, \
         multiply_method=True, res='4x5', debug=False ):
@@ -3606,9 +3546,9 @@ def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
 
     return ars 
 
-# --------------
+# ----
 # 2.44 - Convert [molec/cm3/s ] to [molec/yr] 
-# -------------   
+# ----  
 def convert_molec_cm3_s2_molec_per_yr( ars=None, vol=None ):
     """ 
     Takes a list of arrays (4D) and converts their units from molec/cm3/s to     
@@ -3628,11 +3568,11 @@ def convert_molec_cm3_s2_molec_per_yr( ars=None, vol=None ):
     return ars
 
 
-# --------------
+# ----
 # 2.46 - Convert molec/cm3/s to g/s
-# -------------
+# ----
 def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
-         months=None, years=None, vol=None, t_ps=None, trop_limit=True, \
+        months=None, years=None, vol=None, t_ps=None, trop_limit=True, \
         s_area=None, rm_strat=True, ctm_f=None, wd=None, res='4x5', \
         multiply_method=True, use_time_in_trop=True, conbine_ars=True, \
         month_eq=False, verbose=False,  debug=False ):
@@ -3707,9 +3647,9 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
     else:
         return ars   
          
-# --------------
+# ----
 # 2.47 - Print out stats on a list of 2D arrays in terms of masked areas
-# -------------
+# ----
 def prt_2D_vals_by_region( specs=None, res='4x5', arrs=None, prt_pcent=False, \
         add_total=False, months=range(12), summate=True, \
         csv_title='regional_vals.csv', save2csv=False, \
@@ -3784,7 +3724,9 @@ def prt_2D_vals_by_region( specs=None, res='4x5', arrs=None, prt_pcent=False, \
             # save to csv
             df.to_csv( csv_title )
 
-
+# ----
+# X.XX - 
+# ----
 def get_2D_arr_weighted_by_X( arr, spec=None, res='4x5', print_values=False, \
         s_area=None):
     """
@@ -3828,9 +3770,9 @@ def get_2D_arr_weighted_by_X( arr, spec=None, res='4x5', print_values=False, \
 # (3) These will be removed when AC_tools is next re-structured.
 
 
-# --------------
+# ----
 # 1.01 - open ctm.bpch using pygchem ( version '0.2.0' ) 
-# -------------- 
+# ----
 def open_ctm_bpch(wd, fn='ctm.bpch', debug=False):
     """ 
     This is a vestigial programme, based on pychem version 0.2.0.
@@ -3869,9 +3811,9 @@ def open_ctm_bpch(wd, fn='ctm.bpch', debug=False):
 
     return ctm_f
 
-# --------------
+# ----
 # 1.02 - get np array (4D) of ctm.bpch (lon, lat ,alt, time) 
-# --------------
+# ----
 def get_gc_data_np(ctm, spec='O3', category="IJ-AVG-$", debug=False):
     """ 
     This function extracts fields from diagnostics 
@@ -3923,9 +3865,9 @@ def get_gc_data_np(ctm, spec='O3', category="IJ-AVG-$", debug=False):
 # -------------- Time Processing
 #
 
-# --------------
+# ----
 # 3.01 - Takes monthly outputs and sort to chronological order
-# -------------
+# ----
 def ctms2chronological( ctms, debug=False ):
     """ 
     Ensure list of ctms is chronological 
@@ -3972,9 +3914,9 @@ def ctms2chronological( ctms, debug=False ):
 
     return ctms
 
-# --------------
+# ----
 # 3.02 - Takes monthly outputs and sort to chronological order
-# -------------
+# ----
 def np2chronological_fromctm( ctms, arr, debug=False ):
     """ 
     Ensure np array is in chronological order 
@@ -4016,9 +3958,9 @@ def np2chronological_fromctm( ctms, arr, debug=False ):
 # -------------- Delete/move to user specific modules 
 
 
-# --------------
+# ----
 # 2.09 - Get tropospheric Burden - 
-# -------------
+# ----
 def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
         Iodine=False, all_data=True, total_atmos=False , res='4x5',  \
         trop_limit=True, debug=False ):
@@ -4087,11 +4029,12 @@ def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
     else:
         return np.ma.mean( ar, axis=3 )
 
-# --------------
+# ----
 # 2.25 - Get O3 Burden
-# -------------
-def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None, ctm_f=False, 
-        trop_limit=True, all_data=False, annual_mean=True, debug=False ):
+# ----
+def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None, \
+        ctm_f=False, trop_limit=True, all_data=False, annual_mean=True, \
+        debug=False ):
     """ 
     Get O3 burden in CTM output 
 
