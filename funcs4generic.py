@@ -1534,6 +1534,41 @@ def get_ODR(x=None, y=None):
     return myoutput
 
        
+def convert_ug_per_m3_2_ppbv( data=None,  spec='O3', rtn_units=False, \
+        units='ug m$^{-3}$' ):
+    """
+    Converts units of ugm^-3 to ppbv for a given species 
+    """
+    # --- Get constants
+    RMM_air = constants('RMM_air') # g/mol
+    # assume standard air density
+    # At sea level and at 15 °C air has a density of approximately 1.225 kg/m3 
+    #(0.001225 g/cm3, 0.0023769 slug/ft3, 0.0765 lbm/ft3) according to 
+    # ISA (International Standard Atmosphere).
+    AIRDEN = 0.001225 # g/cm3
+    # moles per cm3
+    #  (1/(g/mol)) = (mol/g) ; (mol/g) * (g/cm3) = mol/cm3
+    MOLS = (1/RMM_air) * AIRDEN 
+
+    # moles * spec RMM * microgram
+    # e.g. v/v * mols/cm3 = mols of X per cm3; / spec RMM = mass
+    # unitless * mols * g/mol * conversion
+#   scale = MOLS * AC.species_mass( spec ) 
+
+    # convert ug/m3 to ppbv
+    # get g per cm3, ( instead of ug/m3)
+    data = data /1E6 /1E6
+    # get mol/cm3 (mass/ RMM ) = ( ug/m3  /  g/mol )
+    data = data/species_mass( spec ) 
+    # convert to ppb
+    data = data/MOLS *1E9
+    # update unit string 
+    units = 'ppbv'
+    if rtn_units:
+        return data, units
+    else:
+        return data
+
 
 
 # --------------------------------------------------------------------------

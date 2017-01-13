@@ -65,7 +65,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
         lon_0=None, lon_1=None, lat_0=None, lat_1=None, norm=None,\
         sigfig_rounding_on_cb=2, fixcb_buffered=None, ylabel=True, \
         xlabel=True, wd=None, verbose=True, debug=False, tight_layout=False, \
-        **Kwargs):
+        axis_titles=False, **Kwargs):
     """ 
     Plots Global/regional 2D (lon, lat) slices.  
 
@@ -110,6 +110,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     verbose (boolean): legacy debug option, replaced by python logging
     wd (str): Specify the wd to get the results from a run.
     window (boolean): use window plot settings (fewer axis labels/resolution of map)
+    axis_titles (boolean): title X and y axis? (lat and lon)
 
     Returns
     -------
@@ -189,11 +190,15 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     x, y = np.meshgrid(lon,lat)
     # Set existing axis to current if axis provided
     if not isinstance(ax, type(None)):
-        plt.sca( ax )
- 
+        # temporary remove as mpl widget has a bug
+        # http://stackoverflow.com/questions/20562582/axes-instance-argument-was-not-found-in-a-figure
+#        plt.sca( ax )
+        pass
+         
     # ---- Setup map ("m") using Basemap
     m = get_basemap( lat=lat, lon=lon, resolution=resolution, res=res, \
         everyother=everyother, interval=interval, f_size=f_size, ylabel=ylabel, \
+        axis_titles=axis_titles, 
         xlabel=xlabel, drawcountries=drawcountries )
     # Process data to grid
     x, y = np.meshgrid( *m(lon, lat) )
@@ -704,12 +709,12 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None,
     -----
      - Adapted from David Hagen's example - https://www.davidhagan.me/articles?id=7
     """
-    
+    logging.info('diurnal_plot_df called with stat2plot={} '.format(stat2plot) )
     # ---  process input data
     # Form a dataFrame from input numpy arrays. 
     df = pd.DataFrame( {'data':data}, index=dates )
 
-    # Add a time coluumn to group by (e.g. "%H:%M" for minuitse) 
+    # Add a time coluumn to group by (e.g. "%H:%M" for minutes) 
     df['Time'] = df.index.map(lambda x: x.strftime(time_resolution_str))
 
     # Group by time resolution column
@@ -2500,7 +2505,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         orientation='vertical', rotatecbunits='vertical', title_y=1, \
         title_x=0.5, no_cb=True, return_m=False, log=False, wd=None, \
         resolution='c', lat_min = None, lat_max=None, lon_min=None, \
-        lon_max=None, xlabel=True, limit_window=False,  \
+        lon_max=None, xlabel=True, limit_window=False, axis_titles=False,  \
         verbose=False, debug=False ):
     """ 
     Wrapper for map_plot - Creates a "standard" spatial plot with acceptable 
@@ -2567,7 +2572,10 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
                                         edgecolor='k') 
     # setup fig if not provided
     if not isinstance( ax, type(None) ):
-        plt.sca( ax )
+        # temporary remove as mpl widget has a bug
+        # http://stackoverflow.com/questions/20562582/axes-instance-argument-was-not-found-in-a-figure
+#        plt.sca( ax )
+        pass
 
     # Set colourbar limits        
     if isinstance( fixcb, type(None) ):
@@ -2610,7 +2618,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         fixcb=fixcb, return_m=return_m, log=log, window=window, no_cb=True, 
         norm=norm, f_size=f_size*.75,  res=res, wd=wd, resolution=resolution,\
         fixcb_buffered=fixcb_buffered, interval=interval, xlabel=xlabel, \
-        ylabel=ylabel, verbose=verbose, debug=debug )
+        ylabel=ylabel, axis_titles=axis_titles, verbose=verbose, debug=debug )
 
     # if title != None, add to plot
     if not isinstance(title, type(None)):

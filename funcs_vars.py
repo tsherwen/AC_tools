@@ -2303,7 +2303,13 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'PDM' : (0.0, 43.0, 1000), # Pic du midi 
     # ---  Misc
 #    'MAC' : ( -10.846408, 53.209003, 0 ) # Mace Head.
-    'MAC' : ( -9.9039169999999999, 53.326443999999995, 0 ) # Mace Head.
+    'MAC' : ( -9.9039169999999999, 53.326443999999995, 0 ), # Mace Head.
+    'Brittany' : ( -4.0, 48.7, 0 ), # Brittany, France
+    'Ria de Arousa' : (-8.87, 42.50,0), # Ria de Arousa, Spain
+    'Mweenish Bay' : (-9.83, 53.31,0), # Ireland 
+    'Harestua' : (10.7098608, 60.2008617, 0), # Norway
+    'Cartagena': (-1.0060599, 37.6174104, 0 ), # Spain
+    'Malasapina - final day':(-8.338, 35.179, 0), # final day of cruise
     }
     if rtn_dict:
         return loc_dict

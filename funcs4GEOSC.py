@@ -3265,19 +3265,25 @@ def fam_data_extractor4ts_bpch_files( spec='NOy', wd=None,
             specs = GC_var('NOy' )
             # get stiochiometry
             stioch4fam = [ spec_stoich(i, ref_spec='N') \
-                 for n,i in enumerate( specs ) ]
+                for n,i in enumerate( specs ) ]
         # ---  Inorganic iodine ( Cly )
         elif spec == 'Cly' :
             specs = GC_var('Cly' )
             # get stiochiometry
             stioch4fam = [ spec_stoich(i, ref_spec='Cl') \
-                 for n,i in enumerate( specs ) ]
+                for n,i in enumerate( specs ) ]
         # ---  Inorganic iodine ( Iy )
         elif spec == 'Iy' :
             specs = GC_var('Iy' )
             # get stiochiometry
             stioch4fam = [ spec_stoich(i, ref_spec='I') \
-             for n,i in enumerate( specs ) ]
+                for n,i in enumerate( specs ) ]
+        # ---  Inorganic bromine ( Bry )
+        elif spec == 'Bry' :
+            specs = GC_var('Bry' )
+            # get stiochiometry
+            stioch4fam = [ spec_stoich(i, ref_spec='I') \
+                for n,i in enumerate( specs ) ]
         # --- total nitrate TNO3 ( NO3 + NIT + NITs )    
         elif spec == 'TNO3' :
             # Select species in family
