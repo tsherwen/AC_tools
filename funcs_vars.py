@@ -2310,6 +2310,10 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'Harestua' : (10.7098608, 60.2008617, 0), # Norway
     'Cartagena': (-1.0060599, 37.6174104, 0 ), # Spain
     'Malasapina - final day':(-8.338, 35.179, 0), # final day of cruise
+    'Dagebull':(8.69, 54.73, 0),
+    'Lilia' : (-4.55, 48.62, 0 ),
+    'Heraklion' : (25.1, 35.3, 0 ),  # Heraklion, Crete
+    'Sylt': (8.1033406, 54.8988164, 0),
     }
     if rtn_dict:
         return loc_dict

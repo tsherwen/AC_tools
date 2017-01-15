@@ -3492,20 +3492,32 @@ def greyoutstrat( fig,  arr, axn=[1,1,1], ax=None, cmap=plt.cm.bone_r, \
 # --------   
 # 4.22 - adjust subplots
 # --------
-def adjust_subplots( fig ):
+def adjust_subplots( fig, left=None, bottom=None, right=None, top=None, \
+        wspace=None, hspace=None ):
     """ 
     Set subplot adjust in provide figure 
     """
-
-    left  = 0.125  # the left side of the subplots of the figure
-    right = 0.9    # the right side of the subplots of the figure
-    bottom = 0.1   # the bottom of the subplots of the figure
-    top = 0.9  # the top of the subplots of the figure
-    wspace = 0.2 # the amount of width reserved for blank space between subplots
-    hspace = 0.5 # the amount of height reserved for white space between subplots
-
-    fig.subplots_adjust(left=None, bottom=None, right=None, top=None, \
-        wspace=None, hspace=None)
+    # the left side of the subplots of the figure
+    if isinstance( left, type(None)):
+        left  = 0.125  
+    # the right side of the subplots of the figure
+    if isinstance( right, type(None)):
+        right = 0.9    
+    # the bottom of the subplots of the figure
+    if isinstance( bottom, type(None)):
+        bottom = 0.1   
+    # the top of the subplots of the figure
+    if isinstance( top, type(None)):    
+        top = 0.9  
+    # the amount of width reserved for blank space between subplots
+    if isinstance( wspace, type(None)):
+        wspace = 0.2 
+    # the amount of height reserved for white space between subplots
+    if isinstance( hspace, type(None)):
+        hspace = 0.5 
+    # Adjust subplots
+    fig.subplots_adjust(left=left, bottom=bottom, right=right, top=top, \
+        wspace=wspace, hspace=hspace)
 
 
 # ----
