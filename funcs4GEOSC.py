@@ -2561,7 +2561,7 @@ def molec_weighted_avg( arr, wd=None, ctm_f=None, vol=None, t_p=None, n_air=None
     Molecs is the same as n_air ( [molec air/m3] * [m3]  vs.   
        air mass [kg] / RMM [kg mol^-1] * Avogadros [mol^-1] )
     """
-
+    logging.info('molec_weighted_avg called for arr.shape={}'.format(arr.shape))
     if isinstance( molecs, type(None) ): 
         if not isinstance( n_air, np.ndarray): 
             n_air = get_GC_output( wd, vars=['BXHGHT_S__N(AIR)'], \
@@ -2914,7 +2914,6 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
         # Convert HO2 to molec/cm3
         HO2_arr = convert_v_v_2_molec_cm3( HO2_arr, a_m=a_m, vol=vol, wd=wd, \
             res=res )
-
         
         # HOx ( HO + HO2)
         arr = OH_arr + HO2_arr
@@ -2925,6 +2924,22 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
         # convert to 1E6 molecules per cm3
         units = '1x10$^{6}$ molec. cm$^{-3}$'
         arr = arr / 1E6
+
+    # --- Cl
+    if fam == 'Cl':
+        # Extract data
+        arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+'Cl' ], \
+                    trop_limit=trop_limit )
+        # if units already set, then convert to these
+        if units == 'molec. cm$^{-3}$':
+            # Convert HO2 to molec/cm3
+            arr = convert_v_v_2_molec_cm3( arr, a_m=a_m, vol=vol, wd=wd, \
+                res=res )
+        # else return in v/v
+        else:
+            scale = 1E12
+            units = 'pmol mol${^-1}$'
+            arr = arr *scale 
     
     # --- NOy
     if fam == 'NOy' :
@@ -3155,7 +3170,7 @@ def convert_tracers2PM25( ars=[], specs=[], region='Europe' ):
     for details see GEOS-Chem wiki:
     http://wiki.seas.harvard.edu/geos-chem/index.php/Particulate_matter_in_GEOS-Chem#PM2.5_in_the_1-yr_benchmark_plots
     """
-    # - Convert to PM2.5 ('ug m$^{-3}$')
+    # - Convert to PM2.5 ('$\mu$g m$^{-3}$')
     # Note. below list does not contain SOA species 
     if region == 'USA':
         PM25_convertion_factor = {
@@ -3207,7 +3222,7 @@ def convert_tracers2PM25( ars=[], specs=[], region='Europe' ):
         # e.g. v/v * mols/cm3 = mols of X per cm3; / spec RMM = mass
         # unitless * mols * g/mol * conversion
         scale = MOLS * species_mass( spec ) *1E6 *1E6
-        units = 'ug m$^{-3}$'
+        units = '$\mu$g m$^{-3}$'
 
         # convert... 
         ars[n]*scale*PM25_convertion_factor[spec]
@@ -3333,7 +3348,7 @@ def fam_data_extractor4ts_bpch_files( spec='NOy', wd=None,
         if spec == 'PM2.5':
             # convert ctm output species. 
             data_l = convert_tracers2PM25( specs=specs, ars=data_l )
-            units = 'ug m$^{-3}$' 
+            units = '$\mu$g m$^{-3}$' 
 
         # Sum family...
         data = np.array( data_l )
