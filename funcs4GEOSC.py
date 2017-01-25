@@ -3349,6 +3349,18 @@ def fam_data_extractor4ts_bpch_files( spec='NOy', wd=None,
             # convert ctm output species. 
             data_l = convert_tracers2PM25( specs=specs, ars=data_l )
             units = '$\mu$g m$^{-3}$' 
+        # If NIT+NH4+SO4
+        if spec == 'NIT+NH4+SO4':
+#        if False:
+            for n, fam_spec in enumerate(specs):
+
+                # get data and scale from ppbv to v/v
+                data=data_l[n] /1E9
+                # update data in list
+                data_l[n] = convert_spec_v_v_2_ugm3( data=data, spec=fam_spec )
+    
+            # convert to ug m3 
+            units = '$\mu$g m$^{-3}$' 
 
         # Sum family...
         data = np.array( data_l )
@@ -3356,6 +3368,37 @@ def fam_data_extractor4ts_bpch_files( spec='NOy', wd=None,
         logging.debug('Shape for array:{}, units={}'.format( data.shape, units))
 
         return data, units
+
+
+# ----
+# X.XX - Spec 
+# ----
+def convert_spec_v_v_2_ugm3( spec=None, data=None ):
+    """
+    Convert mixing ratio (v/v) to ug m^-3
+    """
+    # --- assume standard conditions. 
+    # RMM
+    RMM_air = constants('RMM_air') # g/mol
+    # assume standard air density
+    # At sea level and at 15 °C air has a density of approximately 1.225 kg/m3 
+    #(0.001225 g/cm3, 0.0023769 slug/ft3, 0.0765 lbm/ft3) according to 
+    # ISA (International Standard Atmosphere).
+    AIRDEN = 0.001225 # g/cm3
+    # moles per cm3
+    #  (1/(g/mol)) = (mol/g) ; (mol/g) * (g/cm3) = mol/cm3
+    MOLS = (1/RMM_air) * AIRDEN 
+
+    # --- convert spec
+    # moles * spec RMM * microgram
+    # e.g. v/v * mols/cm3 = mols of X per cm3; / spec RMM = mass
+    # unitless * mols * g/mol * conversion
+    scale = MOLS * species_mass( spec ) *1E6 *1E6
+    units = '$\mu$g m$^{-3}$'
+
+    # scale data and return
+    return data *scale    
+
 
 # ----
 # X.XX - Extract timeseries data from *ts*bpch* files (e.g. hourly surface data)

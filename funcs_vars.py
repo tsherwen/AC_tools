@@ -2314,6 +2314,8 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'Lilia' : (-4.55, 48.62, 0 ),
     'Heraklion' : (25.1, 35.3, 0 ),  # Heraklion, Crete
     'Sylt': (8.1033406, 54.8988164, 0),
+    'Sicily': (14.2371407,  38.5519809, 0 ) # Sicily
+
 #    'Frankfurt' : ( 8.45,50.22, )
     }
     if rtn_dict:
