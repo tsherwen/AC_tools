@@ -1320,7 +1320,9 @@ def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
     # Adjust to stiochmetry  ( Vars )
     arr = [ arr[n]*spec_stoich(i, ref_spec=fam) \
         for n,i in enumerate( specs) ]
-    logging.debug( [ i.shape for i in arr], len( arr), np.sum( arr ), specs )
+    logging.debug('shapes: {}'.format(*[i.shape for i in arr]) )
+    logging.debug( 'arr len={}, sum={}'.format(len(arr), np.ma.sum(arr)) )
+    logging.debug('specs={}'.format(specs) )
 
     # Sum over stiochmertically adjusted list of specs
     arr = np.array( arr ).sum(axis=0)
@@ -3424,8 +3426,8 @@ def get_LOC_df_from_NetCDF(site='WEY', spec='O3', wd=None, res=None, \
     """
     # Get locations (from "get_loc" dictionary) and find GC grid indices
     LON, LAT, ALT = get_loc( loc=site )
-    LON = get_gc_lon( LON, res=res, wd=wd, filename=filename )
-    LAT = get_gc_lat( LAT, res=res, wd=wd, filename=filename)    
+    LON_ind = get_gc_lon( LON, res=res, wd=wd, filename=filename )
+    LAT_ind = get_gc_lat( LAT, res=res, wd=wd, filename=filename)    
 
     # extract data for 
     with Dataset( wd+'/'+filename, 'r') as rootgrp:
@@ -3433,10 +3435,10 @@ def get_LOC_df_from_NetCDF(site='WEY', spec='O3', wd=None, res=None, \
         print 'Extracted data:', data
         print 'data shape: ', data.shape
         # extract for location (array shape = TIME, LON, LAT)
-        data = data[:, LON, LAT]
+        data = data[:, LON_ind, LAT_ind]
 
     # Get dates
-    dates = get_gc_datetime( filename='ts_ctm.nc', wd=wd )
+    dates = get_gc_datetime( filename=filename, wd=wd )
 
     # Make dataframe and return
     df = pd.DataFrame( data, index=dates )
@@ -3794,7 +3796,7 @@ def prt_2D_vals_by_region( specs=None, res='4x5', arrs=None, prt_pcent=False, \
 def get_2D_arr_weighted_by_X( arr, spec=None, res='4x5', print_values=False, \
         s_area=None):
     """
-    Get weighted average 2D value by another array (e.g. area weighted 
+    Get weighted average 2D value by another array (e.g. area weighted)
 
     Parameters
     ----------
@@ -3809,7 +3811,7 @@ def get_2D_arr_weighted_by_X( arr, spec=None, res='4x5', print_values=False, \
     (float)
     """
     # Get surface area if not provided
-    if isinstance( None, type(None) ):
+    if isinstance( s_area, type(None) ):
         s_area = get_surface_area( res )[...,0]  # m2 land map
     # Calculate average and area weighted average
     area_weighted_avg = ( arr*s_area ).sum()/ s_area.sum() 
