@@ -3234,8 +3234,8 @@ def convert_tracers2PM25( ars=[], specs=[], region='Europe' ):
 # ----
 # X.XX - Extract 2D data from *ts*bpch* files (e.g. hourly surface data)
 # ----
-def fam_data_extractor4ts_bpch_files( spec='NOy', wd=None, 
-        filename=None,  ):
+def fam_data_extractor4ts_bpch_files(spec='NOy', wd=None, \
+        filename='ts_ctm.nc'):
     """
     Driver to extract data requested ( as families have differing diagnostic units)
 
@@ -3243,9 +3243,7 @@ def fam_data_extractor4ts_bpch_files( spec='NOy', wd=None,
     ----------
     spec (str): species/tracer/variable name 
     fam (str): "family" to extract ( e.g. NOy, NOx, POx, CH4 loss rate, ... )
-    res (str): resolution of the model input (e.g. 4x5, 2x2.5 )  
     wd (str): the directory to search for file in
-    stioch4fam (list): list of 
 
     Returns
     -------
