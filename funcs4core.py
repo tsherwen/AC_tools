@@ -172,7 +172,6 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
         print dims
 
     # If full using full vertical 
-    full_vertical_grid=True
     if full_vertical_grid:
         vals =[]
         for i in dims.values():

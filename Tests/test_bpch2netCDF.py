@@ -59,7 +59,7 @@ def test_convert_to_netCDF():
 
     logging.debug("Comparing the temp netCDF file to the origional")
     assert file_comparison(datafile, testfile), \
-        'bpch converter failed to replicate the origional file.'
+        'bpch converter failed to replicate the original file.'
 
     os.remove(testfile)
     logging.info("test complete")
