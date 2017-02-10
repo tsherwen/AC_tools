@@ -139,7 +139,7 @@ def get_gc_lon(lon, res='4x5', wd=None, filename='ctm.nc', debug=False):
 # 1.04 - Get model array dimension for a given resolution                                           
 # --------                                                                                          
 def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
-        just2D=False, debug=False):
+        just2D=False, full_vertical_grid=False, debug=False):
     """ 
     Get dimension of GEOS-Chem output for given resolution 
 
@@ -170,6 +170,16 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
     }
     if debug:
         print dims
+
+    # If full using full vertical 
+    full_vertical_grid=True
+    if full_vertical_grid:
+        vals =[]
+        for i in dims.values():
+            vals += [ ( i[0],i[1],72) ]
+        dims = dict( zip( dims.keys(), vals ) )
+        if debug:
+            print dims
 
     # Only consider the GEOS-Chem chemical troposphere
     if trop_limit:

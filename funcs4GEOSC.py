@@ -1011,31 +1011,35 @@ def get_GC_output( wd, vars=None, species=None, category=None, r_cubes=False, \
         # two reasons why 3D (  missing time dim  or  missing alt dim ) 
         # <= update, there must be a better gotcha than this... 
         if ( (len((arr[0].shape)) == 3 ) \
-            # '4x5'
+            # -- '4x5'
             and ( (72,46,47) != arr[0].shape ) \
             and ( (72,46,38) != arr[0].shape ) \
-            # '2x2.5'
+            # also consider for vertical levels=72 (full_vertical_grid=True)
+            and ( (72,46,72) != arr[0].shape ) \
+            # -- '2x2.5'
             and ( (144,91,47) != arr[0].shape ) \
             and ( (144,91,38) != arr[0].shape ) \
-            # '0.25x0.3125':
+            # -- '0.25x0.3125':
             and ( (177,115,47) != arr[0].shape ) \
             and ( (177,115,38) != arr[0].shape ) \
-            # '0.25x0.3125_CH':
+            # -- '0.25x0.3125_CH':
             and ( (225,161,47) != arr[0].shape ) \
             and ( (225,161,38) != arr[0].shape ) \
-            # '0.25x0.3125_WA':
+            # -- '0.25x0.3125_WA':
             and ( (145,89,47) != arr[0].shape ) \
             and ( (145,89,38) != arr[0].shape ) \
-            # '0.25x0.3125_WA':
+            # -- '0.25x0.3125_WA':
             and ( (145,133,47) != arr[0].shape ) \
             and ( (145,133,38) != arr[0].shape ) \
-            # '0.5x0.625' - SA grid
+            # -- '0.5x0.625' - SA grid
             and ( (121,81,47) != arr[0].shape ) \
             and ( (121,81,38) != arr[0].shape ) ):
                 
-            logging.info('prior roll axis: '.format(*[str(i.shape) for i in arr]))
+            logging.info('prior roll axis: {}'.format(*[str(i.shape) \
+                for i in arr]))
             arr = [np.rollaxis(i,0, 3) for i in arr]
-            logging.info('post roll axis: '.format(*[str(i.shape) for i in arr]))
+            logging.info('post roll axis: {}'.format(*[str(i.shape) \
+                for i in arr]))
 
         # --- loop variables post processing and force inclusions of time dim if applicable
         need_time = ['IJ_AVG', 'GMAO', 'BXHGHT', 'TIME_TPS_']
