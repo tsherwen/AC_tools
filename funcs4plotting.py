@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 """ 
 Generic plotting functions for timeseries/multi-dimensional output.
 
@@ -19,6 +20,7 @@ import matplotlib as mpl
 from pylab import setp
 import functools
 import matplotlib
+#import seaborn as sns
 
 # -- Time                                                                                           
 import time
@@ -39,7 +41,8 @@ from funcs4GEOSC import * # wd2ctms, get_gc_res
 
 # math
 from math import log10, floor
-
+import numpy as np
+import scipy
 # colormaps - Additional maps from Eric Sofen
 #from option_c import test_cm as cmc
 #from option_d import test_cm as cmd
@@ -62,7 +65,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
         lon_0=None, lon_1=None, lat_0=None, lat_1=None, norm=None,\
         sigfig_rounding_on_cb=2, fixcb_buffered=None, ylabel=True, \
         xlabel=True, wd=None, verbose=True, debug=False, tight_layout=False, \
-        **Kwargs):
+        axis_titles=False, **Kwargs):
     """ 
     Plots Global/regional 2D (lon, lat) slices.  
 
@@ -107,6 +110,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     verbose (boolean): legacy debug option, replaced by python logging
     wd (str): Specify the wd to get the results from a run.
     window (boolean): use window plot settings (fewer axis labels/resolution of map)
+    axis_titles (boolean): title X and y axis? (lat and lon)
 
     Returns
     -------
@@ -186,11 +190,15 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     x, y = np.meshgrid(lon,lat)
     # Set existing axis to current if axis provided
     if not isinstance(ax, type(None)):
-        plt.sca( ax )
- 
+        # temporary remove as mpl widget has a bug
+        # http://stackoverflow.com/questions/20562582/axes-instance-argument-was-not-found-in-a-figure
+#        plt.sca( ax )
+        pass
+         
     # ---- Setup map ("m") using Basemap
     m = get_basemap( lat=lat, lon=lon, resolution=resolution, res=res, \
         everyother=everyother, interval=interval, f_size=f_size, ylabel=ylabel, \
+        axis_titles=axis_titles, 
         xlabel=xlabel, drawcountries=drawcountries )
     # Process data to grid
     x, y = np.meshgrid( *m(lon, lat) )
@@ -433,8 +441,10 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
     if set_window:
         arr = arr[ get_gc_lat(lat_0, res=res):get_gc_lat(lat_1, res=res), :]
         lat = lat[ get_gc_lat(lat_0, res=res):get_gc_lat(lat_1, res=res) ]
-    logging.debug( 'output post set_window: ', arr.shape, [ len(i) for i in lon,lat,alt],\
-         res, [ (i.mean(), i.min(), i.max()) for i in [ arr[: ,:c_off]  ] ] )
+        logging.debug( 'output post set_window: {}'.format( arr.shape)+
+            'lens={}, res={}, mean={}, min={}, max={}'.format(
+            [ len(i) for i in lon,lat,alt], res,  \
+            [(i.mean(), i.min(), i.max()) for i in [arr[: ,:c_off]] ]) )
     min, max = [ (i.min(), i.max()) for i in [ arr[: ,:c_off]  ] ][0] 
 
     # Limit cb to top of (GEOS-Chem chemical) troposphere
@@ -663,118 +673,49 @@ def diurnal_boxplot(fig, ax,  dates, data, pos=1, posn =1,  bin_size=2/24.,\
 # --------   
 # 1.07 - Diurnal plot
 # --------
-def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
-        bin_size=2/24.,widths=0.01, rmax=False, \
-        ls='-', color=None, fractional=False, diurnal=False, mean=True, \
-        xlabel = True, r_avgs=False, marker=None, label=None, \
-        markersize=1, title=None, f_size=10, units='ppbv', scale='linear', \
-        lw=1,lgnd_f_size=None, alpha=1, debug=False ):
-    """ 
-    Creates a diurnal plot for given data and dates. 
-
-    NOTES:
-     - Data and dates must be in numpy array form. 
-     - Dates must also be datetime.datetime objects 
-     """
-
-    # Convert datetime to fractional day <= set this to map on array at once?
-    dates = np.array( [ get_day_fraction(i) for i in dates ] )
-
-    # asectics
-    ls =[ls]*5
-    if posn> 4:
-        ls=get_ls( posn )
-    if color == None:
-        color=color_list(posn)[pos-1]
-    else:
-        color=color
-    if isinstance( lgnd_f_size, type(None)):
-        lgnd_f_size = f_size
-    
-    # Bin data
-    binned, bins_used = bin_data( data, dates, bin_size, debug=debug )
-
-    # Take average of hourly binned data.
-    if mean:
-        avgs = np.ma.array([np.ma.mean(i) for i in binned]  )
-    else:
-        avgs = np.ma.array([np.ma.median(i) for i in binned]  )
-    avg = np.ma.mean( avgs )
-    max_ = np.ma.max( avgs )
-#    print avgs, avg, np.ma.max( avgs )
-    
-    if fractional:
-#        y = ( avgs - np.ma.max( avgs )  )  / avgs *100
-#        y = ( avgs - np.ma.max( avgs )  )  / avg *100
-        y = ( avgs - np.ma.max( avgs )  )  / max_*100
-        print 'test'*100, avg, max_, avgs
-
-        ymin, ymax =  -0.15, 0.025 
-        ymin, ymax =  [i*100 for i in ymin, ymax ]
-        units = '%'
-    elif diurnal:        
-        y =  avgs - np.ma.max( avgs )
-        ymin, ymax =  -3.5 , 0.5
-    else:
-        y = avgs
-        ymin, ymax =  None, None#27, 37
-    
-    # Plot
-    plt.plot( bins_used, y, color=color , label=label, linestyle=ls[pos-1], \
-        alpha=alpha, marker=marker, lw=lw, ms=markersize )
-
-    # Beautify 
-    ax.set_xticklabels( np.arange(0,24,1 )[::2]  )
-    plt.xticks( np.arange(0,1,1/24. )[::2], fontsize=f_size )
-    plt.xlim(0., 23/24.)
-
-    if ymin != None:    
-        plt.ylim( ymin, ymax )
-    plt.yticks( fontsize=f_size*.75)
-    plt.xticks( fontsize=f_size*.75)
-    if (title != None):
-        plt.title( title )
-    if xlabel:
-        plt.xlabel('Hour of day', fontsize=f_size*.75)
-    plt.ylabel('{}'.format(units), fontsize=f_size*.75)
-
-    # Apply legend to last plot
-    if pos == posn:
-        plt.legend( fontsize=lgnd_f_size )
-
-    # return max 
-    if rmax :
-        return np.ma.max( avgs )
-
-    if r_avgs:
-        return avgs 
-
-# --------   
-# 1.07 - Diurnal plot
-# --------
-def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1,  \
-        bin_size=2/24.,widths=0.01, rmax=False, \
-        ls='-', color=None, fractional=False, diurnal=False, mean=True, \
-        xlabel = True, r_avgs=False, marker=None, label=None, \
-        markersize=1, title=None, f_size=10, units='ppbv', scale='linear', \
-        lw=1,lgnd_f_size=None, alpha=1, 
-        
-        time_resolution_str="%H:%M", 
-#        time_resolution_str="%H", 
-        debug=False ):
+def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, 
+        xlabel=True, ylabel=True, label=None, title=None, f_size=10, 
+        units='ppbv',lgnd_f_size=None, alpha=0.5, rotatexlabel=45, 
+        loc='upper right', time_resolution_str="%H:%M", stat2plot='mean', 
+        legend=False, ylim=None, debug=False ):
     """ 
     Creates a diurnal plot for given data and dates using pandas Dataframe
 
-    NOTES:
-     - Data and dates must be in numpy array form. 
-     - Dates must also be datetime.datetime objects 
+    Parameters
+    -------
+    data (array): numpy array of data 
+    dates (numpy array of datetime.datetime): dates to use for x axis 
+    fig (fig instance)
+    ax (ax instance)
+    stat2plot (str): stat (e.g. mean or medium) to use for main line
+    xlabel, ylabel (str): label for axis?
+    label (str): label for input data
+    units (str): unites to label
+    time_resolution_str (str): time string to reduce dataframe by
+    legend (boolean): add a legend?
+    title (str): title for plot
+    color (str/hex etc): color for line
+    f_size (float): fontsize
+    lgnd_f_size (float): fontsize for legend
+    loc (str): location for legend
+    rotatexlabel (numnber/str): rotation of x axis labels 
+    pos, posn (int): vestigle(!) location indices for window plots
+    ylim (list): min and max y axis limit
+
+    Returns
+    -------
+    (None)
+
+    Notes
+    -----
      - Adapted from David Hagen's example - https://www.davidhagan.me/articles?id=7
     """
-     
+    logging.info('diurnal_plot_df called with stat2plot={} '.format(stat2plot) )
+    # ---  process input data
     # Form a dataFrame from input numpy arrays. 
     df = pd.DataFrame( {'data':data}, index=dates )
 
-    # Add a time coluumn to group by (e.g. "%H:%M" for minuitse) 
+    # Add a time coluumn to group by (e.g. "%H:%M" for minutes) 
     df['Time'] = df.index.map(lambda x: x.strftime(time_resolution_str))
 
     # Group by time resolution column
@@ -786,76 +727,57 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1,  \
 #    df.index = pd.to_datetime(df.index )#.astype(str))
 #    df.index = [ datetime.datetime( 2005, 1, 1, i ) for i in range(0, 24) ]
     
-    # aesthetics
-    ls =[ls]*5
-    if posn> 4:
-        ls=get_ls( posn )
-    if color == None:
+    # --- Aesthetics
+    if isinstance(color, type(None)):
         color=color_list(posn)[pos-1]
-    else:
-        color=color
+    # lengend font size
     if isinstance( lgnd_f_size, type(None)):
         lgnd_f_size = f_size
 
-    # plot up mean
-#    ax.plot(df.index, df['data']['mean'], 'g', linewidth=2.0)
-#    print df
-    ax.plot(df.index, df['data']['mean'], color=color, linewidth=2.0)
-
-    # beautify
-    from matplotlib import dates as d
-    import datetime as dt    
-    ticks = ax.get_xticks()
-    ax.set_xticks(np.linspace(ticks[0], d.date2num(d.num2date(ticks[-1]) + dt.timedelta(hours=3)), 5))
-    ax.set_xticks(np.linspace(ticks[0], d.date2num(d.num2date(ticks[-1]) + dt.timedelta(hours=3)), 25), minor=True)
-    ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%I:%M %p'))
+    # --- Plot up average line (median or mean)
+    if stat2plot == 'median':
+        stat2plot='50%'
+    ax.plot(df.index, df['data'][stat2plot], color=color, linewidth=2.0, \
+        label=label)
 
     # Add quartiles
-    ax.plot(df.index, df['data']['75%'], color=color, alpha=.5)
-    ax.plot(df.index, df['data']['25%'], color=color, alpha=.5)    
+    ax.plot(df.index, df['data']['75%'], color=color, alpha=alpha)
+    ax.plot(df.index, df['data']['25%'], color=color, alpha=alpha)    
     
-    # And shade
+    # And shading for quartiles 
     try:
-#    if True:
-        ax.fill_between(df.index, df['data']['mean'], df['data']['75%'], alpha=.5, facecolor=color)
-        ax.fill_between(df.index, df['data']['mean'], df['data']['25%'], alpha=.5, facecolor=color)    
+        ax.fill_between(df.index, df['data'][stat2plot], df['data']['75%'], 
+            alpha=alpha, facecolor=color)
+        ax.fill_between(df.index, df['data'][stat2plot], df['data']['25%'], 
+            alpha=alpha, facecolor=color)    
+        
     except:
         logging.info( 'Failed to add percentile shading' )
 
-#    if mean:
-#    else:
-    
-    # Plot
-#    plt.plot( bins_used, y, color=color , label=label, linestyle=ls[pos-1], \
-#        alpha=alpha, marker=marker, lw=lw, ms=markersize )
-
-    # Beautify 
-#    ax.set_xticklabels( np.arange(0,24,1 )[::2]  )
-#    plt.xticks( np.arange(0,1,1/24. )[::2], fontsize=f_size )
-#    plt.xlim(0., 23/24.)
-
-#    if ymin != None:    
-#        plt.ylim( ymin, ymax )
-#    plt.yticks( fontsize=f_size*.75)
-#    plt.xticks( fontsize=f_size*.75)
+    # --- Beautify 
+    # title?
     if (title != None):
         plt.title( title )
+    # axis labels?
     if xlabel:
-        plt.xlabel('Hour of day', fontsize=f_size*.75)
-    plt.ylabel('{}'.format(units), fontsize=f_size*.75)
+        plt.xlabel('Hour of day', fontsize=f_size )#*.75)
+        # Add hourly ticks if labeling xaxis 
+        plt.xticks( rotation=rotatexlabel, fontsize=f_size )#*.75 )
+        ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H') )
+    else:
+        ax_tmp = ax_tmp = plt.gca()
+        ax_tmp.tick_params( axis='x', which='both', labelbottom='off')
+    if ylabel:
+        plt.ylabel('{}'.format(units), fontsize=f_size)#*.75)
+    else:
+        ax_tmp = ax_tmp = plt.gca()
+        
+    # Add legend?
+    if legend:
+        plt.legend( fontsize=lgnd_f_size, loc=loc )
 
-    # Apply legend to last plot
-#    if pos == posn:
-#        plt.legend( fontsize=lgnd_f_size )
-
-    # return max 
-#    if rmax :
-#        return np.ma.max( avgs )
-
-#    if r_avgs:
-#        return avgs 
-
-
+    if not isinstance(ylim, type(None)):
+        plt.ylim(ylim)
 
 # --------   
 # 1.11 - Plot up Sonde data
@@ -1286,7 +1208,7 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         lw=1,ls='-', color=None, start_month=7, end_month=7, \
         boxplot=True, showmeans=False, alt_text=None, r_plt=False, \
         unitrotation=45, color_by_z=False, fig=None,  xlabel=True, \
-        second_title='', positive=None, debug=False ):
+        second_title='', add_dates2title=True, positive=None, debug=False ):
     """ 
     Plot up month timeseries of values. Requires data, and dates in numpy 
     array form. Dates must be as datetime.datetime objects. 
@@ -1334,12 +1256,14 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
 
     # Beatify plot
     if not isinstance( title, type(None) ):
-        plt.title( title + ' for {}-{} {}'.format( num2month(start_month),\
-            num2month(end_month), second_title  ) )
+        if add_dates2title:
+            title += ' for {}-{} {}'.format( num2month(start_month),\
+                num2month(end_month), second_title  )
+        plt.title( title)
     if not isinstance( alt_text, type(None) ):
         plt.figtext(x=0.05,y=0.85, s=alt_text, fontsize=f_size*.75 )
     if not isinstance( ylabel, type(None) ):
-        plt.ylabel( ylabel )
+        plt.ylabel( ylabel, fontsize=f_size*.75 )
     if legend:
         plt.legend( fontsize=f_size*.75, loc=loc )
 
@@ -2068,7 +1992,7 @@ def PDF_obs_vs_mod( ax, dates, data, f_size=20, pos=0, posn=1,  \
 def X_Y_scatter( x, y, z=None, fig=None, ax=None, vmin=None, vmax=None, \
         left= 0.1, width=0.60, bottom=0.1, height=0.60, widthII=0.2,  \
         lim2std=10,trendline=True, f_size=20, lw=10, title=None, \
-        line121=True, Trend_line=True, X_title=None, Y_title=None ):
+        line121=True, X_title=None, Y_title=None ):
     """ 
     Plot up a X Y scatter plot of x vs. y 
     """
@@ -2143,7 +2067,8 @@ def scatter_3D_cube( data, dims=None, res='2x2.5', fig=None, everyother=1, inter
     """
     Make a 3D scatter cube of given 3D array
     """
-    logging.debug('scatter_3D_cube called with input data shape: ', data.shape)
+    logging.debug('scatter_3D_cube called with input data shape: {}'.format(\
+        data.shape) )
 
     from mpl_toolkits.mplot3d import Axes3D
 
@@ -2228,7 +2153,7 @@ def get_seasonal_plot( arr, fixcb=None, fig=None, f_size=15, \
 # -------------
 def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
         left= 0.1, width=0.60, bottom=0.1, height=0.60, widthII=0.2, \
-        fit = 0.02, binwidth=0.1, Trend_line = False, cmap=plt.cm.gnuplot2, \
+        fit = 0.02, binwidth=0.1, cmap=plt.cm.gnuplot2, \
         X_title='X title', Y_title='Y title', f_size=5 , line121=False ):
     """ Plots a X vs. Y histogram """
 
@@ -2581,7 +2506,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         orientation='vertical', rotatecbunits='vertical', title_y=1, \
         title_x=0.5, no_cb=True, return_m=False, log=False, wd=None, \
         resolution='c', lat_min = None, lat_max=None, lon_min=None, \
-        lon_max=None, xlabel=True, limit_window=False,  \
+        lon_max=None, xlabel=True, limit_window=False, axis_titles=False,  \
         verbose=False, debug=False ):
     """ 
     Wrapper for map_plot - Creates a "standard" spatial plot with acceptable 
@@ -2648,7 +2573,10 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
                                         edgecolor='k') 
     # setup fig if not provided
     if not isinstance( ax, type(None) ):
-        plt.sca( ax )
+        # temporary remove as mpl widget has a bug
+        # http://stackoverflow.com/questions/20562582/axes-instance-argument-was-not-found-in-a-figure
+#        plt.sca( ax )
+        pass
 
     # Set colourbar limits        
     if isinstance( fixcb, type(None) ):
@@ -2691,7 +2619,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         fixcb=fixcb, return_m=return_m, log=log, window=window, no_cb=True, 
         norm=norm, f_size=f_size*.75,  res=res, wd=wd, resolution=resolution,\
         fixcb_buffered=fixcb_buffered, interval=interval, xlabel=xlabel, \
-        ylabel=ylabel, verbose=verbose, debug=debug )
+        ylabel=ylabel, axis_titles=axis_titles, verbose=verbose, debug=debug )
 
     # if title != None, add to plot
     if not isinstance(title, type(None)):
@@ -2758,15 +2686,16 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
     NOTES:
      -  
     """
-
-    if verbose:
-        print 'plot_zonal_figure called ', region, arr.shape, log, units, pdf, \
+    all_str = 'plot_zonal_figure called ', region, arr.shape, log, units, pdf, \
             show, arr.min(), arr.max()
+    logging.info( all_str )
+    if verbose:
+        print all_str
 
     # If lon, lat, alt array provided then take mean of lon
     if any( [arr.shape[0] ==i for i in 72, 144, 121, 177] ):
 #        arr = arr.mean(axis=0)
-        arr = molec_weighted_avg( arr, weight_lon=True, \
+        arr = molec_weighted_avg( arr, weight_lon=True, res=res, \
             trop_limit=trop_limit, rm_strat=False, wd=wd) 
 
     # Create figure if not provided
@@ -3192,42 +3121,43 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
         alt_text_x=.15, alt_text_y=0.75, alt_text=None, ncol=1, pcent=False,  \
         stacked=False, verbose=False, debug=False):
     """ 
-    Produce a stacked plot (by X axis) for values in Y array. 
+    Make a stacked plot (by X axis) for values in Y array. 
 
-    INPUTS:
-     - X must be a list of numpy arrays 
-     - Y must be a numpy array
+    Parameters
+    -------
+    X (list): list of numpy arrays to plot as X
+    Y (array): must be a numpy array use use as Y
+
+    Returns
+    -------
+    (None)
     
-    NOTE:
+    Notes
+    -----
      - MPL only contains a stackplot function for Y axis, this function is 
     based on that code  
     (https://github.com/matplotlib/matplotlib/blob/3ae7c2a32ddd9809552315458da1dd70afec1b15/lib/matplotlib/stackplot.py )
-
     """
-
-    if debug:
-        print 'X_stackplot called, with X[0] shape {}'.format( X[0].shape )
+    logging.info('X_stackplot called, with X[0] shape {}'.format( X[0].shape ))
 
     # --- fig and ax provided? Otherwise create these... 
     if isinstance( fig, type(None) ):
         fig = plt.figure( figsize=(8,8), dpi=dpi, facecolor='w', \
             edgecolor='k')
-        if debug:
-            print 'Creating figure'
+        logging.debug('Creating figure' )
 
     if isinstance( ax, type(None) ):
         ax = fig.add_subplot( 1,1,1  )
-        if debug:
-            print 'Creating ax'
-    if debug:
-        print zip( labels, [ colors[:len(labels)] ] )
-        print zip( labels,  [np.sum(i) for i in X] )
+        logging.debug('Creating ax' )
+    logging.debug( '{}'.format( zip( labels, [np.sum(i) for i in X] ) )  )
 
     # --- stack arrays if not stacked... 
     if isinstance( X, np.ndarray ):
         X = np.ma.atleast_2d( X )
+        logging.debug('Array passed has been made at least 2D if nessesary')
     else:
         X = np.ma.column_stack( X )
+        logging.debug('WARNING - Stacking X data, X shape={}'.format( X.shape))
     # Assume data passed has not been 'stacked', so stack it here.
 #    if stacked:
 #        stack =  X
@@ -3254,10 +3184,12 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
     # Get list of colors
     if isinstance( colors, type(None) ):
         colors = color_list( len(stack[0,:]) )
+    logging.debug( '{}'.format( zip( labels, [ colors[:len(labels)] ] ) ))
 
     # Color between x = 0 and the first array.
-    if debug:
-        print stack[:, 0]
+    logging.debug( '{}'.format(stack[:, 0]) )
+    logging.debug( 'len colors={}, labels={}, stack={}'.format( 
+        *[len(i) for i in colors, labels, stack[0, :] ]) )
     r =[]
     r += [ ax.fill_betweenx( Y, first_line, stack[:, 0],
                                color=colors[0], 
@@ -3561,20 +3493,32 @@ def greyoutstrat( fig,  arr, axn=[1,1,1], ax=None, cmap=plt.cm.bone_r, \
 # --------   
 # 4.22 - adjust subplots
 # --------
-def adjust_subplots( fig ):
+def adjust_subplots( fig, left=None, bottom=None, right=None, top=None, \
+        wspace=None, hspace=None ):
     """ 
     Set subplot adjust in provide figure 
     """
-
-    left  = 0.125  # the left side of the subplots of the figure
-    right = 0.9    # the right side of the subplots of the figure
-    bottom = 0.1   # the bottom of the subplots of the figure
-    top = 0.9  # the top of the subplots of the figure
-    wspace = 0.2 # the amount of width reserved for blank space between subplots
-    hspace = 0.5 # the amount of height reserved for white space between subplots
-
-    fig.subplots_adjust(left=None, bottom=None, right=None, top=None, \
-        wspace=None, hspace=None)
+    # the left side of the subplots of the figure
+    if isinstance( left, type(None)):
+        left  = 0.125  
+    # the right side of the subplots of the figure
+    if isinstance( right, type(None)):
+        right = 0.9    
+    # the bottom of the subplots of the figure
+    if isinstance( bottom, type(None)):
+        bottom = 0.1   
+    # the top of the subplots of the figure
+    if isinstance( top, type(None)):    
+        top = 0.9  
+    # the amount of width reserved for blank space between subplots
+    if isinstance( wspace, type(None)):
+        wspace = 0.2 
+    # the amount of height reserved for white space between subplots
+    if isinstance( hspace, type(None)):
+        hspace = 0.5 
+    # Adjust subplots
+    fig.subplots_adjust(left=left, bottom=bottom, right=right, top=top, \
+        wspace=wspace, hspace=hspace)
 
 
 # ----
@@ -4030,9 +3974,9 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
      - this function also will can adjust colormaps to fit a given set of ticks
     """
     # Mannual fix maintain scaling to False
-    maintain_scaling=True
+#    maintain_scaling=False
     
-    logging.info( 'get_colormap called' )
+    logging.info( 'get_colormap called with fixcb={}'.format(str(fixcb)) )
     # Manually override colourbar?
 #    cb='Blues' # Kludge. 
 #    cb='Reds' # Kludge. 
@@ -4235,7 +4179,6 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     logging.debug('get_human_readable_gradiations called with the following:')
     logging.debug('vmin = {vmin}, vmax = {vmax}, lvls = {lvls}'\
             .format(vmin=vmin, vmax=vmax, lvls=lvls))
-    
 
     if isinstance(lvls, type(None)):
         lvls = np.linspace( vmin, vmax, nticks, endpoint=True )
@@ -4330,9 +4273,9 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
             for i in range( nticks ) ][::-1])   
 
     logging.debug("colorbar levels are: {lvls}".format(lvls=lvls))
-    if debug:
-        print lvls, len( lvls )
-        print 2, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
+#    if debug:
+#        print lvls, len( lvls )
+#        print 2, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
 
     # ensure returned ticks are to a maximum of 2 sig figs  
     # ( this only works if all positive ) and are unique
@@ -4358,9 +4301,19 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
 
     lvls = new_lvls
 
+#    if any([ (type(i) == str) for i in lvls] ):
+#        logging.debug('WARNING str in list of levels, tmp conversion to float'+
+#         ' - This is due to error in get_sigfig - seting "0.0" to float' )
+#        for n, i in enumerate( lvls ):
+#            if i == '0.0':
+#                lvls[n] = 0.0
 
-    if debug:
-        print 3, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
+
+#    if debug:
+#        print 3, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
+#    print [(i, type(i)) for i in vmin, vmax ], lvls
+#    print [(i, type(i)) for i in lvls ]
+
 
     if rtn_lvls_diff:
         return lvls, lvls_diff
@@ -4514,14 +4467,6 @@ def show_plot():
     plt.show()
     return
 
-def close_plot():
-    """
-    Wrapper for plt.close(). Use to close the plots and free from memory.
-    """
-    plt.close()
-    return
-
-
 def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=True):
     """
     Save a plot to disk.
@@ -4552,6 +4497,9 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=T
         logging.info("Plot saved to {location}".format(location=filename))
     return
 
+
+ 
+
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
@@ -4562,3 +4510,97 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=T
 # NOTE(s): 
 # (1) These are retained even though they are redundant for back compatibility
 # (2) It is not advised to use these. 
+
+
+# --------   
+# 1.07 - Diurnal plot
+# --------
+def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
+        bin_size=2/24.,widths=0.01, rmax=False, \
+        ls='-', color=None, fractional=False, diurnal=False, mean=True, \
+        xlabel=True, r_avgs=False, marker=None, label=None, \
+        markersize=1, title=None, f_size=10, units='ppbv', scale='linear', \
+        lw=1,lgnd_f_size=None, alpha=1, debug=False ):
+    """ 
+    REDUNDENT!  (use diurnal_plot_df instead)
+     Creates a diurnal plot for given data and dates. 
+    
+
+    NOTES:
+     - Data and dates must be in numpy array form. 
+     - Dates must also be datetime.datetime objects 
+
+     """
+
+    # Convert datetime to fractional day <= set this to map on array at once?
+    dates = np.array( [ get_day_fraction(i) for i in dates ] )
+
+    # asectics
+    ls =[ls]*5
+    if posn> 4:
+        ls=get_ls( posn )
+    if color == None:
+        color=color_list(posn)[pos-1]
+    else:
+        color=color
+    if isinstance( lgnd_f_size, type(None)):
+        lgnd_f_size = f_size
+    
+    # Bin data
+    binned, bins_used = bin_data( data, dates, bin_size, debug=debug )
+
+    # Take average of hourly binned data.
+    if mean:
+        avgs = np.ma.array([np.ma.mean(i) for i in binned]  )
+    else:
+        avgs = np.ma.array([np.ma.median(i) for i in binned]  )
+    avg = np.ma.mean( avgs )
+    max_ = np.ma.max( avgs )
+#    print avgs, avg, np.ma.max( avgs )
+    
+    if fractional:
+#        y = ( avgs - np.ma.max( avgs )  )  / avgs *100
+#        y = ( avgs - np.ma.max( avgs )  )  / avg *100
+        y = ( avgs - np.ma.max( avgs )  )  / max_*100
+        print 'test'*100, avg, max_, avgs
+
+        ymin, ymax =  -0.15, 0.025 
+        ymin, ymax =  [i*100 for i in ymin, ymax ]
+        units = '%'
+    elif diurnal:        
+        y =  avgs - np.ma.max( avgs )
+        ymin, ymax =  -3.5 , 0.5
+    else:
+        y = avgs
+        ymin, ymax =  None, None#27, 37
+    
+    # Plot
+    plt.plot( bins_used, y, color=color , label=label, linestyle=ls[pos-1], \
+        alpha=alpha, marker=marker, lw=lw, ms=markersize )
+
+    # Beautify 
+    ax.set_xticklabels( np.arange(0,24,1 )[::2]  )
+    plt.xticks( np.arange(0,1,1/24. )[::2], fontsize=f_size )
+    plt.xlim(0., 23/24.)
+
+    if ymin != None:    
+        plt.ylim( ymin, ymax )
+    plt.yticks( fontsize=f_size*.75)
+    plt.xticks( fontsize=f_size*.75)
+    if (title != None):
+        plt.title( title )
+    if xlabel:
+        plt.xlabel('Hour of day', fontsize=f_size*.75)
+    plt.ylabel('{}'.format(units), fontsize=f_size*.75)
+
+    # Apply legend to last plot
+    if pos == posn:
+        plt.legend( fontsize=lgnd_f_size )
+
+    # return max 
+    if rmax :
+        return np.ma.max( avgs )
+
+    if r_avgs:
+        return avgs 
+    

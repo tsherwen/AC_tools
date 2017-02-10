@@ -20,6 +20,7 @@ try:
 except:
   import pygchem.datafields as datasets
 
+
 def convert_to_netCDF(folder=None,filename='ctm.nc', bpch_file_list=None, \
         remake=False, hemco_file_list=None, verbose=True, \
         bpch_file_type="*.ctm.nc"):
@@ -57,6 +58,7 @@ def convert_to_netCDF(folder=None,filename='ctm.nc', bpch_file_list=None, \
 #                .format(_dir=folder))
 
     return
+
 
 def hemco_to_netCDF( folder, hemco_file_list=None, remake=False ):
     """
@@ -117,13 +119,9 @@ def hemco_to_netCDF( folder, hemco_file_list=None, remake=False ):
     return
 
 
-
-
-
-    
- 
 def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None, \
-        remake=False, filetype="*ctm.bpch*", verbose=False, **kwargs):
+        remake=False, filetype="*ctm.bpch*", \
+        check4_trac_avg_if_no_ctm_bpch=True, verbose=False, **kwargs):
 
    """    
    Converts GEOS-Chem ctm.bpch output file(s) to NetCDF
@@ -135,13 +133,12 @@ def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None, \
    bpch_file_list (list): list of files to convert 
    remake (boolean): overwrite existing NetCDF file
    filetype (str): string with wildcards to match filenames 
-   ( e.g. *ctm.bpch*,*ts*bpch* )
+   ( e.g. *ctm.bpch*, trac_avg.*, or *ts*bpch* )
    verbose (boolean): print (minor) logging to screen
    
    Returns
    -------
    (None) saves a NetCDF file to disk
-
    """   
 
    # Check if file already exists and warn about remaking
@@ -160,11 +157,18 @@ def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None, \
        logging.debug("Searching for the following bpch filetype: {filetype}"\
                 .format(filetype=filetype))
        bpch_files = glob.glob( folder + '/' + filetype )
+       # Also check if directory contains *trac_avg* files, if no ctm.bpch
+       if (len(bpch_files) == 0) and check4_trac_avg_if_no_ctm_bpch:
+            filetype = '*trac_avg*'
+            logging.info('WARNING! - now trying filetype={}'.format(filetype))
+            bpch_files = glob.glob( folder + '/' + filetype )
+       # Raise error if no files matching filetype
        if len(bpch_files) == 0:
-           logging.error("No bpch files found in "+folder)
-           raise IOError(folder + " contains no bpch files.")
+           logging.error("No bpch files ({}) found in {}".format(filetype, 
+           folder) )
+           raise IOError("{} contains no bpch files.".format(folder))
 
-   # use the specified files.
+   # Use the specified files.
    else:
        file_list = []
        for bpch_file in bpch_file_list:
@@ -179,7 +183,8 @@ def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None, \
    logging.debug( "The following bpch files were found:")
    logging.debug( str(bpch_files) )
    if verbose:
-        print "Creating a netCDF file. This can take some time..."
+        print "Creating a netCDF from {} file(s).".format(len(bpch_files))+\
+            " This can take some time..."
    bpch_data = datasets.load(bpch_files)
 
    # Save the netCDF file
@@ -188,9 +193,10 @@ def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None, \
    logging.info( "A netCDF file has been created with the name {ctm}".format(ctm=output_file)) 
    return
 
+
 def get_folder(folder):
    """
-    Get name of folder that contains ctm.bpch data from command line 
+   Get name of folder that contains ctm.bpch data from command line 
    """
    if isinstance( folder, type(None) ):
       # getting the folder location from system argument
@@ -206,8 +212,8 @@ def get_folder(folder):
       print folder
       sys.exit()
 
-
    return folder;
+
    
 if __name__ == "__main__":
    convert_to_netCDF()

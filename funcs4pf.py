@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 """ 
 Generic functions for use with output from GEOS-Chem's planeflight module.
 
@@ -199,6 +200,11 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
     'HOU', 'BOL', 'LAC', 'HES', 'SCH', 'TEX', 'CAL', 'PAS', 'WEY', \
     'MON'
     ]
+    # And PI surface sites
+    surface_data += [
+    'HOB', 'ADE','MOV', 'MAU', 'LUA' , 'HOK', 'TOK', 'COI',  'PDM',
+    'MVT', 'VIE', 'MON' ]
+    # plane data
     plane_data = ['TOR', 'BAE', 'GCV', 'CGV', 'CON' ]
 
     # Pull values for a variable from data arrays and scale
@@ -581,6 +587,8 @@ def get_pf_data_from_NetCDF_table( ncfile=None, req_var='TRA_69', spec='IO', \
     """ 
     Extracts data from NetCDF file processed by pf2NetCDF (pandas) converter in PhD_Progs
     """
+#    debug=True
+
     # Convert to plane-flight (pf) variable name ('req_var') if not given
     if isinstance( req_var, type(None) ):
         req_var = what_species_am_i( spec, ver=ver, invert=True ) 
@@ -600,7 +608,7 @@ def get_pf_data_from_NetCDF_table( ncfile=None, req_var='TRA_69', spec='IO', \
         print LOC
     ind = np.where( LOC == loc  )
     if debug:
-        print ind
+        print 'indcies where LOC==loc: ', ind
     Epoch = Epoch[ ind ]
     data = data[ ind ]
 
@@ -613,7 +621,7 @@ def get_pf_data_from_NetCDF_table( ncfile=None, req_var='TRA_69', spec='IO', \
 
     # Select dates ( <= add this )
     if not isinstance( sdate, type(None) ):
-        data =  data[ np.where( (dates < edate ) & (dates >= sdate  )  ) ]
+        data = data[ np.where( (dates < edate ) & (dates >= sdate  )  ) ]
         dates = dates[ np.where( (dates < edate ) & ( dates >= sdate  )  ) ]
 
     return dates, data

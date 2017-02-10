@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 """ 
 Generic functions for use with GEOS-Chem/Data Analysis.
 
@@ -711,6 +712,23 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
     with conditions (lower and upper bounds) set by given cases for
     MBL, UT, FT 
 
+    Parameters
+    -------
+    sect (Str): section of the atmosphere of interest (e.g. MBL, UT...)
+    hPa (array): array for pressures ( in hPa)
+    MBL (boolean): apply a mask for the marine boundary layer
+    res (str): the resolution of required output/input arrays (e.g. '4x5' )
+    use_multiply_method (boolean): Create arrays of ones and zeros
+    trop_limit (boolean): limit 3D arrays to troposphere     
+    debug (boolean): legacy debug option, replaced by python logging
+    verbose (boolean): legacy debug option, replaced by python logging
+    extra_mask (str): name of additional region (e.g. ocean) to mask
+    M_all (boolean): apply oceanic masking to all regions 
+    
+    Returns
+    -------
+    (np.ma.mask)
+
     NOTES:
      - originally written to generate masks for mulitplication 
     (i.e. use_multiply_method = True ), but can also be use to make 
@@ -723,8 +741,8 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
 
     # Get atmospheric region as case defining lower and upper bounds
     cases = { 
-      'BL': [1200., 900.], 'MBL': [1200., 900.], 'FT': [ 900., 350. ]         \
-     , 'UT': [ 350., 75.], 'All' : [ 1200., 75.]
+    'BL': [1200., 900.], 'MBL': [1200., 900.], 'FT': [ 900., 350. ],  \
+    'UT': [ 350., 75.], 'All' : [ 1200., 75.]
     }
     l, h = cases[ sect ] 
 
@@ -732,9 +750,9 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
     m=np.ones( get_dims4res(res) )
     m[ (hPa >=l) ] = 0
     m[ (hPa <h) ] = 0
-    if debug:
-        print sect, l, h, [ [np.ma.min(i), np.ma.max(i),   \
-                    np.ma.mean(i), np.ma.sum(i), i.shape ] for i in [ m  ] ]
+    logging.debug( 'Sect={}, l={}, h={}'.format(sect, l, h) )
+    logging.debug( '{}'.format( \
+        *[ [i.min(), i.max(), i.mean(), i.sum(), i.shape] for i in [m] ]) )
 
     # Mask off the 'sect' area that still equals 1
     m = np.ma.masked_equal(m, 1 )
@@ -763,7 +781,7 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
         if use_multiply_method:    
             return m.mask * land_unmasked( res )
         else:
-            land_unmasked_ = mask_all_but( 'Land', mask3D=True, \
+            land_unmasked_ = mask_all_but( 'Land', mask3D=True, res=res, \
                 use_multiply_method=False, trop_limit=trop_limit )
 
             # MBL unmasked 
@@ -880,7 +898,7 @@ def NH_unmasked(  res='4x5', mask2D=False ):
     m=np.ma.array( np.ones( get_dims4res(res) ), mask=True)
     if res=='4x5':
         lats = np.arange(1, 91,1 )
-    if res == '2x2.5':
+    elif res == '2x2.5':
         lats = np.arange(0, 89,1 )
         print 'CHECK (NH) mask for non 4x5 resolutions'
 #        sys.exit(0)
@@ -959,7 +977,7 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
         if use_multiply_method:
 
             maskes = [ mask_all_but(i, trop_limit=trop_limit, mask3D=True, \
-                use_multiply_method=True ) for i in mtitles ]    
+                use_multiply_method=True, res=res ) for i in mtitles ]    
 
             # if comparison with saiz-lopez 2014, 
             if M_all:
@@ -970,7 +988,7 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
         # --- Use pythonic approach
         else:
             maskes = [ mask_all_but(i, trop_limit=trop_limit, mask3D=True, \
-                use_multiply_method=False ) for i in mtitles ]
+                use_multiply_method=False, res=res ) for i in mtitles ]
 
             # If not 'use_multiply_method', then invert hPa masks
             sects3D = [ np.logical_not(i) for i in sects3D ]
@@ -979,7 +997,7 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
         maskes = maskes + sects3D
         mtitles = mtitles + tsects3D
 
-        # also create print strings...    
+        # Also create print strings...    
         npstr ='{:<12}'*len(maskes)
         pstr ='{:<12,.2f}'*len(maskes)
 
@@ -1013,15 +1031,18 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
                 maskes[n] = maskes[n]*land_unmasked(res=res)
 
         print [ len(i) for i in maskes, dmaskes, mtitles, tsects3D ]
+        # Also create print strings...    
         npstr ='{:<15}'*len(maskes)
         pstr ='{:<15,.2f}'*len(maskes)
 
     if masks=='trop_regions':
         mtitles = [ 'BL','FT',  'UT'] 
-        maskes = [ 
-        mask_3D(hPa, i,M_all=M_all, res=res )[:,:,:38]  
-        for i in  mtitles
-                ]
+        maskes = [  mask_3D(hPa, i, M_all=M_all, MBL=False, res=res )[:,:,:38]  \
+            for i in  mtitles ]
+        # Also create print strings...    
+        npstr ='{:<15}'*len(maskes)
+        pstr ='{:<15,.2f}'*len(maskes)
+
 
     # Only consider the "chemical troposphere" - according v9-2
     if trop_limit:
@@ -1045,18 +1066,35 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
 # 2.17 -  Retrieve individual 4D mask of locations except region given
 # --------
 def mask_all_but( region='All', M_all=False, saizlopez=False, \
-            res='4x5', trop_limit=True, \
-            mask2D=False, mask3D=False, mask4D=False, \
-            use_multiply_method=True, verbose=False, debug=False ):
+        res='4x5', trop_limit=True, mask2D=False, mask3D=False, mask4D=False, \
+        use_multiply_method=True, verbose=False, debug=False ):
     """ 
     Mask selector for analysis. global mask provided for with given region 
         unmasked 
-    NOTE: 
-     - "unmask_all" yeilds completely unmasked array
-     - fucntion was oringialyl used to mulitple masks, however, this approch is 
-     unpythonic and therefore reccomended against. 
-     """
 
+    Parameters
+    -------
+    res (str): the resolution if wd not given (e.g. '4x5' )
+    M_all (boolean): maask all marine areas?
+    saizlopez (boolean): use tropics definition from Saiz-Lopez er al 2014 
+    trop_limit (boolean): limit 4D arrays to troposphere     
+    mask2D/mask3D/mask4D(booolean): ensure mask returned is 2D/3D/4D
+    use_multiply_method (boolean): return array of ones, that can be mulitpled 
+    through an array to set data to zero
+    verbose (boolean): legacy debug option, replaced by python logging
+    debug (boolean): legacy debug option, replaced by python logging
+
+    Returns
+    -------
+    (np.ma.mask) or (np.array) (later if use_multiply_method==True)
+
+    Notes
+    -----
+    "unmask_all" yeilds completely unmasked array
+    function was oringialyl used to mulitple masks, however, this approch is 
+    unpythonic and therefore reccomended against. 
+    """
+    logging.info( 'mask_all_but called for region {}'.format(region) )
     # --- Setup cases...   
     # ( except None, unmask_all and global to retrive no mask )
     case = {
@@ -1094,10 +1132,18 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
      'Ice Sur.' : 18, 
     'lat50_2_50':19, 
     '50S-50N':19, 
-    'Oceanic lat50_2_50': 20, 
+#    'Oceanic lat50_2_50': 20, 
     'Ocn. 50S-50N' : 20, 
 #     'South >60': 2,
 #      'North >60': 3
+    'North Sea' : 21, 
+    'Med. Sea' : 22, 
+    'Mediterranean. Sea' : 22, 
+    'Black Sea' : 23, 
+    'Irish Sea' : 24, 
+    'Europe' : 25, 
+    'EU' : 25, 
+#    'Surface BL': 26, 
     }[region]
 
 
@@ -1156,11 +1202,18 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
         if case == 20: # 'Ocn. 50S-50N' 
             mask = np.ma.mask_or( lat2lat_2D_unmasked( lowerlat=-50, 
                 higherlat=50, res=res ), ocean_unmasked( res=res )[...,0]  )
+        if case == 21:
+            mask = get_north_sea_unmasked( res=res )
+
+        if case == 25:
+            mask = get_EU_unmasked( res=res )
+#        if case == 26:
+#            mask = get_2D_BL_unmasked( res=res )
 
         # Invert mask to leave exception unmasked if used to multiply
         mask = np.logical_not(mask)
 
-    # --- This is a more pythonic way of using masks
+    # --- This is a more pythonic way of using masks (Use as preference)
     else:
         # For case, pull mask from case list 
         if case == 0:
@@ -1189,7 +1242,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
         if case == 12:
             mask = mask_lat40_2_40( res=res )
         if case == 13:
-             mask = np.ma.mask_or( ocean_unmasked( res=res),  \
+            mask = np.ma.mask_or( ocean_unmasked( res=res),  \
                     tropics_unmasked(res=res, saizlopez=saizlopez ) )
         if case == 14:
             mask = np.ma.mask_or( land_unmasked( res=res ),  \
@@ -1211,9 +1264,21 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
         if case == 20:
             mask = np.ma.mask_or( lat2lat_2D_unmasked( lowerlat=-50, 
                 higherlat=50, res=res ), ocean_unmasked( res=res )[...,0]  )
+        if case == 21:
+            mask = get_north_sea_unmasked( res=res )
+        if case == 22:
+            mask = get_unmasked_mediterranean_sea( res=res )
+        if case == 23:
+            mask = get_unmasked_black_sea( res=res )
+        if case == 24:
+            mask = get_unmasked_irish_sea( res=res )
+        if case == 25:
+            mask = get_EU_unmasked( res=res )
+#        if case == 26:
+#            mask = get_2D_BL_unmasked( res=res )
 
-    if debug:
-        print 'prior to setting dimensions:', mask.shape
+
+    logging.debug( 'prior to setting dimensions: {}'.format(mask.shape) )
 
     # Apply Saiz-Lopez Marine MFT/MUT? <= should this be before multiply op.?
     if M_all:
@@ -1257,10 +1322,8 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
             pass
         else: # concatenate dimensions
             mask = np.concatenate( [ mask[...,None] ]*12, axis=3 )
-
-    if debug:
-        print 'post to setting dimensions: ', mask.shape
-    
+    logging.debug('post to setting dimensions: {}'.format(mask.shape) )
+    logging.info("returning a 'mask' of type:{}".format(type(mask)) )
     return mask
     
 # --------
@@ -1292,15 +1355,22 @@ def lon2lon_2D_unmasked(lowerlon, higherlon, res='2x2.5', debug=False ):
 # --------
 # 2.19 - EU mask
 # --------
-def get_EU_unmasked( res='1x1',  ):
+def get_EU_unmasked( res='1x1'  ):
     """ 
     Mask 'EU' as defined by GEOS-Chem EU grid the grid of "'0.5x0.666" resolution is 
     used by default, but any list of lat and lons could be provided and the extremities 
     would be used as the mask edges  
     """
 
+    EU_resolutions = [ '0.25x0.3125', '0.5x0.666' ]
+    if res not in EU_resolutions:
+        EU_res = EU_resolutions[0] # default = '0.25x0.3125'
+#        EU_res = EU_resolutions[1] # default = '0.5x0.666'
+    else:
+        EU_res =res
+
     # Get GEOS-Chem EU lat and lons
-    lon, lat, NIU = get_latlonalt4res( res='0.5x0.666' )
+    lon, lat, NIU = get_latlonalt4res( res=EU_res )
 
     # mask lats
     m1 = lat2lat_2D_unmasked( lowerlat=lat.min(), higherlat=lat.max(), res=res )
@@ -1308,7 +1378,7 @@ def get_EU_unmasked( res='1x1',  ):
     # mask lons
     m2 = lon2lon_2D_unmasked(lowerlon=lon.min(), higherlon=lon.max(), res=res )
 
-    #  conbine maskes 
+    #  combine maskes 
     m = m1 + m2 
     
     return m
@@ -1343,7 +1413,164 @@ def get_cruise_track_mask(  max_lon=None, min_lon=None, max_lat=None, \
     m = np.logical_not( m )
     
     return m
+
+
+def get_north_sea_unmasked( res='0.25x0.3125' ):
+    """
+    A rough Mask of the North Sea for use with ~0.5/~0.25 mdodel output. 
+    (inc. English channel. )
+
+    """
+    # mask latitudes of mediterranean
+    # Drawing a box that include all of North sea and English channel
+    # Near Brest in France 48.3669927,-4.7560745
+    # Lillehammer 61.1122408,10.4386779
+
+    # mask lats
+    m1 = lat2lat_2D_unmasked( lowerlat=48.3669927, higherlat=61.1122408, res=res )
     
+    # mask lons
+    m2 = lon2lon_2D_unmasked(lowerlon=-4.7560745, higherlon=10.4386779, res=res )
+
+    #  combine maskes 
+    m = m1 + m2     
+
+    # remove all water.     
+#    m = np.ma.mask_or( m, ocean_unmasked( res=res)[...,0] ) # old approach
+    # the below will work for muliple options. 
+#    m = m + 
+#    m = ocean_unmasked( res=res)[...,0] 
+    
+    
+    # remove irish sea
+
+    return m.mask
+    
+    
+def get_mediterranean_sea_unmasked( res='0.25x0.3125' ):
+    """
+    A rough Mask of the Mediterranean Sea for use with ~0.5/~0.25 mdodel output. 
+    """
+    
+    # mask latitudes of mediterranean
+    # Drawing a box that include all of Med. Sea
+    # East South corner (south Jordan) = 43.4623268,33.3809392
+    # West North corner (south Jordan) = 44.17207,25.30604
+    
+    # add mask for Black Sea
+    
+    # add mask for  
+    pass
+
+def get_unmasked_black_sea( res='0.25x0.3125'):
+    """
+    A rough Mask of the Black Sea for use with ~0.5/~0.25 mdodel output. 
+    """
+    
+    # Drawing a box that include all of Black. Sea
+    # East South corner (south Jordan) = 43.4623268,33.3809392
+    # West North corner  = 44.17207,25.30604
+    pass
+
+def get_unmasked_irish_sea( res='0.25x0.3125', unmasked_oceans=None):
+    """
+    A rough Mask of the Irish Sea for use with ~0.5/~0.25 mdodel output. 
+    """
+    
+    # NE corner Glasgow - 55.8553803,-4.3725463
+    # SW corner Cork - 51.8959842,-8.5332609
+    # mask lats
+    m1 = lat2lat_2D_unmasked( lowerlat=51.8959842, higherlat=55.855380, res=res )
+    
+    # mask lons
+    m2 = lon2lon_2D_unmasked(lowerlon=8.5332609, higherlon=4.3725463, res=res )
+
+    #  combine maskes 
+    m = m1 + m2     
+
+    # only consider oceans     
+    m = np.ma.mask_or( ocean_unmasked( res=res)[...,0], m )    
+    
+    
+    return mask 
+
+def get_ODR(x=None, y=None):
+    """
+    Wrapper to run ODR for arrays of x and y
+
+    NOTES
+    ----- 
+    adapted from example in manual
+    (https://docs.scipy.org/doc/scipy/reference/odr.html)
+    """
+    import scipy.odr
+    
+    # Setup linear model to fit
+    def f(B, x):
+        '''Linear function y = m*x + b'''
+        # B is a vector of the parameters.
+        # x is an array of the current x values.
+        # x is in the same format as the x passed to Data or RealData.
+        #
+        # Return an array in the same format as y passed to Data or RealData.
+        return B[0]*x + B[1]
+
+    # create a model 
+    linear = scipy.odr.Model(f) 
+
+    # Create a Data or RealData instance.:
+    mydata = scipy.odr.Data(x, y)
+    
+    # Instantiate ODR with your data, model and initial parameter estimate.:
+#    myodr = scipy.odr.ODR(mydata, linear, beta0=[1., 2.])
+    myodr = scipy.odr.ODR(mydata, linear, [0., 1.],  maxit = 10000 )
+    
+    # Run the fit.:
+    myoutput = myodr.run()
+
+    # Examine output.:
+    myoutput.pprint()
+    
+    return myoutput
+
+       
+def convert_ug_per_m3_2_ppbv( data=None,  spec='O3', rtn_units=False, \
+        units='ug m$^{-3}$' ):
+    """
+    Converts units of ugm^-3 to ppbv for a given species 
+    """
+    # --- Get constants
+    RMM_air = constants('RMM_air') # g/mol
+    # assume standard air density
+    # At sea level and at 15 °C air has a density of approximately 1.225 kg/m3 
+    #(0.001225 g/cm3, 0.0023769 slug/ft3, 0.0765 lbm/ft3) according to 
+    # ISA (International Standard Atmosphere).
+    AIRDEN = 0.001225 # g/cm3
+    # moles per cm3
+    #  (1/(g/mol)) = (mol/g) ; (mol/g) * (g/cm3) = mol/cm3
+    MOLS = (1/RMM_air) * AIRDEN 
+
+    # moles * spec RMM * microgram
+    # e.g. v/v * mols/cm3 = mols of X per cm3; / spec RMM = mass
+    # unitless * mols * g/mol * conversion
+#   scale = MOLS * AC.species_mass( spec ) 
+
+    # convert ug/m3 to ppbv
+    # get g per cm3, ( instead of ug/m3)
+    data = data /1E6 /1E6
+    # get mol/cm3 (mass/ RMM ) = ( ug/m3  /  g/mol )
+    data = data/species_mass( spec ) 
+    # convert to ppb
+    data = data/MOLS *1E9
+    # update unit string 
+    units = 'ppbv'
+    if rtn_units:
+        return data, units
+    else:
+        return data
+
+
+
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------

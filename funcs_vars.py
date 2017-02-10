@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 """
 Variable store/dictionarys for use in AC_Tools.
 
@@ -359,7 +360,8 @@ def num2spec( num=69, rtn_dict=False, invert=False, ver = '1.7' ):
 # ------------- 
 def species_mass( spec ):
     """ 
-    Function to return species mass ( in relative molecular mass ( RMM ) for given species
+    Function to return species mass ( in relative molecular mass ( RMM ) 
+    for given species in g/mol
 
     Parameters
     ----------
@@ -516,7 +518,7 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
     elif C:
         d = {
     'ACET': 3.0, 'ALD2': 2.0, 'C2H6': 2.0, 'C3H8': 3.0, 'ISOP': 5.0, \
-    'PRPE': 3.0, 
+    'PRPE': 3.0, 'ALK4': 4.0, 'MEK': 4.0
         }
     elif Br:
          d= {
@@ -529,7 +531,9 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         'LR73' : 1.0, 
         # Note: stoichometry is for **GAS** phase Br (aka not SSA )
         # ( Aka JT03s == Br2 ( ==2 ), but one is BrSALA/BrSALC therefore =1)
-        'JT03s' : 1.0, 'JT04s' :1.0, 'JT05s': 1.0
+        'JT03s' : 1.0, 'JT04s' :1.0, 'JT05s': 1.0, 
+        # BrCl from HOBr or hv
+        'JT02s' : 1.0, 'JT08':1.0
         }
     elif Cl:
         d= {
@@ -541,6 +545,12 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
          'LR62': 3.0, 'LR107': 3.0, 
          'LR74' : 1.0, 'LR106':1.0, 'LR103': 1.0, 
          'LR75' : 2.0, 'LR105': 2.0, 'LR104' : 2.0, 
+        # BrCl from HOBr or hv
+        'JT02s' : 1.0, 'JT08':1.0,
+        # ICl  (assuming 0.85:0.15 )
+        'RD59': 0.15, 'RD92': 0.15, 'RD63': 0.15,
+        # N2O5+SSA=>ClNO2
+        'LR114': 1.0
         }
     elif Cl:
         d= {
@@ -664,7 +674,8 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,\
     'MO2': 'pptv', 'NOy':'ppbv','EOH': 'ppbv' , 'CO':'ppbv', 'CH4':'ppbv', \
     'TSKIN':'K', 'GMAO_TEMP': 'K', 'GMAO_VWND' :'m/s',\
     'GMAO_UWND': 'm/s', 'RO2': 'pptv', 'U10M':'m/s','V10M': 'm/s' ,\
-     'PRESS': 'hPa', 'CH2OO':'pptv', 'Bry':'ppbv', 'NOx': 'ppbv', 
+    'PRESS': 'hPa', 'CH2OO':'pptv', 'Bry':'ppbv', 'NOx': 'ppbv', 'HOx':'HOx',
+    'VOC': 'ppbC','TNO3': 'ppbv', 
     # Extra ClearFlo compounds
     u'acetylene': 'pptv', u'propene': 'pptv', u'Napthalene': 'pptv', \
     u'Styrene': 'pptv', u'1,3-butadiene': 'pptv', u'1,2-butadiene': 'pptv', \
@@ -834,18 +845,17 @@ def get_unit_scaling( units, scaleby=1 ):
     misc = 'K', 'm/s', 'unitless', 'kg' ,'m', 'm2','kg/m2/s', \
             'molec/cm2/s', 'mol/cm3/s',  'kg/s', 'hPa', 'atoms C/cm2/s' \
             'kg S', 'mb', 'atoms C/cm2/s', 'molec/cm3', 'v/v', 'cm/s', 's-1', \
-            'molec/m3'
+            'molec/m3', 'W/m2'
 
     # parts per trillion
-    if any( [ (units ==  i) for i in 'pptv', 'pptC' ]):
+    if any( [ (units ==  i) for i in 'pptv', 'pptC', 'ppt' ]):
         scaleby = 1E12
     # parts per billion
-    elif any( [ (units ==  i) for i in 'ppbv', 'ppbC' ]):
+    elif any( [ (units ==  i) for i in 'ppbv', 'ppbC', 'ppb' ]):
         scaleby = 1E9
     elif any( [units ==i for i in misc ] ):
         scaleby = 1
-    else:
-        print 'WARNING: This unit is not in unit lists: ', units
+        logging.debug('WARNING: {} is not in unit lists: '.format(units) )
     return scaleby
 
 # --------   
@@ -1004,7 +1014,7 @@ def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
     ----------
     wd (str): Specify the wd to get the results from a run.
     debug (boolean): legacy debug option, replaced by python logging
-    PHOTOPROCESS (str): smvgear index of 1st photochemical reaction
+    PHOTOPROCESS (int): smvgear index of 1st photochemical reaction
     LaTeX (boolean): convert species to LaTeX style formatting
     ver (str): The GEOS-Chem halogen version that is being used
 
@@ -2154,9 +2164,9 @@ def latex_spec_name(input_x, debug=False):
     'R4N2':'$\geq$C4 alkylnitrates','PRPE':'$\geq$C3 alkenes', \
     'C3H8':'C$_{3}$H$_{8}$','CH2O':'CH$_{2}$O', \
     'C2H6':'C$_{2}$H$_{6}$', 'MP':'CH$_{3}$OOH', 'SO2':'SO$_{2}$',\
-    'SO4':'SO$_{4}$','SO4s':'SO$_{4}$ on SSA', \
-    'MSA':'CH$_{4}$SO$_{3}$','NH3':'NH$_{3}$', 'NH4': 'NH$_{4}$', \
-    'NIT': 'InOrg N', 'NITs': 'InOrg N on SSA', 'BCPI':'BCPI', \
+    'SO4':'SO${_4}{^{2-}}$','SO4s':'SO${_4}{^{2-}}$ on SSA', \
+    'MSA':'CH$_{4}$SO$_{3}$','NH3':'NH$_{3}$', 'NH4': 'NH${_4}{^+}$', \
+    'NIT': 'NO${_3}{^-}$', 'NITs': 'NO${_3}{^-}$ on SSA', 'BCPI':'BCPI', \
     'OCPI':'OCPI', 'BCPO':'BCPO','OCPO':'OCPO', 'DST1':'DST1', \
     'DST2':'DST2','DST3':'DST3','DST4':'DST4','SALA':'SALA', \
     'SALC':'SALC',  'HBr':'HBr', 'BrNO2': 'BrNO$_{2}$', \
@@ -2189,12 +2199,13 @@ def latex_spec_name(input_x, debug=False):
     'CH2OO':'CH$_{2}$OO', 'Sulfate': 'Sulfate', 'VOCs': 'VOCs', \
     'GMAO_ABSH' : 'Absolute humidity', 'GMAO_SURF': 'Aerosol surface area', \
     'GMAO_PSFC': 'Surface pressure', 
-    # Family Names
+    # Family/group species/tracer Names
     'N_specs':u'NO$_{\\rm y}$', 'NOy':u'NO$_{\\rm y}$', 
-     'Bry':u'Br$_{\\rm y}$', 'Cly':u'Cl$_{\\rm y}$',  \
-    'N_specs_no_I': u'NO$_{\\rm y}$ exc. iodine', 
-    'NOx':u'NO$_{\\rm x}$', 'HOx':u'HO$_{\\rm x}$',\
-    'SOx':u'SO$_{\\rm x}$', \
+    'Bry':u'Br$_{\\rm y}$', 'Cly':u'Cl$_{\\rm y}$', 'NIT+NITs':'NIT+NITs',  \
+    'N_specs_no_I': u'NO$_{\\rm y}$ exc. iodine', 'TSO4': 'TSO$_4$',
+    'NOx':u'NO$_{\\rm x}$', 'HOx':u'HO$_{\\rm x}$', 'TNO3': 'TNO$_3$', \
+    'SOx':u'SO$_{\\rm x}$','PM2.5': 'PM$_{2.5}$', 'VOC': 'VOC', \
+    'NIT+NH4+SO4': 'NO${_3}{^-}$+NH${_4}{^+}$+SO${_4}{^{2-}}$', 
     # typos
     'CH2BR2':'CH$_{2}$Br$_{2}$',\
     # Cly names
@@ -2206,7 +2217,7 @@ def latex_spec_name(input_x, debug=False):
     'CHCl3': 'CHCl$_{3}$', 
     # Bry names 
     'BrSALC': 'Br- on SALC', 'BrSALA': 'Br- on SALA',
-            }
+    }
     return spec_dict[input_x]
     
 
@@ -2270,7 +2281,7 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'LEI_AUG' :  ( -1.127311, 52.619823, 0 ),
     'LEI_MAR' :  ( -1.127311, 52.619823, 0 ),
     'LEI' :  ( -1.127311, 52.619823, 0 ),
-    # --- Europ sites
+    # --- Europe sites
     'DZK' :  ( 4.5000, 52.299999237, 4 ),
     # --- O3 preindustrial
     'MON' :  ( 2.338333, 48.822222,  75+5 ), 
@@ -2290,7 +2301,22 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'TOK' : (139.0, 35.0, 0), # Tokyo 
     'VIE' : (16.0, 48.0, 0), # Vienna 
     'PDM' : (0.0, 43.0, 1000), # Pic du midi 
-    #
+    # ---  Misc
+#    'MAC' : ( -10.846408, 53.209003, 0 ) # Mace Head.
+    'MAC' : ( -9.9039169999999999, 53.326443999999995, 0 ), # Mace Head.
+    'Brittany' : ( -4.0, 48.7, 0 ), # Brittany, France
+    'Ria de Arousa' : (-8.87, 42.50,0), # Ria de Arousa, Spain
+    'Mweenish Bay' : (-9.83, 53.31,0), # Ireland 
+    'Harestua' : (10.7098608, 60.2008617, 0), # Norway
+    'Cartagena': (-1.0060599, 37.6174104, 0 ), # Spain
+    'Malasapina - final day':(-8.338, 35.179, 0), # final day of cruise
+    'Dagebull':(8.69, 54.73, 0),
+    'Lilia' : (-4.55, 48.62, 0 ),
+    'Heraklion' : (25.1, 35.3, 0 ),  # Heraklion, Crete
+    'Sylt': (8.1033406, 54.8988164, 0),
+    'Sicily': (14.2371407,  38.5519809, 0 ) # Sicily
+
+#    'Frankfurt' : ( 8.45,50.22, )
     }
     if rtn_dict:
         return loc_dict
@@ -2842,7 +2868,8 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'NO3', 'HNO2', 'IONO', 'IONO2', 'INO'],
     'NOy' : [
     'NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4',\
-    'NH3', 'NH4', 'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN',\
+#    'NH3', 'NH4', 
+    'BrNO2', 'BrNO3', 'MPN', 'ISOPN', 'PROPNN', 'MMN',\
     'NO3', 'HNO2', 'IONO', 'IONO2', 'INO', 'ClNO2', 'ClNO3'],
     'N_specs_no_I'  :  [
     'NO', 'NO2', 'PAN', 'HNO3', 'PMN', 'PPN', 'R4N2', 'N2O5', 'HNO4', \
@@ -2975,7 +3002,7 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'PO3_01', 'RD07', 'LR9', 'LR62', 'LR37', 'LR73', 'LR19', 'LO3_79', \
     'RD15', 'PO3_68', 'RD06', 'LO3_80', 'LR83', 'LR80', 'LR99', \
 	# LR125 is the tag for ALD2 (hash out for runs without this tag)
-    'LR125'
+#    'LR125'
     ], 
     # not outputted by p/l ( but should be) : 'PO3_103', 'PO3_104', 'PO3_105', 
     # 'PO3_10'

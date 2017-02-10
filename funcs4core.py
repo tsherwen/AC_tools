@@ -1,6 +1,8 @@
 #!/usr/bin/python
-""" Core functions used to be used by all function levels of 
-    GEOS-Chem/Data analysis in AC_Tools 
+# -*- coding: utf-8 -*-
+""" 
+Core functions used to be used by all function levels of 
+GEOS-Chem/Data analysis in AC_Tools 
 
 NOTES: 
  - user specific functions need to be migrated to a seperate fuction
@@ -137,7 +139,7 @@ def get_gc_lon(lon, res='4x5', wd=None, filename='ctm.nc', debug=False):
 # 1.04 - Get model array dimension for a given resolution                                           
 # --------                                                                                          
 def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
-        just2D=False, debug=False):
+        just2D=False, full_vertical_grid=False, debug=False):
     """ 
     Get dimension of GEOS-Chem output for given resolution 
 
@@ -168,6 +170,16 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
     }
     if debug:
         print dims
+
+    # If full using full vertical 
+    full_vertical_grid=True
+    if full_vertical_grid:
+        vals =[]
+        for i in dims.values():
+            vals += [ ( i[0],i[1],72) ]
+        dims = dict( zip( dims.keys(), vals ) )
+        if debug:
+            print dims
 
     # Only consider the GEOS-Chem chemical troposphere
     if trop_limit:
@@ -407,7 +419,8 @@ def iGEOSChem_ver(wd, verbose=True, debug=False):
     # List iGEOSChem versions+ then DataFrame
     versions = [
     '1.1','1.2', '1.3', '1.4', '1.5', '1.6', '1.6.1', '1.6.2', \
-     '1.6.3', '1.7', '2.0', '3.0', '4.0'  ]
+     '1.6.3', '1.7', '2.0', '3.0', '4.0', '5.0', '6.0'  
+    ]
     df= DataFrame( versions, columns=['Versions'] )
     if debug:
         print wd, versions, df
@@ -620,7 +633,7 @@ def get_sigfig( x, p=3 ):
     x = float(x)
 
     if x == 0.:
-        return "0." + "0"*(p-1)
+        return float("0." + "0"*(p-1))
 
     out = []
 
