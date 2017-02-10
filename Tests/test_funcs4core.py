@@ -14,6 +14,7 @@ def test_get_sigfig():
     return                                                                      
                                                                                 
 def test_get_sigfig_big():                                                      
+#    assert(get_sigfig(3.22294E20, 0)==3E20) 
     assert(get_sigfig(3.22294E20, 1)==3E20)                                     
     assert(get_sigfig(3.29294E20, 2)==3.3E20)                                   
     assert(get_sigfig(3.29294E20, 3)==3.29E20)                                  
@@ -23,6 +24,18 @@ def test_get_sigfig_small():
     assert(get_sigfig(3.29294E-20, 2)==3.3E-20)                                 
     assert(get_sigfig(3.29294E-20, 3)==3.29E-20)                                
     return                                                                      
+
+#def test_get_sigfig_negative():
+#    assert(get_sigfig(-3.22294, 1)==-3.2)
+#    assert(get_sigfig(-3.29294, 2)==-3.29)
+#    assert(get_sigfig(-3.29294, 3)==-3.293)
+#    return  
+
+def test_get_scientific_number():
+    assert(get_scientific_number(3.22294, 1, string=True)=="3.2")
+    assert(get_scientific_number(3.29294E10, 2, string=True)=="3.29E10")
+    assert(get_scientific_number(-3.29294E-10, 3, string=True)=="-3.293E-10")
+    return  
 
 def test_gchemgrid():
     # Test fail for no inputs

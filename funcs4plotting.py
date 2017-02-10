@@ -149,9 +149,8 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
         arr = arr.T
         logging.warning("Array was wrong shape and has been transposed!")
     else:
-        logging.error("If 4x5 array is the wrong shape. \
-                Should be (46,72). Got " + str(arr.shape))
-        raise AssertionError, "Incorrect array shape for 4x5."
+        logging.error("Array is the wrong shape, Got: " + str(arr.shape))
+        raise AssertionError, "Incorrect array shape."
 
     #### Add a invalid warning!
     # Mask for percent arrays containing invalid values ( to allow PDF save )
@@ -211,10 +210,35 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
         plt.ylim(lat[0+adjust_window], lat[-1-adjust_window])
 
     # ----------------  Cases for arrays  ----------------  
-    if ( not isinstance( case, int ) ):
+    # Keep the names for easier reading
+#################################################################################################### 
+# Old
+#    if ( not isinstance( case, int ) ):
+#        case = {
+#    'linear':3, 'default':3, 'IO': 1,'limit_to_1_2': 2, 'log': 4,  
+#        }[case]
+#################################################################################################### 
+
+# New        
+    if ( isinstance( case, int ) ):
         case = {
-    'linear':3, 'default':3, 'IO': 1,'limit_to_1_2': 2, 'log': 4,  
-        }[case]
+                1: 'IO',
+                2: 'limit_to_1_2',
+                3: 'default', 
+                4: 'log', 
+                }[case]
+
+    if case=="IO":
+        IO=True
+    elif case=="limit_to_1_2":
+        limit_to_1_2=True
+    elif case=="default":
+        default=True
+    elif case=="log":
+        log=True
+    else:
+        raise ValueError, "Unknown case of {case}".format(case=case)
+####################################################################################################
 
     # -------- colorbar variables...
     # Set cmap range I to limit poly, if not given cmap )
@@ -252,7 +276,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     
     # --------------  Linear plots -------------------------------
     # standard plot 
-    linear_cases = [3,9]
+    linear_cases = ["default",9]
     if case in linear_cases:
         if debug:
             print fixcb_, arr.shape, [ len(i) for i in lon, lat ], norm, cmap
@@ -260,7 +284,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
             vmin=fixcb_[0], vmax=fixcb_[1]  )
 
     # -----------------  Log plots --------------------------------
-    if (case == 4 ) or log: # l
+    if log: # l
         poly = m.pcolor(lon, lat, arr, norm=LogNorm(vmin=fixcb_[0], vmax=fixcb_[1]), \
             cmap=cmap)
 
@@ -295,7 +319,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
             cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)  
 
         # Special treatment for log colorbars
-        if (case == 4 ):    
+        if log:    
             round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
             tick_locs = [ float('{:.2g}'.format( t )) for t in lvls ]
             # for asectics, round colorbar labels to sig figs given
@@ -358,6 +382,403 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     if return_m:
         return_l += [ m ]
     return return_l
+
+
+# ----
+# X.XX - UPDATED - Map plot for given array and resolution (lon, lat) 
+# -----
+def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=False, \
+        cb=None, rotatecbunits='horizontal',fixcb=None, nticks=10, mask_invalids=False,\
+        format='%.2f', adjust_window=0, f_size=20, alpha=1, log=False, \
+        set_window=False, res=None, ax=None, case='default', units=None, \
+        drawcountries=True,  set_cb_ticks=True, title=None, lvls=None,  \
+        interval=15, resolution='c', shrink=0.4, window=False, everyother=1,\
+        extend='neither', degrade_resolution=False, discrete_cmap=False, \
+        lon_0=None, lon_1=None, lat_0=None, lat_1=None, norm=None,\
+        sigfig_rounding_on_cb=2, fixcb_buffered=None, ylabel=True, \
+        xlabel=True, wd=None, verbose=True, debug=False, tight_layout=False, \
+        **Kwargs):
+    """ 
+    Plots Global/regional 2D (lon, lat) slices.  
+    Parameters
+    ----------
+    adjust_window (int): amount of array entries to remove the edges of array 
+    alhpa (float): transparency of plotter data
+    arr (np.array): input (2D) array
+    case (str or int): case for type of plot (vestigle: use log=True of False (default))
+    cmap (str): force colormap selection by providing name 
+    centre (boolean): use centre points of lon/lat grid points for mapping data surface
+    drawcountries (boolean): add countries to basemap?
+    debug (boolean): legacy debug option, replaced by python logging
+    degrade_resolution (boolean): reduce resolution of underlay map detail
+    discrete_cmap (boolean): use a discrete instead of conitunous colorbar map
+    everyother (int): use "everyother" axis tick (e.g. 3=use every 3rd)
+    f_size (float): fontsise
+    fixcb (np.array): minimium and maximum to fix colourbar
+    fixcb_buffered (array): minimium and maximum to fix colourbar, with buffer space 
+    format (str): format string for colorbar formating
+    grid (boolean): apply a grid over surface plot?
+    extend (str): colorbar format settings ( 'both', 'min', 'both' ... )
+    interval (int): x/y tick interval in degrees lat/lon (default=15)
+    lvls (list): manually provide levels for colorbar
+    log (boolean): use a log scale for the plot and colorbar
+    no_cb (boolean): include a coloubar?
+    norm (norm object): normalisation to use for colourbar and array
+    nticks (int): number of ticks on colorbar
+    mask_invalids (boolean): mask invalid numbers (to allow saving to PDF)
+    res (str): GEOS-Chem output configuration resolution ( '4x5' etc... )
+    resolution (str): basemasp resolution settings ( 'c' = coarse, 'f' = fine ...  )
+    rotatecbunits (str): orientation of colourbar units
+    shrink (boolean): colorbar size settings ( fractional shrink )
+    set_window (boolean): set the limits of the plotted data (lon_0, lon_1, lat_0, lat_1)
+    (for nested boundary conditions )
+    sigfig_rounding_on_cb (int): significant figure rounding to use for colourbar
+    set_cb_ticks (boolean): mannually set colorbar ticks? (vestigle)     
+    title (str): plot title (deafult is ==None, therefore no title)
+    tight_layout (boolean): use use tight lyaout for figure
+    ylabel, xlabel (boolean): label x/y axis?
+    units (str): units of given data for plot title 
+    verbose (boolean): legacy debug option, replaced by python logging
+    wd (str): Specify the wd to get the results from a run.
+    window (boolean): use window plot settings (fewer axis labels/resolution of map)
+    Returns
+    -------
+    optionally returns basemap (return_m==True) and colorbar (no_cb!=True) object 
+    Notes
+    -----
+     - Takes a numpy array and the resolution of the output. The plot extent is then set by this output.
+    """
+    if isinstance(arr, type(None)):
+        logging.error("No data given to map_plot!")
+        raise AssertionError, "No data given to map_plot"
+    elif not len(arr.shape)==2:
+        logging.error("Input array should be 2D. Got shape {shape}"\
+            .format(shape=arr.shape))
+    logging.info("map_plot called")
+
+    # Find out what resolution we are using if not specified   
+    if isinstance(res, type(None)):         
+        try: # Attempt to extract resolution from wd
+            logging.debug("No resolution specified, getting from wd")
+            res = get_gc_res(wd)
+        except TypeError:  # Assume 4x5 resolution
+            # Assume 4x5 resolution
+            logging.warning('No resolution specified or found. Assuming 4x5')
+            logging.warning('Try specifying the wd or manualy specifying the res')
+            res='4x5'
+
+
+
+
+    # ----------------  Cases for arrays  ----------------  
+    # Keep the names for easier reading
+#################################################################################################### 
+# Old
+#    if ( not isinstance( case, int ) ):
+#        case = {
+#    'linear':3, 'default':3, 'IO': 1,'limit_to_1_2': 2, 'log': 4,  
+#        }[case]
+#################################################################################################### 
+
+# New        
+    if ( isinstance( case, int ) ):
+        case = {
+                1: 'IO',
+                2: 'limit_to_1_2',
+                3: 'default',
+                4: 'log',
+                }[case]
+
+    if case=="IO":
+        IO=True
+    elif case=="limit_to_1_2":
+        limit_to_1_2=True
+    elif case=="default":
+        default=True
+    elif case=="log":
+        log=True
+    else:
+        raise ValueError, "Unknown case of {case}".format(case=case)
+#################################################################################################### 
+
+    # Make sure the input data is usable and try to fix it if not.
+    (res_lat, res_lon) = get_dims4res(res, just2D=True)
+
+    if arr.shape==(res_lon, res_lat):
+        pass
+    elif arr.shape==(res_lat, res_lon):
+        arr = arr.T
+        logging.warning("Array was wrong shape and has been transposed!")
+    else:
+        logging.error("Array is the wrong shape. \
+                Should be (46,72). Got " + str(arr.shape))
+        raise AssertionError, "Incorrect array shape."
+
+    #### Add a invalid warning!
+    # Mask for percent arrays containing invalid values ( to allow PDF save )
+    if mask_invalids:
+        arr = np.ma.masked_invalid( arr )
+
+    # --- Window plot settings
+    if window:
+        interval = 30   # double interval size 
+        degrade_resolution=True
+    if  res == '0.5x0.666':
+        interval,  adjust_window, resolution,shrink  =0.5, 3, 'f', 0.6
+    if degrade_resolution:
+        resolution = 'l'
+
+    nested_res = ['0.25x0.3125', '0.25x0.3125_CH', '0.25x0.3125_WA']
+    if res in nested_res:
+        centre=False
+        adjust_window = 6
+            
+    # Get lons and lats
+    lon, lat, NIU = get_latlonalt4res( res, centre=centre, wd=wd )
+
+    if set_window:
+        # Convert lats and lons to GC lats and restrict lats, lons, and arr
+        if not isinstance( lat_0, type(None) ):
+            gclat_0, gclat_1 = [ get_gc_lat(i, res=res) for i in lat_0, lat_1 ]
+            lat = lat[ gclat_0:gclat_1 ]
+
+        if not isinstance( lon_0, type(None) ):
+            gclon_0, gclon_1 = [ get_gc_lon(i, res=res) for i in lon_0, lon_1 ]
+            lon = lon[ gclon_0:gclon_1]
+
+    # ----------------  Basemap setup  ----------------  
+    # Grid/Mesh values
+    x, y = np.meshgrid(lon,lat)
+    # Set existing axis to current if axis provided
+    if not isinstance(ax, type(None)):
+        plt.sca( ax )
+ 
+    # ---- Setup map ("m") using Basemap
+    m = get_basemap( lat=lat, lon=lon, resolution=resolution, res=res, \
+        everyother=everyother, interval=interval, f_size=f_size, ylabel=ylabel, \
+        xlabel=xlabel, drawcountries=drawcountries )
+    # Process data to grid
+    x, y = np.meshgrid( *m(lon, lat) )
+    # reduce plotted region for nested grids/subregion plots
+    if set_window:
+        plt.xlim( lon_0, lon_1)
+        plt.ylim( lat_0, lat_1 )
+    else:
+        plt.xlim( lon[0+adjust_window], lon[-1-adjust_window] )
+        plt.ylim(lat[0+adjust_window], lat[-1-adjust_window])
+
+
+
+
+
+#################################################################################################### 
+    # -------- colorbar variables...
+    # Set cmap range I to limit poly, if not given cmap )
+    fixcb_ = fixcb
+    # New approach
+    if isinstance( fixcb_, type(None) ) or isinstance( cmap, type(None) ):
+        fixcb_ = np.array( [ (i.min(), i.max()) for i in [arr ] ][0] )
+
+    if isinstance(cmap, type(None)):
+        # Set readable levels for cb, then use these to dictate cmap
+        if isinstance(lvls, type(None)):
+            lvls = get_human_readable_gradations( vmax=fixcb_[1], vmin=fixcb_[0], \
+                nticks=nticks, sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
+
+        # Setup Colormap
+        cmap, fixcb_buffered = get_colormap( np.array( fixcb_ ), \
+                nticks=nticks, fixcb=fixcb_, buffer_cmap_upper=True )
+        # Update colormap with buffer
+        cmap = get_colormap( arr=np.array([fixcb_buffered[0], fixcb_buffered[1]]) )
+
+    # Allow function to operate without fixcb_buffered provided
+    if isinstance( fixcb_buffered, type(None) ):
+        fixcb_buffered = fixcb_
+    fixcb_ = fixcb_buffered
+    logging.info( 'colorbar variables: ' + str([fixcb_buffered, fixcb, fixcb_, lvls, \
+                cmap, lvls]))
+    # Use a discrete colour map?
+#    if discrete_cmap:
+#        if isinstance( fixcb, type(None) ):
+#            cmap, norm = mk_discrete_cmap( vmin=arr.min(), vmax=arr.max(), \
+#                    nticks=nticks, cmap=cmap )
+#        else:
+#            cmap, norm = mk_discrete_cmap( vmin=fixcb[0], vmax=fixcb[1], \
+#                    nticks=nticks, cmap=cmap )
+
+    NEW_VERSION=False
+
+    if not NEW_VERSION:
+####################################################################################################
+            # Old version is here
+####################################################################################################
+        # --------------  Linear plots -------------------------------
+        # standard plot 
+        linear_cases = ["default",9]
+        if case==9 or default:
+            if debug:
+                print fixcb_, arr.shape, [ len(i) for i in lon, lat ], norm, cmap
+            poly = m.pcolor( lon, lat, arr, cmap=cmap, norm=norm, alpha=alpha, \
+                vmin=fixcb_[0], vmax=fixcb_[1]  )
+
+        # -----------------  Log plots --------------------------------
+        if log: # l
+            poly = m.pcolor(lon, lat, arr, norm=LogNorm(vmin=fixcb_[0], vmax=fixcb_[1]), \
+                cmap=cmap)
+
+            if no_cb:
+                pass
+            else:
+
+
+                # Get logarithmically spaced integers
+                lvls = np.logspace( np.log10(fixcb[0]), np.log10(fixcb[1]), num=nticks)
+                # Normalise to Log space
+                norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
+
+                    # Create colourbar instance
+                cb = plt.colorbar(poly, ax=m.ax, ticks=lvls, format=format, shrink=shrink, \
+                    alpha=alpha, norm=norm, extend='min')
+            logging.debug(np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), lvls)
+
+        # ----------------  Colorbars  ----------------  
+        if not no_cb:
+            if isinstance(cb, type(None)):
+                # if linear plot without fixcb set, then define here
+                ax = plt.gca()
+
+            # Create colourbar instance
+            cb = plt.colorbar( poly, ax=ax, shrink=shrink, alpha=alpha, extend=extend )
+            # set ylabel tick properties
+            for t in cb.ax.get_yticklabels():
+                t.set_fontsize(f_size)
+
+            if not isinstance(units, type(None)):
+                cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)  
+
+            # Special treatment for log colorbars
+            if log :    
+                round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
+                tick_locs = [ float('{:.2g}'.format( t )) for t in lvls ]
+                # for asectics, round colorbar labels to sig figs given
+                for n, lvl in enumerate( lvls ):
+                    try:
+                        lvls[n] = round_to_n( lvl, sigfig_rounding_on_cb)
+                    except:
+                        lvls[n] = lvl
+            else:
+                tick_locs = np.array( lvls ).copy()  
+
+            # Turn tick locations into floats
+            tick_locs = [float(_tick) for _tick in tick_locs]
+
+            cb.set_ticks( np.array(tick_locs) )
+            # the format is not correctly being set... - do this manually instead
+            if not isinstance( format, type(None) ):
+                lvls = [ format % (i) for i in lvls ]
+            cb.set_ticklabels( lvls )#, format=format )
+
+####################################################################################################
+
+    if NEW_VERSION:
+
+        if case==9 or default:
+            vmin=fixcb_[0]
+            vmax=fixcb_[1]
+
+        if log:
+            norm=LogNorm(vmin=fixcb_[0], vmax=fixcb_[1], cmap=cmap)
+            lvls = np.logspace( np.log10(fixcb[0]), np.log10(fixcb[1]), num=nticks)
+            # Normalise to Log space
+            norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
+            extend='min'
+            ticks=lvls
+            ax=m.ax
+
+            rount_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n-1))
+            tick_locs = [ float('{:.2g}'.format( t )) for t in lvls ]
+            # for asectics, round colorbar labels to sig figs given
+            for n, lvl in enumerate( lvls ):
+                try:
+                    lvls[n] = round_to_n( lvl, sigfig_rounding_on_cb)
+                except:
+                    lvls[n] = lvl
+        else:
+            tick_locs = np.array( lvls ).copy()  
+
+        # Turn tick locations into floats.
+        tick_locs = [float(_tick) for _tick in tick_locs]
+
+        # Create the colormap
+        poly = m.pcolor(lon, lat, arr, norm=norm, vmax=vmax, vmin=vmin,
+                cmap=cmap, alpha=alpha)
+
+        # Add the colorbar if needed.
+        if not no_cb:
+            #if linear plot without fixcb set, then define here
+            if isinstance(cb, type(None)):
+                ax = plt.gca()
+
+            cb = plt.colorbar(poly, ax=ax, ticks=lvls, format=format,
+                    shrink=shrink, alpha=alpha, norm=norm, extend=extend)
+
+            # Set ylabel tick properties
+            cb.ax.tick_params(labelsize=f_size)
+
+            # Set ylabel units:
+            if not isinstance(units, type(None)):
+                cb.ax.set_ylabel( units, rotation=rotatecbunits, labelpad=f_size)
+
+            cb.set_ticks (np.array(tick_locs) )
+            cb.set_ticklabels( lvls )
+
+
+
+
+
+        
+
+
+
+        #logging.info(tick_locs, lvls, [ type(i) for i in tick_locs, lvls ])
+        #logging.info(cb.get_clim(), title, format)
+    
+# Set number of ticks
+# FIX NEEDED - this currently doesn't doesn't work for log plots
+#    if (not default) and (not no_cb) and ( not log ):
+#        if set_cb_ticks:
+#            tick_locator = ticker.MaxNLocator( nticks=nticks )
+#            cb.locator = tick_locator
+#            cb.update_ticks()
+    # Add grid lines to the plot?
+    plt.grid( grid )
+
+    # Add title to plot?
+    max_title_len=30
+
+    if tight_layout==True:
+        plt.tight_layout()
+
+    if not isinstance( title, type(None) ):
+        # Check if the title is too long and if not split it over lines
+        if len(title)>max_title_len:
+            print "tile takes up multiple lines. Splitting over lines now."
+            import textwrap
+            title="\n".join(textwrap.wrap(title,max_title_len))
+            print title
+            # Adjust the top of the plot by 0.05 for every line the title takes
+#            plt.subplots_adjust(top=1-0.05*(len(title)%max_title_len))
+
+        plt.title(title, fontsize=f_size*1.5)
+    # Setup list of return variables
+    return_l = [ plt ] 
+    if not no_cb:
+        return_l += [ cb ]
+    if return_m:
+        return_l += [ m ]
+    return return_l
+
+
 
 # --------
 # 1.02 - Zonal plot - log or linear
@@ -601,76 +1022,6 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
         ax.set_title(title, fontsize=f_size*1.5)
 
 # --------   
-# 1.05 - Lat plot
-# --------
-def lat_plot(fig, ax, arr, title=None, f_size=10, units='ppbv', \
-        scale='linear', debug=False ):
-    """ 
-    Creates a latitude plot on given figure and axis 
-    """
-
-    NIU, lat, NIU = get_latlonalt4res( res=res )
-    del NIU
-    plt.plot( lat, arr )
-    plt.ylabel(units)
-    plt.xlabel('Latitude' )
-    if (title != None):
-        plt.title(title)
-    ax.set_yscale(scale)
-    parallels = np.arange(-90,91,15)
-    plt.xticks( parallels, fontsize = f_size ) # draw parrelel lines
-    plt.rcParams.update({'font.size': f_size})
-    
-    
-# --------   
-# 1.06 - Diurnal boxplot
-# --------
-def diurnal_boxplot(fig, ax,  dates, data, pos=1, posn =1,  bin_size=2/24.,\
-        widths=0.01, white_fill=True, alpha=0.1, linewidth=0.5, \
-        showmeans=False, title=None, f_size=10, units='ppbv', \
-        scale='linear', debug=False ):
-    """ 
-    Creates a diurnal plot of boxplots (hourly) for given data and dates. 
-    NOTES:
-     - Data and dates must be in numpy array form. 
-     - Dates must also be datetime.datetime objects 
-    """
-
-    # Convert datetime to fractional day <= set this to map on array at once?
-    dates = np.array( [ get_day_fraction(i) for i in dates ] )
-
-    # bin data
-    binned, bins_used, b_all = avg_n_bin_y_by_x(data, dates, bin_size, \
-        binned_data=True, debug=debug)
-
-    # Generate positions
-    positions=[ i+(bin_size*.75/posn)+( (bin_size*.75/posn)*float(pos)) \
-        for i in bins_used ]
-
-    # Plot
-    bp = ax.boxplot( b_all,  positions=positions, widths=widths, \
-        showmeans=showmeans, patch_artist=True )
-    set_bp( bp, pos, white_fill=white_fill, c_list=color_list(posn) )
-
-    # Beautify 
-    ax.set_xticklabels( np.arange(0,24,bin_size*24 )[::2]  )
-    plt.xticks( np.arange(0,1,bin_size )[::2] )
-    plt.xlim(-0.05, 1.05)
-    plt.ylabel(units)
-    if (title != None):
-        plt.title(title)
-    plt.xlabel('Hour of day')
-    plt.ylabel('{}'.format(units))
-    ax.xaxis.grid(True, which='major')
-    ax.xaxis.grid(True, which='minor') 
-
-    # --- Highlight bins        
-    bs = np.arange(0, 24, bin_size )#[ bs[0] - bin_size ] + bs 
-    [ plt.axvline( x=i, color='k', linewidth=linewidth, alpha=alpha, \
-         linestyle='dashed' ) for i in bs ]
-
-
-# --------   
 # 1.07 - Diurnal plot
 # --------
 def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, 
@@ -710,7 +1061,7 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None,
     -----
      - Adapted from David Hagen's example - https://www.davidhagan.me/articles?id=7
     """
-    logging.info('diurnal_plot_df called with stat2plot={} '.format(stat2plot) )
+    logging.info('diurnal_plot_df called with stat2plot={} '.format(stat2plot))
     # ---  process input data
     # Form a dataFrame from input numpy arrays. 
     df = pd.DataFrame( {'data':data}, index=dates )
@@ -750,7 +1101,6 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None,
             alpha=alpha, facecolor=color)
         ax.fill_between(df.index, df['data'][stat2plot], df['data']['25%'], 
             alpha=alpha, facecolor=color)    
-        
     except:
         logging.info( 'Failed to add percentile shading' )
 
@@ -782,15 +1132,51 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None,
 # --------   
 # 1.11 - Plot up Sonde data
 # --------
-def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
-        f_size=10, color=None, rasterized=True, err_bar=False, obs=True, \
+def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, \
+        f_size=10, color=None,  err_bar=False, obs=True, \
         legend=False, units='nmol mol$^{-1}$', stddev=True, \
         c_l=[ 'k', 'red','green', 'blue' , 'purple'], xlimit=None, \
-        loc='upper left', c_off = 37, label=None, ancillary=True, \
+        loc='upper left', c_off=37, label=None, ancillary=True, \
         plt_txt_x=0.5, plt_txt_y=0.94, \
-        ylabel=True, xlabel=True, hPa_labels=True, debug=False ):
+        ylabel=True, xlabel=True, hPa_labels=True,         
+        debug=False, 
+        # redundant arguments?
+        rasterized=True, tropics=False, 
+        ):
     """ 
     Create plot of vertical data for sonde observations/model 
+
+
+    Parameters
+    -------
+    hPa_labels (boolean): include labels for hPa on axis?
+    plt_txt_x, plt_txt_y (float): ordinal locations for alt text
+    ancillary (boolean): add ancillary labels etc. to plot
+    label (str): label to use for line / legend. 
+    c_off (int): index to plot model levels too (e.g. 37 for trop. )
+    xlimit (float): value to limit x axis to (e.g. 100 ppbv)
+    c_l (list):colors to use (index by n )
+    uints (str): units to use for axis labels
+    obs (boolean): overide plot settings with those for observations.
+    err_bar (boolean): apply bar to show quartile range of plots
+    stddev (boolean): as above (see err_bar)
+    color (str/color instance): color for plotted line
+    f_size (float): fontsise    
+    tropics (boolean): mask for tropics?
+    title (str): title for plot
+    subtitle (str): subtitle for plot (e.g. location)
+    n (int): number of plot within window plot figure
+    fig (figure instance): fig. to use
+    ax (axis instance): axis to use
+    ylabel, xlabel (boolean): include axis labels for plot?
+
+
+    Returns
+    -------
+
+    Notes
+    -----
+     -  should be re-written (age >3 years) to work with updated AC_tools    
     """
 
     # Get overall vars
@@ -868,44 +1254,7 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, tropics=False, \
                 ax.tick_params( axis='y', which='both', labelleft='off')
                 ax2.tick_params( axis='y', which='both', labelleft='off')      
 
-# --------------
-# 1.12 - plot up monthly from data provided from DB netCDF
-# -------------
-def obs_month_plot(data, color=None, title=None, rtn_data=False, plt_day=True, debug=False):
-    """ 
-    Plot up seaonal (monthly ) data. Requires data, and dates in numpy 
-    array form. Dates must be as datetime.datetime objects. 
 
-    NOTES:
-     - REDUNDENT? (see 1.13) 
-    """
-
-    # Setup decimal day list
-    day_time= [i+float(1/23) for i in range(23) ]
-    if debug:
-        print data.shape
-        print day_time
-
-    # Plot up all data <= this is inefficient. 
-	if plt_day:
-	    for i in range( len( data[0,:] ) ) :
-	    	day_d = data[:,i]  # select day's data and convert to -1
-        	plt.plot(day_time , day_d , alpha=0.1, color=color)
-
-    # Return data?
-	if rtn_data:
-		if debug:
-			print 'rtn_data'
-#		day_time, 
-		data_ = np.ma.mean(data[:,:],axis=1)
-		return day_time, data_
-    # Plot up daily decimal days
-	else :
-		if debug:
-			print ' not - rtn_data'
-		plt.plot( day_time, np.ma.mean(data[:,:],axis=1) , lw=3 , color=color, \
-		     label=title)
-		return plt
 
 # --------------
 # 1.13 - plot up monthly from data provided from DB netCDF
@@ -4603,4 +4952,111 @@ def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
 
     if r_avgs:
         return avgs 
+
+# --------   
+# X.XX - Lat plot
+# --------
+def lat_plot(fig, ax, arr, title=None, f_size=10, units='ppbv', \
+        scale='linear', debug=False ):
+    """ 
+    Creates a latitude plot on given figure and axis 
+    """
+
+    NIU, lat, NIU = get_latlonalt4res( res=res )
+    del NIU
+    plt.plot( lat, arr )
+    plt.ylabel(units)
+    plt.xlabel('Latitude' )
+    if (title != None):
+        plt.title(title)
+    ax.set_yscale(scale)
+    parallels = np.arange(-90,91,15)
+    plt.xticks( parallels, fontsize = f_size ) # draw parrelel lines
+    plt.rcParams.update({'font.size': f_size})
     
+    
+# --------   
+# X.XX - Diurnal boxplot
+# --------
+def diurnal_boxplot(fig, ax,  dates, data, pos=1, posn =1,  bin_size=2/24.,\
+        widths=0.01, white_fill=True, alpha=0.1, linewidth=0.5, \
+        showmeans=False, title=None, f_size=10, units='ppbv', \
+        scale='linear', debug=False ):
+    """ 
+    Creates a diurnal plot of boxplots (hourly) for given data and dates. 
+    NOTES:
+     - Data and dates must be in numpy array form. 
+     - Dates must also be datetime.datetime objects 
+    """
+
+    # Convert datetime to fractional day <= set this to map on array at once?
+    dates = np.array( [ get_day_fraction(i) for i in dates ] )
+
+    # bin data
+    binned, bins_used, b_all = avg_n_bin_y_by_x(data, dates, bin_size, \
+        binned_data=True, debug=debug)
+
+    # Generate positions
+    positions=[ i+(bin_size*.75/posn)+( (bin_size*.75/posn)*float(pos)) \
+        for i in bins_used ]
+
+    # Plot
+    bp = ax.boxplot( b_all,  positions=positions, widths=widths, \
+        showmeans=showmeans, patch_artist=True )
+    set_bp( bp, pos, white_fill=white_fill, c_list=color_list(posn) )
+
+    # Beautify 
+    ax.set_xticklabels( np.arange(0,24,bin_size*24 )[::2]  )
+    plt.xticks( np.arange(0,1,bin_size )[::2] )
+    plt.xlim(-0.05, 1.05)
+    plt.ylabel(units)
+    if (title != None):
+        plt.title(title)
+    plt.xlabel('Hour of day')
+    plt.ylabel('{}'.format(units))
+    ax.xaxis.grid(True, which='major')
+    ax.xaxis.grid(True, which='minor') 
+
+    # --- Highlight bins        
+    bs = np.arange(0, 24, bin_size )#[ bs[0] - bin_size ] + bs 
+    [ plt.axvline( x=i, color='k', linewidth=linewidth, alpha=alpha, \
+         linestyle='dashed' ) for i in bs ]
+
+# --------------
+# X.XX - plot up monthly from data provided from DB netCDF
+# -------------
+def obs_month_plot(data, color=None, title=None, rtn_data=False, plt_day=True, debug=False):
+    """ 
+    Plot up seaonal (monthly ) data. Requires data, and dates in numpy 
+    array form. Dates must be as datetime.datetime objects. 
+
+    NOTES:
+     - REDUNDENT? (see 1.13) 
+    """
+
+    # Setup decimal day list
+    day_time= [i+float(1/23) for i in range(23) ]
+    if debug:
+        print data.shape
+        print day_time
+
+    # Plot up all data <= this is inefficient. 
+	if plt_day:
+	    for i in range( len( data[0,:] ) ) :
+	    	day_d = data[:,i]  # select day's data and convert to -1
+        	plt.plot(day_time , day_d , alpha=0.1, color=color)
+
+    # Return data?
+	if rtn_data:
+		if debug:
+			print 'rtn_data'
+#		day_time, 
+		data_ = np.ma.mean(data[:,:],axis=1)
+		return day_time, data_
+    # Plot up daily decimal days
+	else :
+		if debug:
+			print ' not - rtn_data'
+		plt.plot( day_time, np.ma.mean(data[:,:],axis=1) , lw=3 , color=color, \
+		     label=title)
+		return plt    

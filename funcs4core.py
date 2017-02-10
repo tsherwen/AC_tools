@@ -20,6 +20,7 @@ import logging
 import os
 
 from math import log10, floor
+import math
 
 # --------------                                                                                              
 # 1.01 - Store of dirs for earth0, atmosviz1, and tms mac                                                     
@@ -613,11 +614,18 @@ def get_sigfig( x, p=3 ):
     """
     Return a number with only the significant figures required.
 
-    Inputs:
-    x: A number
-    sig_figs: The number of sig figs you want returned. Default=3
-    Output:
+    Parameters
+    -------
+    x (float): number to convert 
+    p (int): The number of sig figs you want returned. Default=3
+
+    Returns
+    -------
     number with only significant figures.
+    
+    Notes
+    -----    
+     - Is this function outdated by get_scientific_number()?
     """
 
 #####################
@@ -685,6 +693,72 @@ def get_sigfig( x, p=3 ):
 #    output round(x, -int(floor(log10(abs(x)))))
 #    return output
 
+
+def get_scientific_number( number, precision, string=False ): 
+    """
+    Gets a number in scientific notation with a given precision.
+    Returns a rounded number by default, or can be returned as a string
+    Recomended for plotting.
+    Inputs:
+    number (float) (number you want to change)
+    precision (Integer) (How many significant figures you want)
+    String = True (Boolian) Do you want the output returned as a string?
+    Output: float(default) OR string(if string==True)
+    """
+    number = float(number)
+    # Special case for 0 
+    if number == 0.:
+        if not string:
+            return float("0." + "0"*(precision-1))
+        else:
+            return ("0." + "0"*(precision-1))
+
+    # If negative prepend with - and use the absolute
+    if number < 0:
+        sign = "-"
+#        precision = precision-1
+        number = -number
+    else:
+        sign = ""
+
+    # Get the exponent
+    exponent = int(math.log10(number))
+    mantisa = number / math.pow(10, exponent)
+
+    # Fix for leading_zeroes
+    if mantisa < 1:
+        mantisa = mantisa * 10
+        exponent = exponent - 1
+ 
+     
+#    if exponent < 0:                                 
+#        precision = precision+1                      
+    # Get only the sigfigs from the mantisa          
+    mantisa = round(mantisa, precision)              
+                                                     
+    # Fix for leading 10                             
+    if mantisa >= 10:                                
+        print "hello from 10"                        
+        mantisa = mantisa/10.0                       
+        exponent = exponent+1                        
+                                                     
+    # Fix for mantisa=1                              
+    if mantisa == 1.0:                               
+        print "mantisa = 1.0"                        
+        mantisa = "1." + "0"*(precision-1)           
+                                                   
+
+                                                                                
+    # Create the string for the result.                                         
+    out = sign + str(mantisa) 
+    if not exponent==0:
+        out = out + 'E' + str(exponent)                             
+                                                                                
+    # Return the result as a float unless asking for a string.                  
+    if not string:                                                              
+        return float(out)                                                       
+    else:                      
+	    return out
 
         
 # --------------------------------------------------------------------------
