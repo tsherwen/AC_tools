@@ -2222,118 +2222,6 @@ def plot_specs_poles_change_monthly2pdf(  specs=None,\
         plot2pdfmulti( pdff, savetitle, close=True, dpi=dpi,\
                        no_dstr=no_dstr )
 
-# --------
-# 1.24 - Coupler to select plot type 
-# --------
-def create_plot4case( fig, ax, dates, data, spec, f_size=20, lw=None, ls=None, \
-        loc=True, legend=True, units='', boxplot=False, lname='Weyborne', \
-        run_name='run', start_month=7, end_month=7, plot_type='daily', \
-        case=None, l_dict=None, label=None, alt_text=None, color=None): 
-    """ 
-    Coupler for timeseries data (dates as datetimes + data) to be 
-            converted multiple graph forms with just change of case    
-    """
-
-    # --- select frequency
-    # select case
-    if isinstance(case, type(None) ):
-        case ={  
-        'diurnal': 1, 'daily': 1, 'monthly':2,'weekly': 3,  \
-        'May-Sept':4, 'July' : 5, 'Month': 5, 
-        'PDF':6
-        }[plot_type]
-
-    # --- select labels
-    # 'Build' latex run name dictionary is not given. 
-    if isinstance( l_dict, type(None) ):
-        l_dict= GC_var('latex_run_names')
-
-    # create label from dictionary if not provided
-    if isinstance( label, type(None) ):
-        label= l_dict[ run_name ]
-
-    # --- select line plot details. 
-    # set linewidth +linestyle default if not given
-    if isinstance( lw, type(None) ):
-        lw=1
-    if isinstance( ls, type(None) ):
-        ls='-'
-
-    # --- plot requested timeseries
-    if case == 1:
-        timeseries_daily_plot( fig, ax, dates, data, f_size=f_size,
-            title=latex_spec_name(spec), color=color ) 
-
-    if case == 2:
-        timeseries_seasonal_plot( ax, dates, data,  \
-            label=label, ylabel=units, color=color, \
-            title=latex_spec_name(spec), \
-            ls=ls, lw=lw, loc=loc, legend=legend, f_size=f_size)
-
-    if case == 4:
-        timeseries_by_day_plot( ax, dates, data,  \
-            label=label, ylabel=units, color=color, \
-            title=latex_spec_name(spec), boxplot=boxplot, \
-            ls=ls, lw=lw, loc=loc, legend=legend, f_size=f_size)
-
-    if case == 5:
-        timeseries_month_plot( ax, dates, data,  \
-            label=label, ylabel=units, color=color, alt_text=alt_text, \
-            start_month=start_month, end_month=end_month, \
-            title=latex_spec_name(spec)+' @ '+lname, boxplot=boxplot, \
-            ls=ls, lw=lw, loc=loc, legend=legend, f_size=f_size)
-
-    if case == 6:
-        PDF_obs_vs_mod( ax, dates, data, \
-            label=label, ylabel=units, color=color, \
-            start_month=start_month, end_month=end_month, \
-            title=latex_spec_name(spec)+' @ '+lname, alt_text=alt_text,  \
-            ls=ls, lw=lw, loc=loc, legend=legend, f_size=f_size)
-
-
-# --------
-# 1.25 - Probability distribution plotter
-# --------
-def PDF_obs_vs_mod( ax, dates, data, f_size=20, pos=0, posn=1,  \
-        title=None, legend=False, everyother=7*24,  x_nticks=12, \
-        window=False, label=None, ylabel=None, loc='upper left',  \
-        lw=1,ls='-', color=None, start_month=1, end_month=12, 
-        unitrotation=45, alpha=.5, bins=100, alt_text=None, debug=False ):
-    """
-    Constructs a PDF plot with given dates and data.
-
-    NOTES:
-     - If not provided with axis etc, then these are made.
-     - data and dates need to be as a np.array, with dates as datetime.datetim objects
-    """
-
-    # Process data - reduce resolution to daily, and get std
-    df = DataFrame(data={'data':data},index=dates )
-
-    # remove dates outside of range (start_month > < end_month )
-    def get_month(x):
-         return x.month
-    df[ 'month'] = df.index.map( get_month ) 
-    df = df[ df['month']<=end_month ]
-    df = df[ df['month']>=start_month ]
-    df = DataFrame(data={'data':df['data']}, index=df.index )
-
-    # plot up PDF 
-    plt.hist( df.values, label=label+' (n={})'.format( len(data) ), 
-        histtype='stepfilled', color=color, alpha=alpha, bins=bins )
-
-    # Beatify plot
-    if not isinstance( title, type(None) ):
-        plt.title( title + ' for {}-{}'.format( num2month(start_month),\
-            num2month(end_month))  )
-    if not isinstance( alt_text, type(None) ):
-        plt.figtext(x=0.05,y=0.85, s=alt_text, fontsize=f_size*.75)
-
-    if not isinstance( ylabel, type(None) ):
-        plt.ylabel( ylabel )
-    if legend:
-        plt.legend()
-
 
 # --------
 # 1.26 - Generic X vs. Y plot
@@ -2451,7 +2339,7 @@ def scatter_3D_cube( data, dims=None, res='2x2.5', fig=None, everyother=1, inter
     ax.set_zlim(  alt[0], alt[-1] )
 
 # --------
-# 1.28 - Plot up seasonal output from 4D arr (lon, lat, alt, time)
+# X.XX - Plot up seasonal output from 4D arr (lon, lat, alt, time)
 # --------
 def get_seasonal_plot( arr, fixcb=None, fig=None, f_size=15, \
         case='linear', format=None, extend='neither', units=None, \
@@ -2498,13 +2386,21 @@ def get_seasonal_plot( arr, fixcb=None, fig=None, f_size=15, \
         right=right,hspace=hspace, wspace=wspace)
 
 # -------------
-# 1.29 - box X-Y plot with histograms
+# X.XX - box X-Y plot with histograms
 # -------------
 def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
         left= 0.1, width=0.60, bottom=0.1, height=0.60, widthII=0.2, \
         fit = 0.02, binwidth=0.1, cmap=plt.cm.gnuplot2, \
         X_title='X title', Y_title='Y title', f_size=5 , line121=False ):
-    """ Plots a X vs. Y histogram """
+    """ 
+    Plots a X vs. Y histogram 
+    NOTES
+    --- 
+    Just use pandas for this or seaborn
+     - http://seaborn.pydata.org/generated/seaborn.distplot.html
+     - http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.hist.html
+    
+    """
 
     # Use hist code 
     nullfmt = mpl.ticker.NullFormatter()         # no labels
@@ -3006,6 +2902,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right,     
                                         hspace=hspace, wspace=wspace)
 
+
     # Show/Save as PDF?
     if pdf:
         plot2pdf( title=pdftitle )    
@@ -3156,7 +3053,7 @@ def plot_arr_avg_Q1_Q3( X, Y, ax=None, color='blue', label=None, \
 
     # Plot up mean of Y values
     if plt_mean:
-        ln = plt.plot( X, Y.mean(axis=0), color=color, label=label )
+        ax = plt.plot( X, Y.mean(axis=0), color=color, label=label )
 
     # Show quartiles ( 25th 57th  )    
     Y_nan = Y.filled( np.nan )
@@ -3164,11 +3061,11 @@ def plot_arr_avg_Q1_Q3( X, Y, ax=None, color='blue', label=None, \
     high = np.nanpercentile( Y_nan, pcent2, axis=0 )
     ax.fill_between( X, low, high, alpha=0.2, color=color   )
     if plt_median:
-        ln = plt.plot( X, np.nanpercentile( Y_nan, 50, axis=0 ), \
+        ax = plt.plot( X, np.nanpercentile( Y_nan, 50, axis=0 ), \
             color=color, label=label )
 
-    # return plot object
-    return ln
+    # return axis object
+    return ax
 
 # --------------
 # 1.35 - Timeseries plotter ( takes datetime + np.array )
@@ -3615,55 +3512,11 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
 # -------------- Plotting Ancillaries 
 #
 
-# --------------                                                                                                                                             
-# 4.01 -  Get percentiles
-# ------------- 
-def percentile(N, percent, key=lambda x:x):
-    """
-    Find the percentile of a list of values.
 
-    @parameter N - is a list of values. Note N MUST BE already sorted.
-    @parameter percent - a float value from 0.0 to 1.0.
-    @parameter key - optional key function to compute value from each element of N.
 
-    @return - the percentile of the values
-    NOTES:
-     - Credit: {{{ http://code.activestate.com/recipes/511478/ (r1)
-    """
-    if not N:
-        return None
-    k = (len(N)-1) * percent
-    f = math.floor(k)
-    c = math.ceil(k)
-    if f == c:
-        return key(N[int(k)])
-    d0 = key(N[int(f)]) * (c-k)
-    d1 = key(N[int(c)]) * (k-f)
-    return d0+d1
-
-# --------------                                                                                                                                             
-# 4.02 - moving average
-# ------------- 
-def moving_average(x, n, type='simple'):
-    """   
-    compute an n period moving average.
-    NOTE:
-     - type is 'simple' | 'exponential' 
-    """ 
-    x = np.asarray(x)
-    if type=='simple':
-        weights = np.ones(n)
-    else:
-        weights = np.exp(np.linspace(-1., 0., n))
-
-    weights /= weights.sum()
-
-    a =  np.convolve(x, weights, mode='full')[:len(x)]
-    a[:n] = a[n]
-    return a
 
 # -------------
-# 4.03 -  color list for rainbow plots
+# X.XX -  color list for rainbow plots
 # -------------
 def color_list(length, cb='gist_rainbow' ):
     """ 
@@ -3673,40 +3526,10 @@ def color_list(length, cb='gist_rainbow' ):
     color = [cm(1.*i/length) for i in range(length)]
     return color
 
-# -------------
-# 4.04 - weighted average
-# -------------
-def weighted_average( data, interval , bins_used=False, debug=False):
-    """ 
-    Calculate a weighed average of data fro a given interval 
-    """
-
-    min_v, max_v = int( data.min() ), int( data.max() ) 
-    bins = np.arange(min_v, max_v, interval)
-    if debug:
-        print [ (i, type(i) ) for i in [ min_v, max_v, bins ] ]
-    int_d = np.int_(data)
-    binned, bins_used  = [], []
-    for bin_ in bins:
-        b_mean = np.mean( data[np.where( int_d == bin_ )] )
-        if ( b_mean != 0 ):            
-            binned.append( b_mean )
-            bins_used.append( bin_ ) 
-        else: 
-            print 'no data for bin {}'.format(bin_)
-            pass
-    if debug:
-        print [ ( i, len(i) ) for i in [binned , bins] ]
-    if (bins_used):
-        return binned, bins_used
-    else:
-        return binned
 
 # -------------
-# 4.05 - R squared - credit: Software carpentry
+# X.XX - R squared - credit: Software carpentry
 # -------------
-#def r_squared(actual, ideal):
-
 def r_squared(x, y): 
     """ 
     Return R^2 where x and y are array-like.
@@ -3722,7 +3545,7 @@ def r_squared(x, y):
     return r_value**2
 
 # -------------
-# 4.06 - setup box plots
+# X.XX - setup box plots
 # -------------
 def set_bp( bp, num, c_list=['k', 'red'], white_fill=True, set_all=True,
         median_color='white', linewidth=2, debug=False ):
@@ -3744,7 +3567,7 @@ def set_bp( bp, num, c_list=['k', 'red'], white_fill=True, set_all=True,
         setp(bp['medians'][:], color=median_color, linewidth=linewidth)                        
 
 # -------------
-# 4.07 - Get all marker types
+# X.XX - Get all marker types
 # -------------
 def markers_list( rm_plain_markers=False ):
     """ 
@@ -3765,7 +3588,7 @@ def markers_list( rm_plain_markers=False ):
     return markers
 
 # -------------
-# 4.08- box X-Y plot with histograms
+# X.XX linear trendline calculator for X-Y plot (with histograms)
 # -------------
 def Trendline( ax, X, Y, order =1, intervals= 700, f_size=20, 
             color='blue', lw=1, debug=False ):
@@ -3791,7 +3614,7 @@ def Trendline( ax, X, Y, order =1, intervals= 700, f_size=20,
     ax.legend()
 
 # -------------
-# 4.09 - plot_gc_bin_bands - plot up Fast-J  bins  ( 7 longest nm bins)
+# X.XX - plot_gc_bin_bands - plot up Fast-J  bins  ( 7 longest nm bins)
 # -------------   
 def plot_gc_bin_bands(facecolor='#B0C4DE'):
     """ 
@@ -3803,7 +3626,7 @@ def plot_gc_bin_bands(facecolor='#B0C4DE'):
         alpha=alphas[n]) for n in range(len(vars[0])) ]
 
 # --------------
-# 4.10 - line styles 
+# X.XX - line styles 
 # -------------       
 def get_ls(num):
     """ 
@@ -3814,7 +3637,7 @@ def get_ls(num):
     return ls[:num]
                         
 # --------   
-# 4.21 - takes time in troposphere diagnostic array (46, 47) overlayes 
+# X.XX - takes time in troposphere diagnostic array (46, 47) overlayes 
 # --------
 def greyoutstrat( fig,  arr, axn=[1,1,1], ax=None, cmap=plt.cm.bone_r, \
         res='4x5', rasterized=True, debug=False):
@@ -3822,9 +3645,8 @@ def greyoutstrat( fig,  arr, axn=[1,1,1], ax=None, cmap=plt.cm.bone_r, \
     Grey out stratosphere in existing zonal plot. 
     
     NOTES:
-     - This is used to highlight 
-        tropospherically focused work. This function requires the array of "time 
-        in the troposphere" diagnostic (lon,lat, alt) 
+     - This is used to highlight tropospherically focused work. This function 
+     requires the array of "time in the troposphere" diagnostic (lon,lat, alt) 
     """
     # Get overall vars
     lon, lat, alt = get_latlonalt4res( res=res )
@@ -3840,7 +3662,7 @@ def greyoutstrat( fig,  arr, axn=[1,1,1], ax=None, cmap=plt.cm.bone_r, \
         plt.gcf().set_rasterized(True)    
 
 # --------   
-# 4.22 - adjust subplots
+# X.XX - adjust subplots
 # --------
 def adjust_subplots( fig, left=None, bottom=None, right=None, top=None, \
         wspace=None, hspace=None ):
@@ -3868,10 +3690,10 @@ def adjust_subplots( fig, left=None, bottom=None, right=None, top=None, \
     # Adjust subplots
     fig.subplots_adjust(left=left, bottom=bottom, right=right, top=top, \
         wspace=wspace, hspace=hspace)
-
+        
 
 # ----
-# 4.24 - setup diunal
+# X.XX - setup diunal
 # ----
 def setup_diurnal(years, months, f_size=20):
     """ 
@@ -3888,8 +3710,9 @@ def setup_diurnal(years, months, f_size=20):
     plt.xlim(4, 21)
     plt.rcParams.update({'font.size': f_size})
 
+
 # -------------
-# 4.27 -  print NCAS & York logos in the bottom corners
+# X.XX -  print NCAS & York logos in the bottom corners
 # -------------
 def add_logos_NCAS_york_bottom(fig):
     """ 
@@ -3946,8 +3769,8 @@ def mask_not_obs( loc='Denmark', res='4x5', debug=False ):
 # --------------
 # 4.30 - Annotate grid 
 # -------------
-def annotate_gc_grid(ax, res='4x5', f_size=6.5, loc_list=[ [-9999,-9999] ],
-                                        everyother=1 , label_gc_grid=True):
+def annotate_gc_grid(ax, res='4x5', f_size=6.5, \
+        loc_list=[ [-9999,-9999] ], everyother=1, label_gc_grid=True):
     """ 
     Annotate grid with GEOS-Chem indices 
     """
@@ -4537,13 +4360,9 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     # in both min and max have absolute values less than 0, then sig figs +1
     # Find the amount of significant figures needed to show a difference
     # between vmin and vmax.
-
-
     if vmin==vmax:
         logging.error("There is no difference between vmin and vmax!")
         raise ValueError, "There is no difference between the min and max of the data"
-
-
     try:
         if ( ( abs( int( vmin)) == 0) and (abs( int( vmax)) == 0) ):
             sigfig_rounding_on_cb += 1
@@ -4552,7 +4371,6 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     except np.ma.core.MaskError:
         print 'Gotcha: numpy.ma.core.MaskError'
         print lvls, vmin, vmax
-
 
 
 #    # bjn updated sigfig finder
@@ -4564,10 +4382,6 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
 #        sig_figs_needed = int(np.ceil(abs(np.log10( log_diff ))))
 #
 #    sigfig_rounding_on_cb_ticks = sig_figs_needed
-
-
-
-
             
     # significant figure ( sig. fig. ) rounding func.
     round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
@@ -4657,7 +4471,6 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
 #            if i == '0.0':
 #                lvls[n] = 0.0
 
-
 #    if debug:
 #        print 3, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
 #    print [(i, type(i)) for i in vmin, vmax ], lvls
@@ -4708,106 +4521,7 @@ def mk_discrete_cmap( lvls=None, cmap=None, arr=None,\
 
     return cmap, norm
 
-# -------------
-# 4.99 - Input for plotting  
-# -------------
-def get_input_vars(debug=False):
-    """ 
-    Get input from command line arguments 
-    
-    Parameters
-    ----------
-    debug (boolean): legacy debug option, replaced by python logging
 
-    Returns
-    -------
-    (list): spec(str), filename(str), category(str), start date(tuple), 
-    end date  (tuple)
-    """
-    # If working directory (wd) provided, use command line arguments
-    try:
-        wd = sys.argv[1]
-        print '$>'*5, sys.argv
-
-    # else prompt for input settings
-    except:
-        wd = raw_input("ctm.bpch dir: ")
-        spec = raw_input("species (default = O3): ")
-        if (len(spec) < 1):
-            spec = 'O3'
-        fn = raw_input("ctm.bpch name (default = ctm.bpch): ")
-        if (len(fn) < 1):
-            fn = 'ctm.bpch'
-        cat_ = raw_input("Category (default = 'IJ-AVG-$'): ")
-        if (len(cat_) < 1):
-            cat_ = "IJ-AVG-$"
-        start = raw_input("Enter start time as 'YYYY,MM,DD' (default = all): ")
-        if (len(list(start)) < 1):
-            start = None
-        else:
-            start = datetime.datetime( *tuple( map( int, start.split('-')) ) )
-        end = raw_input("Enter end time as 'YYYY,MM,DD' (default = all): ")
-        if (len(end) < 1):
-            end = None
-        else:
-            end = datetime.datetime( *tuple( map( int, end.split('-')) ) )            
-        print wd, fn, cat_, spec, start, end
-
-    # Has species file name been provided? ( e.g.  "O3" )
-    try:
-        spec = sys.argv[2]
-    except:
-        try:
-            spec
-        except:
-            spec = 'O3'
-
-    # Has ctm.bpch file name been provided? ( e.g.  "ctm.bpch" )
-    try:
-        fn = sys.argv[3]
-    except:
-        try:
-            fn
-        except:
-            fn = 'ctm.bpch'
-
-    # Has category been provided? ( e.g.  "IJ-AVG-$" )
-    try:
-        cat_ = sys.argv[4]
-    except:
-        try:
-            cat_
-        except:
-            cat_ = "IJ-AVG-$"
-
-    # Has start date been provided? ( in form "YYYY, MM, DD" )
-    try:  
-        print sys.argv[5].split('-')
-        start = datetime.datetime( *tuple( map( int, sys.argv[5].split('-')) ) )
-    except:
-        try:
-            start
-        except:
-            start = None
-
-    # Has end date been provided? ( in form "YYYY, MM, DD" )
-    try:  
-        print sys.argv[6].split('-')
-        end = datetime.datetime( *tuple( map( int, sys.argv[6].split('-')) ) )
-    except:
-        try:
-            end
-        except:
-            end = None
-
-    if debug:
-        print '$>'*5, wd, fn, cat_, spec, start, end
-
-    # if final character not '/' add this
-    if wd[-1]  != '/':
-        wd += '/'
-
-    return wd, fn, cat_, spec, start, end
 
 def show_plot():
     """
@@ -4815,6 +4529,7 @@ def show_plot():
     """
     plt.show()
     return
+
 
 def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=True):
     """
@@ -5060,3 +4775,311 @@ def obs_month_plot(data, color=None, title=None, rtn_data=False, plt_day=True, d
 		plt.plot( day_time, np.ma.mean(data[:,:],axis=1) , lw=3 , color=color, \
 		     label=title)
 		return plt    
+
+
+# -------------
+# 4.99 - Input for plotting  
+# -------------
+def get_input_vars(debug=False):
+    """ 
+    Get input from command line arguments 
+    
+    Parameters
+    ----------
+    debug (boolean): legacy debug option, replaced by python logging
+
+    Returns
+    -------
+    (list): spec(str), filename(str), category(str), start date(tuple), 
+    end date  (tuple)
+    """
+    # If working directory (wd) provided, use command line arguments
+    try:
+        wd = sys.argv[1]
+        print '$>'*5, sys.argv
+
+    # else prompt for input settings
+    except:
+        wd = raw_input("ctm.bpch dir: ")
+        spec = raw_input("species (default = O3): ")
+        if (len(spec) < 1):
+            spec = 'O3'
+        fn = raw_input("ctm.bpch name (default = ctm.bpch): ")
+        if (len(fn) < 1):
+            fn = 'ctm.bpch'
+        cat_ = raw_input("Category (default = 'IJ-AVG-$'): ")
+        if (len(cat_) < 1):
+            cat_ = "IJ-AVG-$"
+        start = raw_input("Enter start time as 'YYYY,MM,DD' (default = all): ")
+        if (len(list(start)) < 1):
+            start = None
+        else:
+            start = datetime.datetime( *tuple( map( int, start.split('-')) ) )
+        end = raw_input("Enter end time as 'YYYY,MM,DD' (default = all): ")
+        if (len(end) < 1):
+            end = None
+        else:
+            end = datetime.datetime( *tuple( map( int, end.split('-')) ) )            
+        print wd, fn, cat_, spec, start, end
+
+    # Has species file name been provided? ( e.g.  "O3" )
+    try:
+        spec = sys.argv[2]
+    except:
+        try:
+            spec
+        except:
+            spec = 'O3'
+
+    # Has ctm.bpch file name been provided? ( e.g.  "ctm.bpch" )
+    try:
+        fn = sys.argv[3]
+    except:
+        try:
+            fn
+        except:
+            fn = 'ctm.bpch'
+
+    # Has category been provided? ( e.g.  "IJ-AVG-$" )
+    try:
+        cat_ = sys.argv[4]
+    except:
+        try:
+            cat_
+        except:
+            cat_ = "IJ-AVG-$"
+
+    # Has start date been provided? ( in form "YYYY, MM, DD" )
+    try:  
+        print sys.argv[5].split('-')
+        start = datetime.datetime( *tuple( map( int, sys.argv[5].split('-')) ) )
+    except:
+        try:
+            start
+        except:
+            start = None
+
+    # Has end date been provided? ( in form "YYYY, MM, DD" )
+    try:  
+        print sys.argv[6].split('-')
+        end = datetime.datetime( *tuple( map( int, sys.argv[6].split('-')) ) )
+    except:
+        try:
+            end
+        except:
+            end = None
+
+    if debug:
+        print '$>'*5, wd, fn, cat_, spec, start, end
+
+    # if final character not '/' add this
+    if wd[-1]  != '/':
+        wd += '/'
+
+    return wd, fn, cat_, spec, start, end
+
+
+# -------------
+# X.XX - weighted average
+# -------------
+def weighted_average( data, interval , bins_used=False, debug=False):
+    """ 
+    Calculate a weighed average of data fro a given interval 
+    
+    NOTES just use pandas.cut! 
+    docs: http://pandas-docs.github.io/pandas-docs-travis/generated/pandas.cut.html
+
+
+    """
+
+    min_v, max_v = int( data.min() ), int( data.max() ) 
+    bins = np.arange(min_v, max_v, interval)
+    if debug:
+        print [ (i, type(i) ) for i in [ min_v, max_v, bins ] ]
+    int_d = np.int_(data)
+    binned, bins_used  = [], []
+    for bin_ in bins:
+        b_mean = np.mean( data[np.where( int_d == bin_ )] )
+        if ( b_mean != 0 ):            
+            binned.append( b_mean )
+            bins_used.append( bin_ ) 
+        else: 
+            print 'no data for bin {}'.format(bin_)
+            pass
+    if debug:
+        print [ ( i, len(i) ) for i in [binned , bins] ]
+    if (bins_used):
+        return binned, bins_used
+    else:
+        return binned
+
+
+# --------------                                                                                                                                             
+# X.XX - moving average
+# ------------- 
+def moving_average(x, n, type='simple'):
+    """   
+    compute an n period moving average.
+
+    NOTE:
+     - type is 'simple' | 'exponential' 
+     - Just use pandas for this? 
+    (http://pandas.pydata.org/pandas-docs/version/0.17.0/generated/pandas.rolling_mean.html)
+    """ 
+    x = np.asarray(x)
+    if type=='simple':
+        weights = np.ones(n)
+    else:
+        weights = np.exp(np.linspace(-1., 0., n))
+
+    weights /= weights.sum()
+
+    a =  np.convolve(x, weights, mode='full')[:len(x)]
+    a[:n] = a[n]
+    return a
+
+# --------------                                                                                                                                             
+# X.XX -  Get percentiles
+# ------------- 
+def percentile(N, percent, key=lambda x:x):
+    """
+    Find the percentile of a list of values.
+
+    @parameter N - is a list of values. Note N MUST BE already sorted.
+    @parameter percent - a float value from 0.0 to 1.0.
+    @parameter key - optional key function to compute value from each element of N.
+
+    @return - the percentile of the values
+    NOTES:
+     - Credit: {{{ http://code.activestate.com/recipes/511478/ (r1)
+
+    NOTES
+    ---- 
+    Just use numpy percentile function or pandas .describe() function?
+    
+    """
+    if not N:
+        return None
+    k = (len(N)-1) * percent
+    f = math.floor(k)
+    c = math.ceil(k)
+    if f == c:
+        return key(N[int(k)])
+    d0 = key(N[int(f)]) * (c-k)
+    d1 = key(N[int(c)]) * (k-f)
+    return d0+d1
+    
+# --------
+# X.XX - Coupler to select plot type 
+# --------
+def create_plot4case( fig, ax, dates, data, spec, f_size=20, lw=None, ls=None, \
+        loc=True, legend=True, units='', boxplot=False, lname='Weyborne', \
+        run_name='run', start_month=7, end_month=7, plot_type='daily', \
+        case=None, l_dict=None, label=None, alt_text=None, color=None): 
+    """ 
+    Coupler for timeseries data (dates as datetimes + data) to be 
+            converted multiple graph forms with just change of case    
+    """
+
+    # --- select frequency
+    # select case
+    if isinstance(case, type(None) ):
+        case ={  
+        'diurnal': 1, 'daily': 1, 'monthly':2,'weekly': 3,  \
+        'May-Sept':4, 'July' : 5, 'Month': 5, 
+        'PDF':6
+        }[plot_type]
+
+    # --- select labels
+    # 'Build' latex run name dictionary is not given. 
+    if isinstance( l_dict, type(None) ):
+        l_dict= GC_var('latex_run_names')
+
+    # create label from dictionary if not provided
+    if isinstance( label, type(None) ):
+        label= l_dict[ run_name ]
+
+    # --- select line plot details. 
+    # set linewidth +linestyle default if not given
+    if isinstance( lw, type(None) ):
+        lw=1
+    if isinstance( ls, type(None) ):
+        ls='-'
+
+    # --- plot requested timeseries
+    if case == 1:
+        timeseries_daily_plot( fig, ax, dates, data, f_size=f_size,
+            title=latex_spec_name(spec), color=color ) 
+
+    if case == 2:
+        timeseries_seasonal_plot( ax, dates, data,  \
+            label=label, ylabel=units, color=color, \
+            title=latex_spec_name(spec), \
+            ls=ls, lw=lw, loc=loc, legend=legend, f_size=f_size)
+
+    if case == 4:
+        timeseries_by_day_plot( ax, dates, data,  \
+            label=label, ylabel=units, color=color, \
+            title=latex_spec_name(spec), boxplot=boxplot, \
+            ls=ls, lw=lw, loc=loc, legend=legend, f_size=f_size)
+
+    if case == 5:
+        timeseries_month_plot( ax, dates, data,  \
+            label=label, ylabel=units, color=color, alt_text=alt_text, \
+            start_month=start_month, end_month=end_month, \
+            title=latex_spec_name(spec)+' @ '+lname, boxplot=boxplot, \
+            ls=ls, lw=lw, loc=loc, legend=legend, f_size=f_size)
+
+    if case == 6:
+        PDF_obs_vs_mod( ax, dates, data, \
+            label=label, ylabel=units, color=color, \
+            start_month=start_month, end_month=end_month, \
+            title=latex_spec_name(spec)+' @ '+lname, alt_text=alt_text,  \
+            ls=ls, lw=lw, loc=loc, legend=legend, f_size=f_size)
+
+
+# --------
+# X.XX - Probability distribution plotter
+# --------
+def PDF_obs_vs_mod( ax, dates, data, f_size=20, pos=0, posn=1,  \
+        title=None, legend=False, everyother=7*24,  x_nticks=12, \
+        window=False, label=None, ylabel=None, loc='upper left',  \
+        lw=1,ls='-', color=None, start_month=1, end_month=12, 
+        unitrotation=45, alpha=.5, bins=100, alt_text=None, debug=False ):
+    """
+    Constructs a PDF plot with given dates and data.
+
+    NOTES:
+     - If not provided with axis etc, then these are made.
+     - data and dates need to be as a np.array, with dates as datetime.datetim objects
+    """
+
+    # Process data - reduce resolution to daily, and get std
+    df = DataFrame(data={'data':data},index=dates )
+
+    # remove dates outside of range (start_month > < end_month )
+    def get_month(x):
+         return x.month
+    df[ 'month'] = df.index.map( get_month ) 
+    df = df[ df['month']<=end_month ]
+    df = df[ df['month']>=start_month ]
+    df = DataFrame(data={'data':df['data']}, index=df.index )
+
+    # plot up PDF 
+    plt.hist( df.values, label=label+' (n={})'.format( len(data) ), 
+        histtype='stepfilled', color=color, alpha=alpha, bins=bins )
+
+    # Beatify plot
+    if not isinstance( title, type(None) ):
+        plt.title( title + ' for {}-{}'.format( num2month(start_month),\
+            num2month(end_month))  )
+    if not isinstance( alt_text, type(None) ):
+        plt.figtext(x=0.05,y=0.85, s=alt_text, fontsize=f_size*.75)
+
+    if not isinstance( ylabel, type(None) ):
+        plt.ylabel( ylabel )
+    if legend:
+        plt.legend()
+
+
+		

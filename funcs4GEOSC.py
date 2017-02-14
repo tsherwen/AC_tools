@@ -1566,38 +1566,6 @@ def get_mod_WIND_dir(  sdate=datetime.datetime(2012, 8, 1, 0 ), \
 # -------------- Data Processing tools/drivers
 #
 
-# ----
-# 2.01 - Retrieve model resolution
-# ----
-def mod_res(wd, spec='O3', fn='ctm.bpch', debug=False):
-    """ 
-    Extract model resolution
-    NOTES: 
-     - this is not compatible with PyGChem 0.3.0 
-    """
-
-    if debug:
-        print '>'*10, wd,  glob.glob(wd + '*ctm*'), glob.glob(wd + '*trac_avg*')
-    # assume v9-2... ( ctm.bpch output ... )
-    try:
-        fn = glob.glob(wd + '*ctm*')[0].split('/')[-1]
-    except IndexError:
-        try:
-            fn = glob.glob(wd + '*trac_avg*')[0].split('/')[-1]
-        except:
-            print 'ERROR: for wd: {}'.format( wd )
-            sys.exit( 0 )
-            
-    ar = get_gc_data_np( open_ctm_bpch(wd, fn), spec, debug=debug )
-    if debug:
-        print ar.shape
-    if (len(ar[:,0,0,0]) == 72 ):
-        res = '4x5'
-    elif (len(ar[:,0,0,0]) == 144 ):
-        res='2x2.5'
-    elif (len(ar[:,0,0,0]) == 121 ):
-        res='0.5x0.666'        
-    return res
 
 # ----
 # 2.03 - get GC years
@@ -4181,4 +4149,38 @@ def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None, \
 
 
 # Non generic function to move to new module
+
+
+# ----
+# 2.01 - Retrieve model resolution
+# ----
+def mod_res(wd, spec='O3', fn='ctm.bpch', debug=False):
+    """ 
+    Extract model resolution
+    NOTES: 
+     - this is not compatible with PyGChem 0.3.0 
+    """
+
+    if debug:
+        print '>'*10, wd,  glob.glob(wd + '*ctm*'), glob.glob(wd + '*trac_avg*')
+    # assume v9-2... ( ctm.bpch output ... )
+    try:
+        fn = glob.glob(wd + '*ctm*')[0].split('/')[-1]
+    except IndexError:
+        try:
+            fn = glob.glob(wd + '*trac_avg*')[0].split('/')[-1]
+        except:
+            print 'ERROR: for wd: {}'.format( wd )
+            sys.exit( 0 )
+            
+    ar = get_gc_data_np( open_ctm_bpch(wd, fn), spec, debug=debug )
+    if debug:
+        print ar.shape
+    if (len(ar[:,0,0,0]) == 72 ):
+        res = '4x5'
+    elif (len(ar[:,0,0,0]) == 144 ):
+        res='2x2.5'
+    elif (len(ar[:,0,0,0]) == 121 ):
+        res='0.5x0.666'        
+    return res
 
