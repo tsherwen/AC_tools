@@ -25,6 +25,9 @@ import datetime as datetime
 
 # -- math
 from math import radians, sin, cos, asin, sqrt, pi, atan2
+# astronomical math
+import ephem 
+from ephem import AlwaysUpError, NeverUpError
 
 # --  This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
@@ -37,7 +40,7 @@ from funcs_vars import *
 #
 
 # -------------
-# 1.01 -  Split arrays into chunks (e.g. days)
+# X.XX -  Split arrays into chunks (e.g. days)
 # -------------
 def chunks(l, n):
     """ 
@@ -48,7 +51,7 @@ def chunks(l, n):
     return [l[i:i + n] for i in range(0, len(l), n)]
     
 # -------------
-# 1.02 - Get len of file
+# X.XX - Get len of file
 # -------------
 def file_len(fname):
     """ 
@@ -57,7 +60,7 @@ def file_len(fname):
     return sum(1 for line in open(fname))
 
 # -------------
-# 1.03 - My round - credit: Alok Singhal
+# X.XX - My round - credit: Alok Singhal
 # -------------
 def myround(x, base=5, integer=True, round_up=False):
     """ 
@@ -82,7 +85,7 @@ def myround(x, base=5, integer=True, round_up=False):
         return rounded
 
 # --------------
-# 1.07 - Count number of files/the filenames that contain certain phrase/number conbinations (e.g. dates) - tms 
+# X.XX - Count number of files/the filenames that contain certain phrase/number conbinations (e.g. dates) - tms 
 # -------------
 def counter_directory_contains_files(model_path,must_contain):
     """ 
@@ -93,7 +96,7 @@ def counter_directory_contains_files(model_path,must_contain):
             
 
 # ----
-# 1.09 - Rename vars/strs in files
+# X.XX - Rename vars/strs in files
 # ----
 def replace_strs_in_files( wd, input_str, output_str, debug=False ):
     """ 
@@ -107,7 +110,7 @@ def replace_strs_in_files( wd, input_str, output_str, debug=False ):
             print f.replace(input_str, output_str)
 
 # ----
-# 1.10- Get X and Y coordinates for a given grid - Credit: Eric Sofen
+# X.XX - Get X and Y coordinates for a given grid - Credit: Eric Sofen
 # ----
 def get_xy(Lon,Lat, lon_edges, lat_edges, debug=False):
     """
@@ -130,7 +133,7 @@ def get_xy(Lon,Lat, lon_edges, lat_edges, debug=False):
         return gridindx[0],gridindy[0]
         
 # --------   
-# 1.12 - Save as pdf.
+# X.XX - Save as pdf.
 # --------
 def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,\
         justHH=False, no_dstr=True, save2png=True, \
@@ -177,7 +180,7 @@ def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,\
     print type+' saved & Closed as/at: ', npdf
 
 # --------   
-# 1.13- Save as mulitple page pdf.
+# X.XX - Save as mulitple page pdf.
 # --------
 def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, \
         dpi=160, open=False, close=False, justHH=False, no_dstr=False ):
@@ -219,7 +222,7 @@ def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, \
 
         
 # --------------
-# 1.14 -  Return mesh and indics for which obs are within 
+# X.XX -  Return mesh and indics for which obs are within 
 # -------------
 def obs2grid(  glon=None, glat=None, galt=None, nest='high res global', \
         sites=None, debug=False ):
@@ -244,7 +247,7 @@ def obs2grid(  glon=None, glat=None, galt=None, nest='high res global', \
     return indices_list
 
 # --------   
-# 1.15 - Sort (GAW) sites by Latitude and return
+# X.XX - Sort (GAW) sites by Latitude and return
 # --------
 def sort_sites_by_lat(sites): 
     """ 
@@ -260,7 +263,7 @@ def sort_sites_by_lat(sites):
     return [ sites[i] for i in [ lats.index(ii) for ii in slats ] ] 
 
 # --------   
-# 1.16 - Find nearest
+# X.XX - Find nearest
 # --------
 def find_nearest(array,value):
     """
@@ -274,7 +277,7 @@ def find_nearest(array,value):
     return idx
 
 # --------   
-# 1.17 - Get suffix for number
+# X.XX - Get suffix for number
 # --------
 def get_suffix(n):
     """ 
@@ -284,7 +287,7 @@ def get_suffix(n):
     return ordinal(n)
 
 # --------   
-# 1.18 - Get shortest distance on a sphere ( for finding closest point )
+# X.XX - Get shortest distance on a sphere ( for finding closest point )
 # --------
 def get_shortest_in(needle, haystack, r_distance=False):
     """
@@ -317,7 +320,7 @@ def get_shortest_in(needle, haystack, r_distance=False):
         return list(d).index( np.min(d) )
 
 # --------   
-# 1.19 - Get logarithmically spaced integers
+# X.XX - Get logarithmically spaced integers
 # --------
 def gen_log_space(limit, n):
     """
@@ -346,7 +349,7 @@ def gen_log_space(limit, n):
     return np.array(map(lambda x: round(x)-1, result), dtype=np.uint64)
 
 # --------   
-# 1.20 - Get indices in array where change in value of x occurs
+# X.XX - Get indices in array where change in value of x occurs
 # --------
 def get_arr_edge_indices( arr, res='4x5', extra_points_point_on_edge=None, \
             verbose=True, debug=False):
@@ -444,7 +447,7 @@ def get_arr_edge_indices( arr, res='4x5', extra_points_point_on_edge=None, \
     return coords
 
 # --------
-# 1.21 - Get data binned by uniques days in data
+# X.XX - Get data binned by uniques days in data
 # --------
 def split_data_by_days( data=None, dates=None, day_list=None, \
             verbose=False, debug=False ):
@@ -488,7 +491,7 @@ def split_data_by_days( data=None, dates=None, day_list=None, \
 #
 
 # --------
-# 2.01 - Ocean mask
+# X.XX - Ocean mask
 # --------
 def ocean_unmasked(res='4x5', debug=False):
     """ 
@@ -510,7 +513,7 @@ def ocean_unmasked(res='4x5', debug=False):
     return m.mask
  
 # --------
-# 2.02 - Land mask
+# X.XX - Land mask
 # --------
 def land_unmasked(res='4x5', debug=False):
     """ 
@@ -527,7 +530,7 @@ def land_unmasked(res='4x5', debug=False):
     return m.mask
 
 # --------
-# 2.03 - Ice mask
+# X.XX - Ice mask
 # --------
 def ice_unmasked(res='4x5', debug=False):
     """ 
@@ -544,7 +547,7 @@ def ice_unmasked(res='4x5', debug=False):
     return m
  
 # --------
-# 2.04 - Surface mask
+# X.XX - Surface mask
 # --------
 def surface_unmasked( res='4x5', trop_limit=False, mask2D=False, \
             debug=False ):
@@ -569,8 +572,8 @@ def surface_unmasked( res='4x5', trop_limit=False, mask2D=False, \
         return m[...,0].mask
     else:
         return m.mask 
- # --------
-# 2.05 - Tropical Mask
+# --------
+# X.XX  - Tropical Mask
 # --------
 def tropics_unmasked(res='4x5', saizlopez=False, pradosroman=False, \
         mask2D=False ):
@@ -601,7 +604,7 @@ def tropics_unmasked(res='4x5', saizlopez=False, pradosroman=False, \
         return m.mask
 
 # --------
-# 2.06 - Mid Lats Mask
+# X.XX  - Mid Lats Mask
 # --------
 def mid_lats_unmasked( res='4x5', saizlopez=False, pradosroman=False, \
             mask2D=False ):
@@ -636,7 +639,7 @@ def mid_lats_unmasked( res='4x5', saizlopez=False, pradosroman=False, \
     else:
         return m.mask
 # --------
-# 2.07 - 40N to 40S Mask
+# X.XX - 40N to 40S Mask
 # --------
 def mask_lat40_2_40( res='4x5', mask2D=False ):
     """ 
@@ -662,7 +665,7 @@ def mask_lat40_2_40( res='4x5', mask2D=False ):
     else:
         return m.mask    
 # --------
-# 2.08 - Extra Tropics Mask
+# X.XX - Extra Tropics Mask
 # --------
 def extratropics_unmasked( res='4x5', mask2D=False):
     """ Get mask for all areas but extratropics
@@ -685,7 +688,7 @@ def extratropics_unmasked( res='4x5', mask2D=False):
     else:
         return m.mask
 # --------
-# 2.09 - Create unmask array ( for ease of dataprocessing )
+# X.XX - Create unmask array ( for ease of dataprocessing )
 # --------
 def all_unmasked( res='4x5', mask2D=False ):
     """ Get un-masked mask of size GEOS-Chem dimensions 
@@ -702,7 +705,7 @@ def all_unmasked( res='4x5', mask2D=False ):
         return m.mask
 
 # --------
-# 2.10 - Maskes Regions by Pressure
+# X.XX - Maskes Regions by Pressure
 # --------
 def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
     M_all=False, use_multiply_method=True, trop_limit=False, \
@@ -797,7 +800,7 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
 
 
 # --------
-# 2.11 - Custom 2D (Lat) Mask
+# X.XX  - Custom 2D (Lat) Mask
 # --------
 def lat2lat_2D_unmasked( lowerlat=None, higherlat=None, res='2x2.5', \
             debug=False ):
@@ -822,7 +825,7 @@ def lat2lat_2D_unmasked( lowerlat=None, higherlat=None, res='2x2.5', \
     return m.mask
 
 # --------
-# 2.12 - South Pole mask
+# X.XX - South Pole mask
 # --------
 def southpole_unmasked(  res='4x5', mask2D=False ):
     """ 
@@ -854,7 +857,7 @@ def southpole_unmasked(  res='4x5', mask2D=False ):
         return m.mask
 
 # --------
-# 2.13 - North Pole mask
+# X.XX - North Pole mask
 # --------
 def northpole_unmasked(  res='4x5', mask2D=False ):
     """ 
@@ -886,7 +889,7 @@ def northpole_unmasked(  res='4x5', mask2D=False ):
         return m.mask
 
 # --------
-# 2.14 - North Hemisphere mask
+# X.XX - North Hemisphere mask
 # --------
 def NH_unmasked(  res='4x5', mask2D=False ):
     """ 
@@ -913,7 +916,7 @@ def NH_unmasked(  res='4x5', mask2D=False ):
         return m.mask
 
 # --------
-# 2.15 - South Hemisphere mask
+# X.XX - South Hemisphere mask
 # --------
 def SH_unmasked(  res='4x5', mask2D=False ):
     """ 
@@ -940,7 +943,7 @@ def SH_unmasked(  res='4x5', mask2D=False ):
         return m.mask
         
 # --------
-# 2.16 - Get Analysis maskes
+# X.XX  - Get Analysis maskes
 # --------
 def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
         saizlopez=False, r_pstr=True, wd=None, trop_limit=True, mask4D=False, \
@@ -1063,7 +1066,7 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
         return maskes, mtitles
 
 # --------
-# 2.17 -  Retrieve individual 4D mask of locations except region given
+# X.XX -  Retrieve individual 4D mask of locations except region given
 # --------
 def mask_all_but( region='All', M_all=False, saizlopez=False, \
         res='4x5', trop_limit=True, mask2D=False, mask3D=False, mask4D=False, \
@@ -1327,7 +1330,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     return mask
     
 # --------
-# 2.18 - Custom 2D (Lon) Mask
+# X.XX - Custom 2D (Lon) Mask
 # --------
 def lon2lon_2D_unmasked(lowerlon, higherlon, res='2x2.5', debug=False ):
     """
@@ -1353,7 +1356,7 @@ def lon2lon_2D_unmasked(lowerlon, higherlon, res='2x2.5', debug=False ):
     return m.mask
     
 # --------
-# 2.19 - EU mask
+# X.XX - EU mask
 # --------
 def get_EU_unmasked( res='1x1'  ):
     """ 
@@ -1384,7 +1387,7 @@ def get_EU_unmasked( res='1x1'  ):
     return m
     
 # --------
-# 2.20 - Cruise track mask
+# X.XX - Cruise track mask
 # --------
 def get_cruise_track_mask(  max_lon=None, min_lon=None, max_lat=None, \
         min_lat=None, unmask_water=True, res='4x5', trop_limit=True ):
@@ -1414,86 +1417,101 @@ def get_cruise_track_mask(  max_lon=None, min_lon=None, max_lat=None, \
     
     return m
 
-
-def get_north_sea_unmasked( res='0.25x0.3125' ):
-    """
-    A rough Mask of the North Sea for use with ~0.5/~0.25 mdodel output. 
-    (inc. English channel. )
-
-    """
-    # mask latitudes of mediterranean
-    # Drawing a box that include all of North sea and English channel
-    # Near Brest in France 48.3669927,-4.7560745
-    # Lillehammer 61.1122408,10.4386779
-
-    # mask lats
-    m1 = lat2lat_2D_unmasked( lowerlat=48.3669927, higherlat=61.1122408, res=res )
-    
-    # mask lons
-    m2 = lon2lon_2D_unmasked(lowerlon=-4.7560745, higherlon=10.4386779, res=res )
-
-    #  combine maskes 
-    m = m1 + m2     
-
-    # remove all water.     
+# --------
+# X.XX - Get mask of north sea
+# --------
+# def get_north_sea_unmasked( res='0.25x0.3125' ):
+#     """
+#     A rough Mask of the North Sea for use with ~0.5/~0.25 mdodel output. 
+#     (inc. English channel. )
+# 
+#     """
+#     mask latitudes of mediterranean
+#     Drawing a box that include all of North sea and English channel
+#     Near Brest in France 48.3669927,-4.7560745
+#     Lillehammer 61.1122408,10.4386779
+# 
+#     mask lats
+#     m1 = lat2lat_2D_unmasked( lowerlat=48.3669927, higherlat=61.1122408, res=res )
+#     
+#     mask lons
+#     m2 = lon2lon_2D_unmasked(lowerlon=-4.7560745, higherlon=10.4386779, res=res )
+# 
+#      combine maskes 
+#     m = m1 + m2     
+# 
+#     remove all water.     
 #    m = np.ma.mask_or( m, ocean_unmasked( res=res)[...,0] ) # old approach
-    # the below will work for muliple options. 
+#     the below will work for muliple options. 
 #    m = m + 
 #    m = ocean_unmasked( res=res)[...,0] 
-    
-    
-    # remove irish sea
+#     
+#     
+#     remove irish sea
+# 
+#     return m.mask
+#     
+#     
+# --------
+# X.XX - Get mask of mediterranean sea
+# --------    
+# def get_mediterranean_sea_unmasked( res='0.25x0.3125' ):
+#     """
+#     A rough Mask of the Mediterranean Sea for use with ~0.5/~0.25 mdodel output. 
+#     """
+#     
+#     mask latitudes of mediterranean
+#     Drawing a box that include all of Med. Sea
+#     East South corner (south Jordan) = 43.4623268,33.3809392
+#     West North corner (south Jordan) = 44.17207,25.30604
+#     
+#     add mask for Black Sea
+#     
+#     add mask for  
+#     pass
+# 
+# 
+# --------
+# X.XX - Get mask of black sea
+# --------    
+# def get_unmasked_black_sea( res='0.25x0.3125'):
+#     """
+#     A rough Mask of the Black Sea for use with ~0.5/~0.25 mdodel output. 
+#     """
+#     
+#     Drawing a box that include all of Black. Sea
+#     East South corner (south Jordan) = 43.4623268,33.3809392
+#     West North corner  = 44.17207,25.30604
+#     pass
+# 
+# --------
+# X.XX - Get mask of irsh sea
+# --------    
+# def get_unmasked_irish_sea( res='0.25x0.3125', unmasked_oceans=None):
+#     """
+#     A rough Mask of the Irish Sea for use with ~0.5/~0.25 mdodel output. 
+#     """
+#     
+#     NE corner Glasgow - 55.8553803,-4.3725463
+#     SW corner Cork - 51.8959842,-8.5332609
+#     mask lats
+#     m1 = lat2lat_2D_unmasked( lowerlat=51.8959842, higherlat=55.855380, res=res )
+#     
+#     mask lons
+#     m2 = lon2lon_2D_unmasked(lowerlon=8.5332609, higherlon=4.3725463, res=res )
+# 
+#      combine maskes 
+#     m = m1 + m2     
+# 
+#     only consider oceans     
+#     m = np.ma.mask_or( ocean_unmasked( res=res)[...,0], m )    
+#     
+#     
+#     return mask 
 
-    return m.mask
-    
-    
-def get_mediterranean_sea_unmasked( res='0.25x0.3125' ):
-    """
-    A rough Mask of the Mediterranean Sea for use with ~0.5/~0.25 mdodel output. 
-    """
-    
-    # mask latitudes of mediterranean
-    # Drawing a box that include all of Med. Sea
-    # East South corner (south Jordan) = 43.4623268,33.3809392
-    # West North corner (south Jordan) = 44.17207,25.30604
-    
-    # add mask for Black Sea
-    
-    # add mask for  
-    pass
-
-def get_unmasked_black_sea( res='0.25x0.3125'):
-    """
-    A rough Mask of the Black Sea for use with ~0.5/~0.25 mdodel output. 
-    """
-    
-    # Drawing a box that include all of Black. Sea
-    # East South corner (south Jordan) = 43.4623268,33.3809392
-    # West North corner  = 44.17207,25.30604
-    pass
-
-def get_unmasked_irish_sea( res='0.25x0.3125', unmasked_oceans=None):
-    """
-    A rough Mask of the Irish Sea for use with ~0.5/~0.25 mdodel output. 
-    """
-    
-    # NE corner Glasgow - 55.8553803,-4.3725463
-    # SW corner Cork - 51.8959842,-8.5332609
-    # mask lats
-    m1 = lat2lat_2D_unmasked( lowerlat=51.8959842, higherlat=55.855380, res=res )
-    
-    # mask lons
-    m2 = lon2lon_2D_unmasked(lowerlon=8.5332609, higherlon=4.3725463, res=res )
-
-    #  combine maskes 
-    m = m1 + m2     
-
-    # only consider oceans     
-    m = np.ma.mask_or( ocean_unmasked( res=res)[...,0], m )    
-    
-    
-    return mask 
-
+# --------
+# X.XX - Get orthogonal distance regression (ODR) of two datasets
+# --------    
 def get_ODR(x=None, y=None):
     """
     Wrapper to run ODR for arrays of x and y
@@ -1533,7 +1551,9 @@ def get_ODR(x=None, y=None):
     
     return myoutput
 
-       
+# --------
+# X.XX - Get orthogonal distance regression (ODR) of two datasets
+# --------
 def convert_ug_per_m3_2_ppbv( data=None,  spec='O3', rtn_units=False, \
         units='ug m$^{-3}$' ):
     """
@@ -1568,6 +1588,264 @@ def convert_ug_per_m3_2_ppbv( data=None,  spec='O3', rtn_units=False, \
         return data, units
     else:
         return data
+
+# --------
+# X.XX - Get 2D (lat, lon) mask of night time for 
+# --------
+def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
+        mask_daytime=False, buffer_hours=1., debug=False ):
+    """
+    Creates 2D (lon,lat) masked (1=Masked) for nighttime for a given list of
+    dates
+    
+    Parameters
+    -------
+    date (datetime): date to use (UTC)
+    mask_daytime (boolean): mask daytime instead of nightime
+    ncfile (str): location to netCDF file - not implemented... 
+    res (str): resolution, if using resolutions listed in get_latlonalt4res
+    buffer_hours (float/int): number of hours to buffer subrise/sunset with
+
+    Returns
+    -------
+    (np.array) with conditional values masked (1=masked)
+    
+    ncfile (NetCDF file): NetCDF file to extract lat and lon metadata from
+
+    Notes
+    -----    
+     - if ncfile provide programme will work for that grid. 
+     - TODO - buffertime not yet implimented. 
+    
+    """
+    #  profile 
+    if debug:
+        start_time = time.time()
+
+    # --- Local variables?
+    # reference data for ephem (number of days since noon on 1899 December 31)
+    ref_date = datetime.datetime(1899, 12, 31, 12 )
+
+    # --- Get LON and LAT variables
+    if isinstance( ncfile, type(None) ):
+        # extract from refence files 
+        lons, lats, alts = AC.get_latlonalt4res(res=res)
+    else:
+        # TODO - allow any lat, lon grid to be used by taking input lats and
+        # lons from ncfile file/arguments. 
+        print 'Not implemented'
+        sys.exit()
+
+    if debug:
+        print("--- (start-1) %s seconds ---" % (time.time() - start_time))
+    
+    # --- setup function to mask based on date, lat and lon
+    def mask_nighttime(lon, lat, date=date, mask_daytime=mask_daytime, \
+        ref_date=ref_date, debug=False ):
+        """
+        sub-function to mask if nightime for a given date at a specific lat/lon
+        """
+        # --- get lat and lon values from columns
+        if debug:   
+            print("--- (s4-1) %s seconds ---" % (time.time() - start_time))
+        # --- get sunrise and sunset for location
+        o=ephem.Observer()  
+        # set lat (decimal?), lon (decimal?), and date (UTC)
+        o.lat=str(lat)
+        o.long=str(lon)
+        o.date = date
+        # planetary body
+        s=ephem.Sun()      
+        if debug:   
+            print("--- (s4-2) %s seconds ---" % (time.time() - start_time))
+
+        # Compute sun vs observer
+        s.compute()  
+        if debug:   
+            print("--- (s4-3) %s seconds ---" % (time.time() - start_time))
+
+        # Work out if day or night based on sunrises and sunsets
+        mask_value=False
+        try:
+            # get sunrise time and date
+            next_rising = o.next_rising(s)
+            next_setting = o.next_setting(s)
+            # convert to datetime.datetime
+            next_rising = AC.add_days(ref_date, next_rising)
+            next_setting = AC.add_days(ref_date, next_setting)
+
+            # did the sun last rise or set?
+            sun_last_rose = False
+            if next_setting < next_rising:
+                sun_last_rose = True
+                
+            # --- Check if daytime or nighttime and mask if condition met. 
+            if sun_last_rose:
+                if mask_daytime:
+                    # ... and has not set yet, it must be daytime
+                    if (date < next_setting):
+                        mask_value=True
+            # if the sun last set... (mask nighttime is default)
+            else:
+                # if mask nighttime (aka not mask_daytime)            
+                if not mask_daytime:
+                    # ... and has not risen yet, it must be nighttime                    
+                    if (date < next_rising):
+                        mask_value=True
+
+        # add gotcha for locations where sun is always up.
+        except AlwaysUpError:
+            if mask_daytime:
+                mask_value=True
+
+        # add gotcha for locations where sun is always down.
+        except NeverUpError:
+            if not mask_daytime:
+                mask_value=True
+
+        if debug:   
+            sys.exit()                
+        # mask  value in array
+        if mask_value:
+            return 1
+        else:
+            return 0
+
+    # --- setup an unstack pandas dataframe to contain masked values
+    if debug:
+        print("--- (2) %s seconds ---" % (time.time() - start_time))
+    # use list comprehension to setup list of indices for lat and lon
+    # better way of doing this? (e.g. pd.melt?)
+    ind_lat_lons_list = [ [lon_, lat_] for lat_ in lats for lon_ in lons ]
+    if debug:
+        print("--- (3) %s seconds ---" % (time.time() - start_time))
+    # Make this into a pd.DataFrame and label columns.
+    df = pd.DataFrame( ind_lat_lons_list )
+    df.columns = ['lons', 'lats']
+    if debug:
+        print("--- (4) %s seconds ---" % (time.time() - start_time))
+    # apply function to calculate mask value
+#    df['mask'] = df.apply(mask_nighttime, axis=1)    
+    df['mask'] = df.apply(lambda x: mask_nighttime(x['lons'], x['lats']), axis=1)
+    if debug:
+        print("--- (5) %s seconds ---" % (time.time() - start_time))
+    # re-index by lat and lon
+    df = pd.DataFrame( df['mask'].values, index=[df['lats'],df['lons'] ] )
+    if debug:
+        print("--- (6) %s seconds ---" % (time.time() - start_time))
+    # unstack and return just as array
+    df = df.unstack()
+    marr = df.values
+    if debug:
+        print("--- (end-7) %s seconds ---" % (time.time() - start_time))
+
+    return marr
+
+# --------
+# X.XX - Save 2D arrays (lat, lon) to 3D netCDF (3rd dim=time)
+# --------
+def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
+        lats=None, varname='MASK', filename='misc_output' ):
+    """
+    makes a NetCDF from a list of dates and list of (lon, lat) arrays
+
+    Parameters
+    -------
+    ars (list of np.array): list of (lon, lat) arrays 
+    dates (list of datetime.datetime)
+    res (str): reoslution (opitional )
+    lons (list): lons for use for NetCDF cooridinate variables
+    lats (list): lats for use for NetCDF cooridinate variables
+    filename (str): name for output netCDF file 
+    varname (str): name for variable in NetCDF
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+     - needs updating to take non-standard reoslutions 
+     (e.g. those in funcs_vars)
+
+    """
+    # ---  Settings 
+    ncfilename = '{}_{}.nc'.format( filename, res )
+    # Get lons and lats... 
+    if any( [isinstance(i, type(None))for i in lats, lons] ):
+        lons, lats, NIU = AC.get_latlonalt4res(res=res)
+    else:
+        print 'WARNING: non-standard lats/lons not implemented!!! - TODO. '
+        sys.exit()
+
+    # --- Setup new file
+    # write file
+    ncfile = Dataset( ncfilename,'w', format='NETCDF4') 
+    ncfile.createDimension('lat', len(lats) )
+    ncfile.createDimension('lon', len(lons) )
+    ncfile.createDimension('time', None)
+
+    # Define the coordinate variables. They will hold the coordinate
+    # information, that is, the latitudes and longitudes.
+    time = ncfile.createVariable( 'time','f4',('time',) )
+    lat = ncfile.createVariable( 'lat','f4',('lat',) )
+    lon = ncfile.createVariable('lon','f4',('lon',) )
+
+    # --- Add meta data
+    # Assign units attributes to coordinate var data. This attaches a
+    # text attribute to each of the coordinate variables, containing the
+    # units.
+    lat.units = 'degrees_north'
+    lat.long_name = 'Latitude'
+    lat.standard_name = 'Latitude'
+    lat.axis = "Y" 
+
+    lon.units = 'degrees_east'
+    lon.long_name = 'Longitude'
+    lon.standard_name = 'Longitude'
+    lon.axis = "X"
+
+    time.units='seconds since 1970-01-01 00:00:00'
+    time.calendar = "standard" 
+    time.standard_name = 'Time'
+    time.axis = "T"
+ 
+    # --- Set global variables
+    if not isinstance(Description, type(None)):
+        ncfile.Description = Description
+    if not isinstance(Contact, type(None)):
+        ncfile.Contact = Contact
+    ncfile.Grid = 'lat: {}-{}, lon: {}-{}'.format( lats[0], lats[-1], \
+        lons[0], lons[-1] )
+
+    # Write values to coordinate variables (lat, lon)
+    lon[:] = lons
+    lat[:] = lats
+
+    # ---  Setup time dimension/variables (as epoch)
+    # Convert to Epoch time    
+    format = lambda x: AC.unix_time(x)
+    df = pd.DataFrame({'Datetime':dates})
+    df['Epoch'] = df['Datetime'].map( format ).astype('i8')
+    del df['Datetime']
+    dates = df['Epoch'].values
+    # Assign to time variable
+    time[:] = dates
+
+    # --- Create  mask variable (as i8) with common dimensions 
+    ncfile.createVariable( varname, 'i8', ('time','lat','lon'), )
+    # Close NetCDF
+    ncfile.close()
+
+    # --- Now open and add data in append mode
+    for n, date in enumerate( dates ):
+
+        # Open NetCDF in append mode
+        ncfile = Dataset( ncfilename,'a', format='NETCDF4')     
+    
+        # Add data to array
+        ncfile.variables[ varname ][ n ] = ars[n].T
+
 
 
 

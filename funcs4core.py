@@ -221,7 +221,7 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
         lat_bounds=u'latitude_bnds', lon_bounds=u'longitude_bnds',\
         lon_var=u'longitude', lat_var=u'latitude', \
 #        lon_var=u'lon', lat_var=u'lat', 
-        debug=False ):
+        verbose=True, debug=False ):
     """ 
     Get lon, lat, and alt for a given model resolution. 
 
@@ -290,11 +290,20 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
         raise IOError, "Could not find {fn}".format(fn=data_fname)
 
     if centre:
-        # Extract lat and lon from model output data file
-        with Dataset( data_fname, 'r' ) as d:
-            lat = np.array( d[lat_var] )    
-            lon = np.array( d[lon_var] )        
-            
+        try:
+            # Extract lat and lon from model output data file
+            with Dataset( data_fname, 'r' ) as d:
+                lat = np.array( d[lat_var] )    
+                lon = np.array( d[lon_var] )        
+        except IOError:
+            error = "Could not get {lat}, {lon} from {fn}"\
+                    .format(fn=data_fname,lat=lat_bounds,
+                            lon=lon_bounds)
+            logging.error(error)
+            if verbose:
+                print "ERROR: are the refernces files in 'AC_tools/data/LM' ?"
+                print "(To download just run AC_tools/Scripts/get_data_files.py)"
+            raise IOError, error        
 
     # Get edge values
     exception_res = ('1x1', '0.5x0.5')
@@ -313,6 +322,9 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
             error = "Could not get {lat}, {lon} from {fn}"\
                     .format(fn=data_fname,lat=lat_bounds,
                             lon=lon_bounds)
+            if verbose:
+                print "ERROR: are the refernces files in 'AC_tools/data/LM' ?"
+                print "(To download just run AC_tools/Scripts/get_data_files.py)"
             logging.error(error)
             raise IOError, error
 
