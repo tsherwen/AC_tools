@@ -3419,7 +3419,8 @@ def get_LOC_df_from_NetCDF(site='WEY', spec='O3', wd=None, res=None, \
 # 2.42 - Convert v/v to molec/cm3
 # ----   
 def convert_v_v_2_molec_cm3( arr=None, wd=None, vol=None, a_m=None, \
-        mols=None, res='4x5', trop_limit=True, debug=False):
+        mols=None, res='4x5', trop_limit=True, \
+        explicitly_caculate=True, debug=False):
     """ 
     Covnerts mixing ratio (v/v) into number density (molec/cm3).
     
@@ -3442,30 +3443,101 @@ def convert_v_v_2_molec_cm3( arr=None, wd=None, vol=None, a_m=None, \
     """
     logging.info('convert_v_v_2_molec_cm3 called for res={}'.format(res) ) 
 
-    # Get volume ( cm^3  )
-    if not isinstance(vol, np.ndarray):
-        vol = get_volume_np( wd=wd, res=res, trop_limit=trop_limit, debug=debug)
-        logging.info( 'WARNING: extracting volume online' )
-    # Get air mass ( kg )
-    if not isinstance(a_m, np.ndarray):
-        a_m = get_GC_output( wd, vars=['BXHGHT_S__AD'], trop_limit=trop_limit, 
-                    dtype=np.float64)    
-        logging.info( 'WARNING: extracting air mass online' )
+    if explicitly_caculate:
+        # Get volume ( cm^3  )
+        if not isinstance(vol, np.ndarray):
+            vol = get_volume_np( wd=wd, res=res, trop_limit=trop_limit, \
+                debug=debug)
+            logging.info( 'WARNING: extracting volume online' )
+        # Get air mass ( kg )
+        if not isinstance(a_m, np.ndarray):
+            a_m = get_GC_output( wd, vars=['BXHGHT_S__AD'], \
+                trop_limit=trop_limit, dtype=np.float64)    
+            logging.info( 'WARNING: extracting air mass online' )
 
-    # Get moles
-    if not isinstance(mols, np.ndarray):
-        mols = a_m*1E3/constants( 'RMM_air')
+        # Get moles
+        if not isinstance(mols, np.ndarray):
+            mols = a_m*1E3/constants( 'RMM_air')
 
-    #  Convert to molecules
-    arr = ( arr * mols )*constants('AVG')
+        #  Convert to molecules
+        arr = ( arr * mols )*constants('AVG')
 
-    #  convert to per unit area ( molecs / cm^3  )
-    arr = arr / vol
+        #  convert to per unit area ( molecs / cm^3  )
+        arr = arr / vol
     
+    # use an approximation assuming SATP
+    else:
+        # RMM
+        RMM_air = constants('RMM_air') # g/mol
+        # assume standard air density
+        # At sea level and at 15 °C air has a density of approximately 1.225 kg/m3 
+        #(0.001225 g/cm3, 0.0023769 slug/ft3, 0.0765 lbm/ft3) according to 
+        # ISA (International Standard Atmosphere).
+        AIRDEN = 0.001225 # g/cm3        
+        # moles per cm3
+        #  (1/(g/mol)) = (mol/g) ; (mol/g) * (g/cm3) = mol/cm3
+        MOLS = (1/RMM_air) * AIRDEN         
+        # v/v * mols * AVG's # (to get molecules)
+        arr = arr * MOLS * constants('AVG')
+
     return arr
 
 # ----
-# 2.43 - Mask non tropospheric boxes of 4D array
+# X.XX - Convert molec cm^-3 to v/v
+# ----  
+def convert_molec_cm3_2_v_v( arr=None, wd=None, vol=None, a_m=None, \
+        mols=None, res='4x5', trop_limit=True, \
+        explicitly_caculate=True, debug=False):
+    """ 
+    Covnerts number density (molec/cm3) into mixing ratio (v/v).
+    
+    Parameters
+    ----------
+    arr (array): arrray input
+    a_m (array): array of air mass
+    mols (array): array of molecule number density
+    trop_limit (boolean): limit output to "chemical troposphere" (level 38 )
+    res (str): resolution of the model input (e.g. 4x5, 2x2.5 )    
+
+    Returns
+    -------
+    (array)
+    
+    NOTES
+    -------
+    required variables of volume (vol) and airmass (a_m) can be provided as 
+    arguements or are extracted online (from provided wd )
+    """
+    logging.info('convert_molec_cm3_2_v_v called for res={}'.format(res) ) 
+
+    if explicitly_caculate:
+        print 'Not implimented yet!'
+
+    # use an approximation assuming SATP
+    else:
+        # RMM
+        RMM_air = constants('RMM_air') # g/mol
+        # assume standard air density
+        # At sea level and at 15 °C air has a density of approximately 1.225 kg/m3 
+        #(0.001225 g/cm3, 0.0023769 slug/ft3, 0.0765 lbm/ft3) according to 
+        # ISA (International Standard Atmosphere).
+        AIRDEN = 0.001225 # g/cm3        
+        # moles per cm3
+        #  (1/(g/mol)) = (mol/g) ; (mol/g) * (g/cm3) = mol/cm3
+        MOLS = (1/RMM_air) * AIRDEN         
+        # v/v * mols * AVG's # (to get molecules)
+
+        # get moles/cm3 ( from molecules/cm3 )
+        arr = arr/constants('AVG')
+
+        # get mol/mol and remove cm3 by dividing by mol/cm3
+        arr = arr /MOLS
+
+    return arr
+
+
+# ----
+# X.XX - Mask non tropospheric boxes of 4D array
 # ----  
 def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
         t_lvl=None, masks4stratosphere=False, use_time_in_trop=True, \
