@@ -1557,7 +1557,7 @@ def get_ODR(x=None, y=None):
 def convert_ug_per_m3_2_ppbv( data=None,  spec='O3', rtn_units=False, \
         units='ug m$^{-3}$' ):
     """
-    Converts units of ugm^-3 to ppbv for a given species 
+    Converts units of ugm^-3 to ppbv for a given species assuming SATP
     """
     # --- Get constants
     RMM_air = constants('RMM_air') # g/mol
@@ -1570,11 +1570,7 @@ def convert_ug_per_m3_2_ppbv( data=None,  spec='O3', rtn_units=False, \
     #  (1/(g/mol)) = (mol/g) ; (mol/g) * (g/cm3) = mol/cm3
     MOLS = (1/RMM_air) * AIRDEN 
 
-    # moles * spec RMM * microgram
-    # e.g. v/v * mols/cm3 = mols of X per cm3; / spec RMM = mass
-    # unitless * mols * g/mol * conversion
-#   scale = MOLS * AC.species_mass( spec ) 
-
+    # --- Convert
     # convert ug/m3 to ppbv
     # get g per cm3, ( instead of ug/m3)
     data = data /1E6 /1E6
@@ -1618,6 +1614,8 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
      - TODO - buffertime not yet implimented. 
     
     """
+    from funcs4time import add_days
+
     #  profile 
     if debug:
         start_time = time.time()
@@ -1629,7 +1627,7 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
     # --- Get LON and LAT variables
     if isinstance( ncfile, type(None) ):
         # extract from refence files 
-        lons, lats, alts = AC.get_latlonalt4res(res=res)
+        lons, lats, alts = get_latlonalt4res(res=res)
     else:
         # TODO - allow any lat, lon grid to be used by taking input lats and
         # lons from ncfile file/arguments. 
@@ -1671,8 +1669,8 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
             next_rising = o.next_rising(s)
             next_setting = o.next_setting(s)
             # convert to datetime.datetime
-            next_rising = AC.add_days(ref_date, next_rising)
-            next_setting = AC.add_days(ref_date, next_setting)
+            next_rising = add_days(ref_date, next_rising)
+            next_setting = add_days(ref_date, next_setting)
 
             # did the sun last rise or set?
             sun_last_rose = False
@@ -1772,8 +1770,8 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
     # ---  Settings 
     ncfilename = '{}_{}.nc'.format( filename, res )
     # Get lons and lats... 
-    if any( [isinstance(i, type(None))for i in lats, lons] ):
-        lons, lats, NIU = AC.get_latlonalt4res(res=res)
+    if any( [isinstance(i, type(None)) for i in lats, lons] ):
+        lons, lats, NIU = get_latlonalt4res(res=res)
     else:
         print 'WARNING: non-standard lats/lons not implemented!!! - TODO. '
         sys.exit()
@@ -1824,7 +1822,7 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
 
     # ---  Setup time dimension/variables (as epoch)
     # Convert to Epoch time    
-    format = lambda x: AC.unix_time(x)
+    format = lambda x: unix_time(x)
     df = pd.DataFrame({'Datetime':dates})
     df['Epoch'] = df['Datetime'].map( format ).astype('i8')
     del df['Datetime']
