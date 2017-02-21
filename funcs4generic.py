@@ -1615,6 +1615,7 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
     
     """
     from funcs4time import add_days
+    logging.info('get_2D_nighttime_mask4date_pd called for {}'.format(date))
 
     #  profile 
     if debug:
@@ -1743,7 +1744,8 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
 # X.XX - Save 2D arrays (lat, lon) to 3D netCDF (3rd dim=time)
 # --------
 def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
-        lats=None, varname='MASK', filename='misc_output' ):
+        lats=None, varname='MASK', Description=None, Contact=None, \
+        filename='misc_output' ):
     """
     makes a NetCDF from a list of dates and list of (lon, lat) arrays
 
@@ -1767,6 +1769,8 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
      (e.g. those in funcs_vars)
 
     """
+    from funcs4time import unix_time
+
     # ---  Settings 
     ncfilename = '{}_{}.nc'.format( filename, res )
     # Get lons and lats... 
