@@ -3199,7 +3199,7 @@ def convert_tracers2PM25( ars=[], specs=[], region='Europe' ):
         units = '$\mu$g m$^{-3}$'
 
         # convert... 
-        ars[n]*scale*PM25_convertion_factor[spec]
+        ars[n] = ars[n]*scale*PM25_convertion_factor[spec]
 
     return ars
 
