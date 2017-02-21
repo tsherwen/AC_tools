@@ -3318,7 +3318,9 @@ def fam_data_extractor4ts_bpch_files(spec='NOy', wd=None, \
 
         # If PM2.5
         if spec == 'PM2.5':
-            # convert ctm output species. 
+            # get data and scale from ppbv (assumed) to v/v
+            data_l = [ i/1E9 for i in data_l ]
+            # v/v of tracers to ug/m3
             data_l = convert_tracers2PM25( specs=specs, ars=data_l )
             units = '$\mu$g m$^{-3}$' 
         # If NIT+NH4+SO4
