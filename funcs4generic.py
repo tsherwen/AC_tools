@@ -1846,10 +1846,8 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
         ncfile = Dataset( ncfilename,'a', format='NETCDF4')     
     
         # Add data to array
-        ncfile.variables[ varname ][ n ] = ars[n].T
-
-
-
+        ncfile.variables[ varname ][ n ] = ars[n]
+        
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
