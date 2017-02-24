@@ -23,7 +23,7 @@ from math import log10, floor
 import math
 
 # --------------                                                                                              
-# 1.01 - Store of dirs for earth0, atmosviz1, and tms mac                                                     
+# X.XX - Store of dirs for earth0, atmosviz1, and tms mac                                                     
 # -------------                                                                                               
 def get_dir( input, loc='earth0' ):
     """
@@ -91,7 +91,7 @@ def get_dir( input, loc='earth0' ):
     return d
     
 # ----                                                                                                                                                        
-# 1.02 -  Get Latitude as GC grid box number in dimension                                                                                                                  
+# X.XX -  Get Latitude as GC grid box number in dimension                                                                                                                  
 # ----                                                                                                                                                        
 def get_gc_lat(lat, res='4x5', wd=None, filename='ctm.nc', debug=False):
     """ 
@@ -114,7 +114,7 @@ def get_gc_lat(lat, res='4x5', wd=None, filename='ctm.nc', debug=False):
     return find_nearest_value( lat_c, lat )
 
 # ----                                                                                                                                                        
-# 1.03 -  Get Longitude as GC grid box number in dimension                                                                                                       
+# X.XX -  Get Longitude as GC grid box number in dimension                                                                                                       
 # ----                                                                                                                                                        
 def get_gc_lon(lon, res='4x5', wd=None, filename='ctm.nc', debug=False):
     """ 
@@ -137,7 +137,7 @@ def get_gc_lon(lon, res='4x5', wd=None, filename='ctm.nc', debug=False):
     return find_nearest_value( lon_c, lon )
 
 # --------                                                                                          
-# 1.04 - Get model array dimension for a given resolution                                           
+# X.XX - Get model array dimension for a given resolution                                           
 # --------                                                                                          
 def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
         just2D=False, full_vertical_grid=False, debug=False):
@@ -156,7 +156,6 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
     -------
     (tuple)
     """
-
     # Dictionary of max dimensions of standard GEOS-Chem output
     dims = {
     '4x5'            : (72,46,47), 
@@ -451,7 +450,7 @@ def iGEOSChem_ver(wd, verbose=True, debug=False):
 
 
 # --------------                                                                                 
-# 1.99 - Reference data (lon, lat, and alt) adapted from gchem - credit: GK (Gerrit Kuhlmann )             
+# X.XX - Reference data (lon, lat, and alt) adapted from gchem - credit: GK (Gerrit Kuhlmann )             
 # -------------                                                                                                                                      
 def gchemgrid(input=None, rtn_dict=False, debug=False):
     """

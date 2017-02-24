@@ -9,7 +9,7 @@ NOTE(S):
  - This module is underdevelopment vestigial/inefficient code is being removed/updated. 
  - Where external code is used credit is given. 
 """
-# ----------------------------- Section 0 -----------------------------------
+# ----------------------------- Section X.X -----------------------------------
 # -------------- Required modules:
 
 import logging
@@ -26,12 +26,12 @@ import calendar
 import datetime as datetime
 from datetime import datetime as datetime_
 
-# ----------------------- Section 1 -------------------------------------------
+# ----------------------- Section X.X -------------------------------------------
 # -------------- Time Processing
 #
 
 # --------------
-# 1.01 - Datetime to fractional day 
+# X.XX - Datetime to fractional day 
 # --------------
 def get_day_fraction(date):
     """ 
@@ -43,9 +43,10 @@ def get_day_fraction(date):
     secs = (date.hour *60.*60.)+(date.minute*60.)+(date.second)
     dsecs = 24.*60.*60.
     return  secs/dsecs
+
     
 # --------------
-# 1.02 - numpy.datetime64 to datetime.datetime (assuming UTC )
+# X.XX - numpy.datetime64 to datetime.datetime (assuming UTC )
 # ------------- 
 def dt64_2_dt( dt64 ):
     """  
@@ -58,8 +59,9 @@ def dt64_2_dt( dt64 ):
     ns = 1e-9 # number of seconds in a nanosecond
     return  [ datetime_.utcfromtimestamp(i.astype(int) * ns) for i in dt64 ]
 
+
 # --------------
-# 1.03 - numpy.datetime64 to datetime.datetime (assuming UTC )
+# X.XX - processor for non-ISO dates
 # ------------- 
 def nonISOdate2ISO( ds ):
     """ 
@@ -103,8 +105,9 @@ def nonISOdate2ISO( ds ):
         print 2, d, len(d[0])
     return ds
 
+
 # --------------
-# 1.04 - Find nearest timestamp - Credit: Raymond Hettinger 
+# X.XX - Find nearest timestamp - Credit: Raymond Hettinger 
 # -------------
 def nearest(ts, s):
     """ 
@@ -122,8 +125,9 @@ def nearest(ts, s):
 
     return min(s[max(0, i-1): i+2], key=lambda t: abs(ts - t))
 
+
 # --------------
-# 1.05 -  convert two lists/numpy arrays for date andtime to a datetime numpy 
+# X.XX -  convert two lists/numpy arrays for date andtime to a datetime numpy 
 # -------------
 def YYYYMMDD_HHMM_2_datetime( str1=None, str2=None, conbined=False,  \
             verbose=False, debug=False ):    
@@ -158,8 +162,9 @@ def YYYYMMDD_HHMM_2_datetime( str1=None, str2=None, conbined=False,  \
 
     return dtime
 
+
 # -------------
-# 1.06 - Incremental increase datetime by given months - credit: Dave Webb
+# X.XX - Incremental increase datetime by given months - credit: Dave Webb
 # -------------
 def add_months(sourcedate,months):
     """ 
@@ -171,9 +176,11 @@ def add_months(sourcedate,months):
     day = min(sourcedate.day,calendar.monthrange(year,month)[1])
     return datetime.datetime(year,month,day)
 
-# <= Combine 1.06- 1.10 , by adding specification of timedelta/case approach
+
+# TODO? Combine these functions? 
+# ( by adding specification of timedelta/case approach )
 # -------------
-# 1.07 - Incremental increase datetime by given days 
+# X.XX - Incremental increase datetime by given days 
 # -------------
 def add_days(sourcedate,days_):
     """ 
@@ -183,7 +190,7 @@ def add_days(sourcedate,days_):
     return sourcedate
 
 # -------------
-# 1.08 - Incremental increase datetime by given hours
+# X.XX - Incremental increase datetime by given hours
 # -------------
 def add_hrs(sourcedate,hrs_, debug=False):
     """ 
@@ -194,8 +201,9 @@ def add_hrs(sourcedate,hrs_, debug=False):
     sourcedate += datetime.timedelta(hours=hrs_)    
     return  sourcedate
 
+
 # -------------
-# 1.09 - Incremental increase datetime by given minutes
+# X.XX - Incremental increase datetime by given minutes
 # -------------
 def add_minutes( sourcedate, min_, debug=False ):
     """ 
@@ -204,8 +212,9 @@ def add_minutes( sourcedate, min_, debug=False ):
     sourcedate += datetime.timedelta(minutes=min_)
     return sourcedate
 
+
 # -------------
-# 1.10 - Incremental increase datetime by given seconds
+# X.XX - Incremental increase datetime by given seconds
 # -------------
 def add_secs( sourcedate, secs_, debug=False ):
     """ 
@@ -216,7 +225,7 @@ def add_secs( sourcedate, secs_, debug=False ):
     
 
 # --------------
-# 1.12 - day adjust -  seconds to months
+# X.XX - day adjust -  seconds to months
 # -------------
 def d_adjust( months=None, years=None ):
     """ 
@@ -233,7 +242,7 @@ def d_adjust( months=None, years=None ):
         int( m_ ))[1] for i, m_ in enumerate(months) ]  )  
 
 # --------------                                                                                                                                             
-# 1.13 - adjust non UT times to UT
+# X.XX - adjust non UT times to UT
 # ------------- 
 def gaw_lc_2_UT(time_s, site, half_hour=None, debug=False):
     """ 
@@ -255,8 +264,9 @@ def gaw_lc_2_UT(time_s, site, half_hour=None, debug=False):
             print i, ii, time_s_adjust[i]
     return time_s_adjust
 
+
 # ----  
-# 1.14 - Adjust to lt from UT 
+# X.XX - Adjust to lt from UT 
 # ----  
 def adjust_UT_2_lt( time, date, data, site='CVO', dUTC=None, debug=False ):
     """ 
@@ -288,7 +298,7 @@ def adjust_UT_2_lt( time, date, data, site='CVO', dUTC=None, debug=False ):
 
 
 # --------------
-# 1.16 - returns data as a mean monthly value
+# X.XX - returns data as a mean monthly value
 # -------------
 def data2monthly( data, dates ):
     """ 
@@ -303,8 +313,9 @@ def data2monthly( data, dates ):
     totals = grouped.mean()
     return  totals.values, totals.index
     
+    
 # --------------
-# 1.18 - Get datetimes for run period
+# X.XX - Get datetimes for run period
 # -------------
 def get_dt4run(time_span='year', period=1, startyear=2005, endyear=2005, \
         endhour=23, a=None, b=None ): 
@@ -337,8 +348,9 @@ def get_dt4run(time_span='year', period=1, startyear=2005, endyear=2005, \
     dates = dt_hrs_a2b(a, b)
     return dates
 
+
 # --------------
-# 1.19 - returns data as a mean monthly value
+# X.XX - returns data as a mean monthly value
 # -------------
 def data2daily( data, dates ):
     """ 
@@ -351,8 +363,9 @@ def data2daily( data, dates ):
     totals = df.resample('D', how='mean')
     return  totals.values, totals.index
 
+
 # --------------
-# 1.20 - Datetime hours between datetime a and datetime b
+# X.XX - Datetime hours between datetime a and datetime b
 # -------------
 def dt_hrs_a2b( a, b, period=1, debug=False ) :
     """ 
@@ -370,9 +383,10 @@ def dt_hrs_a2b( a, b, period=1, debug=False ) :
     if debug:
         print dates[0], dates[-1]
     return dates
+
     
 # ----
-# 1.21 - Get interval dates assuming month gap in output.
+# X.XX - Get interval dates assuming month gap in output.
 # -----
 def get_int_btwn(start, end, months=False, years=False ):
     """
@@ -397,7 +411,7 @@ def get_int_btwn(start, end, months=False, years=False ):
 #        print 'State whether years or months are required as boolean arg (e.g. months=True)'
 
 # --------------
-#  1.24 - Normalise data to daily maximiun. 
+#  X.XX - Normalise data to daily maximiun. 
 # --------------
 def normalise2dailymax(dates, data, debug=False ):
     """
@@ -424,17 +438,19 @@ def normalise2dailymax(dates, data, debug=False ):
         logging.debug(  [(np.min(i), np.max(i), np.mean(i) ) for i in [data] ] )
     return data
 
+
 # ----  
-#  1.26 - Translate from time to datetime
+#  X.XX - Translate from time to datetime
 # ----  
 def time2datetime( dates ):
     """ 
     Convert time object to datetime object
     """
     return [ datetime_.fromtimestamp(mktime(i)) for i in dates ]
+
     
 # ----  
-#  1.27 - return abbreviated month for a given month number or vice versa
+#  X.XX - return abbreviated month for a given month number or vice versa
 # ----  
 def num2month(input=None, reverse=False, rtn_dict=False):
     """ 
@@ -468,7 +484,7 @@ def num2month(input=None, reverse=False, rtn_dict=False):
         return d[input]
     
 # -------------- 
-#  1.28 - convert times to datetime from HHMM and YYYYMMDD
+#  X.XX - convert times to datetime from HHMM and YYYYMMDD
 # ----------
 def DF_YYYYMMDD_HHMM_2_dt(df, date_header='YYYYMMDD', 
         time_header='HHMM', rmvars=None, epoch=False,  
@@ -517,7 +533,7 @@ def DF_YYYYMMDD_HHMM_2_dt(df, date_header='YYYYMMDD',
     return df
 
 # -------------- 
-#  1.29 - Convert datetime.datetine to  Unix time
+#  X.XX - Convert datetime.datetine to  Unix time
 # ----------
 def unix_time(dt):
     """ 
@@ -535,7 +551,7 @@ def unix_time(dt):
     return delta.days*86400+delta.seconds+delta.microseconds/1e6
     
 # --------------
-# 1.31 - Datetime days between datetime a and datetime b
+# X.XX - Datetime days between datetime a and datetime b
 # -------------
 def dt_days_a2b( a, b, period=1, debug=False ) :
     """
@@ -595,6 +611,9 @@ def get_nighttime_values( dates=None, data=None, select_nighttime=True,\
     
     return data, dates
 
+# --------------
+# X.XX - Get daily maximum
+# -------------
 def get_daily_maximum( dates=None, data=None ):
     """
     Calculate daily maximum values using dates array and pandas
@@ -631,6 +650,9 @@ def get_daily_maximum( dates=None, data=None ):
     
     return avg_data
 
+# --------------
+# X.XX - Get 8hour rolling average
+# -------------
 def get_8hr_rolling_mean( df ):
     """
     Get 8 hour rolling mean of pandas dataframe/series. 
@@ -674,7 +696,7 @@ def get_8hr_rolling_mean( df ):
 
 
 # --------------
-# 1.30 - Process time/date to CV days equivilent - mje
+# X.XX - Process time/date to CV days equivilent - mje
 # -------------
 def year_to_since_2006(model):
     """

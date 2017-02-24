@@ -37,7 +37,7 @@ from funcs4core import *
 #
 
 # --------------
-# 1.01 - dictionary of variables used for planeflight_mod.F output
+# X.XX - dictionary of variables used for planeflight_mod.F output
 # -------------
 def pf_var( input, ver='1.7', ntracers=85 ):
     """ 
@@ -225,7 +225,7 @@ def pf_var( input, ver='1.7', ntracers=85 ):
     return vars
 
 # --------------
-# 1.02 - Translator for planeflight species to GEOS-Chem species
+# X.XX - Translator for planeflight species to GEOS-Chem species
 # -------------
 def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, ver='1.7', \
         special_case=None, invert=False, rtn_dict=False, debug=False ) :
@@ -299,16 +299,12 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, ver='1.7', \
 
 
 
-# ------------------------------------------- Section 3 ----------------
-# --------------  GeosChem (bpch) prod loss variables
-#
-
-# ----------------- Section 4 -------------------------------------------
+# ----------------- Section X.X -------------------------------------------
 # -------------- GeosChem (bpch) general variables
 #
 
 # --------------   
-# 4.01 - v9-2 species in input.geos from num
+# X.XX - v9-2 species in input.geos from num
 # -------------    
 def num2spec( num=69, rtn_dict=False, invert=False, ver = '1.7' ):
     """ 
@@ -356,12 +352,11 @@ def num2spec( num=69, rtn_dict=False, invert=False, ver = '1.7' ):
         return d[num]
 
 # --------------
-# 4.02 - RMM (Mass) (g /mol) for species 
+# X.XX - RMM (Mass) (g /mol) for species 
 # ------------- 
 def species_mass( spec ):
     """ 
-    Function to return species mass ( in relative molecular mass ( RMM ) 
-    for given species in g/mol
+    Function to get species relative molecular mass ( RMM ) in g/mol
 
     Parameters
     ----------
@@ -369,6 +364,7 @@ def species_mass( spec ):
 
     Returns
     -------
+    (float)
 
     Notes
     -----
@@ -415,7 +411,7 @@ def species_mass( spec ):
     return d[spec]
 
 # --------------
-# 4.03 -  return the stoichiometry of Iodine in species
+# X.XX - Get the stoichiometry of a reference specie (e.g. Iodine) in "spec"
 # --------------
 def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         C=False, Br=False, Cl=False, S=False, ref_spec=None, debug=False ): 
@@ -615,12 +611,12 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
 
 
 # --------------
-#  4.07 - Returns tracers unit and scale (if requested)
+#  X.XX - Get tracer's unit (and scale if requested)
 # --------------
 def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,\
         ClearFlo_unit=False, IUPAC_unit=False, debug=False ):
     """ 
-    Get appropirate unit for Tracer
+    Get appropirate unit for Tracer (and scaling if requested)
 
     Parameters
     ----------
@@ -764,43 +760,8 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,\
     else:
         return units
 
-
-# ----
-#  4.10 - Return dictionary of gaw sites
-# ----
-def gaw_2_name():
-    """ 
-    Returns dictionary GAW of sites
-    """
-    wdf = get_dir('dwd') +'ozonesurface/' + 'gaw_site_list.h5'
-    df= pd.read_hdf( wdf,  'wp', mode='r' )
-    names = df.values[:,1]
-
-    # alter long name for CVO
-    ind = [ n for n, i in enumerate(names) if  \
-        ( i =='Cape Verde Atmospheric Observatory' ) ]
-    names[ind[0]] = 'Cape Verde'
-
-    return dict( zip( df.index, names ))
-
-# ----
-#  4.11 - Returns list of gaw sites in HDF file of O3 surface data
-# ----
-def get_global_GAW_sites(f='gaw_site_list_global.h5'):
-    """ 
-    Get list of just GAW global sites. 
-    """
-    wd= get_dir('dwd') +'ozonesurface/' 
-    df= pd.read_hdf( wd+f,  'wp', mode='r' )
-    vars = sorted( list(df.index) )
-    # Kludge: remove those not in "grouped" analysis  
-    # ( Q: why are these sites not present?  - A: data control for lomb-scragle)
-    [ vars.pop( vars.index(i) ) for i in ['ZUG', 'ZSF', 'ZEP', 'WLG', 'USH', 'SDK', 'PYR', 'PUY', 'PAL', 'MKN', 'IZO', 'HPB', 'DMV', 'BKT', 'AMS', 'ALT', 'ABP'] ]
-#[ 'AMS', 'MKN', 'IZO' , 'WLG', 'PYR', 'USH', 'ABP', 'ALT'] ]
-    return vars
-
 # --------   
-# 4.14 - Convert gamap category/species name to Iris/bpch name
+# X.XX - Convert gamap category/species name to Iris/bpch name
 # --------
 def diagnosticname_gamap2iris( x  ):
     """ 
@@ -830,16 +791,16 @@ def diagnosticname_gamap2iris( x  ):
     return d[x]
 
 # --------   
-# 4.15 - Get scaling for a given unit
+# X.XX - Get scaling for a given unit
 # --------
 def get_unit_scaling( units, scaleby=1 ):
     """ 
     Get scaling for a given unit string 
+
     Parameters
     ----------
     units (str): units  
     scaleby (float): scaling factor for unit
-
     """
     logging.debug("Getting unit scaling for {units}".format(units=units))
     misc = 'K', 'm/s', 'unitless', 'kg' ,'m', 'm2','kg/m2/s', \
@@ -859,7 +820,7 @@ def get_unit_scaling( units, scaleby=1 ):
     return scaleby
 
 # --------   
-# 4.16 - Species class for GEOS-Chem - Credit: Ben Newsome 
+# X.XX - Species class for GEOS-Chem - Credit: Ben Newsome 
 # --------
 class species:
     """ 
@@ -901,39 +862,12 @@ class species:
             except NameError:
                 print "Species not found in CSV file"   
 
-# --------   
-# 4.17 -  Observational site class
-# --------
-class GEO_Site:
-    """ 
-    Class for holding infomation about observational sites 
-    """
-    def __init__(self, name ):
-        self.name = name
-        self.help = (""" This class holds infomatio on obs. sites  """)
-        wd = get_dir( 'tpwd' )+'/d_REF_dat_files/'
-        filename = "ClBrI_ClNO2_FULL.dat" 
+        # TODO - Add in function to return stiochmetery using smile str
+        # (e.g. how many carbons in species )
 
-        # Check file exists
-        if not os.path.exists( wd + filename ):
-            print "ERROR. Is this file correct?: ",  wd + filename 
-        # Open File and extract info on site
-        df = pd.read_csv( wd+'/'+filename, skipinitialspace=True )
-
-        #  Select Site
-        df= df[ df['ID'] == name ]
-        if len(df.index) > 0:
-            # Select site
-            df= df[ df['ID'] == name ]
-            self.LAT = float( df['LAT'].values )
-            self.LON = float( df['LON'].values )
-            self.ALT = float( df['PRESS'].values ) # hPa
-            self.UTC = float( df['UTC'].values ) # Time zone (UTC diff )
-        else:
-            print 'ERROR whilst reading site details', name  
 
 # --------   
-# 4.18 -  dictionary of category + species names from diagnostic ordering
+# X.XX -  dictionary of category + species names from diagnostic ordering
 # --------
 def get_ctm_nc_var( variable ):
     """ 
@@ -967,7 +901,7 @@ def get_ctm_nc_var( variable ):
 
 
 # --------------
-# 5.02 - Store of  constants for use by funcs/progs
+# X.XX - Store of  constants for use by funcs/progs
 # --------------
 def constants(input_x, rtn_dict=False ):
     """ 
@@ -996,12 +930,70 @@ def constants(input_x, rtn_dict=False ):
         return con_dict[input_x]
 
 
-# ---------------- Section 6 -------------------------------------------
+
+# --------------
+# X.XX - Remove ClBrI het loss tracers during testing
+# -------------
+def rm_ClBrI_het_loss( spec_l=None, r_=None, fam=None, debug=False):
+    """ 
+    Allow for remove of het loss routes during testing. Can return species list 
+    (spec_l) + optionally 
+    """
+
+    # Print argument variables
+    if debug:
+        print 'before ind removal', spec_l, fam
+        print [ len(i) for i in spec_l, fam ], \
+    
+
+    # --- Local variables
+    rm_tracers = [ \
+        'LR44', 'LR45', 'LR42', 'LR43', 'LR33', 'LR35', 'LR39', 'LR32', \
+        'LR47', 'LR46']
+    # -- get indices of tracers to rm, then pop from lists
+    ind = [ n for n,i in enumerate( spec_l ) if ( i in rm_tracers) ]
+    # remove species from list
+    [ spec_l.pop(i) for i in sorted( ind )[::-1] ]         
+    rtn_list = [ spec_l]
+    # remove ind from fam list
+    if not isinstance( fam, type(None) ):
+        [ fam.pop(i) for i in sorted( ind )[::-1] ] 
+        rtn_list += [ fam ]
+
+    # remove ind from "r_" list
+    if not isinstance( r_, type(None) ):
+        if debug:
+            print len( [item for sublist in r_ for item in sublist] ), len(r_)
+        count = len( spec_l )        
+        for list_ in r_[::-1]:
+            for element in list_[::-1]:
+                if count in ind:
+                    list_.pop( list_[::-1].index( element ) )
+                # reduce count
+                count = count - 1
+        if debug:
+            print len( [item for sublist in r_ for item in sublist] )
+        rtn_list += [ r_ ]
+
+    if debug:
+        print 'after ind removal', spec_l, fam, ind, sorted( ind )[::-1]
+        print [ len(i) for i in spec_l, fam ], \
+
+    return rtn_list
+
+
+# ------------------------------------------------------------------------
+# ------------------------------------------------------------------------
+# ------------------------------------------------------------------------
+# ---------------- Section X.X -------------------------------------------
 # -------------- Dynamic processing of p/l
 #
+# NOTE - below functions for automated processing/parsing of smvgear 
+# mechanisms for tagging. It is redundant and far more coherent version
+# for processing KPP mechanisms and tags is included in funcs4GEOS.py
     
 # -------------
-# 6.01 - Extract reactions to form a dictionary of active reactions 
+# X.XX - Extract reactions to form a dictionary of active reactions 
 # ------------- 
 def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
         LaTeX=False, debug=False ):
@@ -1092,7 +1084,7 @@ def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
     return rdict
     
 # -------------
-# 6.02 - Extract reactions tracked by prod loss diag for a given p/l family
+# X.XX - Extract reactions tracked by prod loss diag for a given p/l family
 # ------------- 
 def rxns_in_pl( wd, spec='LOX', debug=False ):
     """ 
@@ -1151,7 +1143,7 @@ def rxns_in_pl( wd, spec='LOX', debug=False ):
     return rdict
 
 # ------------- 
-# 6.03 - Extract reaction infomation for given tracer tags
+# X.XX - Extract reaction infomation for given tracer tags
 # ------------- 
 def rxn4pl( pls, wd='example/example', rdict=None, reduce_size=True, \
             ver='1.7', debug=False ):
@@ -1205,7 +1197,7 @@ def rxn4pl( pls, wd='example/example', rdict=None, reduce_size=True, \
     return  dict( zip( keys[:,0],  [ rdict[int(i)] for i in keys[:,1] ]) )
     
 # -------------
-# 6.04 - Construct a list of indicies for each fam from given tags
+# X.XX - Construct a list of indicies for each fam from given tags
 # ------------- 
 def get_indicies_4_fam( tags, fam=False, IO_BrOx2=False, rtnspecs=False,
          NOy_as_HOx=True, Include_Chlorine=False, debug=False ):
@@ -1286,7 +1278,7 @@ def get_indicies_4_fam( tags, fam=False, IO_BrOx2=False, rtnspecs=False,
         return ll
 
 # -------------
-# 6.05 - Get tags for reactions
+# X.XX - Get tags for reactions
 # ------------- 
 def get_p_l_tags( rxns, debug=False):
     """ 
@@ -1324,7 +1316,7 @@ def get_p_l_tags( rxns, debug=False):
     return tagsl
 
 # -------------
-# 6.06 - extract reactions tracked by prod loss diag in input.geos
+# X.XX - extract reactions tracked by prod loss diag in input.geos
 # ------------- 
 def p_l_species_input_geos( wd, ver='1.7', rm_multiple_tagged_rxs=False, debug=False ):
     """ 
@@ -1400,7 +1392,7 @@ def p_l_species_input_geos( wd, ver='1.7', rm_multiple_tagged_rxs=False, debug=F
     return PD, vars
 
 # -------------
-# 6.07 - extract all active tags from smv.log
+# X.XX - extract all active tags from smv.log
 # ------------- 
 def tags_from_smvlog( wd ): #, spec='LOX' ):
     """  
@@ -1435,7 +1427,7 @@ def tags_from_smvlog( wd ): #, spec='LOX' ):
         for x in 'PD', 'RD', 'PO3','LO3' , 'LR' ]) ]
 
 # -------------
-# 6.08 - extract all active PDs from smv.log
+# X.XX - extract all active PDs from smv.log
 # ------------- 
 def PDs_from_smvlog( wd, spec='LOX' ):
     """  
@@ -1473,7 +1465,7 @@ def PDs_from_smvlog( wd, spec='LOX' ):
     return rxns
     
 # -------------
-# 6.09 - Give all reactions tag is active within
+# X.XX - Give all reactions tag is active within
 # ------------- 
 def rxns4tag( tag, rdict=None, ver='1.7', wd=None ):
     """ 
@@ -1517,7 +1509,7 @@ def rxns4tag( tag, rdict=None, ver='1.7', wd=None ):
     return rxns
 
 # -------------
-# 6.10 - get details for a given tag
+# X.XX - get details for a given tag
 # ------------- 
 def get_tag_details( wd, tag=None, PDs=None,  rdict=None, PHOTOPROCESS=None, ver='1.7',\
         LaTeX=False, print_details=False, debug=False ):
@@ -1571,7 +1563,7 @@ def get_tag_details( wd, tag=None, PDs=None,  rdict=None, PHOTOPROCESS=None, ver
         return dets
         
 # -------------
-# 6.11 - Takes a reaction number add gives the Ox Coe
+# X.XX - Takes a reaction number add gives the Ox Coe
 # ------------- 
 def get_rxn_Coe(wd, num, tag, nums=None, rxns=None, tags=None, Coe=None, spec='LOX', \
         ver='1.6', debug=False):
@@ -1614,55 +1606,6 @@ def get_rxn_Coe(wd, num, tag, nums=None, rxns=None, tags=None, Coe=None, spec='L
     return Coe
 
 
-# --------------
-# 6.12 - Remove ClBrI het loss tracers during testing
-# -------------
-def rm_ClBrI_het_loss( spec_l=None, r_=None, fam=None, debug=False):
-    """ 
-    Allow for remove of het loss routes during testing. Can return species list 
-    (spec_l) + optionally 
-    """
-
-    # Print argument variables
-    if debug:
-        print 'before ind removal', spec_l, fam
-        print [ len(i) for i in spec_l, fam ], \
-    
-
-    # --- Local variables
-    rm_tracers = [ \
-        'LR44', 'LR45', 'LR42', 'LR43', 'LR33', 'LR35', 'LR39', 'LR32', \
-        'LR47', 'LR46']
-    # -- get indices of tracers to rm, then pop from lists
-    ind = [ n for n,i in enumerate( spec_l ) if ( i in rm_tracers) ]
-    # remove species from list
-    [ spec_l.pop(i) for i in sorted( ind )[::-1] ]         
-    rtn_list = [ spec_l]
-    # remove ind from fam list
-    if not isinstance( fam, type(None) ):
-        [ fam.pop(i) for i in sorted( ind )[::-1] ] 
-        rtn_list += [ fam ]
-
-    # remove ind from "r_" list
-    if not isinstance( r_, type(None) ):
-        if debug:
-            print len( [item for sublist in r_ for item in sublist] ), len(r_)
-        count = len( spec_l )        
-        for list_ in r_[::-1]:
-            for element in list_[::-1]:
-                if count in ind:
-                    list_.pop( list_[::-1].index( element ) )
-                # reduce count
-                count = count - 1
-        if debug:
-            print len( [item for sublist in r_ for item in sublist] )
-        rtn_list += [ r_ ]
-
-    if debug:
-        print 'after ind removal', spec_l, fam, ind, sorted( ind )[::-1]
-        print [ len(i) for i in spec_l, fam ], \
-
-    return rtn_list
 
 # --------------
 # 6.13 - PD to rxn str - remake of redundant function
@@ -1738,112 +1681,8 @@ def get_pldict_reactants( pl_dict=None, only_rtn_tracers=True, rm_OH=True, rm_Cl
 
     return strs
 
-# --------------
-# 6.14 - 
-# -------------
-def get_adjustment4tags( tags, PDs=None, pl_dict=None, ver='1.6', \
-        verbose=False, wd=None, Include_Chlorine=False, IO_BrOx2=False, \
-        debug=False):
-    """  
-    Get coefficent for rxn tag from smv2.log using the provided family
-    and adjusts the reaction tag to unity.
 
-    The adjust to uniuty only occurs for older LO3_??/PO3_?? tags, which 
-    included coefficents for the reactions in globchem.dat
-
-    This function is a cousin to "get_rxn_Coe", but takes rxn tags as arguements 
-    and adjusts a tag to unity. 
-
-    Notes
-    -----
-     - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
-    will make it redundent and therefore this is not being maintained.    """
-        
-    # --- get dictionaries for reactions + PDs, if not provided
-    if isinstance( pl_dict, type(None) ):
-        pl_dict = get_pl_dict( wd, spec='LOX', rmx2=True, ver=ver, debug=debug )
-    if isinstance( PDs, type(None) ):
-        PDs = [ PLO3_to_PD(i, wd=wd, ver=ver) for i in spec_l ]
-
-    # Extract smv2.log change in rxn for family 
-    # ( note: this won't include tag coefficients as these tag rxn not family )    
-    Coes = [ pl_dict[i][-1] for i in tags ]
-
-    # --- If species is manually known or non zero, then times by tag Coe
-    # ( This is only used for the Ox tracers from dev. Iy...  simulation )
-    for n, tag in enumerate( tags ):
-
-        # Consider all change positive - Kludge 
-        # ( This is due to the assignment approach, where P=prod, L=loss )
-#        if ('P' not in PDs[n] ): 
-        if Coes[n] < 0:
-            Coes[n] =  Coes[n]*-1.0
-
-        # Ensure all tag coefficients start from unity
-        # times by tag Coefficient (if not ==1) all -Coes start from unity
-        try:            
-            if debug:
-                print 'Accounting for (non unity) Coe in globchem.dat for:' + \
-                    '{}, PD:{}, to Coe:{} (from {})'.format(  tag, PDs[n],  \
-                    Coes[n]*p_l_unity(tag), Coes[n]  )
-            Coes[n] = Coes[n]*p_l_unity(tag)
-
-        except:
-            if debug:
-                print 'Just using Coe from smv.log @:'+ \
-                    '{} for {}, PD:{}, Coe:{}'.format( wd, tag, PDs[n], Coes[n])
-
-    # Reduce route by half if considered twice (e.g. for two families )
-    for n, tag in enumerate( tags ):    
-        
-        # If Br + I
-        if ( tag == 'LO3_24' ) and IO_BrOx2:
-            if debug:
-                print 'before: ', tag, Coe[n] 
-            Coes[n] = Coes[n] * adjust2half4crossover( tag )
-            if debug:
-                print 'after: ', tag, Coe[n] 
-
-        # If  Cl+Br+I ("Include_Chlorine")
-        if any( [ (tag == i ) for i in 'LO3_87' , 'LO3_82' ] ) and \
-             Include_Chlorine:
-            if debug:
-                print 'before: ', tag, Coes[n] 
-            Coes[n] = Coes[n] * adjust2half4crossover( tag )
-            if debug:
-                print 'after: ', tag, Coes[n] 
-    
-    return Coes
-
-def adjust2half4crossover( tag='LO3_24', ):
-    """ 
-    Consider half the value for halogen cross-over reaction tags. 
-        This allows for the tags to be included once per family 
-
-    Notes
-    -----
-     - This function is redundent (and no longer in use?)
-    """
-    
-    d = {
-    'LO3_24' :  0.5,  # IO + BrO
-    'LO3_87' : 0.5, # IO + ClO  
-    'LO3_82' : 0.5 # BrO + ClO
-    }
-    
-    return d[tag]
-
-# -------------- Section 7 -------------------------------------------
-# -------------- Observational Variables
-#
-
-# 5.02 - obs sites (e.g. deposition locs, lons, alts )
-# 5.04 - Store site locations ( LAT,  LON,  ALT)
-
-
-
-
-# ---------------- Section 2 -------------------------------------------
+# ---------------- Section X.X -------------------------------------------
 # -------------- Drivers
 #
 
@@ -1892,7 +1731,7 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5', verbose=False, debug=
         print 'update programme - manual PLdict now obsolete. '
 
 # -------------
-# 2.02 - Uses functions to build a dictionary for a given family of loss
+# X.XX - Uses functions to build a dictionary for a given family of loss
 # ------------- 
 def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', rm_redundent_ClBrI_tags=False,\
         debug=False):
@@ -2000,7 +1839,7 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', rm_redundent_ClBrI_tags
             for n, i in enumerate( details) ] ) )
 
 # -------------
-# 2.03 - Get prod loss reactions for a given family.
+# X.XX - Get prod loss reactions for a given family.
 # ------------- 
 def prod_loss_4_spec( wd, fam, all_clean=True, ver='1.7', debug=False ):
     """ 
@@ -2119,6 +1958,11 @@ def prod_loss_4_spec( wd, fam, all_clean=True, ver='1.7', debug=False ):
 
     return nums, rxns, tags, Coe
 
+# ------------------------------------------------------------------------
+# ------------------------------------------------------------------------
+# ------------------------------------------------------------------------
+
+
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
@@ -2131,7 +1975,7 @@ def prod_loss_4_spec( wd, fam, all_clean=True, ver='1.7', debug=False ):
 # (2) It is not advised to use these. 
 
 # --------------
-# 4.05 -  GEOS-Chem/ctm.bpch values
+# X.XX -  GEOS-Chem/ctm.bpch values
 # --------------
 def latex_spec_name(input_x, debug=False):
     """ 
@@ -2220,6 +2064,36 @@ def latex_spec_name(input_x, debug=False):
     }
     return spec_dict[input_x]
     
+# --------   
+# X.XX -  Observational site class
+# --------
+class GEO_Site:
+    """ 
+    Class for holding infomation about observational sites 
+    """
+    def __init__(self, name ):
+        self.name = name
+        self.help = (""" This class holds infomatio on obs. sites  """)
+        wd = get_dir( 'tpwd' )+'/d_REF_dat_files/'
+        filename = "ClBrI_ClNO2_FULL.dat" 
+
+        # Check file exists
+        if not os.path.exists( wd + filename ):
+            print "ERROR. Is this file correct?: ",  wd + filename 
+        # Open File and extract info on site
+        df = pd.read_csv( wd+'/'+filename, skipinitialspace=True )
+
+        #  Select Site
+        df= df[ df['ID'] == name ]
+        if len(df.index) > 0:
+            # Select site
+            df= df[ df['ID'] == name ]
+            self.LAT = float( df['LAT'].values )
+            self.LON = float( df['LON'].values )
+            self.ALT = float( df['PRESS'].values ) # hPa
+            self.UTC = float( df['UTC'].values ) # Time zone (UTC diff )
+        else:
+            print 'ERROR whilst reading site details', name  
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
@@ -2232,7 +2106,140 @@ def latex_spec_name(input_x, debug=False):
 # (1) These are retained, but will be migrated to a seperate non-generic module
 # (2) It is not advised to use these. 
 
+# --------------
+# X.XX - Get coefficient for reaction adjusted reference family terms
+# -------------
+def get_adjustment4tags( tags, PDs=None, pl_dict=None, ver='1.6', \
+        verbose=False, wd=None, Include_Chlorine=False, IO_BrOx2=False, \
+        debug=False):
+    """  
+    Get coefficent for rxn tag from smv2.log using the provided family
+    and adjusts the reaction tag to unity.
 
+    The adjust to uniuty only occurs for older LO3_??/PO3_?? tags, which 
+    included coefficents for the reactions in globchem.dat
+
+    This function is a cousin to "get_rxn_Coe", but takes rxn tags as arguements 
+    and adjusts a tag to unity. 
+
+    Notes
+    -----
+     - This function is useful, but update to GEOS-Chem flexchem ( in >v11) 
+    will make it redundent and therefore this is not being maintained.    """
+        
+    # --- get dictionaries for reactions + PDs, if not provided
+    if isinstance( pl_dict, type(None) ):
+        pl_dict = get_pl_dict( wd, spec='LOX', rmx2=True, ver=ver, debug=debug )
+    if isinstance( PDs, type(None) ):
+        PDs = [ PLO3_to_PD(i, wd=wd, ver=ver) for i in spec_l ]
+
+    # Extract smv2.log change in rxn for family 
+    # ( note: this won't include tag coefficients as these tag rxn not family )    
+    Coes = [ pl_dict[i][-1] for i in tags ]
+
+    # --- If species is manually known or non zero, then times by tag Coe
+    # ( This is only used for the Ox tracers from dev. Iy...  simulation )
+    for n, tag in enumerate( tags ):
+
+        # Consider all change positive - Kludge 
+        # ( This is due to the assignment approach, where P=prod, L=loss )
+#        if ('P' not in PDs[n] ): 
+        if Coes[n] < 0:
+            Coes[n] =  Coes[n]*-1.0
+
+        # Ensure all tag coefficients start from unity
+        # times by tag Coefficient (if not ==1) all -Coes start from unity
+        try:            
+            if debug:
+                print 'Accounting for (non unity) Coe in globchem.dat for:' + \
+                    '{}, PD:{}, to Coe:{} (from {})'.format(  tag, PDs[n],  \
+                    Coes[n]*p_l_unity(tag), Coes[n]  )
+            Coes[n] = Coes[n]*p_l_unity(tag)
+
+        except:
+            if debug:
+                print 'Just using Coe from smv.log @:'+ \
+                    '{} for {}, PD:{}, Coe:{}'.format( wd, tag, PDs[n], Coes[n])
+
+    # Reduce route by half if considered twice (e.g. for two families )
+    for n, tag in enumerate( tags ):    
+        
+        # If Br + I
+        if ( tag == 'LO3_24' ) and IO_BrOx2:
+            if debug:
+                print 'before: ', tag, Coe[n] 
+            Coes[n] = Coes[n] * adjust2half4crossover( tag )
+            if debug:
+                print 'after: ', tag, Coe[n] 
+
+        # If  Cl+Br+I ("Include_Chlorine")
+        if any( [ (tag == i ) for i in 'LO3_87' , 'LO3_82' ] ) and \
+             Include_Chlorine:
+            if debug:
+                print 'before: ', tag, Coes[n] 
+            Coes[n] = Coes[n] * adjust2half4crossover( tag )
+            if debug:
+                print 'after: ', tag, Coes[n] 
+    
+    return Coes
+
+
+# --------------
+# X.XX - adjust halogen cross-over reaction stoichometry 
+# -------------
+def adjust2half4crossover( tag='LO3_24', ):
+    """ 
+    Consider half the value for halogen cross-over reaction tags. 
+        This allows for the tags to be included once per family 
+
+    Notes
+    -----
+     - This function is redundent (and no longer in use?)
+    """
+    
+    d = {
+    'LO3_24' :  0.5,  # IO + BrO
+    'LO3_87' : 0.5, # IO + ClO  
+    'LO3_82' : 0.5 # BrO + ClO
+    }
+    
+    return d[tag]
+
+
+
+# ----
+#  X.XX - Return dictionary of gaw sites
+# ----
+def gaw_2_name():
+    """ 
+    Returns dictionary GAW of sites
+    """
+    wdf = get_dir('dwd') +'ozonesurface/' + 'gaw_site_list.h5'
+    df= pd.read_hdf( wdf,  'wp', mode='r' )
+    names = df.values[:,1]
+
+    # alter long name for CVO
+    ind = [ n for n, i in enumerate(names) if  \
+        ( i =='Cape Verde Atmospheric Observatory' ) ]
+    names[ind[0]] = 'Cape Verde'
+
+    return dict( zip( df.index, names ))
+
+# ----
+#  X.XX - Returns list of gaw sites in HDF file of O3 surface data
+# ----
+def get_global_GAW_sites(f='gaw_site_list_global.h5'):
+    """ 
+    Get list of just GAW global sites. 
+    """
+    wd= get_dir('dwd') +'ozonesurface/' 
+    df= pd.read_hdf( wd+f,  'wp', mode='r' )
+    vars = sorted( list(df.index) )
+    # Kludge: remove those not in "grouped" analysis  
+    # ( Q: why are these sites not present?  - A: data control for lomb-scragle)
+    [ vars.pop( vars.index(i) ) for i in ['ZUG', 'ZSF', 'ZEP', 'WLG', 'USH', 'SDK', 'PYR', 'PUY', 'PAL', 'MKN', 'IZO', 'HPB', 'DMV', 'BKT', 'AMS', 'ALT', 'ABP'] ]
+#[ 'AMS', 'MKN', 'IZO' , 'WLG', 'PYR', 'USH', 'ABP', 'ALT'] ]
+    return vars
 
 
 # --------------

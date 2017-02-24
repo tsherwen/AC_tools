@@ -40,8 +40,9 @@ from funcs_vars import *
 # ------------------------------------------- Section 1 -------------------------------------------
 # -------------- Planeflight Setup tools
 #
+
 # --------------
-# 1.00 - Read in file of GAW sites as lists
+# X.XX - Read in file of GAW sites as lists
 # -------------
 def readin_gaw_sites(filename, all=False):
     """ 
@@ -74,7 +75,7 @@ def readin_gaw_sites(filename, all=False):
     return numbers, lats, lons, pres, locs
 
 # --------------
-# 1.01 - Read in file of site lists -  
+# X.XX - Read in file of site lists -  
 # -------------
 def read_in_kml_sites(filename, limter=10, ind=[0, 3, 1, 2 ], debug=False):
     """ 
@@ -132,39 +133,6 @@ def read_in_kml_sites(filename, limter=10, ind=[0, 3, 1, 2 ], debug=False):
 
     return times, lats, lons, altitude
 
-# --------------
-# 1.01 - Read files from Dix et al/Volkamer et al
-# -------------
-def read_TOR_IO_files(filename, debug = False):
-    """ 
-    Read in csv files from TORERO campaign 
-    """
-    if debug:
-        print 'read_TOR_IO_files called for ', filename
-
-    reader = csv.reader(open(filename,'rb'), delimiter=',') 
-    print reader, filename
-    data_line = False
-    for row in reader:
-        new = row[:][0].strip().split()
-        print  new[0], (new[0] == 'UTC' ), data_line
-        if (data_line):
-            try:
-                locations.append(new)
-            except:
-                locations=[new]
-
-        if (new[0] == 'UTC' ):
-            data_line = True
-
-    locations=np.array(locations)
-    times = locations[:,0]
-    altitude = locations[:,1]
-    lats = locations[:,2]
-    lons = locations[:,3]
-    data = locations[:,-2]
-
-    return times, lats, lons, altitude, data
 
 
 # ------------------------------------------- Section 3 -------------------------------------------
@@ -172,10 +140,10 @@ def read_TOR_IO_files(filename, debug = False):
 #
 
 # ----
-#  3.01 - Get plane flight data for a given location and species
+#  X.XX - Get plane flight data for a given location and species
 # ----
-def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
-            Kludge_fortan_output=False, ver=None, verbose=True, debug=False):
+def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False, \
+        Kludge_fortan_output=False, ver=None, verbose=True, debug=False):
     """ 
     Read in sites from files in a given working directory
 
@@ -251,10 +219,10 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False,   \
         return [data] + vars
 
 # -------------- 
-# 2.02 - Basic planeflight Output reader - mje
+# X.XX - Basic planeflight Output reader - mje
 # -------------- 
-def readfile_basic(files, location, debug=False, \
-            Kludge_fortan_output=False, rm_empty=False):
+def readfile_basic(files, location, debug=False, Kludge_fortan_output=False, \
+        rm_empty=False):
     """ 
     basic readfile function for planeflight output in csv 
 
@@ -293,10 +261,10 @@ def readfile_basic(files, location, debug=False, \
     return big, names
 
 # --------------
-# 2.03 - date specific (Year,Month,Day) planeflight output reader - tms
+# X.XX - date specific (Year,Month,Day) planeflight output reader - tms
 # -------------
 def readfile( files, location, years, months, days, plot_all_data=False, 
-            debug=False, **kwargs):
+        debug=False, **kwargs):
     """ 
     Date specific readfile function for planeflight output in csv
 
@@ -374,9 +342,9 @@ def readfile( files, location, years, months, days, plot_all_data=False,
     return big, names
 
 # -------------- 
-# 2.04 - files sent by a selected read of files
+# X.XX - files sent by a selected read of files
 # ----------
-def process_files_to_read(files, location, big, names, debug = True):
+def process_files_to_read(files, location, big, names, debug=True):
     """ Function to extract data from GEOS-Chem planeflight csv 
             output to list form  """
 
@@ -399,7 +367,7 @@ def process_files_to_read(files, location, big, names, debug = True):
 
 
 # -------------- 
-# 2.06 - Get headers for a given pf file (return var names, and points )
+# X.XX - Get headers for a given pf file (return var names, and points )
 # ----------
 def get_pf_headers(file, debug=False):
     """ 
@@ -424,7 +392,7 @@ def get_pf_headers(file, debug=False):
     return names, list( set(points) )
 
 # -------------- 
-# 2.07 - pf 2 pandas binary
+# X.XX - pf 2 pandas binary
 # ----------
 def pf2pandas(wd, files, vars=None, npwd=None, rmvars=None,   \
             debug=False):
@@ -523,7 +491,7 @@ def pf_csv2pandas( file=None, vars=None, epoch=False, r_vars=False, \
 
 
 # ----
-# 2.10 - Extract all pf data for a given site.
+# X.XX - Extract all pf data for a given site.
 # ----
 def wd_pf_2_gaw_arr( wd, spec='O3', location='CVO', scale=1E9, debug=False ):
     """ 
@@ -541,7 +509,7 @@ def wd_pf_2_gaw_arr( wd, spec='O3', location='CVO', scale=1E9, debug=False ):
     return data, date, time
 
 # ----
-#  2.11 - Process "raw" csv files from GEOS-Chem planeflight output
+#  X.XX - Process "raw" csv files from GEOS-Chem planeflight output
 # ----
 def pro_raw_pf( wd, site='CVO', ext='', run='', frac=False, diurnal=True, \
             res='4x5', debug=False ):
@@ -579,7 +547,7 @@ def pro_raw_pf( wd, site='CVO', ext='', run='', frac=False, diurnal=True, \
     np.memmap.flush(fp)
 
 # ----
-# 2.12 - Read pf data from 2D NetCDF table file 
+# X.XX - Read pf data from 2D NetCDF table file 
 # ----
 def get_pf_data_from_NetCDF_table( ncfile=None, req_var='TRA_69', spec='IO', \
         loc='CVO', start=None, end=None, ver='1.7', verbose=False, \
@@ -630,7 +598,7 @@ def get_pf_data_from_NetCDF_table( ncfile=None, req_var='TRA_69', spec='IO', \
 # -------------- Planeflight Analysis/Post formating 
 
 # --------------
-# 3.01 - Process time/date to datetime equivalent
+# X.XX - Process time/date to datetime equivalent
 # -------------
 def pf2datetime( model, debug=False ):
     """ 
@@ -657,7 +625,7 @@ def pf2datetime( model, debug=False ):
     return dates
 
 # --------------                                                                                                                                             
-# 3.03 - adjust non UT times to UT
+# X.XX - adjust non UT times to UT
 # ------------- 
 def pf_UT_2_local_t(time_s, site='CVO', half_hour=None, debug=False):
     """ 

@@ -61,13 +61,12 @@ from funcs_vars import *
 from Scripts.bpch2netCDF import convert_to_netCDF
 
 
-
 # --------------------------------- Section 2 ----------------------------------
 # -------------- Model Data Extractors
 #
 
 # ----
-# 1.04 -Get surface area  ( m^2 )
+# X.XX - Get array of surface area ( m^2 ) for a 2D grid 
 # ----
 def get_surface_area(res=None, wd=None, debug=False):
     """ 
@@ -154,11 +153,11 @@ def list_variables(wd=None):
 
     Parameters
     ----------
-    wd=None (Specify the working directory)
+    wd (None): Specify the working directory
 
     Returns
     -------
-    prints a list of variables.
+    (None) prints a list of variables.
 
     Notes
     -------
@@ -211,14 +210,21 @@ def list_variables(wd=None):
     return
         
 # ----
-# 1.05 - Get Land map. 
+# X.XX - Get Land map. 
 # ----
 def get_land_map(res='4x5', time=None, wd=None,debug=False):
     """ 
-    Return land, water, and ice indices (LWI ) from GEOS-Chem with integers for Land (1) 
-    and Water (0). Ice fraction is given as fractional values. 
+    Return land, water, and ice indices (LWI ) from GEOS-Chem with integers 
+    for Land (1) and Water (0). Ice fraction is given as fractional values. 
 
-	NOTES:
+    Parameters
+    -------
+
+    Returns
+    -------
+
+    Notes
+    -----
 	 - This approach is inefficent and requires large files. Could this be improved with
 	 on-line extract on inclusion of generic output for various resoltions as txt files? 
     """
@@ -264,12 +270,21 @@ def get_land_map(res='4x5', time=None, wd=None,debug=False):
     return landmap
 
 # ----
-# 1.07 - get air mass (4D) np.array in kg
+# X.XX - get air mass (4D) np.array in kg
 # ----
 def get_air_mass_np( ctm_f=None, wd=None, times=None, trop_limit=True,\
         debug=False ):
     """ 
     Get array of air mass in kg 
+
+    Parameters
+    -------
+
+    Returns
+    -------
+
+    Notes
+    -----
     """
     logging.info( 'called get air mass' )
 
@@ -332,6 +347,15 @@ def get_CH4_mean( wd, rtn_global_mean=True, rtn_avg_3D_concs=False, \
         res='4x5', debug=False ):
     """ 
     Get mean CH4 concentrtaion from geos.log files in given directory 
+
+    Parameters
+    -------
+
+    Returns
+    -------
+
+    Notes
+    -----
     """
 
     if debug:
@@ -466,7 +490,7 @@ def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, \
     return OH, HO2
 
 # ----
-# 1.21 - Process species for given arrays to (v/v) in respective scale + DU
+# X.XX - Process species for given arrays to (v/v) in respective scale + DU
 # ----
 def process_data4specs( specs=None, just_bcase_std=True, preindustrial=False, \
         just_bcase_no_hal=False, res='4x5', ver='1.6', diff=True, pcent=True, \
@@ -700,16 +724,19 @@ def get_HEMCO_output( wd=None, files=None, filename=None, vars=None, \
     Data extractor for hemco files and folders. You can specify either a 
     working dir or a file to get the data from.
 
+    Parameters
+    -------
+    wd (str): the directory to search for files in
+    vars (None): hemco_file or file list
+    files (None): hemco_file or file list
 
-    INPUTS:
-    wd=None,        Working directory
-    files=None,      hemco_file or file list
-    vars=None,      List of variables
+    Returns
+    -------
+    (list) of numpy arrays the size of the input vars list.
 
-    Output:
-    List of numpy arrays the size of the input vars list.
+    Notes
+    -----
     """
-
     logging.info("Called get hemco output.")
 
     # Allow single strings to be input instead of making it have to be a list.
@@ -772,7 +799,7 @@ def get_HEMCO_output( wd=None, files=None, filename=None, vars=None, \
     return arr;
 
 # ----
-# 1.22 - Get var data for model run
+# X.XX - Get var data for model run
 # ----
 def get_GC_output( wd, vars=None, species=None, category=None, r_cubes=False, \
         r_res=False, restore_zero_scaling=True, r_list=False, trop_limit=False, \
@@ -1110,7 +1137,6 @@ def get_gc_res( wd, filename='ctm.nc' ):
     Returns
     -------
     (str)
-
     """
     # create NetCDf if not created.
     fname = wd+ '/'+filename
@@ -1134,13 +1160,23 @@ def get_gc_res( wd, filename='ctm.nc' ):
     return res 
 
 # ----
-# 1.25 - Get surface area ( m^2 ) for any global resolution
+# X.XX - Get surface area ( m^2 ) for any global resolution
 # ----
 def calc_surface_area_in_grid( res='1x1', debug=False ):
     """ 
     Use GEOS-Chem appraoch for GEOS-Chem grid surface areas.
 
-	NOTE(s):
+    Parameters
+    -------
+    res (str): the resolution if wd not given (e.g. '4x5' )
+    debug (boolean): legacy debug option, replaced by python logging
+
+    Returns
+    -------
+    (array)
+
+    Notes
+    -----
      - update this to take any values for res... 
 	 - Does this function need updating?
 
@@ -1216,10 +1252,7 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
     !
     ! (bmy, 4/20/06, 2/24/12)
     !======================================================================
-        
-
     """
-
     logging.info('called calc surface area in grid')
 
     # Get latitudes and longitudes in grid    
@@ -1257,7 +1290,7 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
     return A1x1
 
 # ----
-# 1.26 - Process species for given family arrays to (v/v)
+# X.XX - Process species for given family arrays to (v/v)
 # ----
 def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
     trop_limit=True, N=False, I=False, Cl=False, Br=False, t_ps=None, a_m=None,\
@@ -1338,14 +1371,22 @@ def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
     return arr, specs
 
 # ----
-# 1.27 - Convert v/v array to DU array 
+# X.XX - Convert v/v array to DU array 
 # ----
 def convert_v_v_2_DU( arr, wd=None, a_m=None, trop_limit=True, s_area=None, \
         molecs=None, verbose=True, debug=False):
     """ 
     Convert a 4D array of v/v for species (or family) to  DU
-    """
 
+    Parameters
+    -------
+
+    Returns
+    -------
+
+    Notes
+    -----
+    """
     # Get DU values for each array (2D not 3D )
     if isinstance( molecs, type(None) ):
         # If 'a_m' not given, get air mass ('a_m') in kg
@@ -1377,13 +1418,21 @@ def convert_v_v_2_DU( arr, wd=None, a_m=None, trop_limit=True, s_area=None, \
     return DUarrs 
     
 # ----
-# 1.28 - Get common GC diagnostic arrays 
+# X.XX - Get common GC diagnostic arrays 
 # ---- 
 def get_common_GC_vars( wd=None, trop_limit=True, res='4x5', \
         verbose=True, debug=False):
     """  
     Returns t_ps, a_m, molecs, s_area
-    NOTES:
+
+    Parameters
+    -------
+
+    Returns
+    -------
+
+    Notes
+    -----
      - This appraoch is taken to avoid circular calls + reduces code repitions 
     """
 
@@ -1403,7 +1452,7 @@ def get_common_GC_vars( wd=None, trop_limit=True, res='4x5', \
     return t_ps, a_m, molecs, s_area
 
 # ----
-# 1.29 - Get 3D CH4 concentrations
+# X.XX - Get 3D CH4 concentrations
 # ----
 def get_CH4_3D_concenctrations( z, res='4x5', trop_limit=True, debug=False ):
     """ 
@@ -1448,7 +1497,7 @@ def get_CH4_3D_concenctrations( z, res='4x5', trop_limit=True, debug=False ):
     return arr
 
 # ----
-# 1.30 - Get Strat-Trop exchange (from geos.log files )
+# X.XX - Get Strat-Trop exchange (from geos.log files )
 # ----
 def get_STRAT_TROP_exchange_from_geos_log( fn=None, ver='3.0', \
         rtn_date=False, rtn_Tg_per_yr=True, verbose=False, debug=False ):
@@ -1456,7 +1505,14 @@ def get_STRAT_TROP_exchange_from_geos_log( fn=None, ver='3.0', \
     Extract all tracer Stat-trop exchange values for a given geos.log file. 
     These are then returned as a Pandas Dataframe
     
-    NOTEs:
+    Parameters
+    -------
+
+    Returns
+    -------
+
+    Notes
+    -----
      - Works by extracting all lines between start ("Strat-Trop Exchange")
          and end ("================") of section. 
      - file name (fn) is assumed to include directory as well as name
@@ -1520,7 +1576,7 @@ def get_STRAT_TROP_exchange_from_geos_log( fn=None, ver='3.0', \
         return df
 
 # ----
-# 1.30 - Get Wind direction from U and V vectors 
+# X.XX - Get Wind direction from U and V vectors 
 # ----  
 def get_mod_WIND_dir(  sdate=datetime.datetime(2012, 8, 1, 0 ), \
             edate = datetime.datetime(2012, 8, 8, 0 ), loc='KEN', \
@@ -1568,7 +1624,7 @@ def get_mod_WIND_dir(  sdate=datetime.datetime(2012, 8, 1, 0 ), \
 
 
 # ----
-# 2.03 - get GC years
+# X.XX - get GC years
 # ----
 def get_gc_years(ctm_f=None, wd=None, set_=True, debug=False):
     """ 
@@ -1590,7 +1646,7 @@ def get_gc_years(ctm_f=None, wd=None, set_=True, debug=False):
         return [ i.year for i in dates ]         
 
 # ----
-# 2.04 - get GC months
+# X.XX - get GC months
 # ----
 def get_gc_months(ctm_f=None, wd=None, verbose=False, debug=False):
     """ 
@@ -1606,7 +1662,7 @@ def get_gc_months(ctm_f=None, wd=None, verbose=False, debug=False):
         return [ i.month for i in dates ] 
 
 # ----
-# 2.07 - Get gc datetime
+# X.XX - Get gc datetime
 # ----
 def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
         filename='ctm.nc', verbose=False, debug=False):
@@ -1670,16 +1726,23 @@ def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
         return dates
     
 # ----
-# 2.11 - Get Emission of species in Gg
+# X.XX - Get Emission of species in Gg
 # ----
 def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
-            molec_cm2_s=False, nmonl_m2_d=False, kg_m2_s=False, \
-            monthly=False, months=None, s_area=None, res='4x5', \
-            ref_spec='I', debug=False ):
+        molec_cm2_s=False, nmonl_m2_d=False, kg_m2_s=False, \
+        monthly=False, months=None, s_area=None, res='4x5', \
+        ref_spec='I', debug=False ):
     """ 
     Extract given species emissions from BIOGSRCE category diagnostic
 
-    NOTES:
+    Parameters
+    -------
+
+    Returns
+    -------
+
+    Notes
+    -----
      - Back compatibility maintained with PyGChem 0.2.0 
      - Asumption on iodine emissions 
      ( set ref_spec to mass unit equivelnces wanted ( e.g. Br )  )
@@ -1749,7 +1812,7 @@ def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
     return arr_
 
 # ----
-# 2.12 - Get CH4 Lifetime in years
+# X.XX - Get CH4 Lifetime in years
 # ----
 def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
         vol=None, a_m=None, t_ps=None, K=None, t_lvl=None, n_air=None, \
@@ -1760,7 +1823,14 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
     """ 
     Get amtospheric methane (CH4) lifetime by calculating loss rate against OH.
     
-    NOTES:
+    Parameters
+    -------
+
+    Returns
+    -------
+
+    Notes
+    -----
      - Multiple options for calculation of this value. 
      - uses diagnostic arrays for [OH] instead of goes.log values as default.
      - Calculates the total atmospheric lifetime of CH4 due to oxidation by 
@@ -1951,7 +2021,7 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
         return 1/ CH4_tau_s / (3600*24*365)
 
 # ----
-# 2.13 - get Land / Water /Ice fraction
+# X.XX - get Land / Water /Ice fraction
 # ---- 
 def get_LWI(lon, lat, res='4x5',debug=False):
     """ Return LWI for a given lon and lat """
@@ -1961,7 +2031,7 @@ def get_LWI(lon, lat, res='4x5',debug=False):
     return LWI[lon,lat,0]
     
 # ----
-# 2.14 - get_gc_alt  ( KM => box num )   
+# X.XX - get_gc_alt  ( KM => box num )   
 # ----
 def get_gc_alt(alt):
     """ 
@@ -1971,14 +2041,21 @@ def get_gc_alt(alt):
     return find_nearest( alt_c, alt )
 
 # ----
-# 2.15 - species arrary (4D) in v/v to Gg  I/ O3/Species
+# X.XX - species arrary (4D) in v/v to Gg  I/ O3/Species
 # ----
 def species_v_v_to_Gg(arr, spec, a_m=None, Iodine=True, All =False, \
         Ox=False, ctm_f=None, wd=None, debug=False):
     """ 
     Convert array of species in v/v to Gg (of spec)
-    
-    NOTE(s):
+
+    Parameters
+    -------
+
+    Returns
+    -------
+
+    Notes
+    -----
      - The processing is not clear in this function, NEEDS UPDATE
      - To output in terms of provide spec (e.g. Bry ) set All=True and 
       Iodine=False. This should be default bevahiour, but is not for reasons 
@@ -2008,7 +2085,7 @@ def species_v_v_to_Gg(arr, spec, a_m=None, Iodine=True, All =False, \
     return arr
 
 # ----
-# 2.16 - retrive volume for geos chem run ( in cm3 )
+# X.XX - retrive volume for geos chem run ( in cm3 )
 # ----
 def get_volume_np(ctm_f=None, box_height=None, s_area=None, res='4x5', \
         wd=None, trop_limit=False, debug=False):
@@ -2058,7 +2135,7 @@ def get_volume_np(ctm_f=None, box_height=None, s_area=None, res='4x5', \
     return volume
 
 # ----
-# 2.17 - Test is grid box for a given lat and lon is over water
+# X.XX - Test is grid box for a given lat and lon is over water
 # ----
 def loc_is_water_grid_box( lat, lon, res='4x5' ):
     """ 
@@ -2085,7 +2162,7 @@ def loc_is_water_grid_box( lat, lon, res='4x5' ):
     return booll
 
 # ----
-# 2.18 - Get dry dep for given spec
+# X.XX - Get dry dep for given spec
 # ----
 def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
         years=None, res='4x5', vol=None, trop_limit=True, Iodine=False, \
@@ -2154,63 +2231,7 @@ def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
     return df
 
 # ----
-# 2.20 - Gg Ox yr^-1 from individual PORL-L$ rxns ([molec/cm3/s] )
-# ----
-def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None, \
-        Iodine=False, I=False, IO=False, months=None, years=None, wd=None, \
-        year_eq=True, month_eq=False, spec=None, res='4x5',debug=False ):
-    """ 
-    Convert species/tag prod/loss from "molec/cm3/s" to "Gg (Ox) yr^-1".
-
-	!!! This is redundent. use convert_molec_cm3_s_2_g_X_s instead. !!!
-
-    NOTES:
-     - This function was originally used to process diagnostic outputs from PORL-L$  
-     - Alterate Output term apart from Ox are possible ( e.g. I, mass ... )
-        Just stipulate input species  
-     - Output can also be requested on a monthly basis 
-        ( set  month_eq=True,  and year_eq=False )
-
-    """ 
-
-    if debug:
-        print ' molec_cm3_s_2_Gg_Ox_np  called'
-    if not isinstance(vol, np.ndarray):
-        vol = get_volume_np( ctm_f=ctm_f, wd=wd, res=res )
-        print 'WARNING: extracting volume online - inefficent'
-
-    # --- Process conversion
-    if (Iodine):
-        if debug:
-            print rxn , arr.shape, vol.shape 
-
-        #  [molec/cm3/s] => * vol / moles * RAM *I in species / 1E9 
-        arr = ( arr * vol[:,:,:38,:] ) /  constants( 'AVG')* (127.) /1E9 * \
-            spec_stoich( rxn, I=I, IO=IO ) 
-
-    else: # ELSE return Gg X yr^-s ( ASSUMING UNITY OF TAG! )
-        if ( rxn ==  'CH4' ):
-            RMM =  species_mass(rxn) 
-        else:
-            RMM =  species_mass('O3')             
-        # Return mass in terms of species provide ( if given )
-        if not isinstance( spec, type(None) ):
-            RMM = species_mass( spec  )
-        arr = ( arr * vol[:,:,:38,:] ) / constants( 'AVG') * RMM /1E9
-
-    # --- Process time from /s to ????
-    if year_eq: # convert /second to / year
-        arr = arr * 60*60*24*365
-    if month_eq:
-        day_adjust = d_adjust( months, years)
-        arr = arr * day_adjust
-
-    if debug:
-        print 'arr', arr.shape , 'vol', vol.shape
-    return arr
-
-# ----
-# 2.21 - Gg Ox yr^-1 from induvial spec (2D array - dry dep)  ( ([molec/cm2/s] ) to Gg X (or Gg X / s if not year_eq. )
+# X.XX - Gg Ox yr^-1 from induvial spec (2D array - dry dep)  ( ([molec/cm2/s] ) to Gg X (or Gg X / s if not year_eq. )
 # ----
 def molec_cm2_s_2_Gg_Ox_np( arr, spec='O3', s_area=None, ctm_f=None, \
         Iodine=False, res='4x5', year_eq=False, debug=False):
@@ -2265,21 +2286,26 @@ def molec_cm2_s_2_Gg_Ox_np( arr, spec='O3', s_area=None, ctm_f=None, \
     return arr
 
 # ----
-# 2.24 - Get DU mean value
+# X.XX - Get DU mean value
 # ----
 def get_DU_mean(s_area=None, a_m=None, t_p=None, O3_arr=None, \
             ctm_f=False, area_weight=True, res='4x5', debug=False ):
     """ 
     Get mean DU value weighed by grid box area 
-    
-    ARGUMENTS:
+
+    Parameters
+    -------
      - t_p: time in the troposphere diganostic ( float values 0 to 1 )
      - res: resolution of the model input (e.g. 4x5, 2x2.5 ) 
      - ctm_f: ctm.bpch file object (vestigle from PyGChem <3.0)
      - s_area: Surface array (array of values in metres)
      - area_weight (boolean): weight by area of grid box?
-    """
 
+    Returns
+    -------
+    (array)
+
+    """
     if not isinstance(s_area, np.ndarray):
         print "Extracting s_area in 'get_DU_mean'" 
         s_area  =  get_surface_area( res )[...,0]  # m2 land map
@@ -2318,7 +2344,7 @@ def get_DU_mean(s_area=None, a_m=None, t_p=None, O3_arr=None, \
     return arr
 
 # ----
-# 2.26 - Get Prod / loss for O3
+# X.XX - Get Prod / loss for O3
 # ----
 def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
         wd=None, year_eq=True, res='4x5', return_as_int_sum=False, debug=False):
@@ -2384,7 +2410,7 @@ def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
 
 
 # ----
-# 2.28 - Get wet dep
+# X.XX - Get wet dep
 # ----
 def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
         scale=1E9, s_area=None, res='4x5', wd=None, specs=None, \
@@ -2393,7 +2419,8 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
     """ 
     Extract wet deposition for given species in terms of X Gg of ref_spec. 
 
-    ARGUMENTS:
+    Parameters
+    -------
      - ctm_f: ctm.bpch file object (vestigle from PyGChem <3.0)
      - ver: GEOSChem version with halogens (default = 3.0), ignore if not using halogen code
      - s_area: Surface array (array of values in metres)
@@ -2403,8 +2430,13 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
      - scale: scaleing to use (e.g. 1E9 = Gg )
      - sep_rxn: return list of arrays by "reaction"/process
      - res: resolution of the model input (e.g. 4x5, 2x2.5 )  
+     
+    Returns
+    -------
+    (Array)
 
-    NOTES: 
+    Notes
+    -----
      - If Iodine=True, re_spec == 'I'
      - this fucntion expects list of species
     ( if a species list is not provided, then Iodine deposition is returned)
@@ -2488,8 +2520,7 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
 
     # List wet dep rxns, concat. and sum of rxns ( and convert to Gg )
     if sep_rxn: 
-        return np.concatenate( [ i[None,...] /scale \
-                            for i in dep_w ], axis=0 )
+        return np.concatenate( [ i[None,...] /scale for i in dep_w ], axis=0 )
 
     # List wet dep rxns and concat. 
     else:   
@@ -2497,7 +2528,7 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
                         for i in dep_w ], axis=-1 ).sum(axis=-1 )
 
 # ----
-# 2.32 - molecule weighted array average value
+# X.XX - molecule weighted array average value
 # ----
 def molec_weighted_avg( arr, wd=None, ctm_f=None, vol=None, t_p=None, n_air=None, \
         trop_limit=True, multiply_method=False, rm_strat=True, molecs=None,\
@@ -2583,7 +2614,7 @@ def molec_weighted_avg( arr, wd=None, ctm_f=None, vol=None, t_p=None, n_air=None
         return (arr *molecs).sum()/molecs.sum()
 
 # ----
-# 2.38 - split 4D ( lon, lat, alt, time) output by season
+# X.XX - split 4D ( lon, lat, alt, time) output by season
 # ----     
 def split_4D_array_into_seasons( arr, annual_plus_seasons=True, \
         debug=False ):
@@ -2593,6 +2624,7 @@ def split_4D_array_into_seasons( arr, annual_plus_seasons=True, \
 
     NOTE(s): 
      - currently seasons index is mannual set assuming Jan-Dec 
+     - TODO - update to use extract data?
     """
     
     if debug:
@@ -2629,7 +2661,7 @@ def split_4D_array_into_seasons( arr, annual_plus_seasons=True, \
     return ars, seasons
 
 # ----
-# 2.39 - Convert v/v to ng/m^3
+# X.XX - Convert v/v to ng/m^3
 # ----   
 def convert_v_v2ngm3( arr, wd=None, spec='AERI', trop_limit=True, \
         s_area=None, vol=None, a_m=None, res='4x5', debug=False ):
@@ -2637,12 +2669,17 @@ def convert_v_v2ngm3( arr, wd=None, spec='AERI', trop_limit=True, \
     Take v/v array for a species, and conver this to mass loading
     units used as standard are ng/m3
 
-    ARGUMENTS:
-     - spec: species to convert to (uses mass of this species)
-     - a_m (array): array of air mass
-     - vol: volumne of grid boxes
-     - trop_limit: limit output to "chemical troposphere" (level 38 )
-     - res: resolution of the model input (e.g. 4x5, 2x2.5 )  
+    Parameters
+    -------
+    spec (str): species/tracer/variable name 
+    a_m (np.array): 4D array of air mass
+    vol (array): volume contained in each grid box (cm^-3)
+    trop_limit (boolean): limit 4D arrays to troposphere     
+    res (str): the resolution if wd not given (e.g. '4x5' )
+
+    Returns
+    -------
+    (array)
     """
 
     # Get volume (m^3, adjusted (x1E6) from cm^3) 
@@ -2669,7 +2706,7 @@ def convert_v_v2ngm3( arr, wd=None, spec='AERI', trop_limit=True, \
     return arr
     
 # ----
-# 2.40 - Print weighted array 
+# X.XX - Print seasonal values array 
 # ----  
 def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
         region='All', monthly=False, mask3D=True, trop_limit=True, \
@@ -2803,7 +2840,7 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
 
 
 # ----
-# 2.41 - Extract data by family for a given wd
+# X.XX - Extract data by family for a given wd
 # ----  
 def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
         annual_mean=True, t_ps=None, a_m=None, vol=None, res='4x5', \
@@ -3140,12 +3177,25 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
         return arr
 
 # ----
-# X.XX - 
+# X.XX - Convert GC tracers to PM2.5
 # ----
 def convert_tracers2PM25( ars=[], specs=[], region='Europe' ):
     """
     Aproximate PM2.5 from PM2.5 ratios 
-    for details see GEOS-Chem wiki:
+
+    Parameters
+    -------
+    ars (list): list of arrays
+    specs (list): list of species to convert
+    region (str): region for which PM2.5 is being approximated? (RH differs)
+
+    Returns
+    -------
+    (list)
+    
+    Notes
+    -----
+     - for details see GEOS-Chem wiki:
     http://wiki.seas.harvard.edu/geos-chem/index.php/Particulate_matter_in_GEOS-Chem#PM2.5_in_the_1-yr_benchmark_plots
     """
     # - Convert to PM2.5 ('$\mu$g m$^{-3}$')
@@ -3349,11 +3399,20 @@ def fam_data_extractor4ts_bpch_files(spec='NOy', wd=None, \
 
 
 # ----
-# X.XX - Spec 
+# X.XX - Convert species from v/v to ug/m^3
 # ----
 def convert_spec_v_v_2_ugm3( spec=None, data=None ):
     """
     Convert mixing ratio (v/v) to ug m^-3
+    
+    Parameters
+    -------
+    spec (str): species/tracer/variable name 
+    data (array): array of data 
+
+    Returns
+    -------
+    (array)    
     """
     # --- assume standard conditions. 
     # RMM
@@ -3397,8 +3456,7 @@ def get_LOC_df_from_NetCDF(site='WEY', spec='O3', wd=None, res=None, \
 
     Returns
     -------
-    data (pd.DataFrame object)
-
+    (pd.DataFrame object)
     """
     # Get locations (from "get_loc" dictionary) and find GC grid indices
     LON, LAT, ALT = get_loc( loc=site )
@@ -3422,7 +3480,7 @@ def get_LOC_df_from_NetCDF(site='WEY', spec='O3', wd=None, res=None, \
     return df
 
 # ----
-# 2.42 - Convert v/v to molec/cm3
+# X.XX - Convert v/v to molec/cm3
 # ----   
 def convert_v_v_2_molec_cm3( arr=None, wd=None, vol=None, a_m=None, \
         mols=None, res='4x5', trop_limit=True, \
@@ -3661,15 +3719,21 @@ def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
     return ars 
 
 # ----
-# 2.44 - Convert [molec/cm3/s ] to [molec/yr] 
+# X.XX -  Convert [molec/cm3/s ] to [molec/yr] 
 # ----  
 def convert_molec_cm3_s2_molec_per_yr( ars=None, vol=None ):
     """ 
     Takes a list of arrays (4D) and converts their units from molec/cm3/s to     
     molec./yr
-    
-    ARGUMENTS:
-     - vol: volumne of grid boxes
+
+    Parameters
+    -------
+    ars (list): list of np.arrays
+    vol (array): volume contained in each grid box (cm^-3)
+
+    Returns
+    -------
+    (list)
     """
     # Loop provided arrays
     for n, arr in enumerate( ars ):
@@ -3683,7 +3747,7 @@ def convert_molec_cm3_s2_molec_per_yr( ars=None, vol=None ):
 
 
 # ----
-# 2.46 - Convert molec/cm3/s to g/s
+# X.XX - Convert molec/cm3/s to g/s
 # ----
 def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
         months=None, years=None, vol=None, t_ps=None, trop_limit=True, \
@@ -3762,7 +3826,7 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
         return ars   
          
 # ----
-# 2.47 - Print out stats on a list of 2D arrays in terms of masked areas
+# X.XX - Print out stats on a list of 2D arrays in terms of masked areas
 # ----
 def prt_2D_vals_by_region( specs=None, res='4x5', arrs=None, prt_pcent=False, \
         add_total=False, months=range(12), summate=True, \
@@ -3870,117 +3934,12 @@ def get_2D_arr_weighted_by_X( arr, spec=None, res='4x5', print_values=False, \
     return area_weighted_avg
 
 
-
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# ---------------- Section X -------------------------------------------
-# -------------- Redundant Functions
-# --------------------------------------------------------------------------
-# 
-# NOTE(s): 
-# (1) These are retained even though they are redundant for back compatibility
-# (2) It is not advised to use these. 
-# (3) These will be removed when AC_tools is next re-structured.
-
-
-# ----
-# 1.01 - open ctm.bpch using pygchem ( version '0.2.0' ) 
-# ----
-def open_ctm_bpch(wd, fn='ctm.bpch', debug=False):
-    """ 
-    This is a vestigial programme, based on pychem version 0.2.0.
-    Updates have made this incompatibile. 
-        
-    Update functions to use iris class. e.g. 
-        
-    if :
-    wd = <run directory of containing ctm.bpch files/ctm.nc file to analyse>
-    then:
-    # setup variables 
-    list_of_species =  ['NO', 'O3', 'PAN', 'CO', 'ALK4']
-
-    # convert to Iris Cube/NetCDF naming form 
-    list_of_species = ['IJ_AVG_S__'+i for i in list_of_species ]
-
-    # this will return data as a 5D array ( species, lon, lat, alt, time)
-    data = AC.get_GC_output( wd, vars=list_of_species )
-    """
-    
-    if ( debug ) :
-        print 'fn: {}'.format(fn)
-        print 'File to open: {}'. format(os.path.join(wd, fn))
-
-    if pygchem.__version__ == '0.2.0':
-        try:
-            ctm_f = gdiag.CTMFile.fromfile(os.path.join(wd, fn))
-        except:
-            print 'Error @ open_ctm_bpch for {}'. format(os.path.join(wd, fn))  
-            print gdiag.CTMFile.fromfile(os.path.join(wd, fn))
-            sys.exit(0)
-    else:
-        print 'WARNING, using: {}'.format(pygchem.__version__)
-        print 'Add a get data call, for specific data (spceies, category)' +\
-                'using the get_GC_output function' 
-
-    return ctm_f
-
-# ----
-# 1.02 - get np array (4D) of ctm.bpch (lon, lat ,alt, time) 
-# ----
-def get_gc_data_np(ctm, spec='O3', category="IJ-AVG-$", debug=False):
-    """ 
-    This function extracts fields from diagnostics 
-    
-    NOTES:
-     -  This was written to work with pychem version 0.2.0 and it is included 
-    for back compatibility
-    """
-
-    if debug:
-        print 'called get_np_gc_4D_diags'
-
-    # Retrieve given diagnostics
-    diags = ctm.filter(name=spec, category=category)
-    if debug:
-        print 'diagnostics', diags , spec, category
-
-    # Extract diagnostics to np array    
-    for diag in diags:
-        ar = (diag.values[:,:,:])[...,None]
-        if debug:
-            print diag.name ,'len(ar)', len(ar), 'type(ar)', type(ar), \
-                'diag.scale', diag.scale, 'ar.shape', ar.shape, 'diag.unit', \
-                diag.unit
-        try:
-            arr = np.concatenate( (arr, ar), axis=3 )
-        except NameError:
-            arr = ar
-        if debug:
-            print 'arr' , type(arr), len(arr), arr.shape, 'ar', type(ar), \
-                len(ar), ar.shape
-
-    if len([d for d in diags]) <1 :
-        print 'ERROR: No diags for {} and {} in {}'.format( spec, category, ctm)
-        sys.exit(0)
-
-    # if ctms len > 1, sort chronologically - this is to fix bug in pygchem
-    if debug:
-        print [ i[0] for i in get_gc_datetime(ctm ) ]
-    if get_gc_datetime( ctm ) > 1:
-        arr = np2chronological_fromctm([ ctm ], arr, debug=debug )
-    if debug:
-        print [ i[0] for i in get_gc_datetime(ctm ) ]
-
-    return arr
-
-
-# ------------------ Section 6 -------------------------------------------
+# ------------------ Section X.X -------------------------------------------
 # -------------- Time Processing
 #
 
 # ----
-# 3.01 - Takes monthly outputs and sort to chronological order
+# X.XX - Takes monthly outputs and sort to chronological order
 # ----
 def ctms2chronological( ctms, debug=False ):
     """ 
@@ -4029,7 +3988,7 @@ def ctms2chronological( ctms, debug=False ):
     return ctms
 
 # ----
-# 3.02 - Takes monthly outputs and sort to chronological order
+# X.XX - Takes monthly outputs and sort to chronological order
 # ----
 def np2chronological_fromctm( ctms, arr, debug=False ):
     """ 
@@ -4067,7 +4026,9 @@ def np2chronological_fromctm( ctms, arr, debug=False ):
 
     return np.concatenate( [arr[...,i][...,None] for i in ind ], axis =3)
 
-
+# ------------------ Section X.X -------------------------------------------
+# -------------- KPP input/output file Processing
+#
 
 # ----
 # X.XX - Get reaction numbers 
@@ -4077,6 +4038,17 @@ def get_KPP_tagged_rxns( fam='LOx', filename='gckpp_Monitor.F90',
     """
     Search compiled KPP mechanism for reactions with a certain tag ("fam") in
     their mechanism (e.g. LOx for loss of Ox)
+
+    Parameters
+    -------
+    fam (str): prod/loss family in KPP file (e.g. Ox loss or "LOx" )
+    wd (str): the working (code) directory to search for files in
+    Mechanism (str): name of mechanism (e.g. dir in KPP folder)
+    filename (str): name of KPP monitor file 
+    
+    Returns
+    -------
+    (list)
     """
     # Get dictionary of reactions in Mechanism
     RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename, \
@@ -4094,12 +4066,23 @@ def get_KPP_tagged_rxns( fam='LOx', filename='gckpp_Monitor.F90',
 
 
 # ----
-# X.XX - Get stoichiometry of each reactino in 
+# X.XX - Get stoichiometry of each tagged reaction in KPP file
 # ---- 
 def get_stioch_for_family_reactions( fam='LOx', filename='gckpp_Monitor.F90', 
         Mechanism='Halogens', wd=None ):
     """
-    Get the stiochmetery for each reaction in family from KPP files 
+    Get the stiochmetery for each reaction in family from compiled KPP file 
+
+    Parameters
+    -------
+    fam (str): prod/loss family in KPP file (e.g. Ox loss or "LOx" )
+    wd (str): the working (code) directory to search for files in
+    Mechanism (str): name of mechanism (e.g. dir in KPP folder)
+    filename (str): name of KPP monitor file 
+    
+    Returns
+    -------
+    (dict)
     """
     # Get dictionary of reactions in Mechanism
     RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename, \
@@ -4138,9 +4121,18 @@ def get_stioch_for_family_reactions( fam='LOx', filename='gckpp_Monitor.F90',
 def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90', 
         Mechanism='Halogens', wd=None):
     """
-    Get a dictionary of KPP mechansim from 
-    """
+    Get a dictionary of KPP mechansim from compile mechanism 
 
+    Parameters
+    -------
+    wd (str): the working (code) directory to search for files in
+    Mechanism (str): name of mechanism (e.g. dir in KPP folder)
+    filename (str): name of KPP monitor file 
+    
+    Returns
+    -------
+    (dict)
+    """
     # Get base working code directory
     if isinstance( wd, type(None)):
 #        wd = sys.agrv[1]
@@ -4173,34 +4165,47 @@ def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90',
                     RR_dummy = 'RR{}'.format( line[118:].strip() )
                     # add to dictionary            
                     RR_dict[RR_dummy] = rxn_str
-            
 
     return RR_dict
 
 
 # ----
-# X.XX - Get O3 Burden
+# X.XX - Print Prod-loss reactions for tagged/passed reactions
 # ----
-def prt_families4rxns_to_input_to_PROD_LOSS(fam='LOx', filename='gckpp_Monitor.F90', 
-        Mechanism='Halogens', rxns=None, wd=None ):
+def prt_families4rxns_to_input_to_PROD_LOSS(fam='LOx', rxns=None, wd=None, \
+        filename='gckpp_Monitor.F90', Mechanism='Halogens' ):
     """
-    takes a list of reaction numbers or (fam) and prints out
+    Takes a list of reaction numbers or (fam) and prints out prod/loss in 
+    a form that can be copy/pasted into KPP (gckpp.kpp)
+
+    Parameters
+    -------
+    rnxs (list): lisst of reactions to use for 
+    fam (str): prod/loss family in KPP file (e.g. Ox loss or "LOx" )
+    wd (str): the working (code) directory to search for files in
+    Mechanism (str): name of mechanism (e.g. dir in KPP folder)
+    filename (str): name of KPP monitor file 
+    
+    Returns
+    -------
+    (None)
     """
     # get list of tagged reactions for family
     if isinstance(rxns, type(None)):
         rxns = get_KPP_tagged_rxns( fam=fam, filename=filename, \
             Mechanism=Mechanism, wd=wd)
 
-    # --- Print 
+    # --- Print to screen
     header_Str = '#FAMILIES'
     pstr = 'P{} : {};'
     print '>>>> Copy and paste the below text into gckpp.kpp <<<'
     print header_Str
     for rxn in rxns:
         print pstr.format(rxn, rxn ) 
-    
 
-
+# ----
+# X.XX - Get reaction numbers that oxidative release halogens
+# ----
 def get_oxidative_release4specs(filename='gckpp_Monitor.F90', 
         Mechanism='Halogens', wd=None):
     """
@@ -4208,6 +4213,15 @@ def get_oxidative_release4specs(filename='gckpp_Monitor.F90',
     the source value is calculated by the summ of the oxidative release
     ( OH, Br, Cl )
 
+    Parameters
+    -------
+    wd (str): the working (code) directory to search for files in
+    Mechanism (str): name of mechanism (e.g. dir in KPP folder)
+    filename (str): name of KPP monitor file 
+    
+    Returns
+    -------
+    (list)
     """
     # species ?
     specs = ['CHBr3', 'CH3Cl', 'CH3Cl2', 'CHCl3' ]
@@ -4226,9 +4240,8 @@ def get_oxidative_release4specs(filename='gckpp_Monitor.F90',
             if spec in rxn_str:
                 print rxn_str
                 RR_rxn_dummies +=[ key_ ]
+
     return RR_rxn_dummies
-
-
 
 
 # --------------------------------------------------------------------------
@@ -4376,6 +4389,171 @@ def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None, \
         return ar.mean(axis=3 )
 
 
+# ----
+# X.XX - Gg Ox yr^-1 from individual PORL-L$ rxns ([molec/cm3/s] )
+# ----
+def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None, \
+        Iodine=False, I=False, IO=False, months=None, years=None, wd=None, \
+        year_eq=True, month_eq=False, spec=None, res='4x5',debug=False ):
+    """ 
+    Convert species/tag prod/loss from "molec/cm3/s" to "Gg (Ox) yr^-1".
+
+	!!! This is redundent. use convert_molec_cm3_s_2_g_X_s instead. !!!
+
+    NOTES:
+     - This function was originally used to process diagnostic outputs from PORL-L$  
+     - Alterate Output term apart from Ox are possible ( e.g. I, mass ... )
+        Just stipulate input species  
+     - Output can also be requested on a monthly basis 
+        ( set  month_eq=True,  and year_eq=False )
+
+    """ 
+
+    if debug:
+        print ' molec_cm3_s_2_Gg_Ox_np  called'
+    if not isinstance(vol, np.ndarray):
+        vol = get_volume_np( ctm_f=ctm_f, wd=wd, res=res )
+        print 'WARNING: extracting volume online - inefficent'
+
+    # --- Process conversion
+    if (Iodine):
+        if debug:
+            print rxn , arr.shape, vol.shape 
+
+        #  [molec/cm3/s] => * vol / moles * RAM *I in species / 1E9 
+        arr = ( arr * vol[:,:,:38,:] ) /  constants( 'AVG')* (127.) /1E9 * \
+            spec_stoich( rxn, I=I, IO=IO ) 
+
+    else: # ELSE return Gg X yr^-s ( ASSUMING UNITY OF TAG! )
+        if ( rxn ==  'CH4' ):
+            RMM =  species_mass(rxn) 
+        else:
+            RMM =  species_mass('O3')             
+        # Return mass in terms of species provide ( if given )
+        if not isinstance( spec, type(None) ):
+            RMM = species_mass( spec  )
+        arr = ( arr * vol[:,:,:38,:] ) / constants( 'AVG') * RMM /1E9
+
+    # --- Process time from /s to ????
+    if year_eq: # convert /second to / year
+        arr = arr * 60*60*24*365
+    if month_eq:
+        day_adjust = d_adjust( months, years)
+        arr = arr * day_adjust
+
+    if debug:
+        print 'arr', arr.shape , 'vol', vol.shape
+    return arr
+
+
+
+
+
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# ---------------- Section X -------------------------------------------
+# -------------- Redundant Functions
+# --------------------------------------------------------------------------
+# 
+# NOTE(s): 
+# (1) These are retained even though they are redundant for back compatibility
+# (2) It is not advised to use these. 
+# (3) These will be removed when AC_tools is next re-structured.
+
+
+# ----
+# X.XX - open ctm.bpch using pygchem ( version '0.2.0' ) 
+# ----
+def open_ctm_bpch(wd, fn='ctm.bpch', debug=False):
+    """ 
+    This is a vestigial programme, based on pychem version 0.2.0.
+    Updates have made this incompatibile. 
+        
+    Update functions to use iris class. e.g. 
+        
+    if :
+    wd = <run directory of containing ctm.bpch files/ctm.nc file to analyse>
+    then:
+    # setup variables 
+    list_of_species =  ['NO', 'O3', 'PAN', 'CO', 'ALK4']
+
+    # convert to Iris Cube/NetCDF naming form 
+    list_of_species = ['IJ_AVG_S__'+i for i in list_of_species ]
+
+    # this will return data as a 5D array ( species, lon, lat, alt, time)
+    data = AC.get_GC_output( wd, vars=list_of_species )
+    """
+    
+    if ( debug ) :
+        print 'fn: {}'.format(fn)
+        print 'File to open: {}'. format(os.path.join(wd, fn))
+
+    if pygchem.__version__ == '0.2.0':
+        try:
+            ctm_f = gdiag.CTMFile.fromfile(os.path.join(wd, fn))
+        except:
+            print 'Error @ open_ctm_bpch for {}'. format(os.path.join(wd, fn))  
+            print gdiag.CTMFile.fromfile(os.path.join(wd, fn))
+            sys.exit(0)
+    else:
+        print 'WARNING, using: {}'.format(pygchem.__version__)
+        print 'Add a get data call, for specific data (spceies, category)' +\
+                'using the get_GC_output function' 
+
+    return ctm_f
+
+# ----
+# X.XX - get np array (4D) of ctm.bpch (lon, lat ,alt, time) 
+# ----
+def get_gc_data_np(ctm, spec='O3', category="IJ-AVG-$", debug=False):
+    """ 
+    This function extracts fields from diagnostics 
+    
+    NOTES:
+     -  This was written to work with pychem version 0.2.0 and it is included 
+    for back compatibility
+    """
+
+    if debug:
+        print 'called get_np_gc_4D_diags'
+
+    # Retrieve given diagnostics
+    diags = ctm.filter(name=spec, category=category)
+    if debug:
+        print 'diagnostics', diags , spec, category
+
+    # Extract diagnostics to np array    
+    for diag in diags:
+        ar = (diag.values[:,:,:])[...,None]
+        if debug:
+            print diag.name ,'len(ar)', len(ar), 'type(ar)', type(ar), \
+                'diag.scale', diag.scale, 'ar.shape', ar.shape, 'diag.unit', \
+                diag.unit
+        try:
+            arr = np.concatenate( (arr, ar), axis=3 )
+        except NameError:
+            arr = ar
+        if debug:
+            print 'arr' , type(arr), len(arr), arr.shape, 'ar', type(ar), \
+                len(ar), ar.shape
+
+    if len([d for d in diags]) <1 :
+        print 'ERROR: No diags for {} and {} in {}'.format( spec, category, ctm)
+        sys.exit(0)
+
+    # if ctms len > 1, sort chronologically - this is to fix bug in pygchem
+    if debug:
+        print [ i[0] for i in get_gc_datetime(ctm ) ]
+    if get_gc_datetime( ctm ) > 1:
+        arr = np2chronological_fromctm([ ctm ], arr, debug=debug )
+    if debug:
+        print [ i[0] for i in get_gc_datetime(ctm ) ]
+
+    return arr
+
+
+
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
@@ -4393,7 +4571,7 @@ def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None, \
 
 
 # ----
-# 2.01 - Retrieve model resolution
+# X.XX - Retrieve model resolution
 # ----
 def mod_res(wd, spec='O3', fn='ctm.bpch', debug=False):
     """ 

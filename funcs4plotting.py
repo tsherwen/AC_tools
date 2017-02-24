@@ -1406,7 +1406,7 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         ax.set_yscale('linear')
     
 # --------------
-# 1.15 - plot up daily timeseries from ...
+# X.XX - plot up daily timeseries from ...
 # -------------
 def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,  \
         bin_size=1/24.,widths=0.01, rotatexlabel = 'vertical', \
@@ -1549,7 +1549,7 @@ def timeseries_by_day_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
 
 
 # --------------
-# 1.17 - plot up timeseries from between two given months 
+# X.XX - plot up timeseries from between two given months 
 # -------------
 def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         title=None, legend=False, everyother=7*24,  x_nticks=12, \
@@ -1617,7 +1617,7 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         plt.legend( fontsize=f_size*.75, loc=loc )
 
 # --------
-# 1.18 - North Pole surface plot
+# X.XX - North Pole surface plot
 # --------
 def north_pole_surface_plot( arr, return_m=False, grid=True, centre=False, \
         cmap=None, format='%.2f', m=None, fixcb=False,  nbins=25, \
@@ -1728,7 +1728,7 @@ def north_pole_surface_plot( arr, return_m=False, grid=True, centre=False, \
     return return_list
 
 # --------
-# 1.19- South Pole surface plot
+# X.XX - South Pole surface plot
 # --------
 def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False, 
         cmap=None, format='%.2f', res='4x5', ax=None, alpha=1,  title=None, 
@@ -1834,7 +1834,7 @@ def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False,
         return plt , cb 
 
 # --------
-# 1.20 - PDF of monthly surface change plots for given species (takes 5D arr )
+# X.XX - PDF of monthly surface change plots for given species (takes 5D arr )
 # --------
 def plot_specs_surface_change_monthly2pdf( arr, res='4x5', dpi=160, \
         no_dstr=True, f_size=20, pcent=True, specs=None, dlist=None, \
@@ -1955,7 +1955,7 @@ def plot_specs_surface_change_monthly2pdf( arr, res='4x5', dpi=160, \
     plot2pdfmulti( pdff, savetitle, close=True, dpi=dpi, no_dstr=no_dstr )
         
 # --------
-# 1.21 - PDF of monthly zonal change plots for given species
+# X.XX - PDF of monthly zonal change plots for given species
 # --------
 def plot_specs_zonal_change_monthly2pdf( Vars, res='4x5', dpi=160, \
         no_dstr=True, f_size=20, pcent=False, specs=None, dlist=None, \
@@ -2084,11 +2084,7 @@ def plot_specs_zonal_change_monthly2pdf( Vars, res='4x5', dpi=160, \
     plot2pdfmulti( pdff, savetitle, close=True, dpi=dpi, no_dstr=no_dstr )
 
 # --------
-# 1.22 - 
-# --------
-
-# --------
-# 1.23 - Change as 2D plot of surface ( for column or surface change )
+# X.XX - Change as 2D plot of surface ( for column or surface change )
 # --------
 def plot_specs_poles_change_monthly2pdf(  specs=None,\
         arr=None, res='4x5', dpi=160, no_dstr=True, f_size=20, pcent=False,\
@@ -2224,7 +2220,7 @@ def plot_specs_poles_change_monthly2pdf(  specs=None,\
 
 
 # --------
-# 1.26 - Generic X vs. Y plot
+# X.XX - Generic X vs. Y plot
 # --------
 def X_Y_scatter( x, y, z=None, fig=None, ax=None, vmin=None, vmax=None, \
         left= 0.1, width=0.60, bottom=0.1, height=0.60, widthII=0.2,  \
@@ -2297,7 +2293,7 @@ def X_Y_scatter( x, y, z=None, fig=None, ax=None, vmin=None, vmax=None, \
     plt.yticks( fontsize=f_size )    
 
 # --------
-# 1.27 - Scatter 3D cube
+# X.XX - Scatter 3D cube
 # --------
 def scatter_3D_cube( data, dims=None, res='2x2.5', fig=None, everyother=1, interval=1, \
         f_size=20, cm='RdYlBu', debug=False ):
@@ -2496,7 +2492,7 @@ def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
 
 
 # --------
-# 1.30 - PDF of annual surface change plots for given species (takes 5D arr )
+# X.XX - PDF of annual surface change plots for given species (takes 5D arr )
 # --------
 def plot_specs_surface_change_annual2pdf( arr, res='4x5', dpi=160, \
         no_dstr=True, f_size=20, pcent=True, specs=None, dlist=None, \
@@ -2615,7 +2611,7 @@ def plot_specs_surface_change_annual2pdf( arr, res='4x5', dpi=160, \
 
 
 # --------
-# 1.31 - PDF of annual zonal change plots for given species
+# X.XX - PDF of annual zonal change plots for given species
 # --------
 def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
         no_dstr=True, f_size=20, pcent=False, specs=None, dlist=None, \
@@ -2740,7 +2736,7 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
         plot2pdfmulti( pdff, savetitle, close=True, dpi=dpi, no_dstr=no_dstr )
 
 # --------
-# 1.32 - Spatial Figure maker ( just provide lon, lat, time,  np array )
+# X.XX - Spatial Figure maker ( just provide lon, lat, time,  np array )
 # --------
 def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         norm=None, nticks=10, format=None, units=None, extend='neither', ax=None, \
@@ -2912,7 +2908,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         return [ fig, cmap ] + plt_vars + [ fixcb ] #+= [ cb_ax ]
 
 # --------
-# 1.33 - Zonal Figure maker ( just provide lon, lat np array )
+# X.XX - Zonal Figure maker ( just provide lon, lat np array )
 # --------
 def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
         norm=None, nticks=10, format=None, units=None, extend='neither', \
@@ -3035,7 +3031,7 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
         return [ fig, cmap, fixcb ]# + plt_vars + [ fixcb ] #+= [ cb_ax ]
 
 # --------
-# 1.34 - Lat plotter of average + Q1/Q3
+# X.XX - Lat plotter of average + Q1/Q3
 # --------
 def plot_arr_avg_Q1_Q3( X, Y, ax=None, color='blue', label=None, \
         plt_mean=True, plt_median=False, pcent1=25, pcent2=75, \
@@ -3749,7 +3745,7 @@ def add_logos_NCAS_york_bottom(fig):
     return fig
 
 # --------
-# 4.28 - Iodine deposition mask (for sites... e.g Denmark, Germany, Norfolk )
+# X.XX - Iodine deposition mask (for sites... e.g Denmark, Germany, Norfolk )
 # --------
 def mask_not_obs( loc='Denmark', res='4x5', debug=False ):
     """ 
@@ -3771,7 +3767,7 @@ def mask_not_obs( loc='Denmark', res='4x5', debug=False ):
     return np.ma.not_equal(  arr, 1)
     
 # --------------
-# 4.30 - Annotate grid 
+# X.XX - Annotate grid 
 # -------------
 def annotate_gc_grid(ax, res='4x5', f_size=6.5, \
         loc_list=[ [-9999,-9999] ], everyother=1, label_gc_grid=True):
@@ -3808,7 +3804,7 @@ def annotate_gc_grid(ax, res='4x5', f_size=6.5, \
                      fontsize=f_size, color=color )
 
 # --------
-# 4.31 - Function for centering colorbar
+# X.XX - Function for centering colorbar
 # --------
 def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, upper=1, \
         start_center=0.5, stop=1.0, maintain_scaling=True, arr=None, \
@@ -3889,7 +3885,7 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, upper=1, \
     return newcmap
 
 # --------
-# 4.35 - Add colorbar to side of plot
+# X.XX - Add colorbar to side of plot
 # --------
 def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
         orientation='vertical', f_size=20, rotatecbunits='vertical', nticks=10, \
@@ -4067,7 +4063,7 @@ def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     return cb_ax
 
 # --------
-# 4.36 - Create base map for plotting
+# X.XX - Create base map for plotting
 # --------
 def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
         everyother=1, f_size=10, interval=1, axis_titles=False, \
@@ -4112,7 +4108,7 @@ def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
     return m
  
 # --------
-# 4.37 - Provide an appropriate colormap for given data
+# X.XX - Provide an appropriate colormap for given data
 # --------
 def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         npoints=100, cb='CMRmap_r', maintain_scaling=True, \
@@ -4256,7 +4252,7 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         return cmap
   
 # --------
-# 4.40 -Make segments for variable line color plot
+# X.XX -Make segments for variable line color plot
 # --------
 def make_segments(x, y):
     """
@@ -4270,7 +4266,7 @@ def make_segments(x, y):
 
 
 # --------
-# 4.41 - Make colored line for plot
+# X.XX - Make colored line for plot
 # --------
 def colorline( x, y, z=None, cmap=plt.get_cmap('copper'),  \
         norm=None, linewidth=3, alpha=1.0, ax=None, fig=None, \
@@ -4332,7 +4328,7 @@ def colorline( x, y, z=None, cmap=plt.get_cmap('copper'),  \
     return lc
 
 # --------
-# 4.42 - Get human readable gradations for plot
+# X.XX - Get human readable gradations for plot
 # --------
 def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
         nticks=10, sigfig_rounding_on_cb=2, \
@@ -4487,7 +4483,7 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
         return lvls
 
 # --------
-# 4.43 - mk colourmap discrete 
+# X.XX - mk colourmap discrete 
 # --------
 def mk_discrete_cmap( lvls=None, cmap=None, arr=None,\
         vmin=0, vmax=10, nticks=10, debug=False ):
@@ -4581,7 +4577,7 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=T
 
 
 # --------   
-# 1.07 - Diurnal plot
+# X.XX - Diurnal plot
 # --------
 def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
         bin_size=2/24.,widths=0.01, rmax=False, \
@@ -4782,7 +4778,7 @@ def obs_month_plot(data, color=None, title=None, rtn_data=False, plt_day=True, d
 
 
 # -------------
-# 4.99 - Input for plotting  
+# X.XX - Input for plotting  
 # -------------
 def get_input_vars(debug=False):
     """ 
