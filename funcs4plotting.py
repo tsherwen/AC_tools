@@ -2885,7 +2885,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         ax.set_ylim( lat_min, lat_max )
 
     # Manually Add colorbar
-    logging.debug( 'colorbar orientation:', orientation )
+    logging.debug('colorbar orientation: {}'.format(orientation))
     if no_cb:
         if orientation == 'vertical':
             width = width/2
@@ -3373,6 +3373,8 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
     -------
     X (list): list of numpy arrays to plot as X
     Y (array): must be a numpy array use use as Y
+    labels (list): list of labels for stack data
+    baseline (str): if =='zero' then start filling from zero. 
 
     Returns
     -------
@@ -3384,20 +3386,21 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
     based on that code  
     (https://github.com/matplotlib/matplotlib/blob/3ae7c2a32ddd9809552315458da1dd70afec1b15/lib/matplotlib/stackplot.py )
     """
-    logging.info('X_stackplot called, with X[0] shape {}'.format( X[0].shape ))
+    logging.info('X_stackplot called, X[0] & Y[0] shape={}.{}'.format( \
+        *[i.shape for i in (X[0], Y) ]) )
 
-    # --- fig and ax provided? Otherwise create these... 
+    # --- Fig and ax provided? Otherwise create these... 
     if isinstance( fig, type(None) ):
         fig = plt.figure( figsize=(8,8), dpi=dpi, facecolor='w', \
             edgecolor='k')
-        logging.debug('Creating figure' )
+        logging.info('Creating figure' )
 
     if isinstance( ax, type(None) ):
         ax = fig.add_subplot( 1,1,1  )
-        logging.debug('Creating ax' )
+        logging.info('Creating ax' )
     logging.debug( '{}'.format( zip( labels, [np.sum(i) for i in X] ) )  )
 
-    # --- stack arrays if not stacked... 
+    # --- Stack arrays if not stacked... 
     if isinstance( X, np.ndarray ):
         X = np.ma.atleast_2d( X )
         logging.debug('Array passed has been made at least 2D if nessesary')
@@ -3411,6 +3414,7 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
     stack = np.ma.cumsum( X, axis=1)
     # convert to %?
 #    pcent = True
+    logging.info('stack shape={}'.format(stack.shape) )
     if pcent:
         max =  np.ma.max( stack, axis=1 ) # get accumulated maximum
         print [ (i.min(), i.max(), i.mean(), i.shape) for i in stack, max ]

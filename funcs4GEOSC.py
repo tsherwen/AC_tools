@@ -2975,6 +2975,8 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
         specs = GC_var('Bry' )
         # Also consider Br- on SS
 #        specs += [ 'BrSALA', 'BrSALC', ]
+        if ver == 'v11-1':
+            specs.pop(specs.index('IBr'))
 
         # Extract data
         arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ], \
@@ -3013,6 +3015,8 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
     if fam == 'Cly' :
         # Select species in family
         specs = GC_var('Cly' )
+        if ver == 'v11-1':
+            specs.pop(specs.index('ICl'))
 
         # Extract data
         arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ], \
@@ -3413,7 +3417,7 @@ def get_LOC_df_from_NetCDF(site='WEY', spec='O3', wd=None, res=None, \
     dates = get_gc_datetime( filename=filename, wd=wd )
 
     # Make dataframe and return
-    df = pd.DataFrame( data, index=dates )
+    df = pd.DataFrame( data, index=dates, columns=[spec] )
 
     return df
 

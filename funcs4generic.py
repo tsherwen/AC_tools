@@ -1586,7 +1586,7 @@ def convert_ug_per_m3_2_ppbv( data=None,  spec='O3', rtn_units=False, \
         return data
 
 # --------
-# X.XX - Get 2D (lat, lon) mask of night time for 
+# X.XX - Get 2D (lat, lon) mask of night time for a given datetime
 # --------
 def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
         mask_daytime=False, buffer_hours=1., debug=False ):

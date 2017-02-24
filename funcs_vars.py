@@ -578,7 +578,7 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
     'CH2IBr': 1.0, 'LIOx': 1.0, 'L_Iy': 1.0, 'ICl': 1.0, 'IBr': 1.0, \
     'RD95': 2.0, 'I2O2': 2.0, 'I2O3': 2.0, 'I2O4': 2.0, 'I2O5': 2.0, \
     'HI': 1.0, 'I2O': 2.0, 'RD59': 1.0, 'RD93': 2.0, 'RD92': 1.0, \
-    'IONO2': 1.0, 'RD58': 1.0, 'ISALA':1.0, 'ISALC':1.0, 
+    'IONO2': 1.0, 'RD58': 1.0, 'ISALA':1.0, 'ISALC':1.0, 'CH3I': 1.0, \
     # p/l for: IO, I
     'RD15': 1.0, 'RD17': 1.0, 'RD75': 1.0, 'RD72': 2.0, 'RD71': 1.0, \
     'RD70': 1.0, 'RD56': 1.0, 'RD69': 1.0, 'RD88': 1.0, 'RD89': 1.0, \

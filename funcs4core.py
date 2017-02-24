@@ -214,10 +214,10 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
         return dims[res ]
 
 # ----                                                                                                                                                        
-#  1.05 - Get grid values of lon, lat, and alt for a given resolution                                                                                                                         
+#  X.XX - Get grid values of lon, lat, and alt for a given resolution                                                                                                                         
 # ----                                                                                                                                                        
 def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
-        dtype=None, wd=None, filename='ctm.nc', \
+        dtype=None, wd=None, filename='ctm.nc', full_vertical_grid=False, \
         lat_bounds=u'latitude_bnds', lon_bounds=u'longitude_bnds',\
         lon_var=u'longitude', lat_var=u'latitude', \
 #        lon_var=u'lon', lat_var=u'lat', 
@@ -236,6 +236,7 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
     dtype (type): type for which data is return as, e.g. np.float64
     nest (str): manual override for retruned variables - vestigle?
     hPa (boolean): return altitudes in units of hPa, instead of km
+    full_vertical_grid (boolean): use full vertical grid or reduced (47 vs. 72)
 
     Returns
     -------
@@ -359,9 +360,12 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
     # Get dictionary variable name in Gerrit's GEOS-Chem dimensions list
     # ( now only doing this for alt, as alt values not in model output? )
     if hPa:
-        alt = 'c_hPa_geos5_r'
+        alt = 'c_hPa_geos5'
     else:
-        alt='c_km_geos5_r'
+        alt = 'c_km_geos5'
+    # Use reduced vertical grid? (then add '_r')
+    if not full_vertical_grid:
+        alt+= '_r'
     d = gchemgrid(rtn_dict=True)
     alt = d[alt]
 
@@ -379,7 +383,7 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
         return rtn_list
 
 # --------------
-# 1.06 - Convert from hPa to km or vice versa.
+# X.XX - Convert from hPa to km or vice versa.
 # -------------
 def hPa_to_Km(input, reverse=False, debug=False):
     """ 
@@ -401,7 +405,7 @@ def hPa_to_Km(input, reverse=False, debug=False):
         return [-7.6*np.log( float(i) / 1013.) for i in input ]
 
 # --------   
-# 1.07 - Find nearest
+# X.XX - Find nearest
 # --------
 def find_nearest_value( array, value ):
     """ 
@@ -418,7 +422,7 @@ def find_nearest_value( array, value ):
     return idx
 
 # -------------
-# 1.08 - Work out iGEOS-Chem version 
+# X.XX - Work out iGEOS-Chem version from working directory name
 # ------------- 
 def iGEOSChem_ver(wd, verbose=True, debug=False):
     """ 
@@ -520,7 +524,7 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
             4.02600000e-03,   1.62500000e-03,   6.01000000e-04,
             1.99000000e-04,   5.50000000e-05,   0.00000000e+00]) ,
 
-    #Grid box level edges [km]:                                                                      
+    # Grid box level edges [km]:                                                                      
     'e_km_geos5_r' : np.array([
             6.00000000e-03,   1.35000000e-01,   2.66000000e-01,
             3.99000000e-01,   5.33000000e-01,   6.69000000e-01,
@@ -539,7 +543,7 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
             3.75740000e+01,   4.42860000e+01,   5.17880000e+01,
             5.99260000e+01,   6.83920000e+01,   8.05810000e+01]) ,
 
-    #Grid box level edges [hPa]:                                                                     
+    # Grid box level edges [hPa]:                                                                     
     'e_hPa_geos5_r' : np.array([
             1.01181400e+03,   9.96636000e+02,   9.81382000e+02,
             9.66128000e+02,   9.50874000e+02,   9.35621000e+02,
@@ -558,7 +562,7 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
             4.07700000e+00,   1.65100000e+00,   6.17000000e-01,
             2.11000000e-01,   6.60000000e-02,   1.00000000e-02]) ,
 
-    #Grid box level centers (eta-coordinates)                                                        
+    # Grid box level centers (eta-coordinates)                                                        
     'c_eta_geos5_r' : np.array([
             9.94283000e-01,   9.79217000e-01,   9.64113000e-01,
             9.49010000e-01,   9.33908000e-01,   9.18805000e-01,
@@ -577,7 +581,7 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
             2.82500000e-03,   1.11300000e-03,   4.00000000e-04,
             1.27000000e-04,   2.80000000e-05]) ,
 
-    #Grid box level centers [km]                                                                     
+    # Grid box level centers [km]                                                                     
     'c_km_geos5_r' : np.array([
             7.10000000e-02,   2.01000000e-01,   3.32000000e-01,
             4.66000000e-01,   6.01000000e-01,   7.37000000e-01,
@@ -596,7 +600,7 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
             4.01660000e+01,   4.71350000e+01,   5.48340000e+01,
             6.30540000e+01,   7.21800000e+01]) ,
 
-    #Grid box level centers [hPa]                                                                    
+    # Grid box level centers [hPa]                                                                    
     'c_hPa_geos5_r' : np.array([
             1.00422500e+03,   9.89009000e+02,   9.73755000e+02,
             9.58501000e+02,   9.43247000e+02,   9.27994000e+02,
@@ -614,7 +618,78 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
             2.40800000e+01,   1.45420000e+01,   6.68500000e+00,
             2.86400000e+00,   1.13400000e+00,   4.14000000e-01,
             1.39000000e-01,   3.80000000e-02]) ,
+
+    # GEOS-5 Native Vertical Grid (72 hybrid pressure-sigma levels)
+    # http://acmg.seas.harvard.edu/geos/doc/archive/man.v9-01-02/appendix_3.html
+    'c_hPa_geos5' : np.array([  
+         1.00000000e-02,   1.50000000e-02,   2.00000000e-02,
+         2.60000000e-02,   3.30000000e-02,   4.00000000e-02,
+         4.80000000e-02,   5.70000000e-02,   6.60000000e-02,
+         7.80000000e-02,   8.90000000e-02,   1.05000000e-01,
+         1.20000000e-01,   1.40000000e-01,   1.59000000e-01,
+         1.85000000e-01,   2.11000000e-01,   2.45000000e-01,
+         2.79000000e-01,   3.22000000e-01,   3.65000000e-01,
+         4.20000000e-01,   4.76000000e-01,   5.46000000e-01,
+         6.17000000e-01,   7.06000000e-01,   7.95000000e-01,
+         9.07000000e-01,   1.01900000e+00,   1.16000000e+00,
+         1.30100000e+00,   1.47600000e+00,   1.65100000e+00,
+         1.86800000e+00,   2.08500000e+00,   2.35300000e+00,
+         2.62000000e+00,   2.94800000e+00,   3.27600000e+00,
+         3.67700000e+00,   4.07700000e+00,   4.56200000e+00,
+         5.04700000e+00,   5.63200000e+00,   6.21700000e+00,
+         6.91800000e+00,   7.62000000e+00,   8.45600000e+00,
+         9.29300000e+00,   1.02850000e+01,   1.12770000e+01,
+         1.24600000e+01,   1.36430000e+01,   1.50500000e+01,
+         1.64570000e+01,   1.81240000e+01,   1.97920000e+01,
+         2.17610000e+01,   2.37300000e+01,   2.60490000e+01,
+         2.83680000e+01,   3.10890000e+01,   3.38100000e+01,
+         3.69930000e+01,   4.01750000e+01,   4.39100000e+01,
+         4.76440000e+01,   5.20160000e+01,   5.63880000e+01,
+         6.14960000e+01,   6.66030000e+01,   7.25580000e+01,
+         7.85120000e+01,   8.54390000e+01,   9.23660000e+01,
+         1.00514000e+02,   1.08663000e+02,   1.18250000e+02,
+         1.27837000e+02,   1.39115000e+02,   1.50393000e+02,
+         1.63661000e+02,   1.76930000e+02,   1.92587000e+02,
+         2.08244000e+02,   2.26745000e+02,   2.45246000e+02,
+         2.67087000e+02,   2.88927000e+02,   3.13966000e+02,
+         3.39005000e+02,   3.58038000e+02,   3.77070000e+02,
+         3.96112000e+02,   4.15155000e+02,   4.34212000e+02,
+         4.53269000e+02,   4.72335000e+02,   4.91401000e+02,
+         5.10475000e+02,   5.29550000e+02,   5.48628000e+02,
+         5.67706000e+02,   5.86793000e+02,   6.05880000e+02,
+         6.24967000e+02,   6.44054000e+02,   6.63146000e+02,
+         6.82239000e+02,   6.94969000e+02,   7.07699000e+02,
+         7.20429000e+02,   7.33160000e+02,   7.45890000e+02,
+         7.58621000e+02,   7.71354000e+02,   7.84088000e+02,
+         7.96822000e+02,   8.09556000e+02,   8.19743000e+02,
+         8.29929000e+02,   8.37570000e+02,   8.45211000e+02,
+         8.52852000e+02,   8.60493000e+02,   8.68135000e+02,
+         8.75776000e+02,   8.83418000e+02,   8.91059000e+02,
+         8.98701000e+02,   9.06342000e+02,   9.13984000e+02,
+         9.21626000e+02,   9.29268000e+02,   9.36911000e+02,
+         9.44553000e+02,   9.52195000e+02,   9.59837000e+02,
+         9.67480000e+02,   9.75122000e+02,   9.82765000e+02,
+         9.90408000e+02,   9.98051000e+02,   1.00565000e+03,
+         1.01325000e+03]),
+    # GEOS-5 Native Vertical Grid (72 hybrid pressure-sigma levels)
+    'c_km_geos5' : np.array([  
+        0.0905,   0.2215,   0.3535,   0.4875,   0.623 ,   0.7605,
+         0.899 ,   1.0395,   1.182 ,   1.3265,   1.473 ,   1.6215,
+         1.8095,   2.053 ,   2.3155,   2.5855,   2.862 ,   3.1465,
+         3.552 ,   4.014 ,   4.499 ,   5.0105,   5.5525,   6.1285,
+         6.745 ,   7.4095,   8.1315,   9.1275,  10.22  ,  11.2995,
+        12.3595,  13.404 ,  14.438 ,  15.4645,  16.4875,  17.508 ,
+        18.538 ,  19.582 ,  20.642 ,  21.721 ,  22.8195,  23.944 ,
+        25.098 ,  26.2835,  27.502 ,  28.754 ,  30.0415,  31.3655,
+        32.7365,  34.1605,  35.637 ,  37.1665,  38.7505,  40.388 ,
+        42.078 ,  43.8205,  45.613 ,  47.454 ,  49.3395,  51.271 ,
+        53.2445,  55.2555,  57.299 ,  59.37  ,  61.4615,  63.567 ,
+        65.68  ,  67.8175,  70.0485,  72.496 ,  75.4755,  79.3635]),
     }
+    # 
+    Temp_arrays = ['c_km_geos5', 'c_hPa_geos5']
+    if input in Temp_arrays:
+        print 'WARNING array ({}) is tempoary! - Please check it!'.format(input)
 
     if rtn_dict:
         return d
@@ -622,6 +697,9 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
         return d[input]
 
 
+# --------------                                                                                 
+# X.XX - Get significant figures 
+# ------------- 
 def get_sigfig( x, p=3 ):
     """
     Return a number with only the significant figures required.
@@ -705,7 +783,9 @@ def get_sigfig( x, p=3 ):
 #    output round(x, -int(floor(log10(abs(x)))))
 #    return output
 
-
+# --------------                                                                                 
+# X.XX - Get number in scientific form 
+# ------------- 
 def get_scientific_number( number, precision, string=False ): 
     """
     Gets a number in scientific notation with a given precision.
