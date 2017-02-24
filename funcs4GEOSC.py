@@ -3748,7 +3748,7 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
 
     # only consider troposphere ( update this to use mask4troposphere )
     if rm_strat:
-        ars = mask4troposphere( ars,  t_ps=t_ps, wd=wd,\
+        ars = mask4troposphere( ars,  t_ps=t_ps, wd=wd, #trop_limit=trop_limit, \
             use_time_in_trop=use_time_in_trop, multiply_method=multiply_method )
 
     if debug:
@@ -4067,13 +4067,177 @@ def np2chronological_fromctm( ctms, arr, debug=False ):
 
     return np.concatenate( [arr[...,i][...,None] for i in ind ], axis =3)
 
+
+
+# ----
+# X.XX - Get reaction numbers 
+# ----
+def get_KPP_tagged_rxns( fam='LOx', filename='gckpp_Monitor.F90', 
+        Mechanism='Halogens', wd=None ):
+    """
+    Search compiled KPP mechanism for reactions with a certain tag ("fam") in
+    their mechanism (e.g. LOx for loss of Ox)
+    """
+    # Get dictionary of reactions in Mechanism
+    RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename, \
+        wd=wd)
+
+    # loop dictionary of reactions and save those that contain tag
+    tagged_RR_dummies = []
+    for key_ in RR_dict.keys():
+        # Get reaction string 
+        rxn_str = RR_dict[key_]
+        # collection reactions with tag
+        if fam in rxn_str:
+            tagged_RR_dummies += [key_]
+    return tagged_RR_dummies
+
+
+# ----
+# X.XX - Get stoichiometry of each reactino in 
+# ---- 
+def get_stioch_for_family_reactions( fam='LOx', filename='gckpp_Monitor.F90', 
+        Mechanism='Halogens', wd=None ):
+    """
+    Get the stiochmetery for each reaction in family from KPP files 
+    """
+    # Get dictionary of reactions in Mechanism
+    RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename, \
+        wd=wd)    
+    
+    # assume unity if no coeffeicent
+    unity = 1.0
+
+    # loop dictionary of reactions and save those that contain tag
+    tagged_RR_dummies = []
+    tagged_RR_stioch = []
+    for key_ in RR_dict.keys():
+        # Get reaction string 
+        rxn_str = RR_dict[key_]
+        # collection reactions with tag
+        if fam in rxn_str:
+            tagged_RR_dummies += [key_]    
+            # split reaction str by '+'
+            rxn_str = rxn_str.split('+')
+            print rxn_str
+            # get product
+            product_str = [i for i in rxn_str if (fam in i) ]
+            print product_str
+            # split Coe from 
+            product_str = product_str[0].strip().split()
+            if len(product_str)>1:
+                tagged_RR_stioch += [ float(product_str[0]) ]
+            else:
+                tagged_RR_stioch += [ unity ]
+
+    return dict(zip(tagged_RR_dummies, tagged_RR_stioch))
+
+# ----
+# X.XX - Get dict of KPP Mech. 
+# ----
+def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90', 
+        Mechanism='Halogens', wd=None):
+    """
+    Get a dictionary of KPP mechansim from 
+    """
+
+    # Get base working code directory
+    if isinstance( wd, type(None)):
+#        wd = sys.agrv[1]
+        # Hardwire for testing
+        wd = '/work/home/ts551/data/all_model_simulations/iodine_runs/iGEOSChem_5.0/code/'
+        wd += '/KPP/{}/'.format(Mechanism)
+
+    MECH_start_str = 'INTEGER, DIMENSION(1) :: MONITOR'
+    rxn_line_ind = '! index'
+    RR_dict = {}
+    with open( wd+filename, 'r') as file:
+        
+        # loop by line in file
+        start_extracting_mech_line=1E99
+        for n, line in enumerate( file ):
+            
+            # check for mechanism identifier
+            if (MECH_start_str in line):
+                start_extracting_mech_line = n+3
+            # Extract reaction mechanism info
+            if n >=start_extracting_mech_line:
+                
+                # break out of loop after empyty line (len<3)
+                if len(line) < 3:
+                    break
+
+                # check if the line contains a reaction str        
+                if rxn_line_ind in line:
+                    rxn_str = line[6:106]                    
+                    RR_dummy = 'RR{}'.format( line[118:].strip() )
+                    # add to dictionary            
+                    RR_dict[RR_dummy] = rxn_str
+            
+
+    return RR_dict
+
+
+# ----
+# X.XX - Get O3 Burden
+# ----
+def prt_families4rxns_to_input_to_PROD_LOSS(fam='LOx', filename='gckpp_Monitor.F90', 
+        Mechanism='Halogens', rxns=None, wd=None ):
+    """
+    takes a list of reaction numbers or (fam) and prints out
+    """
+    # get list of tagged reactions for family
+    if isinstance(rxns, type(None)):
+        rxns = get_KPP_tagged_rxns( fam=fam, filename=filename, \
+            Mechanism=Mechanism, wd=wd)
+
+    # --- Print 
+    header_Str = '#FAMILIES'
+    pstr = 'P{} : {};'
+    print '>>>> Copy and paste the below text into gckpp.kpp <<<'
+    print header_Str
+    for rxn in rxns:
+        print pstr.format(rxn, rxn ) 
+    
+
+
+def get_oxidative_release4specs(filename='gckpp_Monitor.F90', 
+        Mechanism='Halogens', wd=None):
+    """
+    Certain species have a fixed concentration in the model, for these speices
+    the source value is calculated by the summ of the oxidative release
+    ( OH, Br, Cl )
+
+    """
+    # species ?
+    specs = ['CHBr3', 'CH3Cl', 'CH3Cl2', 'CHCl3' ]
+
+    # Get dictionary of reactions in Mechanism
+    RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename, \
+        wd=wd)    
+
+    # loop species 
+    RR_rxn_dummies = []
+    for spec in specs:
+        # loop reactions
+        for key_ in RR_dict:
+            rxn_str = RR_dict[key_] 
+            # species in reaction?
+            if spec in rxn_str:
+                print rxn_str
+                RR_rxn_dummies +=[ key_ ]
+    return RR_rxn_dummies
+
+
+
+
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 # -------------- Delete/move to user specific modules 
 
 
 # ----
-# 2.09 - Get tropospheric Burden - 
+# X.XX - Get tropospheric Burden - 
 # ----
 def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
         Iodine=False, all_data=True, total_atmos=False , res='4x5',  \
@@ -4144,7 +4308,7 @@ def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
         return np.ma.mean( ar, axis=3 )
 
 # ----
-# 2.25 - Get O3 Burden
+# X.XX - Get O3 Burden
 # ----
 def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None, \
         ctm_f=False, trop_limit=True, all_data=False, annual_mean=True, \
@@ -4210,7 +4374,6 @@ def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None, \
         return ar
     else:
         return ar.mean(axis=3 )
-
 
 
 
