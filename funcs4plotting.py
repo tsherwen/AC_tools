@@ -781,7 +781,7 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 
 
 # --------
-# 1.02 - Zonal plot - log or linear
+# X.XX - Zonal plot - log or linear
 # --------
 def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=37, \
         format='%.2f', interval=None, no_cb=False, units=None, shrink=0.4, alpha=1, \
@@ -1022,7 +1022,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
         ax.set_title(title, fontsize=f_size*1.5)
 
 # --------   
-# 1.07 - Diurnal plot
+# X.XX - Diurnal plot
 # --------
 def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, 
         xlabel=True, ylabel=True, label=None, title=None, f_size=10, 
@@ -1483,69 +1483,6 @@ def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,  \
                             linestyle='dashed' ) for i in bs ]
 
 
-# --------------
-# 1.16 - plot up timeseries from May through Septmeber
-# -------------
-def timeseries_by_day_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
-        title=None, legend=False, everyother=7,  x_nticks=12, \
-        window=False, label=None, ylabel=None, loc='upper right',  \
-        lw=1,ls='-', color=None, start_month=5, end_month=9, 
-        boxplot=True, showmeans=False, debug=False ):
-    """ 
-    Timeseries plot. 
-    
-    ARGUEMENTS:
-     - Takes numpy arrays of datetimes and data as arguemnts. 
-
-    NOTES:  
-     - Description needs update.
-    """
-
-    # Process data - reduce resolution to daily, and get std
-    df = DataFrame(data={'data':data},index=dates )
-
-    # remove dates outside of range (start_month > < end_month )
-    def get_month(x):
-         return x.month
-    df[ 'month'] = df.index.map( get_month ) 
-    df = df[ df['month']<=end_month ]
-    df = df[ df['month']>=start_month ]
-
-    # split by day
-    def get_day(x):
-         return datetime.datetime(*x.timetuple()[:3]) 
-    df[ 'day'] = df.index.map( get_day )
-    sel_days = sorted(set(df[ 'day']))
-    df = DataFrame(data={'data':df.data, 'day':df.day},index=df.index )
-    daily = [ df[df['day']== i].data for i in sel_days ]
-    sel_days = [i.to_datetime() for i in sel_days ]
-
-    # label once per week 
-    labels = [i.strftime("%-d %b") for  i in sel_days ][::everyother]
-
-    if boxplot:
-        # output boxplot for range
-        bp = ax.boxplot( daily, sel_days, showmeans=showmeans )
-
-        # xticks are numbers, therefore set all to ''
-        # except those you want to show dates
-        fill_label = ['']*len(sel_days)
-        fill_points =range(len(sel_days))[::everyother] 
-        for n,i in enumerate( fill_points) :
-            fill_label[i] = labels[n]
-    
-        plt.xticks( range(len(sel_days)), fill_label, \
-                        rotation='vertical')
-    else:
-        plt.plot( sel_days, [np.mean(i) for i in daily] )
-        plt.xticks( sel_days[::everyother], labels, \
-                    rotation='vertical' )
-
-    # Beatify plot
-    if not isinstance( title, type(None) ):
-        plt.title( title )
-    if not isinstance( ylabel, type(None) ):
-        plt.ylabel( ylabel )
 
 
 # --------------
@@ -1615,6 +1552,7 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         plt.ylabel( ylabel, fontsize=f_size*.75 )
     if legend:
         plt.legend( fontsize=f_size*.75, loc=loc )
+
 
 # --------
 # X.XX - North Pole surface plot
@@ -1727,6 +1665,7 @@ def north_pole_surface_plot( arr, return_m=False, grid=True, centre=False, \
         return_list += [ m ]
     return return_list
 
+
 # --------
 # X.XX - South Pole surface plot
 # --------
@@ -1832,6 +1771,7 @@ def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False,
         return plt         
     else:
         return plt , cb 
+
 
 # --------
 # X.XX - PDF of monthly surface change plots for given species (takes 5D arr )
@@ -1953,6 +1893,7 @@ def plot_specs_surface_change_monthly2pdf( arr, res='4x5', dpi=160, \
 
     #  save entire pdf  
     plot2pdfmulti( pdff, savetitle, close=True, dpi=dpi, no_dstr=no_dstr )
+
         
 # --------
 # X.XX - PDF of monthly zonal change plots for given species
@@ -2082,6 +2023,7 @@ def plot_specs_zonal_change_monthly2pdf( Vars, res='4x5', dpi=160, \
 
     #  save entire pdf 
     plot2pdfmulti( pdff, savetitle, close=True, dpi=dpi, no_dstr=no_dstr )
+
 
 # --------
 # X.XX - Change as 2D plot of surface ( for column or surface change )
@@ -2292,6 +2234,7 @@ def X_Y_scatter( x, y, z=None, fig=None, ax=None, vmin=None, vmax=None, \
     plt.xticks( fontsize=f_size )
     plt.yticks( fontsize=f_size )    
 
+
 # --------
 # X.XX - Scatter 3D cube
 # --------
@@ -2333,6 +2276,7 @@ def scatter_3D_cube( data, dims=None, res='2x2.5', fig=None, everyother=1, inter
     ax.set_xlim(  lon[0], lon[-1] )
     ax.set_ylim(  lat[0], lat[-1] )    
     ax.set_zlim(  alt[0], alt[-1] )
+
 
 # --------
 # X.XX - Plot up seasonal output from 4D arr (lon, lat, alt, time)
@@ -2380,115 +2324,6 @@ def get_seasonal_plot( arr, fixcb=None, fig=None, f_size=15, \
     # Adjust figure
     fig.subplots_adjust( bottom=bottom, top=top, left=left,\
         right=right,hspace=hspace, wspace=wspace)
-
-# -------------
-# X.XX - box X-Y plot with histograms
-# -------------
-def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
-        left= 0.1, width=0.60, bottom=0.1, height=0.60, widthII=0.2, \
-        fit = 0.02, binwidth=0.1, cmap=plt.cm.gnuplot2, \
-        X_title='X title', Y_title='Y title', f_size=5 , line121=False ):
-    """ 
-    Plots a X vs. Y histogram 
-    NOTES
-    --- 
-    Just use pandas for this or seaborn
-     - http://seaborn.pydata.org/generated/seaborn.distplot.html
-     - http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.hist.html
-    
-    """
-
-    # Use hist code 
-    nullfmt = mpl.ticker.NullFormatter()         # no labels
-
-    # start with a rectangular Figure
-    if isinstance( fig, type(None) ):
-        fig = plt.figure(1, figsize=(8,8))
-    
-    rect_scatter = [left, bottom, width, height]    
-    axScatter = plt.axes(rect_scatter)
-
-    if z == None:
-        # the scatter plot:
-        axScatter.scatter(x, y)
-
-        # definitions for the hist axes & setup.
-#        bottom_h = left_h = left+width+fit
-#        rect_histx = [left, bottom_h, width, widthII]
-#        rect_histy = [left_h, bottom, widthII, height]
-
-    else:        
-        vmin, vmax = [  ( float(np.ma.min(i)), float(np.ma.max(i)) ) \
-            for  i in [ z] ][0]
-        s_z = [ cmap(  (float(i) - vmin) / ( np.array([vmin,vmax]) ).ptp() ) \
-            for i in z ]
-        pts = axScatter.scatter(x, y, c=z)
-
-        # definitions for the hist axes & setup.
-#        widthII , height = [ i*.75 for i in widthII, height ]
-        widthII  = widthII*.75 
-
-    # definitions for the hist axes & setup.
-    bottom_h = left_h = left+width+fit
-    rect_histx = [left, bottom_h, width, widthII]
-    rect_histy = [left_h, bottom, widthII, height]
-
-    # now determine nice limits by hand or prescribe: 
-    xymax = np.ma.max( [np.ma.max(np.fabs(x)), np.ma.max(np.fabs(y))] )
-    lim = ( int(xymax/binwidth) + 1) * binwidth
-
-    # manually?
-    lim_min, lim_max  =  0,  max( np.ma.max(x), np.ma.max(y) )
-    axScatter.set_xlim( lim_min, lim_max )
-    axScatter.set_ylim(  lim_min, lim_max )
-    # or by hand?
-#    axScatter.set_xlim( (-lim, lim) )
- #   axScatter.set_ylim( (-lim, lim) )
-
-    # add trendline
-    Trendline( axScatter, x, y, order =1, intervals= 700 ) 
-
-    # plot up titles
-    plt.xlabel(  X_title )
-    plt.ylabel( Y_title )
-    if  line121:
-        print lim_min, lim_max
-        plt.plot( np.arange(lim_min, lim_max*1.5 )  , np.arange(lim_min, \
-            lim_max*1.5  ), linestyle='--', color=(0.5, 0.5, 0.5))
-    
-    # add color bar if using z - [left, bottom, width, height],
-    if z != None:
-        cbaxes = plt.axes([0.9+fit*.5, bottom, fit*.5, height]) 
-        cb = plt.colorbar(pts, cax = cbaxes) 
-        if zlabel != None:
-            cb.ax.set_ylabel(zlabel, rotation='vertical', labelpad=1 )
-    
-    # plot up histograms 
-    axHistx = plt.axes(rect_histx)
-    axHisty = plt.axes(rect_histy)
-
-    # no labels
-    axHistx.xaxis.set_major_formatter(nullfmt)
-    axHisty.yaxis.set_major_formatter(nullfmt)    
-    
-    # bin data
-    bins = np.arange(-lim, lim + binwidth, binwidth)
-    axHistx.hist(x, bins=bins)
-    axHisty.hist(y, bins=bins, orientation='horizontal')
-    plt.xticks( rotation='vertical' )
-#    plt.setp( axHisty.xaxis.get_majorticklabels(), rotation=70 )
-
-    axHistx.set_xlim( axScatter.get_xlim() )
-    axHisty.set_ylim( axScatter.get_ylim() )
-    
-    # make sure scales are linear
-    [ i.set_yscale('linear') for i in axHisty, axScatter ]
-    [ i.set_xscale('linear') for i in axHistx, axScatter ]
-
-    plt.rcParams.update({'font.size': f_size})
-#    [ i.rcParams.update({'font.size': f_size}) for i in axHisty, axHistx, axScatter ]
-#    [ i.xticks( fontsize=f_size ) for i in axHisty, axHistx, axScatter ]
-#    [ i.yticks( fontsize=f_size ) for i in axHisty, axHistx, axScatter ]
 
 
 # --------
@@ -2735,6 +2570,7 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
         #  save entire pdf 
         plot2pdfmulti( pdff, savetitle, close=True, dpi=dpi, no_dstr=no_dstr )
 
+
 # --------
 # X.XX - Spatial Figure maker ( just provide lon, lat, time,  np array )
 # --------
@@ -2907,6 +2743,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     if return_m:
         return [ fig, cmap ] + plt_vars + [ fixcb ] #+= [ cb_ax ]
 
+
 # --------
 # X.XX - Zonal Figure maker ( just provide lon, lat np array )
 # --------
@@ -3030,6 +2867,7 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
     if return_m or rtn_plt_vars:
         return [ fig, cmap, fixcb ]# + plt_vars + [ fixcb ] #+= [ cb_ax ]
 
+
 # --------
 # X.XX - Lat plotter of average + Q1/Q3
 # --------
@@ -3063,6 +2901,7 @@ def plot_arr_avg_Q1_Q3( X, Y, ax=None, color='blue', label=None, \
     # return axis object
     return ax
 
+
 # --------------
 # 1.35 - Timeseries plotter ( takes datetime + np.array )
 # -------------
@@ -3076,7 +2915,7 @@ def timeseries_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         debug=False ):
     """ 
     Plot up timeseries of values. 
-
+    
     NOTES:
      - Requires data, and dates in numpy array form. 
      - Dates must be as datetime.datetime objects.
@@ -3146,7 +2985,6 @@ def timeseries_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     # Legend?
     if legend:
         plt.legend( fontsize=f_size*.75, loc=loc )
-
 
 
 # --------
@@ -3247,6 +3085,7 @@ def plt_4Darray_surface_by_month( arr, res='4x5', dpi=160, \
         plot2pdf( title=pdftitle )    
     if show:
         plt.show()
+
 
 # --------
 # 1.37 - Get monthly surface plots for (4D) array 
@@ -3352,6 +3191,7 @@ def plt_4Darray_zonal_by_month( arr, res='4x5', dpi=160, \
         plot2pdf( title=pdftitle )    
     if show:
         plt.show()
+
 
 # --------
 # 1.38 - Stackplot for variables over X axis
@@ -3513,8 +3353,6 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
 #
 
 
-
-
 # -------------
 # X.XX -  color list for rainbow plots
 # -------------
@@ -3544,6 +3382,7 @@ def r_squared(x, y):
     slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
     return r_value**2
 
+
 # -------------
 # X.XX - setup box plots
 # -------------
@@ -3566,6 +3405,7 @@ def set_bp( bp, num, c_list=['k', 'red'], white_fill=True, set_all=True,
         [ box.set( facecolor = c_list[num] ) for box in bp['boxes'] ]
         setp(bp['medians'][:], color=median_color, linewidth=linewidth)                        
 
+
 # -------------
 # X.XX - Get all marker types
 # -------------
@@ -3586,6 +3426,7 @@ def markers_list( rm_plain_markers=False ):
         [ markers.pop(i) for i in [3, 5][::-1] ]
 
     return markers
+
 
 # -------------
 # X.XX linear trendline calculator for X-Y plot (with histograms)
@@ -3613,6 +3454,7 @@ def Trendline( ax, X, Y, order =1, intervals= 700, f_size=20,
 
     ax.legend()
 
+
 # -------------
 # X.XX - plot_gc_bin_bands - plot up Fast-J  bins  ( 7 longest nm bins)
 # -------------   
@@ -3624,6 +3466,7 @@ def plot_gc_bin_bands(facecolor='#B0C4DE'):
     alphas = [ 0.3,0.1 ]*len(vars[0])
     [ plt.axvspan( vars[0][n], vars[1][n], facecolor=facecolor, \
         alpha=alphas[n]) for n in range(len(vars[0])) ]
+
 
 # --------------
 # X.XX - line styles 
@@ -3691,58 +3534,6 @@ def adjust_subplots( fig, left=None, bottom=None, right=None, top=None, \
     fig.subplots_adjust(left=left, bottom=bottom, right=right, top=top, \
         wspace=wspace, hspace=hspace)
         
-
-# ----
-# X.XX - setup diunal
-# ----
-def setup_diurnal(years, months, f_size=20):
-    """ 
-    Setup figure for diurnal plot 
-    """
-
-    plt.title('Monthly Diurnal Obs (2008-2011) vs. Model ({}{}-{}{}) '.format( \
-        years[0], months[0],years[1],months[1]   ) )
-    plt.legend(loc='lower left')
-    plt.ylabel('Delta O3 (UT 17:00-09:00) /  p.p.b.v')
-    plt.xlabel('Hours')
-#    plt.ylim(-5, 1)
-    plt.ylim(-3, 1)
-    plt.xlim(4, 21)
-    plt.rcParams.update({'font.size': f_size})
-
-
-# -------------
-# X.XX -  print NCAS & York logos in the bottom corners
-# -------------
-def add_logos_NCAS_york_bottom(fig):
-    """ 
-    Add NCAS + York logo for external plots used externally 
-
-    NOTE(s):
-     - This function is not general enough and needs to be removed from AC_tools
-    """
-    from PIL import Image
-    
-    wd1 = get_dir ('dwd') +'misc/logos/'
-    logo_list= [
-    'NCAS_national_centre_logo.gif', 'nerclogo1000.gif' , 'york_uni_shield.tif' ,   \
-    'york_uni_name.tif' 
-    ]
-
-    # Setup logo 1
-    logo1 = Image.open( wd1 + logo_list[3])  # York name
-    # [left, bottom, width, height]
-    ax2=fig.add_axes([0.01, 0.015, 0.55, 0.055], frameon=False)  
-    ax2.imshow(logo1,interpolation="bilinear")
-    ax2.axis('off')
-
-    # Setup logo 2
-    logo2 = Image.open( wd1 + logo_list[0]) # NCAS logo
-    # [left, bottom, width, height]
-    ax3 = fig.add_axes([0.7, 0.01, 0.25, 0.1], frameon=False) 
-    ax3.imshow(logo2,interpolation="bilinear")
-    ax3.axis('off')
-    return fig
 
 # --------
 # X.XX - Iodine deposition mask (for sites... e.g Denmark, Germany, Norfolk )
@@ -4522,7 +4313,9 @@ def mk_discrete_cmap( lvls=None, cmap=None, arr=None,\
     return cmap, norm
 
 
-
+# --------
+# X.XX - 
+# --------
 def show_plot():
     """
     Wrapper for plt.show(). Use to plot to screen.
@@ -4530,7 +4323,9 @@ def show_plot():
     plt.show()
     return
 
-
+# --------
+# X.XX - 
+# --------
 def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=True):
     """
     Save a plot to disk.
@@ -4562,6 +4357,51 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=T
     return
 
 
+
+ 
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# ---------------- Section X -------------------------------------------
+# -------------- User specific functions. 
+# --------------------------------------------------------------------------
+# 
+# NOTE(s): 
+# (1) These functions should be removed following checks on compatibility
+#  
+
+# -------------
+# X.XX -  print NCAS & York logos in the bottom corners
+# -------------
+def add_logos_NCAS_york_bottom(fig):
+    """ 
+    Add NCAS + York logo for external plots used externally 
+
+    NOTE(s):
+     - This function is not general enough and needs to be removed from AC_tools
+    """
+    from PIL import Image
+    
+    wd1 = get_dir ('dwd') +'misc/logos/'
+    logo_list= [
+    'NCAS_national_centre_logo.gif', 'nerclogo1000.gif' , 'york_uni_shield.tif' ,   \
+    'york_uni_name.tif' 
+    ]
+
+    # Setup logo 1
+    logo1 = Image.open( wd1 + logo_list[3])  # York name
+    # [left, bottom, width, height]
+    ax2=fig.add_axes([0.01, 0.015, 0.55, 0.055], frameon=False)  
+    ax2.imshow(logo1,interpolation="bilinear")
+    ax2.axis('off')
+
+    # Setup logo 2
+    logo2 = Image.open( wd1 + logo_list[0]) # NCAS logo
+    # [left, bottom, width, height]
+    ax3 = fig.add_axes([0.7, 0.01, 0.25, 0.1], frameon=False) 
+    ax3.imshow(logo2,interpolation="bilinear")
+    ax3.axis('off')
+    return fig 
  
 
 # --------------------------------------------------------------------------
@@ -4574,6 +4414,181 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=T
 # NOTE(s): 
 # (1) These are retained even though they are redundant for back compatibility
 # (2) It is not advised to use these. 
+
+# --------------
+# 1.16 - plot up timeseries from May through Septmeber
+# -------------
+def timeseries_by_day_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
+        title=None, legend=False, everyother=7,  x_nticks=12, \
+        window=False, label=None, ylabel=None, loc='upper right',  \
+        lw=1,ls='-', color=None, start_month=5, end_month=9, 
+        boxplot=True, showmeans=False, debug=False ):
+    """ 
+    Timeseries plot. 
+    
+    ARGUEMENTS:
+     - Takes numpy arrays of datetimes and data as arguemnts. 
+
+    NOTES:  
+     - Description needs update.
+    """
+
+    # Process data - reduce resolution to daily, and get std
+    df = DataFrame(data={'data':data},index=dates )
+
+    # remove dates outside of range (start_month > < end_month )
+    def get_month(x):
+         return x.month
+    df[ 'month'] = df.index.map( get_month ) 
+    df = df[ df['month']<=end_month ]
+    df = df[ df['month']>=start_month ]
+
+    # split by day
+    def get_day(x):
+         return datetime.datetime(*x.timetuple()[:3]) 
+    df[ 'day'] = df.index.map( get_day )
+    sel_days = sorted(set(df[ 'day']))
+    df = DataFrame(data={'data':df.data, 'day':df.day},index=df.index )
+    daily = [ df[df['day']== i].data for i in sel_days ]
+    sel_days = [i.to_datetime() for i in sel_days ]
+
+    # label once per week 
+    labels = [i.strftime("%-d %b") for  i in sel_days ][::everyother]
+
+    if boxplot:
+        # output boxplot for range
+        bp = ax.boxplot( daily, sel_days, showmeans=showmeans )
+
+        # xticks are numbers, therefore set all to ''
+        # except those you want to show dates
+        fill_label = ['']*len(sel_days)
+        fill_points =range(len(sel_days))[::everyother] 
+        for n,i in enumerate( fill_points) :
+            fill_label[i] = labels[n]
+    
+        plt.xticks( range(len(sel_days)), fill_label, \
+                        rotation='vertical')
+    else:
+        plt.plot( sel_days, [np.mean(i) for i in daily] )
+        plt.xticks( sel_days[::everyother], labels, \
+                    rotation='vertical' )
+
+    # Beatify plot
+    if not isinstance( title, type(None) ):
+        plt.title( title )
+    if not isinstance( ylabel, type(None) ):
+        plt.ylabel( ylabel )
+
+
+# -------------
+# X.XX - box X-Y plot with histograms
+# -------------
+def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
+        left= 0.1, width=0.60, bottom=0.1, height=0.60, widthII=0.2, \
+        fit = 0.02, binwidth=0.1, cmap=plt.cm.gnuplot2, \
+        X_title='X title', Y_title='Y title', f_size=5 , line121=False ):
+    """ 
+    Plots a X vs. Y histogram 
+    NOTES
+    --- 
+    Just use pandas for this or seaborn
+     - http://seaborn.pydata.org/generated/seaborn.distplot.html
+     - http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.hist.html
+    
+    """
+
+    # Use hist code 
+    nullfmt = mpl.ticker.NullFormatter()         # no labels
+
+    # start with a rectangular Figure
+    if isinstance( fig, type(None) ):
+        fig = plt.figure(1, figsize=(8,8))
+    
+    rect_scatter = [left, bottom, width, height]    
+    axScatter = plt.axes(rect_scatter)
+
+    if z == None:
+        # the scatter plot:
+        axScatter.scatter(x, y)
+
+        # definitions for the hist axes & setup.
+#        bottom_h = left_h = left+width+fit
+#        rect_histx = [left, bottom_h, width, widthII]
+#        rect_histy = [left_h, bottom, widthII, height]
+
+    else:        
+        vmin, vmax = [  ( float(np.ma.min(i)), float(np.ma.max(i)) ) \
+            for  i in [ z] ][0]
+        s_z = [ cmap(  (float(i) - vmin) / ( np.array([vmin,vmax]) ).ptp() ) \
+            for i in z ]
+        pts = axScatter.scatter(x, y, c=z)
+
+        # definitions for the hist axes & setup.
+#        widthII , height = [ i*.75 for i in widthII, height ]
+        widthII  = widthII*.75 
+
+    # definitions for the hist axes & setup.
+    bottom_h = left_h = left+width+fit
+    rect_histx = [left, bottom_h, width, widthII]
+    rect_histy = [left_h, bottom, widthII, height]
+
+    # now determine nice limits by hand or prescribe: 
+    xymax = np.ma.max( [np.ma.max(np.fabs(x)), np.ma.max(np.fabs(y))] )
+    lim = ( int(xymax/binwidth) + 1) * binwidth
+
+    # manually?
+    lim_min, lim_max  =  0,  max( np.ma.max(x), np.ma.max(y) )
+    axScatter.set_xlim( lim_min, lim_max )
+    axScatter.set_ylim(  lim_min, lim_max )
+    # or by hand?
+#    axScatter.set_xlim( (-lim, lim) )
+ #   axScatter.set_ylim( (-lim, lim) )
+
+    # add trendline
+    Trendline( axScatter, x, y, order =1, intervals= 700 ) 
+
+    # plot up titles
+    plt.xlabel(  X_title )
+    plt.ylabel( Y_title )
+    if  line121:
+        print lim_min, lim_max
+        plt.plot( np.arange(lim_min, lim_max*1.5 )  , np.arange(lim_min, \
+            lim_max*1.5  ), linestyle='--', color=(0.5, 0.5, 0.5))
+    
+    # add color bar if using z - [left, bottom, width, height],
+    if z != None:
+        cbaxes = plt.axes([0.9+fit*.5, bottom, fit*.5, height]) 
+        cb = plt.colorbar(pts, cax = cbaxes) 
+        if zlabel != None:
+            cb.ax.set_ylabel(zlabel, rotation='vertical', labelpad=1 )
+    
+    # plot up histograms 
+    axHistx = plt.axes(rect_histx)
+    axHisty = plt.axes(rect_histy)
+
+    # no labels
+    axHistx.xaxis.set_major_formatter(nullfmt)
+    axHisty.yaxis.set_major_formatter(nullfmt)    
+    
+    # bin data
+    bins = np.arange(-lim, lim + binwidth, binwidth)
+    axHistx.hist(x, bins=bins)
+    axHisty.hist(y, bins=bins, orientation='horizontal')
+    plt.xticks( rotation='vertical' )
+#    plt.setp( axHisty.xaxis.get_majorticklabels(), rotation=70 )
+
+    axHistx.set_xlim( axScatter.get_xlim() )
+    axHisty.set_ylim( axScatter.get_ylim() )
+    
+    # make sure scales are linear
+    [ i.set_yscale('linear') for i in axHisty, axScatter ]
+    [ i.set_xscale('linear') for i in axHistx, axScatter ]
+
+    plt.rcParams.update({'font.size': f_size})
+#    [ i.rcParams.update({'font.size': f_size}) for i in axHisty, axHistx, axScatter ]
+#    [ i.xticks( fontsize=f_size ) for i in axHisty, axHistx, axScatter ]
+#    [ i.yticks( fontsize=f_size ) for i in axHisty, axHistx, axScatter ]
+
 
 
 # --------   

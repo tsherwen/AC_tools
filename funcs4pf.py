@@ -18,8 +18,6 @@ import glob
 import pandas as pd
 from pandas import HDFStore
 from pandas import DataFrame
-#from pandas import Series
-#from pandas import Panel
 import logging
 
 # Math functions
@@ -37,105 +35,8 @@ import datetime as datetime
 # -- Variables
 from funcs_vars import *
 
-# ------------------------------------------- Section 1 -------------------------------------------
-# -------------- Planeflight Setup tools
-#
 
-# --------------
-# X.XX - Read in file of GAW sites as lists
-# -------------
-def readin_gaw_sites(filename, all=False):
-    """ 
-    Read in list format csv, with details of sites to output planeflight for
-
-    NOTES:
-    - REDUNDENT? 
-    """
-
-    with open(filename,'rb') as f:
-        reader = csv.reader(f, delimiter=',') 
-        for row in reader:
-            new = row[:]
-            try:
-                locations.append(new)
-
-            except:
-                locations=[new]
-
-        locations=np.array(locations)
-        if all:
-            return locations
-        else:
-            numbers = locations[:,0]
-        #    IDs = locations[:,1]
-            lats = locations[:,2]
-            lons = locations[:,3]
-            pres = locations[:,4]
-            locs = locations[:,5]
-    return numbers, lats, lons, pres, locs
-
-# --------------
-# X.XX - Read in file of site lists -  
-# -------------
-def read_in_kml_sites(filename, limter=10, ind=[0, 3, 1, 2 ], debug=False):
-    """ 
-    Read in list format csv, with details of sites to output planeflight for.
-    NOTES:
-     - double up of function 1.00?
-    """
-
-    if debug:
-        print 'read_in_kml_sites called for ', filename
-    reader = csv.reader( open( filename, 'rb' ), delimiter=',' ) 
-
-    if debug:
-        print reader
-    for row in reader:
-        if debug:
-            print row
-        new = row[:limter]
-        try:
-            locations.append(new)
-
-        except:
-            locations=[new]
-
-    if debug:
-        print type( locations)
-        print len(locations), locations[:2]
-        print len(locations[0]), locations[0]
-
-    if debug:
-        print '-'*100
-    for ii, i in enumerate( locations ):
-        if ( len(i) != 5 ):
-            if debug:
-                print len(i),  i 
-    if debug:
-        print '-%'*50
-
-    locations=np.array(locations)
-
-    if debug:
-        print type( locations)
-        print len(locations), locations[:2]
-        print len(locations[0]), locations[0]
-        print locations.shape
-        
-    # extract vars  = 
-    times, altitude, lats, lons = [ locations[:,i] for i in ind ]
-
-    if debug:
-        print 'complete read of : {}'.format( filename )
-        print [ len(i) for i in [times, lats, lons, altitude ]]
-        print [ (i[0], i[-1]) for i in [times, lats, lons, altitude ]]
-        print 'min max:' , [ (min(i), max(i)) for i in [times, lats, lons, altitude ]]
-
-    return times, lats, lons, altitude
-
-
-
-# ------------------------------------------- Section 3 -------------------------------------------
+# ---------------------------------- Section X.X ---------------------------
 # -------------- Planeflight Extractors
 #
 
@@ -391,55 +292,6 @@ def get_pf_headers(file, debug=False):
         print names, list( set(points) )
     return names, list( set(points) )
 
-# -------------- 
-# X.XX - pf 2 pandas binary
-# ----------
-def pf2pandas(wd, files, vars=None, npwd=None, rmvars=None,   \
-            debug=False):
-    """ 
-    Read in GEOS-Chem planeflight output and convert to HDF format
-
-     - Converts date and time columns to datetime format indexes
-     - the resultant HDF is in 2D list form 
-    ( aka further processing required to 3D /2D output  )
-        
-    Note: 
-     - This function is limited by the csv read speed. for large csv output expect 
-     significant processing times or set to automatically run post run
-     - Original files are not removed, so this function will double space usage for 
-     output unless the original fiels are deleted.
-    """
-
-    # Ensure working dorectory string has leading foreward slash
-    if wd[-1] != '/':
-        wd += '/'
-
-#    pfdate =( re.findall('\d+', file ) )[-1]
-    if not isinstance(vars, list ):
-        vars, sites = get_pf_headers( files[0], debug=debug )
-    if not isinstance(npwd, str ):
-        npwd = get_dir('npwd')
-    hdf =HDFStore( npwd+ 'pf_{}_{}.h5'.format( wd.split('/')[-3], \
-        wd.split('/')[-2], wd.split('/')[-1]  ))
-    
-    if debug:
-        print hdf
-
-    for file in files:
-        print file#, pfdate
-
-        # convert planeflight.log to DataFrame
-        df = pf_csv2pandas( file, vars )
-            
-        if file==files[0]:
-            hdf.put('d1', df, format='table', data_columns=True)
-        else:
-            hdf.append('d1', df, format='table', data_columns=True)
-
-        if debug:
-            print hdf['d1'].shape, hdf['d1'].index
-        del df
-    hdf.close()
 
 # -------------- 
 # X.0X - converts planeflight.dat file to pandas array
@@ -489,63 +341,6 @@ def pf_csv2pandas( file=None, vars=None, epoch=False, r_vars=False, \
         return df   
 
 
-
-# ----
-# X.XX - Extract all pf data for a given site.
-# ----
-def wd_pf_2_gaw_arr( wd, spec='O3', location='CVO', scale=1E9, debug=False ):
-    """ 
-    Extract all data rom a GEOS-Chem planeflight csv files in given 
-    working directory, returning this in numpy array form 
-    """
-
-#    print wd
-    files  =  sorted(glob.glob(wd +'/plane_flight_logs/plane.log.2*'))
-    model, names = readfile_basic( files, location, debug=debug )
-    data = np.float64( model[:,names.index( spec )]*1E9 )
-    date = np.int64( model[:,names.index( 'YYYYMMDD' )] )
-    time = np.int64( model[:,names.index( 'HHMM' )] )
-    print [ ( len(i) , min(i), max(i) )  for i in [data, date, time]]
-    return data, date, time
-
-# ----
-#  X.XX - Process "raw" csv files from GEOS-Chem planeflight output
-# ----
-def pro_raw_pf( wd, site='CVO', ext='', run='', frac=False, diurnal=True, \
-            res='4x5', debug=False ):
-    """ 
-    Process csv rom GEOS-Chem planeflight output and save these as numpy memory arrays 
-
-    NOTES:
-     -  this is redundent. remove this function.
-    """
-    np_wd  = get_dir('npwd' )
-
-    # Open & get data
-    data, date, time = wd_pf_2_gaw_arr( wd, location=site  )
-    print [(type(i),len(i) ) for i in [ time, date, data ] ]
-
-    # get local time and shift time to match, - adjust dates,Cut off adjusted day at end an begining
-    time, date, data = adjust_UT_2_lt( time, date, data, site=site)
-
-    # Get O3 max, adjusted diurnal and monthly mean from data and time (int64)
-    months, O3_max, O3_min, O3_d = hr_data_2_diurnal(time, date, data, \
-        frac, diurnal=diurnal )
-
-    # save out numpy of this data                                                                                                      
-    if (diurnal):
-#        fp = np.memmap( np_wd+'{}_mean_monthly_diurnal_O3_pf{}_{}.npy'.format(site, ext, run), dtype='float32', mode='w+', shape=(12,24) )
-        diurnal_name =  '{}_{}_mean_monthly_diurnal_O3_pf{}_{}_{}.npy'
-        fp = np.memmap(np_wd+diurnal_name.format( site, res, ext, run,\
-             wd.split('/')[-2] ), dtype='float32', mode='w+', shape=(12,24) )
-    else:
-        fp = np.memmap( np_wd+'{}_{}_mean_monthly_O3_pf{}_{}.npy'.format(site, \
-            res, ext, run), dtype='float32', mode='w+', shape=(12,24) )
-
-    print fp
-    fp[:] = months[:]
-    np.memmap.flush(fp)
-
 # ----
 # X.XX - Read pf data from 2D NetCDF table file 
 # ----
@@ -594,7 +389,7 @@ def get_pf_data_from_NetCDF_table( ncfile=None, req_var='TRA_69', spec='IO', \
 
     return dates, data
 
-# --------------------------------- Section 3  ---------------------------------
+# --------------------------------- Section X.X  ---------------------------------
 # -------------- Planeflight Analysis/Post formating 
 
 # --------------
@@ -667,3 +462,205 @@ def pf_UT_2_local_t(time_s, site='CVO', half_hour=None, debug=False):
 # NOTE(s): 
 # (1) These are retained even though they are redundant for back compatibility
 # (2) It is not advised to use these. 
+
+
+# --------------
+# X.XX - Read in file of site lists -  
+# -------------
+def read_in_kml_sites(filename, limter=10, ind=[0, 3, 1, 2 ], debug=False):
+    """ 
+    Read in list format csv, with details of sites to output planeflight for.
+    NOTES:
+     - double up of function 1.00?
+    """
+
+    if debug:
+        print 'read_in_kml_sites called for ', filename
+    reader = csv.reader( open( filename, 'rb' ), delimiter=',' ) 
+
+    if debug:
+        print reader
+    for row in reader:
+        if debug:
+            print row
+        new = row[:limter]
+        try:
+            locations.append(new)
+
+        except:
+            locations=[new]
+
+    if debug:
+        print type( locations)
+        print len(locations), locations[:2]
+        print len(locations[0]), locations[0]
+
+    if debug:
+        print '-'*100
+    for ii, i in enumerate( locations ):
+        if ( len(i) != 5 ):
+            if debug:
+                print len(i),  i 
+    if debug:
+        print '-%'*50
+
+    locations=np.array(locations)
+
+    if debug:
+        print type( locations)
+        print len(locations), locations[:2]
+        print len(locations[0]), locations[0]
+        print locations.shape
+        
+    # extract vars  = 
+    times, altitude, lats, lons = [ locations[:,i] for i in ind ]
+
+    if debug:
+        print 'complete read of : {}'.format( filename )
+        print [ len(i) for i in [times, lats, lons, altitude ]]
+        print [ (i[0], i[-1]) for i in [times, lats, lons, altitude ]]
+        print 'min max:' , [ (min(i), max(i)) for i in [times, lats, lons, altitude ]]
+
+    return times, lats, lons, altitude
+
+
+
+# --------------
+# X.XX - Read in file of GAW sites as lists
+# -------------
+def readin_gaw_sites(filename, all=False):
+    """ 
+    Read in list format csv, with details of sites to output planeflight for
+
+    NOTES:
+    - REDUNDENT? 
+    """
+
+    with open(filename,'rb') as f:
+        reader = csv.reader(f, delimiter=',') 
+        for row in reader:
+            new = row[:]
+            try:
+                locations.append(new)
+
+            except:
+                locations=[new]
+
+        locations=np.array(locations)
+        if all:
+            return locations
+        else:
+            numbers = locations[:,0]
+        #    IDs = locations[:,1]
+            lats = locations[:,2]
+            lons = locations[:,3]
+            pres = locations[:,4]
+            locs = locations[:,5]
+    return numbers, lats, lons, pres, locs
+
+# ----
+#  X.XX - Process "raw" csv files from GEOS-Chem planeflight output
+# ----
+def pro_raw_pf( wd, site='CVO', ext='', run='', frac=False, diurnal=True, \
+            res='4x5', debug=False ):
+    """ 
+    Process csv rom GEOS-Chem planeflight output and save these as numpy memory arrays 
+
+    NOTES:
+     -  this is redundent. remove this function.
+    """
+    np_wd  = get_dir('npwd' )
+
+    # Open & get data
+    data, date, time = wd_pf_2_gaw_arr( wd, location=site  )
+    print [(type(i),len(i) ) for i in [ time, date, data ] ]
+
+    # get local time and shift time to match, - adjust dates,Cut off adjusted day at end an begining
+    time, date, data = adjust_UT_2_lt( time, date, data, site=site)
+
+    # Get O3 max, adjusted diurnal and monthly mean from data and time (int64)
+    months, O3_max, O3_min, O3_d = hr_data_2_diurnal(time, date, data, \
+        frac, diurnal=diurnal )
+
+    # save out numpy of this data                                                                                                      
+    if (diurnal):
+#        fp = np.memmap( np_wd+'{}_mean_monthly_diurnal_O3_pf{}_{}.npy'.format(site, ext, run), dtype='float32', mode='w+', shape=(12,24) )
+        diurnal_name =  '{}_{}_mean_monthly_diurnal_O3_pf{}_{}_{}.npy'
+        fp = np.memmap(np_wd+diurnal_name.format( site, res, ext, run,\
+             wd.split('/')[-2] ), dtype='float32', mode='w+', shape=(12,24) )
+    else:
+        fp = np.memmap( np_wd+'{}_{}_mean_monthly_O3_pf{}_{}.npy'.format(site, \
+            res, ext, run), dtype='float32', mode='w+', shape=(12,24) )
+
+    print fp
+    fp[:] = months[:]
+    np.memmap.flush(fp)
+    
+# ----
+# X.XX - Extract all pf data for a given site.
+# ----
+def wd_pf_2_gaw_arr( wd, spec='O3', location='CVO', scale=1E9, debug=False ):
+    """ 
+    Extract all data rom a GEOS-Chem planeflight csv files in given 
+    working directory, returning this in numpy array form 
+    """
+
+#    print wd
+    files  =  sorted(glob.glob(wd +'/plane_flight_logs/plane.log.2*'))
+    model, names = readfile_basic( files, location, debug=debug )
+    data = np.float64( model[:,names.index( spec )]*1E9 )
+    date = np.int64( model[:,names.index( 'YYYYMMDD' )] )
+    time = np.int64( model[:,names.index( 'HHMM' )] )
+    print [ ( len(i) , min(i), max(i) )  for i in [data, date, time]]
+    return data, date, time
+
+
+# -------------- 
+# X.XX - pf 2 pandas binary
+# ----------
+def pf2pandas(wd, files, vars=None, npwd=None, rmvars=None,   \
+            debug=False):
+    """ 
+    Read in GEOS-Chem planeflight output and convert to HDF format
+
+     - Converts date and time columns to datetime format indexes
+     - the resultant HDF is in 2D list form 
+    ( aka further processing required to 3D /2D output  )
+        
+    Note: 
+     - This function is limited by the csv read speed. for large csv output expect 
+     significant processing times or set to automatically run post run
+     - Original files are not removed, so this function will double space usage for 
+     output unless the original fiels are deleted.
+    """
+
+    # Ensure working dorectory string has leading foreward slash
+    if wd[-1] != '/':
+        wd += '/'
+
+#    pfdate =( re.findall('\d+', file ) )[-1]
+    if not isinstance(vars, list ):
+        vars, sites = get_pf_headers( files[0], debug=debug )
+    if not isinstance(npwd, str ):
+        npwd = get_dir('npwd')
+    hdf =HDFStore( npwd+ 'pf_{}_{}.h5'.format( wd.split('/')[-3], \
+        wd.split('/')[-2], wd.split('/')[-1]  ))
+    
+    if debug:
+        print hdf
+
+    for file in files:
+        print file#, pfdate
+
+        # convert planeflight.log to DataFrame
+        df = pf_csv2pandas( file, vars )
+            
+        if file==files[0]:
+            hdf.put('d1', df, format='table', data_columns=True)
+        else:
+            hdf.append('d1', df, format='table', data_columns=True)
+
+        if debug:
+            print hdf['d1'].shape, hdf['d1'].index
+        del df
+    hdf.close()

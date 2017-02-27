@@ -240,79 +240,6 @@ def d_adjust( months=None, years=None ):
     # ajust to months ( => min => hours => days => months )
     return  np.array( [ 60*60*24*calendar.monthrange(int( years[i] ), \
         int( m_ ))[1] for i, m_ in enumerate(months) ]  )  
-
-# --------------                                                                                                                                             
-# X.XX - adjust non UT times to UT
-# ------------- 
-def gaw_lc_2_UT(time_s, site, half_hour=None, debug=False):
-    """ 
-    Adjust list of local times to UTC for a given GAW site
-
-    NOTEs:
-        - This function is redundent. 
-    """
-    if debug:
-        print 'gaw_lc_2_UT called'
-    UT_diff={'CVO':-1.}                    #  UT diff library for sites ....
-    t_diff= float(  UT_diff[site] )*float(1./24.)     # look  up diff and adjust to decimal hours
-    time_s_adjust = [ i + t_diff for i in time_s]  # adjust time series to UT
-    time_s_adjust = [ float(str(i)[:str(i).find('.')+10])  for i  in time_s_adjust  ] # cut values to length
-    time_s_adjust = np.array(time_s_adjust)  # return to as numpy array
-    debug = True
-    if debug:
-        for i,ii in enumerate(time_s):
-            print i, ii, time_s_adjust[i]
-    return time_s_adjust
-
-
-# ----  
-# X.XX - Adjust to lt from UT 
-# ----  
-def adjust_UT_2_lt( time, date, data, site='CVO', dUTC=None, debug=False ):
-    """ 
-    Adjust list of UTC times to local time a given GAW site
-
-    NOTEs:
-     - This function is redundent. It is reverse of function "gaw_lc_2_UT"
-    """
-    from funcs4generic import chunks
-
-    if (dUTC ==  None ):
-        dUTC   = gaw_2_loc(site)[-1]
-    if debug:
-        print 'adjust_UT_2_lt called and dUTC = {}'.format(dUTC)
-
-    # np.roll works in reverse to UTC change (reversed date also)  
-    time = np.array([np.roll( i, -1*dUTC ) for i in chunks(time,24) ]).flatten()
-    date = np.roll(date, -1*dUTC )
-    dUTC = -1*dUTC
-    if (dUTC >= 0 ):
-        print [ ( len(i),len(i)/24. ) for i in [time, data, date] ]
-        time, data, date = [i[dUTC:-24+dUTC] for i in [time, data, date] ] 
-        print [ ( len(i),len(i)/24. ) for i in [time, data, date] ]
-    else:
-        print [ ( len(i),len(i)/24. ) for i in [time, data, date] ]
-        time, data, date = [i[24+dUTC:dUTC] for i in [time, data, date] ] 
-        print [ ( len(i),len(i)/24. ) for i in [time, data, date] ]
-    return time,date, data
-
-
-# --------------
-# X.XX - returns data as a mean monthly value
-# -------------
-def data2monthly( data, dates ):
-    """ 
-    Resample list of numpy data by month (taken from given list of dates )
-
-    NOTES:
-        - Why is this a seperate function?
-    """
-    df = DataFrame(data,index=dates )
-    df['Month'] =  [ i.month for i in dates ]
-    grouped = df.groupby('Month')
-    totals = grouped.mean()
-    return  totals.values, totals.index
-    
     
 # --------------
 # X.XX - Get datetimes for run period
@@ -348,22 +275,6 @@ def get_dt4run(time_span='year', period=1, startyear=2005, endyear=2005, \
     dates = dt_hrs_a2b(a, b)
     return dates
 
-
-# --------------
-# X.XX - returns data as a mean monthly value
-# -------------
-def data2daily( data, dates ):
-    """ 
-    resample list of numpy data by day (e.g. taken from given list of dates )
-
-    NOTES:
-     - Redundent? Why is this a seperate function?
-    """
-    df = DataFrame(data,index=dates )
-    totals = df.resample('D', how='mean')
-    return  totals.values, totals.index
-
-
 # --------------
 # X.XX - Datetime hours between datetime a and datetime b
 # -------------
@@ -385,30 +296,6 @@ def dt_hrs_a2b( a, b, period=1, debug=False ) :
     return dates
 
     
-# ----
-# X.XX - Get interval dates assuming month gap in output.
-# -----
-def get_int_btwn(start, end, months=False, years=False ):
-    """
-    Get interval dates assuming month gap in output.
-    
-    NOTES:
-     - Is this function redundent?
-    """
-    # list of dates
-    m_,i = [], 0
-    while(add_months(start,i) != end ):  # -1 so that final (end) value included
-        m_.append( add_months(start,i) )
-        i += 1
-
-    if months:     # if months reqested...
-        return [ i.strftime('%m') for i in m_]
-    elif years:      # if years reqested...
-        return [ i.strftime('%Y') for i in m_]        
-    else:
-        return m_
-#    else:
-#        print 'State whether years or months are required as boolean arg (e.g. months=True)'
 
 # --------------
 #  X.XX - Normalise data to daily maximiun. 
@@ -682,6 +569,131 @@ def get_8hr_rolling_mean( df ):
         df = pd.concat(dfs, axis=1)
         
     return df
+
+
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# ---------------- Section X -------------------------------------------
+# -------------- User specific functions. 
+# --------------------------------------------------------------------------
+# 
+# NOTE(s): 
+# (1) These functions should be removed following checks on compatibility
+#  
+
+
+# --------------
+# X.XX - returns data as a mean monthly value
+# -------------
+def data2monthly( data, dates ):
+    """ 
+    Resample list of numpy data by month (taken from given list of dates )
+
+    NOTES:
+        - Why is this a seperate function?
+    """
+    df = DataFrame(data,index=dates )
+    df['Month'] =  [ i.month for i in dates ]
+    grouped = df.groupby('Month')
+    totals = grouped.mean()
+    return  totals.values, totals.index
+
+# --------------                                                                                                                                             
+# X.XX - adjust non UT times to UT
+# ------------- 
+def gaw_lc_2_UT(time_s, site, half_hour=None, debug=False):
+    """ 
+    Adjust list of local times to UTC for a given GAW site
+
+    NOTEs:
+        - This function is redundent. 
+    """
+    if debug:
+        print 'gaw_lc_2_UT called'
+    UT_diff={'CVO':-1.}                    #  UT diff library for sites ....
+    t_diff= float(  UT_diff[site] )*float(1./24.)     # look  up diff and adjust to decimal hours
+    time_s_adjust = [ i + t_diff for i in time_s]  # adjust time series to UT
+    time_s_adjust = [ float(str(i)[:str(i).find('.')+10])  for i  in time_s_adjust  ] # cut values to length
+    time_s_adjust = np.array(time_s_adjust)  # return to as numpy array
+    debug = True
+    if debug:
+        for i,ii in enumerate(time_s):
+            print i, ii, time_s_adjust[i]
+    return time_s_adjust
+
+
+# ----  
+# X.XX - Adjust to lt from UT 
+# ----  
+def adjust_UT_2_lt( time, date, data, site='CVO', dUTC=None, debug=False ):
+    """ 
+    Adjust list of UTC times to local time a given GAW site
+
+    NOTEs:
+     - This function is redundent. It is reverse of function "gaw_lc_2_UT"
+    """
+    from funcs4generic import chunks
+
+    if (dUTC ==  None ):
+        dUTC   = gaw_2_loc(site)[-1]
+    if debug:
+        print 'adjust_UT_2_lt called and dUTC = {}'.format(dUTC)
+
+    # np.roll works in reverse to UTC change (reversed date also)  
+    time = np.array([np.roll( i, -1*dUTC ) for i in chunks(time,24) ]).flatten()
+    date = np.roll(date, -1*dUTC )
+    dUTC = -1*dUTC
+    if (dUTC >= 0 ):
+        print [ ( len(i),len(i)/24. ) for i in [time, data, date] ]
+        time, data, date = [i[dUTC:-24+dUTC] for i in [time, data, date] ] 
+        print [ ( len(i),len(i)/24. ) for i in [time, data, date] ]
+    else:
+        print [ ( len(i),len(i)/24. ) for i in [time, data, date] ]
+        time, data, date = [i[24+dUTC:dUTC] for i in [time, data, date] ] 
+        print [ ( len(i),len(i)/24. ) for i in [time, data, date] ]
+    return time,date, data
+
+
+# --------------
+# X.XX - returns data as a mean monthly value
+# -------------
+def data2daily( data, dates ):
+    """ 
+    resample list of numpy data by day (e.g. taken from given list of dates )
+
+    NOTES:
+     - Redundent? Why is this a seperate function?
+    """
+    df = DataFrame(data,index=dates )
+    totals = df.resample('D', how='mean')
+    return  totals.values, totals.index
+
+# ----
+# X.XX - Get interval dates assuming month gap in output.
+# -----
+def get_int_btwn(start, end, months=False, years=False ):
+    """
+    Get interval dates assuming month gap in output.
+    
+    NOTES:
+     - Is this function redundent?
+    """
+    # list of dates
+    m_,i = [], 0
+    while(add_months(start,i) != end ):  # -1 so that final (end) value included
+        m_.append( add_months(start,i) )
+        i += 1
+
+    if months:     # if months reqested...
+        return [ i.strftime('%m') for i in m_]
+    elif years:      # if years reqested...
+        return [ i.strftime('%Y') for i in m_]        
+    else:
+        return m_
+#    else:
+#        print 'State whether years or months are required as boolean arg (e.g. months=True)'
+
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------

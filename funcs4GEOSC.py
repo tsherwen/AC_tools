@@ -1725,91 +1725,6 @@ def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
         # return datetime objects
         return dates
     
-# ----
-# X.XX - Get Emission of species in Gg
-# ----
-def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
-        molec_cm2_s=False, nmonl_m2_d=False, kg_m2_s=False, \
-        monthly=False, months=None, s_area=None, res='4x5', \
-        ref_spec='I', debug=False ):
-    """ 
-    Extract given species emissions from BIOGSRCE category diagnostic
-
-    Parameters
-    -------
-
-    Returns
-    -------
-
-    Notes
-    -----
-     - Back compatibility maintained with PyGChem 0.2.0 
-     - Asumption on iodine emissions 
-     ( set ref_spec to mass unit equivelnces wanted ( e.g. Br )  )
-    """
-            
-    if debug:
-        print 'get_emiss called for >{}<'.format(spec)
-    if not isinstance(years, list):
-        years = get_gc_years( ctm_f=ctm_f, set_=False, wd=wd )
-    if not isinstance(months, list):
-        months = get_gc_months( ctm_f=ctm_f, wd=wd)
-                                             
-    # Adjust to " Gg (X) / monthly" from "Kg/m2/ s"  
-    m_adjust = d_adjust(months, years)
-
-    #  get emissions in  Kg/m2/ s
-    # retain compatibility with version 0.2.0
-    if pygchem.__version__ == '0.2.0':
-        arr = get_gc_data_np( ctm_f, spec, category="BIOGSRCE")[:,:,0,:] 
-    else:
-        arr = get_GC_output( wd=wd, species=spec, category="BIOGSRCE") 
-        res=get_dims4res( r_dims=True, just2D=True )[arr.shape[:2]]
-
-    if not isinstance(s_area, np.ndarray):        
-        s_area = get_surface_area(res)  # m2 land map   
-
-    if kg_m2_s:
-        arr_ = arr
-    else:
-        # Kg/m2/ s => Kg/ s
-        arr_ = arr*s_area
-
-        # Kg/ s => "kg / monthly" 
-        arr_ = arr_ * m_adjust
-        # g ( e.g. I  ) / month 
-        arr_ = arr_*1E3/ species_mass(spec)*species_mass(ref_spec) * \
-            spec_stoich(spec)
-
-    if nmonl_m2_d:
-        # Convert to (g) / m2
-        arr_  =  arr_ / s_area 
-
-        # Convert to (g) / m2 / day
-        arr_  =  arr_ / (365./12.) 
-
-        # Convert to nmol ( /m2/day ) ( reverse normalisation to X mass equiv. )
-        arr_ = arr_ / species_mass(ref_spec)  /  spec_stoich(spec) 
-        arr_ = arr_*1E9
-
-        if debug:
-            print 'get_emiss - 2', arr_.shape
-
-    if molec_cm2_s:
-        # From  "I Gg/month" to "I Gg/month/cm/2" #convert to /m2 => cm/2
-        arr_  =  arr_ / (s_area *10000.) 
-
-        # Convert to / day => hour => hour => minute => sec 
-        arr_  =  arr_ / (365./12.) / 24. / 60. / 60. 
-
-        # Convert to molecules ( reverse normalisation to X mass equiv. )
-        arr_ = ( arr_ / species_mass(ref_spec)  ) / spec_stoich(spec) *\
-                        constants('AVG')  
-
-        if debug:
-            print 'get_emiss - 3', arr_.shape
-
-    return arr_
 
 # ----
 # X.XX - Get CH4 Lifetime in years
@@ -2020,6 +1935,7 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
 
         return 1/ CH4_tau_s / (3600*24*365)
 
+
 # ----
 # X.XX - get Land / Water /Ice fraction
 # ---- 
@@ -2029,6 +1945,7 @@ def get_LWI(lon, lat, res='4x5',debug=False):
     lon=get_gc_lon(lon, res=res)
     LWI=get_land_map(res, res=res)
     return LWI[lon,lat,0]
+
     
 # ----
 # X.XX - get_gc_alt  ( KM => box num )   
@@ -2039,6 +1956,7 @@ def get_gc_alt(alt):
     """
     alt_c = gchemgrid('c_km_geos5_r')
     return find_nearest( alt_c, alt )
+
 
 # ----
 # X.XX - species arrary (4D) in v/v to Gg  I/ O3/Species
@@ -2083,6 +2001,7 @@ def species_v_v_to_Gg(arr, spec, a_m=None, Iodine=True, All =False, \
     if ( ( not Iodine ) and ( All) ):      
         arr = ( ( arr * moles )  * (species_mass( spec  )) ) /1E9 
     return arr
+
 
 # ----
 # X.XX - retrive volume for geos chem run ( in cm3 )
@@ -2134,6 +2053,7 @@ def get_volume_np(ctm_f=None, box_height=None, s_area=None, res='4x5', \
         box_height.shape, s_area.shape, volume.shape ) )
     return volume
 
+
 # ----
 # X.XX - Test is grid box for a given lat and lon is over water
 # ----
@@ -2160,6 +2080,7 @@ def loc_is_water_grid_box( lat, lon, res='4x5' ):
         except:
             booll = [ bool ]
     return booll
+
 
 # ----
 # X.XX - Get dry dep for given spec
@@ -2230,6 +2151,7 @@ def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
 
     return df
 
+
 # ----
 # X.XX - Gg Ox yr^-1 from induvial spec (2D array - dry dep)  ( ([molec/cm2/s] ) to Gg X (or Gg X / s if not year_eq. )
 # ----
@@ -2284,6 +2206,7 @@ def molec_cm2_s_2_Gg_Ox_np( arr, spec='O3', s_area=None, ctm_f=None, \
     if debug:
         print 'arr', arr.shape
     return arr
+
 
 # ----
 # X.XX - Get DU mean value
@@ -2342,6 +2265,7 @@ def get_DU_mean(s_area=None, a_m=None, t_p=None, O3_arr=None, \
     if area_weight:
         arr = np.sum(arr * s_area)/np.sum(s_area)    # weight by area
     return arr
+
 
 # ----
 # X.XX - Get Prod / loss for O3
@@ -2704,6 +2628,7 @@ def convert_v_v2ngm3( arr, wd=None, spec='AERI', trop_limit=True, \
     arr = arr*1E9/vol 
     
     return arr
+
     
 # ----
 # X.XX - Print seasonal values array 
@@ -3176,6 +3101,7 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
     else:
         return arr
 
+
 # ----
 # X.XX - Convert GC tracers to PM2.5
 # ----
@@ -3257,6 +3183,7 @@ def convert_tracers2PM25( ars=[], specs=[], region='Europe' ):
 
     return ars
 
+
 # ----
 # X.XX - Extract 2D data from *ts*bpch* files (e.g. hourly surface data)
 # ----
@@ -3275,7 +3202,6 @@ def fam_data_extractor4ts_bpch_files(spec='NOy', wd=None, \
     -------
     data (pd.DataFrame object) and units (str)
     """
-
     # --- Nitrogen Oxides NOx ( NO + NO2)
     non_IJ_AVG_specs = ['HOx', 'POX']
     if spec in non_IJ_AVG_specs :
@@ -3719,7 +3645,7 @@ def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
     return ars 
 
 # ----
-# X.XX -  Convert [molec/cm3/s ] to [molec/yr] 
+# X.XX - Convert [molec/cm3/s ] to [molec/yr] 
 # ----  
 def convert_molec_cm3_s2_molec_per_yr( ars=None, vol=None ):
     """ 
@@ -3937,94 +3863,6 @@ def get_2D_arr_weighted_by_X( arr, spec=None, res='4x5', print_values=False, \
 # ------------------ Section X.X -------------------------------------------
 # -------------- Time Processing
 #
-
-# ----
-# X.XX - Takes monthly outputs and sort to chronological order
-# ----
-def ctms2chronological( ctms, debug=False ):
-    """ 
-    Ensure list of ctms is chronological 
-    ARGUMENTS:
-     - ctms is a list of ctm files 
-    (from pyghcem ver <3.0 approach of passing bpch objects)   
-    """
-    
-    # get datetimes for month
-    dts = [ get_gc_datetime(ctm ) for ctm in ctms ]
-    if debug:
-        print dts
-
-    # if multiple months within ctm file
-    if debug:
-        print ctms
-        print dts
-        print len(dts), 
-    if len(dts) > 1:
-        dts = [ i[0] for i in dts ]
-    else:
-        dts = [ i[0] for i in dts[0] ]
-
-#    print dts
-    # Get indicies for sorted list and return chronological list
-    ind = [dts.index(i) for i in sorted(dts)]
-    if not ( len(dts) > 1 ):
-        debug=True        
-    if debug:
-        print 'before: ', dts, len(dts), ind
-        print ctms, ind
-
-    if not ( len(dts) > 1 ):
-        if debug:
-            print [ctms[i] for i in ind ] 
-        ctms =  [ctms[i] for i in ind ]
-        if debug:
-            print 'after: ', dts, len(dts)
-
-    # deal with single files containing multiple months
-    else:
-        if debug:
-            print ctms, dts
-
-    return ctms
-
-# ----
-# X.XX - Takes monthly outputs and sort to chronological order
-# ----
-def np2chronological_fromctm( ctms, arr, debug=False ):
-    """ 
-    Ensure np array is in chronological order 
-
-    Parameters
-    ----------
-    ctms (list):  list of ctm files (read by PyGChem v2.0)
-    arr (np.array): arr to order, with the final dimension being time
-
-    Returns
-    -------
-    (np.array)
-
-    """
-    logging.info( 'np2chronological_fromctm called' )
-
-    # get datetimes for month and sort chron.
-    dts = [ get_gc_datetime(ctm ) for ctm in ctms ]
-    logging.debug( 'before', dts, len(dts ) )
-
-    # if multiple months within ctm file
-    if len(dts) > 1:
-        dts = [ i[0] for i in dts ]
-    else:
-        dts = [ i[0] for i in dts[0] ]
-
-    sdts = sorted(dts)
-    if sdts != sorted(dts):
-        print 'sorted in chronological order of np in np2chronological_fromctm'
-        logging.debug( 'after',dts, sdts, len(sdts) )
-
-    # Get indicies for sorted list and return chronological list
-    ind = [dts.index(i) for i in sdts ]
-
-    return np.concatenate( [arr[...,i][...,None] for i in ind ], axis =3)
 
 # ------------------ Section X.X -------------------------------------------
 # -------------- KPP input/output file Processing
@@ -4389,6 +4227,21 @@ def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None, \
         return ar.mean(axis=3 )
 
 
+
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# ---------------- Section X -------------------------------------------
+# -------------- Redundant Functions
+# --------------------------------------------------------------------------
+# 
+# NOTE(s): 
+# (1) These are retained even though they are redundant for back compatibility
+# (2) It is not advised to use these. 
+# (3) These will be removed when AC_tools is next re-structured.
+
+
+
 # ----
 # X.XX - Gg Ox yr^-1 from individual PORL-L$ rxns ([molec/cm3/s] )
 # ----
@@ -4446,111 +4299,91 @@ def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None, \
     return arr
 
 
-
-
-
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# ---------------- Section X -------------------------------------------
-# -------------- Redundant Functions
-# --------------------------------------------------------------------------
-# 
-# NOTE(s): 
-# (1) These are retained even though they are redundant for back compatibility
-# (2) It is not advised to use these. 
-# (3) These will be removed when AC_tools is next re-structured.
-
-
 # ----
-# X.XX - open ctm.bpch using pygchem ( version '0.2.0' ) 
+# X.XX - Get Emission of species in Gg
 # ----
-def open_ctm_bpch(wd, fn='ctm.bpch', debug=False):
+def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
+        molec_cm2_s=False, nmonl_m2_d=False, kg_m2_s=False, \
+        monthly=False, months=None, s_area=None, res='4x5', \
+        ref_spec='I', debug=False ):
     """ 
-    This is a vestigial programme, based on pychem version 0.2.0.
-    Updates have made this incompatibile. 
-        
-    Update functions to use iris class. e.g. 
-        
-    if :
-    wd = <run directory of containing ctm.bpch files/ctm.nc file to analyse>
-    then:
-    # setup variables 
-    list_of_species =  ['NO', 'O3', 'PAN', 'CO', 'ALK4']
+    Extract given species emissions from BIOGSRCE category diagnostic
 
-    # convert to Iris Cube/NetCDF naming form 
-    list_of_species = ['IJ_AVG_S__'+i for i in list_of_species ]
+    Parameters
+    -------
 
-    # this will return data as a 5D array ( species, lon, lat, alt, time)
-    data = AC.get_GC_output( wd, vars=list_of_species )
+    Returns
+    -------
+
+    Notes
+    -----
+     - Back compatibility maintained with PyGChem 0.2.0 
+     - Asumption on iodine emissions 
+     ( set ref_spec to mass unit equivelnces wanted ( e.g. Br )  )
     """
-    
-    if ( debug ) :
-        print 'fn: {}'.format(fn)
-        print 'File to open: {}'. format(os.path.join(wd, fn))
+            
+    if debug:
+        print 'get_emiss called for >{}<'.format(spec)
+    if not isinstance(years, list):
+        years = get_gc_years( ctm_f=ctm_f, set_=False, wd=wd )
+    if not isinstance(months, list):
+        months = get_gc_months( ctm_f=ctm_f, wd=wd)
+                                             
+    # Adjust to " Gg (X) / monthly" from "Kg/m2/ s"  
+    m_adjust = d_adjust(months, years)
 
+    #  get emissions in  Kg/m2/ s
+    # retain compatibility with version 0.2.0
     if pygchem.__version__ == '0.2.0':
-        try:
-            ctm_f = gdiag.CTMFile.fromfile(os.path.join(wd, fn))
-        except:
-            print 'Error @ open_ctm_bpch for {}'. format(os.path.join(wd, fn))  
-            print gdiag.CTMFile.fromfile(os.path.join(wd, fn))
-            sys.exit(0)
+        arr = get_gc_data_np( ctm_f, spec, category="BIOGSRCE")[:,:,0,:] 
     else:
-        print 'WARNING, using: {}'.format(pygchem.__version__)
-        print 'Add a get data call, for specific data (spceies, category)' +\
-                'using the get_GC_output function' 
+        arr = get_GC_output( wd=wd, species=spec, category="BIOGSRCE") 
+        res=get_dims4res( r_dims=True, just2D=True )[arr.shape[:2]]
 
-    return ctm_f
+    if not isinstance(s_area, np.ndarray):        
+        s_area = get_surface_area(res)  # m2 land map   
 
-# ----
-# X.XX - get np array (4D) of ctm.bpch (lon, lat ,alt, time) 
-# ----
-def get_gc_data_np(ctm, spec='O3', category="IJ-AVG-$", debug=False):
-    """ 
-    This function extracts fields from diagnostics 
-    
-    NOTES:
-     -  This was written to work with pychem version 0.2.0 and it is included 
-    for back compatibility
-    """
+    if kg_m2_s:
+        arr_ = arr
+    else:
+        # Kg/m2/ s => Kg/ s
+        arr_ = arr*s_area
 
-    if debug:
-        print 'called get_np_gc_4D_diags'
+        # Kg/ s => "kg / monthly" 
+        arr_ = arr_ * m_adjust
+        # g ( e.g. I  ) / month 
+        arr_ = arr_*1E3/ species_mass(spec)*species_mass(ref_spec) * \
+            spec_stoich(spec)
 
-    # Retrieve given diagnostics
-    diags = ctm.filter(name=spec, category=category)
-    if debug:
-        print 'diagnostics', diags , spec, category
+    if nmonl_m2_d:
+        # Convert to (g) / m2
+        arr_  =  arr_ / s_area 
 
-    # Extract diagnostics to np array    
-    for diag in diags:
-        ar = (diag.values[:,:,:])[...,None]
+        # Convert to (g) / m2 / day
+        arr_  =  arr_ / (365./12.) 
+
+        # Convert to nmol ( /m2/day ) ( reverse normalisation to X mass equiv. )
+        arr_ = arr_ / species_mass(ref_spec)  /  spec_stoich(spec) 
+        arr_ = arr_*1E9
+
         if debug:
-            print diag.name ,'len(ar)', len(ar), 'type(ar)', type(ar), \
-                'diag.scale', diag.scale, 'ar.shape', ar.shape, 'diag.unit', \
-                diag.unit
-        try:
-            arr = np.concatenate( (arr, ar), axis=3 )
-        except NameError:
-            arr = ar
+            print 'get_emiss - 2', arr_.shape
+
+    if molec_cm2_s:
+        # From  "I Gg/month" to "I Gg/month/cm/2" #convert to /m2 => cm/2
+        arr_  =  arr_ / (s_area *10000.) 
+
+        # Convert to / day => hour => hour => minute => sec 
+        arr_  =  arr_ / (365./12.) / 24. / 60. / 60. 
+
+        # Convert to molecules ( reverse normalisation to X mass equiv. )
+        arr_ = ( arr_ / species_mass(ref_spec)  ) / spec_stoich(spec) *\
+                        constants('AVG')  
+
         if debug:
-            print 'arr' , type(arr), len(arr), arr.shape, 'ar', type(ar), \
-                len(ar), ar.shape
+            print 'get_emiss - 3', arr_.shape
 
-    if len([d for d in diags]) <1 :
-        print 'ERROR: No diags for {} and {} in {}'.format( spec, category, ctm)
-        sys.exit(0)
-
-    # if ctms len > 1, sort chronologically - this is to fix bug in pygchem
-    if debug:
-        print [ i[0] for i in get_gc_datetime(ctm ) ]
-    if get_gc_datetime( ctm ) > 1:
-        arr = np2chronological_fromctm([ ctm ], arr, debug=debug )
-    if debug:
-        print [ i[0] for i in get_gc_datetime(ctm ) ]
-
-    return arr
+    return arr_
 
 
 
@@ -4568,38 +4401,4 @@ def get_gc_data_np(ctm, spec='O3', category="IJ-AVG-$", debug=False):
 
 
 # Non generic function to move to new module
-
-
-# ----
-# X.XX - Retrieve model resolution
-# ----
-def mod_res(wd, spec='O3', fn='ctm.bpch', debug=False):
-    """ 
-    Extract model resolution
-    NOTES: 
-     - this is not compatible with PyGChem 0.3.0 
-    """
-
-    if debug:
-        print '>'*10, wd,  glob.glob(wd + '*ctm*'), glob.glob(wd + '*trac_avg*')
-    # assume v9-2... ( ctm.bpch output ... )
-    try:
-        fn = glob.glob(wd + '*ctm*')[0].split('/')[-1]
-    except IndexError:
-        try:
-            fn = glob.glob(wd + '*trac_avg*')[0].split('/')[-1]
-        except:
-            print 'ERROR: for wd: {}'.format( wd )
-            sys.exit( 0 )
-            
-    ar = get_gc_data_np( open_ctm_bpch(wd, fn), spec, debug=debug )
-    if debug:
-        print ar.shape
-    if (len(ar[:,0,0,0]) == 72 ):
-        res = '4x5'
-    elif (len(ar[:,0,0,0]) == 144 ):
-        res='2x2.5'
-    elif (len(ar[:,0,0,0]) == 121 ):
-        res='0.5x0.666'        
-    return res
 
