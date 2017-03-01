@@ -1776,7 +1776,7 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
 # X.XX - Get 2D array of solar time.  
 # --------
 def get_2D_solartime_array4_date( date=None, ncfile=None, res='4x5', \
-        debug=False ):
+        lons=None, lats=None, varname='SolarTime',  debug=False ):
     """
     Creates 2D (lon,lat) masked (1=Masked) for nighttime for a given list of
     dates
@@ -1800,7 +1800,7 @@ def get_2D_solartime_array4_date( date=None, ncfile=None, res='4x5', \
     -----    
      - if ncfile provide programme will work for that grid.     
     """
-    from funcs4time import add_days, add_hrs
+    from funcs4time import add_days, add_hrs, unix_time
     logging.info('get_2D_solartime_array4_dates called for {}'.format(date))
 
     # Profile function... 
@@ -1825,9 +1825,13 @@ def get_2D_solartime_array4_date( date=None, ncfile=None, res='4x5', \
             sys.exit()
 
     # --- setup function to get solartime based on date, lat and lon
-    def solartime(lon, lat, date=date):
+    def _solartime(lon, lat, date=date, rtn_as_epoch=True):
         """
         Get solartime for location (lat, lon) and date
+
+        Returns
+        --- 
+        (float) Epoch time    
         """
         # --- get sunrise and sunset for location
         o=ephem.Observer()  
@@ -1842,8 +1846,18 @@ def get_2D_solartime_array4_date( date=None, ncfile=None, res='4x5', \
         # below code was adapted from stackoverflow (Credit: J.F. Sebastian)
         # http://stackoverflow.com/questions/13314626/local-solar-time-function-from-utc-and-longitude
         # sidereal time == ra (right ascension) is the highest point (noon)
-        hour_angle = observer.sidereal_time() - sun.ra
-        return ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h
+        hour_angle = o.sidereal_time() - s.ra
+        s_time = ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h
+        # ephem.hours is a float number that represents an angle in radians 
+        # and converts to/from a string as "hh:mm:ss.ff".
+        s_time = "%s" % s_time
+        if len(s_time) != 11:
+            s_time = '0'+s_time
+        # return as datetime
+        s_time = datetime.datetime.strptime(s_time[:8], '%H:%M:%S' )
+        if rtn_as_epoch:
+            s_time = unix_time(s_time)            
+        return s_time
 
     # --- Setup an unstack(ed) pandas dataframe to contain masked values
     # Use list comprehension to setup list of indices for lat and lon
@@ -1853,9 +1867,9 @@ def get_2D_solartime_array4_date( date=None, ncfile=None, res='4x5', \
     df = pd.DataFrame( ind_lat_lons_list )
     df.columns = ['lons', 'lats']
     # Apply function to calculate mask value
-    df['SolarTime'] = df.apply(lambda x: solartime(x['lons'], x['lats']), axis=1)
+    df[varname] = df.apply(lambda x: _solartime(x['lons'], x['lats']), axis=1)
     # Re-index by lat and lon
-    df = pd.DataFrame( df['mask'].values, index=[df['lats'],df['lons'] ] )
+    df = pd.DataFrame( df[varname].values, index=[df['lats'],df['lons'] ] )
     # Unstack and return just as array
     return df.unstack().values
 
