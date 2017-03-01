@@ -1676,48 +1676,45 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
             next_rising = add_days(ref_date, next_rising)
             next_setting = add_days(ref_date, next_setting)
 
+            # did the sun last rise or set? (inc. any adjustments)
+            sun_last_rose = False
+            if next_setting < next_rising:
+                sun_last_rose = True
+
             # Add buffer to rising/setting if provided with buffer_hours
             if buffer_hours != 0:
 
-#                if mask_daytime:
-                A_next_setting = add_hrs(next_setting, buffer_hours)
-                A_next_rising = add_hrs(next_rising, -buffer_hours)
-#                else:    
-#                    A_next_setting = add_hrs(next_setting, buffer_hours)
-#                    A_next_rising = add_hrs(next_rising, -buffer_hours) 
-#                print 'I got here 1a'
+                # Calculate last rise 
+                previous_rising = o.previous_rising(s)
+                # convert to datetime.datetime
+                previous_rising = add_days(ref_date, previous_rising)
+                # Calculate last setting
+                previous_setting = o.previous_setting(s)
+                # convert to datetime.datetime
+                previous_setting = add_days(ref_date, previous_setting)
+ 
+                 # Calculate absolute difference
+                time_from_rise = (date-previous_rising).total_seconds()
+                time_till_set = (date-next_setting).total_seconds()
+                time_from_set = (date-previous_setting).total_seconds()
+                time_till_rise = (date-next_rising).total_seconds() 
 
-            else:
-                A_next_rising = next_rising
-                A_next_setting = next_setting
-            
-            # did the sun last rise or set? (inc. any adjustments)
-            sun_last_rose = False
-            if A_next_setting < A_next_rising:
-                sun_last_rose = True
+                # If absolutely difference less than buffer
+                if abs(time_from_rise)/60./60.<= buffer_hours:
+                    mask_value=1
+                elif abs(time_till_set)/60./60.<= buffer_hours:
+                    mask_value=1
+                elif abs(time_from_set)/60./60.< buffer_hours:
+                    mask_value=1
+                elif abs(time_till_rise)/60./60.< buffer_hours:
+                    mask_value=1
 
-#            print 'I got here 1b', (A_next_setting < A_next_rising)
-                
             # --- Check if daytime or nighttime and mask if condition met. 
             if sun_last_rose:
                 if mask_daytime:
                     # ... and has not set yet, it must be daytime
                     if (date < next_setting):
                         mask_value=1
-                    # If within buffer period of sunrise then mask
-                    if buffer_hours != 0:
-                        # Calculate next rise and last setting
-                        previous_rising = o.previous_rising(s)
-                        # convert to datetime.datetime
-                        previous_rising = add_days(ref_date, previous_rising)
- 
-                        time_from_rise = (date-previous_rising).total_seconds()
-                        time_till_set = (date-next_setting).total_seconds()
-                        if abs(time_from_rise)/60./60.<= buffer_hours:
-                            mask_value=1
-                        if abs(time_till_set)/60./60.<= buffer_hours:
-                            mask_value=1
-
 
             # if the sun last set... (mask nighttime is default)
             else:
@@ -1726,30 +1723,6 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
                     # ... and has not risen yet, it must be nighttime                    
                     if (date < next_rising):
                         mask_value=1
-                    #If within buffer period of sunrise then mask
-#                    print 'I got here 2'
-
-                    if buffer_hours != 0:
-                        # Calculate next rise and last setting
-                        previous_setting = o.previous_setting(s)
-                        # convert to datetime.datetime
-                        previous_setting = add_days(ref_date, previous_setting)
-
-#                        print 'I got here 3'
- 
-                        # Calculate absolute difference
-                        time_from_set = (date-previous_setting).total_seconds()
-                        time_till_rise = (date-next_rising).total_seconds()
-
-#                        print 'I got here 4'
-
-                        if abs(time_from_set)/60./60.< buffer_hours:
-                            mask_value=1
-                        if abs(time_till_rise)/60./60.< buffer_hours:
-                            mask_value=1
-
-#                        print 'I got here 5'
-
                          
         # Add gotcha for locations where sun is always up.
         except AlwaysUpError:
@@ -1760,6 +1733,7 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
         except NeverUpError:
             if not mask_daytime:
                 mask_value=1
+
         except:
             print 'FAIL'
             sys.exit()
@@ -1918,7 +1892,7 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
 
     """
     logging.info('save_2D_arrays_to_3DNetCDF called')
-    from funcs4time import unix_time
+    from funcs4time import unix_time, dt64_2_dt
 
     # ---  Settings 
     ncfilename = '{}_{}.nc'.format( filename, res )
@@ -1978,6 +1952,8 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
     format = lambda x: unix_time(x)
     df = pd.DataFrame({'Datetime':dates})
     df['Epoch'] = df['Datetime'].map( format ).astype('i8')
+    # store a copy of dates at datetime.datetime, then remove from DataFrame
+    dt_dates = dt64_2_dt( df['Datetime'].values.copy() )
     del df['Datetime']
     dates = df['Epoch'].values
     # Assign to time variable
@@ -1989,11 +1965,12 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
     ncfile.close()
 
     # --- Now open and add data in append mode
-    for n, date in enumerate( dates ):
+    for n, date in enumerate( dt_dates ):
 
         if debug:
-            logging.debug('saving array date:{}'.format(date) )
-            pcent = str(float(n)/float(len(dates))*100 )
+            fmtstr="%Y%d%m %T"
+            logging.debug('saving array date:{}'.format(date.strftime(fmtstr)))
+            pcent = (float(n)+1)/float(len(dt_dates))*100 
             logging.debug('array #: {} (% complete: {:.1f})'.format(n, pcent))
 
         # Open NetCDF in append mode
