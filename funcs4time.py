@@ -19,12 +19,16 @@ import numpy as np
 from time import mktime
 from pandas import DataFrame
 import pandas as pd
+# astronomical math
+import ephem 
+from ephem import AlwaysUpError, NeverUpError
 
 # -- Time                                                                                           
 import time
 import calendar
 import datetime as datetime
 from datetime import datetime as datetime_
+
 
 # ----------------------- Section X.X -------------------------------------------
 # -------------- Time Processing
@@ -693,6 +697,20 @@ def get_int_btwn(start, end, months=False, years=False ):
         return m_
 #    else:
 #        print 'State whether years or months are required as boolean arg (e.g. months=True)'
+
+# ----
+# X.XX - 
+# -----
+def solartime(observer, sun=ephem.Sun()):
+    """
+    """
+    # Credit: J.F. Sebastian
+    # http://stackoverflow.com/questions/13314626/local-solar-time-function-from-utc-and-longitude
+    sun.compute(observer)
+    # sidereal time == ra (right ascension) is the highest point (noon)
+    hour_angle = observer.sidereal_time() - sun.ra
+    return ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h
+
 
 
 # --------------------------------------------------------------------------

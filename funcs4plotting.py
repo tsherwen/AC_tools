@@ -285,8 +285,8 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 
     # -----------------  Log plots --------------------------------
     if log: # l
-        poly = m.pcolor(lon, lat, arr, norm=LogNorm(vmin=fixcb_[0], vmax=fixcb_[1]), \
-            cmap=cmap)
+        poly = m.pcolor(lon, lat, arr, cmap=cmap, \
+            norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1]) )
 
         if no_cb:
             pass

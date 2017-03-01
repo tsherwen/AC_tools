@@ -1589,7 +1589,7 @@ def convert_ug_per_m3_2_ppbv( data=None,  spec='O3', rtn_units=False, \
 # X.XX - Get 2D (lat, lon) mask of night time for a given datetime
 # --------
 def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
-        mask_daytime=False, buffer_hours=1., debug=False ):
+        mask_daytime=False, buffer_hours=0, debug=False ):
     """
     Creates 2D (lon,lat) masked (1=Masked) for nighttime for a given list of
     dates
@@ -1601,6 +1601,9 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
     ncfile (str): location to netCDF file - not implemented... 
     res (str): resolution, if using resolutions listed in get_latlonalt4res
     buffer_hours (float/int): number of hours to buffer subrise/sunset with
+     (This will act to increase the size of the mask - e.g. if masking 
+      nightime, then an extra hour of nightime would be added to sunrise, and 
+      removed from sunset. )
 
     Returns
     -------
@@ -1610,14 +1613,12 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
 
     Notes
     -----    
-     - if ncfile provide programme will work for that grid. 
-     - TODO - buffertime not yet implimented. 
-    
+     - if ncfile provide programme will work for that grid.     
     """
-    from funcs4time import add_days
+    from funcs4time import add_days, add_hrs
     logging.info('get_2D_nighttime_mask4date_pd called for {}'.format(date))
 
-    #  profile 
+    # Profile function... 
     if debug:
         start_time = time.time()
 
@@ -1634,13 +1635,13 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
         # lons from ncfile file/arguments. 
         print 'Not implemented'
         sys.exit()
-
     if debug:
         print("--- (start-1) %s seconds ---" % (time.time() - start_time))
     
     # --- setup function to mask based on date, lat and lon
     def mask_nighttime(lon, lat, date=date, mask_daytime=mask_daytime, \
-        ref_date=ref_date, debug=False ):
+        ref_date=datetime.datetime(1899, 12, 31, 12 ), \
+        buffer_hours=buffer_hours, debug=False ):
         """
         sub-function to mask if nightime for a given date at a specific lat/lon
         """
@@ -1664,57 +1665,113 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
             print("--- (s4-3) %s seconds ---" % (time.time() - start_time))
 
         # Work out if day or night based on sunrises and sunsets
-        mask_value=False
+        mask_value=0
         try:
+
             # get sunrise time and date
             next_rising = o.next_rising(s)
             next_setting = o.next_setting(s)
+
             # convert to datetime.datetime
             next_rising = add_days(ref_date, next_rising)
             next_setting = add_days(ref_date, next_setting)
 
-            # did the sun last rise or set?
+            # Add buffer to rising/setting if provided with buffer_hours
+            if buffer_hours != 0:
+
+#                if mask_daytime:
+                A_next_setting = add_hrs(next_setting, buffer_hours)
+                A_next_rising = add_hrs(next_rising, -buffer_hours)
+#                else:    
+#                    A_next_setting = add_hrs(next_setting, buffer_hours)
+#                    A_next_rising = add_hrs(next_rising, -buffer_hours) 
+#                print 'I got here 1a'
+
+            else:
+                A_next_rising = next_rising
+                A_next_setting = next_setting
+            
+            # did the sun last rise or set? (inc. any adjustments)
             sun_last_rose = False
-            if next_setting < next_rising:
+            if A_next_setting < A_next_rising:
                 sun_last_rose = True
+
+#            print 'I got here 1b', (A_next_setting < A_next_rising)
                 
             # --- Check if daytime or nighttime and mask if condition met. 
             if sun_last_rose:
                 if mask_daytime:
                     # ... and has not set yet, it must be daytime
                     if (date < next_setting):
-                        mask_value=True
+                        mask_value=1
+                    # If within buffer period of sunrise then mask
+                    if buffer_hours != 0:
+                        # Calculate next rise and last setting
+                        previous_rising = o.previous_rising(s)
+                        # convert to datetime.datetime
+                        previous_rising = add_days(ref_date, previous_rising)
+ 
+                        time_from_rise = (date-previous_rising).total_seconds()
+                        time_till_set = (date-next_setting).total_seconds()
+                        if abs(time_from_rise)/60./60.<= buffer_hours:
+                            mask_value=1
+                        if abs(time_till_set)/60./60.<= buffer_hours:
+                            mask_value=1
+
+
             # if the sun last set... (mask nighttime is default)
             else:
                 # if mask nighttime (aka not mask_daytime)            
                 if not mask_daytime:
                     # ... and has not risen yet, it must be nighttime                    
                     if (date < next_rising):
-                        mask_value=True
+                        mask_value=1
+                    #If within buffer period of sunrise then mask
+#                    print 'I got here 2'
 
-        # add gotcha for locations where sun is always up.
+                    if buffer_hours != 0:
+                        # Calculate next rise and last setting
+                        previous_setting = o.previous_setting(s)
+                        # convert to datetime.datetime
+                        previous_setting = add_days(ref_date, previous_setting)
+
+#                        print 'I got here 3'
+ 
+                        # Calculate absolute difference
+                        time_from_set = (date-previous_setting).total_seconds()
+                        time_till_rise = (date-next_rising).total_seconds()
+
+#                        print 'I got here 4'
+
+                        if abs(time_from_set)/60./60.< buffer_hours:
+                            mask_value=1
+                        if abs(time_till_rise)/60./60.< buffer_hours:
+                            mask_value=1
+
+#                        print 'I got here 5'
+
+                         
+        # Add gotcha for locations where sun is always up.
         except AlwaysUpError:
             if mask_daytime:
-                mask_value=True
+                mask_value=1
 
-        # add gotcha for locations where sun is always down.
+        # Add gotcha for locations where sun is always down.
         except NeverUpError:
             if not mask_daytime:
-                mask_value=True
+                mask_value=1
+        except:
+            print 'FAIL'
+            sys.exit()
+              
+        # Mask value in array
+        return mask_value
 
-        if debug:   
-            sys.exit()                
-        # mask  value in array
-        if mask_value:
-            return 1
-        else:
-            return 0
-
-    # --- setup an unstack pandas dataframe to contain masked values
+    # --- Setup an unstack(ed) pandas dataframe to contain masked values
     if debug:
         print("--- (2) %s seconds ---" % (time.time() - start_time))
-    # use list comprehension to setup list of indices for lat and lon
-    # better way of doing this? (e.g. pd.melt?)
+    # Use list comprehension to setup list of indices for lat and lon
+    # Better way of doing this? (e.g. pd.melt?)
     ind_lat_lons_list = [ [lon_, lat_] for lat_ in lats for lon_ in lons ]
     if debug:
         print("--- (3) %s seconds ---" % (time.time() - start_time))
@@ -1723,16 +1780,16 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
     df.columns = ['lons', 'lats']
     if debug:
         print("--- (4) %s seconds ---" % (time.time() - start_time))
-    # apply function to calculate mask value
+    # Apply function to calculate mask value
 #    df['mask'] = df.apply(mask_nighttime, axis=1)    
     df['mask'] = df.apply(lambda x: mask_nighttime(x['lons'], x['lats']), axis=1)
     if debug:
         print("--- (5) %s seconds ---" % (time.time() - start_time))
-    # re-index by lat and lon
+    # Re-index by lat and lon
     df = pd.DataFrame( df['mask'].values, index=[df['lats'],df['lons'] ] )
     if debug:
         print("--- (6) %s seconds ---" % (time.time() - start_time))
-    # unstack and return just as array
+    # Unstack and return just as array
     df = df.unstack()
     marr = df.values
     if debug:
@@ -1740,12 +1797,103 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
 
     return marr
 
+
+# --------
+# X.XX - Get 2D array of solar time.  
+# --------
+def get_2D_solartime_array4_date( date=None, ncfile=None, res='4x5', \
+        debug=False ):
+    """
+    Creates 2D (lon,lat) masked (1=Masked) for nighttime for a given list of
+    dates
+    
+    Parameters
+    -------
+    date (datetime): date to use (UTC)
+    mask_daytime (boolean): mask daytime instead of nightime
+    ncfile (str): location to netCDF file - not implemented... 
+    res (str): resolution, if using resolutions listed in get_latlonalt4res
+    lons (array): array of longditudes (optional)
+    lats (array): array of lattiudes (optional) 
+
+    Returns
+    -------
+    (np.array) 
+    
+    ncfile (NetCDF file): NetCDF file to extract lat and lon metadata from
+
+    Notes
+    -----    
+     - if ncfile provide programme will work for that grid.     
+    """
+    from funcs4time import add_days, add_hrs
+    logging.info('get_2D_solartime_array4_dates called for {}'.format(date))
+
+    # Profile function... 
+    if debug:
+        start_time = time.time()
+
+    # --- Local variables?
+    # reference data for ephem (number of days since noon on 1899 December 31)
+    ref_date = datetime.datetime(1899, 12, 31, 12 )
+
+    # --- Get LON and LAT variables (if lons/lats not provdided)
+    if any( [not isinstance(i, type(None)) for i in lats, lons]):
+        pass
+    else:
+        if isinstance( ncfile, type(None)):
+            # extract from refence files 
+            lons, lats, NIU = get_latlonalt4res(res=res)
+        else:
+            # TODO - allow any lat, lon grid to be used by taking input lats and
+            # lons from ncfile file/arguments. 
+            print 'Not implemented'
+            sys.exit()
+
+    # --- setup function to get solartime based on date, lat and lon
+    def solartime(lon, lat, date=date):
+        """
+        Get solartime for location (lat, lon) and date
+        """
+        # --- get sunrise and sunset for location
+        o=ephem.Observer()  
+        # set lat (decimal?), lon (decimal?), and date (UTC)
+        o.lat=str(lat)
+        o.long=str(lon)
+        o.date = date
+        # planetary body
+        s=ephem.Sun()  
+        # Compute sun vs observer
+        s.compute(o)                 
+        # below code was adapted from stackoverflow (Credit: J.F. Sebastian)
+        # http://stackoverflow.com/questions/13314626/local-solar-time-function-from-utc-and-longitude
+        # sidereal time == ra (right ascension) is the highest point (noon)
+        hour_angle = observer.sidereal_time() - sun.ra
+        return ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h
+
+    # --- Setup an unstack(ed) pandas dataframe to contain masked values
+    # Use list comprehension to setup list of indices for lat and lon
+    # Better way of doing this? (e.g. pd.melt?)
+    ind_lat_lons_list = [ [lon_, lat_] for lat_ in lats for lon_ in lons ]
+    # Make this into a pd.DataFrame and label columns.
+    df = pd.DataFrame( ind_lat_lons_list )
+    df.columns = ['lons', 'lats']
+    # Apply function to calculate mask value
+    df['SolarTime'] = df.apply(lambda x: solartime(x['lons'], x['lats']), axis=1)
+    # Re-index by lat and lon
+    df = pd.DataFrame( df['mask'].values, index=[df['lats'],df['lons'] ] )
+    # Unstack and return just as array
+    return df.unstack().values
+
+
+
+
 # --------
 # X.XX - Save 2D arrays (lat, lon) to 3D netCDF (3rd dim=time)
 # --------
 def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
         lats=None, varname='MASK', Description=None, Contact=None, \
-        filename='misc_output' ):
+        filename='misc_output', debug=False ):
     """
     makes a NetCDF from a list of dates and list of (lon, lat) arrays
 
@@ -1769,6 +1917,7 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
      (e.g. those in funcs_vars)
 
     """
+    logging.info('save_2D_arrays_to_3DNetCDF called')
     from funcs4time import unix_time
 
     # ---  Settings 
@@ -1842,12 +1991,21 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
     # --- Now open and add data in append mode
     for n, date in enumerate( dates ):
 
+        if debug:
+            logging.debug('saving array date:{}'.format(date) )
+            pcent = str(float(n)/float(len(dates))*100 )
+            logging.debug('array #: {} (% complete: {:.1f})'.format(n, pcent))
+
         # Open NetCDF in append mode
         ncfile = Dataset( ncfilename,'a', format='NETCDF4')     
     
         # Add data to array
         ncfile.variables[ varname ][ n ] = ars[n]
-        
+
+    # Close NetCDF
+    ncfile.close()        
+    if debug:
+        logging.debug('saved NetCDF file:{}'.format(ncfilename) )
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
