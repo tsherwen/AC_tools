@@ -4041,6 +4041,44 @@ def prt_families4rxns_to_input_to_PROD_LOSS(fam='LOx', rxns=None, wd=None, \
     for rxn in rxns:
         print pstr.format(rxn, rxn ) 
 
+
+# ----
+# X.XX - Print Prod-loss reactions for tagged/passed reactions
+# ----
+def prt_families4rxns_to_input_to_PROD_LOSS_globchem_spec(fam='LOx', \
+        rxns=None, wd=None, filename='gckpp_Monitor.F90', \
+        Mechanism='Halogens' ):
+    """
+    Takes a list of reaction numbers or (fam) and prints out prod/loss in 
+    a form that can be copy/pasted into KPP (gckpp.kpp)
+
+    Parameters
+    -------
+    rnxs (list): lisst of reactions to use for 
+    fam (str): prod/loss family in KPP file (e.g. Ox loss or "LOx" )
+    wd (str): the working (code) directory to search for files in
+    Mechanism (str): name of mechanism (e.g. dir in KPP folder)
+    filename (str): name of KPP monitor file 
+    
+    Returns
+    -------
+    (None)
+    """
+    # get list of tagged reactions for family
+    if isinstance(rxns, type(None)):
+        rxns = get_KPP_tagged_rxns( fam=fam, filename=filename, \
+            Mechanism=Mechanism, wd=wd)
+
+    # --- Print to screen
+    header_Str = '#DEFVAR'
+    pstr = '     {:<10}      =          IGNORE;'
+    print '>>>> Copy and paste the below text into globchem.spc <<<'
+    print header_Str
+    for rxn in rxns:
+        print pstr.format(rxn, rxn ) 
+
+
+
 # ----
 # X.XX - Get reaction numbers that oxidative release halogens
 # ----
@@ -4062,7 +4100,7 @@ def get_oxidative_release4specs(filename='gckpp_Monitor.F90',
     (list)
     """
     # species ?
-    specs = ['CHBr3', 'CH3Cl', 'CH3Cl2', 'CHCl3' ]
+    specs = ['CHBr3', 'CH3Cl', 'CH2Cl2', 'CHCl3' ]
 
     # Get dictionary of reactions in Mechanism
     RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename, \

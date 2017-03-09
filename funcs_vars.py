@@ -529,7 +529,9 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         # ( Aka JT03s == Br2 ( ==2 ), but one is BrSALA/BrSALC therefore =1)
         'JT03s' : 1.0, 'JT04s' :1.0, 'JT05s': 1.0, 
         # BrCl from HOBr or hv
-        'JT02s' : 1.0, 'JT08':1.0
+        'JT02s' : 1.0, 'JT08':1.0, 
+        # v11 KPP Tags
+        'T149': 3.0, 'T127': 0.680+1.360, 'T071':0.71, 
         }
     elif Cl:
         d= {
@@ -546,17 +548,9 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         # ICl  (assuming 0.85:0.15 )
         'RD59': 0.15, 'RD92': 0.15, 'RD63': 0.15,
         # N2O5+SSA=>ClNO2
-        'LR114': 1.0
-        }
-    elif Cl:
-        d= {
-        'ClO': 1.0, 'Cl': 1.0, 'ClOO': 1.0, 'ClNO3': 1.0, 'ClNO2': 1.0, \
-        'Cl2': 2.0, 'OClO': 1.0, 'HOCl': 1.0, 'HCl': 1.0, 'Cl2O2': 2.0,
-         'BrCl': 1.0, 'ICl':1.0, 
-         # Also have reaction tracers
-         'LR62': 3.0, 'LR107': 3.0, 
-         'LR74' : 1.0, 'LR106':1.0, 'LR103': 1.0, 
-         'LR75' : 2.0, 'LR105': 2.0, 'LR104' : 2.0, 
+        'LR114': 1.0,
+        # v11 KPP Tags
+        'T174' : 3.0, 'T173': 2.0, 'T172': 1.0, 'T171': 1.0, 
         }
     else:  # ( I=True is the default... )
         d = {
@@ -2284,10 +2278,18 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'CAL' : ( -114.12950, 51.07933,  1100), 
     'PAS':  ( -118.20, 34.23, 246  ), 
     # --- ClNO2 (UK) sites
-    'PEN':  ( -4.1858, 50.3214 , 0  ), 
-    'LEI_AUG' :  ( -1.127311, 52.619823, 0 ),
-    'LEI_MAR' :  ( -1.127311, 52.619823, 0 ),
-    'LEI' :  ( -1.127311, 52.619823, 0 ),
+    'PEN':  ( -4.1858, 50.3214 , 0.  ), 
+    'LEI_AUG' :  ( -1.127311, 52.619823, 0. ),
+    'LEI_MAR' :  ( -1.127311, 52.619823, 0. ),
+    'LEI' :  ( -1.127311, 52.619823, 0. ),
+    'Mace_head_M3': (-10.846408, 53.209003, 0. ), 
+    'Penlee':  ( -4.1858, 50.3214 , 0.  ),
+    'Penlee_M2': (-2.0229414, 49.7795272, 0.),
+    'Penlee_M3': (-5.3652425, 49.8370764, 0.), 
+    'Penlee_M4': (-4.15,  50.25, 0. ), 
+    'Penlee_M5': (-0.85, 50.25, 0. ), 
+    'Penlee_M6': (-7.05, 50.25, 0. ),
+    'Penlee_M7': ( -4.1858, 50.1 , 0.  ),
     # --- Europe sites
     'DZK' :  ( 4.5000, 52.299999237, 4 ),
     # --- O3 preindustrial
@@ -2311,6 +2313,7 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     # ---  Misc
 #    'MAC' : ( -10.846408, 53.209003, 0 ) # Mace Head.
     'MAC' : ( -9.9039169999999999, 53.326443999999995, 0 ), # Mace Head.
+    'Mace Head' : ( -9.9039169999999999, 53.326443999999995, 0 ), # .
     'Brittany' : ( -4.0, 48.7, 0 ), # Brittany, France
     'Ria de Arousa' : (-8.87, 42.50,0), # Ria de Arousa, Spain
     'Mweenish Bay' : (-9.83, 53.31,0), # Ireland 
@@ -2322,7 +2325,6 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'Heraklion' : (25.1, 35.3, 0 ),  # Heraklion, Crete
     'Sylt': (8.1033406, 54.8988164, 0),
     'Sicily': (14.2371407,  38.5519809, 0 ) # Sicily
-
 #    'Frankfurt' : ( 8.45,50.22, )
     }
     if rtn_dict:
@@ -2359,7 +2361,7 @@ def get_obs_loc(loc, debug=False):
     'Penlee'    : [[50.3214], [-4.1858]],\
     'Penlee_M2' :[[49.7795272], [-2.0229414]], \
     'Penlee_M3' :[[49.8370764,], [-5.3652425]], \
-    'Penlee_M4' :[[5], [-4.15]], \
+    'Penlee_M4' :[[50.0], [-4.15]], \
     'Penlee_M5' :[[50.25], [-0.85]], \
     'Penlee_M6' :[[50.25], [-7.05]], \
     'Mace_head_M3' :[[53.209003], [ -10.846408 ]], \
@@ -3159,6 +3161,7 @@ def get_ref_spec( spec='LIOx' ):
     """
     d = {
     'Cly' : 'Cl',
+    'Cl' : 'Cl',
     'LOX' :'O3',
     'POX' :'O3',
     'LIOx' :'I',
@@ -3174,6 +3177,8 @@ def get_ref_spec( spec='LIOx' ):
     'LCII' :'Cl',
     'PBrOx' :'Br',
     'LBrOx' :'Br'
+    'Br' : 'Br',
+    'I' : 'I',
     }
     return d[spec]
 
