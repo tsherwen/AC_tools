@@ -4001,34 +4001,80 @@ def get_stioch_for_family_reactions( fam='LOx', filename='gckpp_Monitor.F90',
     unity = 1.0
 
     # loop dictionary of reactions and save those that contain tag
-    tagged_RR_dummies = []
-    tagged_RR_stioch = []
+    tagged_rxns = []
+    tagged_rxn_stioch = []
     for key_ in RR_dict.keys():
         # Get reaction string 
         rxn_str = RR_dict[key_]
         # collection reactions with tag
         if fam in rxn_str:
-            tagged_RR_dummies += [key_]    
-            # split reaction str by '+'
-            rxn_str = rxn_str.split('+')
+            tagged_rxns += [key_]    
+            # split reaction str by '+' (excluding reactants part)
+            rxn_str = rxn_str[18:].split('+')
             print rxn_str
             # get product
             product_str = [i for i in rxn_str if (fam in i) ]
             print product_str
+            # Find 
+#            ind_of_rxn = [ n for n,i in product_str if (fam in i) ]
             # split Coe from 
             product_str = product_str[0].strip().split()
             if len(product_str)>1:
-                tagged_RR_stioch += [ float(product_str[0]) ]
+                tagged_rxn_stioch += [ float(product_str[0]) ]
             else:
-                tagged_RR_stioch += [ unity ]
+                tagged_rxn_stioch += [ unity ]
 
-    return dict(zip(tagged_RR_dummies, tagged_RR_stioch))
+    return dict(zip(tagged_rxns, tagged_rxn_stioch))
+
+
+def get_tags4_family( fam='LOx', filename='gckpp_Monitor.F90', 
+        Mechanism='Halogens', tag_prefix='PT', RR_dict=None, wd=None ):
+    """
+    For a P/L family tag (e.g. LOx), if there are induvidual tags then these 
+    are extracted 
+
+    Parameters
+    -------
+    fam (str): prod/loss family in KPP file (e.g. Ox loss or "LOx" )
+    wd (str): the working (code) directory to search for files in
+    Mechanism (str): name of mechanism (e.g. dir in KPP folder)
+    filename (str): name of KPP monitor file 
+    
+    Returns
+    -------
+    (dict)    
+    """
+    # Get dictionary of reactions in Mechanism
+    if isinstance(RR_dict, type(None)):
+        RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename,\
+            wd=wd)
+        
+    # loop dictionary of reactions and save those that contain tag
+    tagged_rxns = []
+    tagged_rxn_tags = []
+    for key_ in RR_dict.keys():        
+        # Get reaction string 
+        rxn_str = RR_dict[key_]
+        # collection reactions with tag
+        if fam in rxn_str:
+            tagged_rxns += [key_]    
+            # split reaction str by '+' (excluding reactants part)
+            rxn_str = rxn_str[18:].split('+')            
+            # look for tag(s)... - should only be one per reaction!
+            tags = [i.strip() for i in rxn_str if (tag_prefix in i) ]
+            if len(tags)>=1:
+                tagged_rxn_tags += tags 
+            else:
+                tagged_rxn_tags += [ 'WARNING - NOT TAGGED!!!' ]
+
+    return dict(zip(tagged_rxns, tagged_rxn_tags))
+
 
 # ----
 # X.XX - Get dict of KPP Mech. 
 # ----
 def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90', 
-        Mechanism='Halogens', wd=None):
+        Mechanism='Halogens', GC_version='v11-02', wd=None):
     """
     Get a dictionary of KPP mechansim from compile mechanism 
 
@@ -4037,6 +4083,7 @@ def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90',
     wd (str): the working (code) directory to search for files in
     Mechanism (str): name of mechanism (e.g. dir in KPP folder)
     filename (str): name of KPP monitor file 
+    GC_version (str): name of GEOS-Chem version
     
     Returns
     -------
@@ -4046,7 +4093,7 @@ def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90',
     if isinstance( wd, type(None)):
 #        wd = sys.agrv[1]
         # Hardwire for testing
-        wd = '/work/home/ts551/data/all_model_simulations/iodine_runs/iGEOSChem_5.0/code/'
+        wd = '/work/home/ts551/data/all_model_simulations/iodine_runs/iGEOSChem_5.0/code_TMS_new/'
         wd += '/KPP/{}/'.format(Mechanism)
 
     MECH_start_str = 'INTEGER, DIMENSION(1) :: MONITOR'
@@ -4071,9 +4118,16 @@ def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90',
                 # check if the line contains a reaction str        
                 if rxn_line_ind in line:
                     rxn_str = line[6:106]                    
-                    RR_dummy = 'RR{}'.format( line[118:].strip() )
-                    # add to dictionary            
-                    RR_dict[RR_dummy] = rxn_str
+                    # RR??? dummy tags only available on v11-01 patches!
+                    if GC_version == 'v11-01':
+                        RR_dummy = 'RR{}'.format( line[118:].strip() )
+                        # add to dictionary            
+                        RR_dict[RR_dummy] = rxn_str
+                    # Use just reaction number for other versions... 
+                    else:
+                        RR_num = int( line[118:].strip() )
+                        # add to dictionary            
+                        RR_dict[RR_num] = rxn_str
 
     return RR_dict
 
@@ -4148,6 +4202,170 @@ def prt_families4rxns_to_input_to_PROD_LOSS_globchem_spec(fam='LOx', \
     for rxn in rxns:
         print pstr.format(rxn, rxn ) 
 
+# ----
+# X.XX - Get dictionary of all reactions strings for tagged reactions
+# ----
+def get_dictionary_of_tagged_reactions(filename='globchem.eqn',
+        Mechanism='Halogens', wd=None):
+    """
+    Construct a dictionary of reaction strings for tagged reactions in 
+    globchem.eqn
+    """
+    # Get base working code directory
+    if isinstance( wd, type(None)):
+#        wd = sys.agrv[1]
+        # Hardwire for testing
+        wd = '/work/home/ts551/data/all_model_simulations/iodine_runs/iGEOSChem_5.0/code_TMS_new/'
+        wd += '/KPP/{}/'.format(Mechanism)
+    # Local variable
+    tracer_names_like_tag = ['TRO2']
+
+    # Initialise lists to store tags
+    tags_l = []
+    rxn_l = []
+
+    # Now open file and look for tags
+    with open(wd+filename) as file_:
+        
+        # loop lines and store reaction strs (1st line) that contain tags
+        for line in file_:
+            try:
+                # What does the reaction string begin?
+                start_str_index = line.index('}')+2
+                # Select reaction string and just products.
+                reaction_str = line[start_str_index:51]
+                product_str = reaction_str.split(' =')[-1]
+                # Assume Tag is 1st and in form TG??? (where ??? are numerical )
+                # update this to use regular expressions?
+                part_of_str_that_would_contain_tag = product_str[:6]
+                if ' T' in part_of_str_that_would_contain_tag:
+                    # strip tag from string.
+                    tag = part_of_str_that_would_contain_tag.strip()
+                    # Add if actually a tag.
+                    if tag not in tracer_names_like_tag:
+                        tags_l += [ tag ] 
+                        # select tag
+                        rxn_l += [ reaction_str.strip() ]
+            # If the line doesn't contain a reaction # ("{?}"), then pass 
+            except ValueError:
+                pass
+    return dict( zip(tags_l, rxn_l) )
+
+
+# ----
+# X.XX - Assign family for tag based on reaction string
+# ----
+def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
+        Mechanism='Halogens', wd=None,  fam='LOx', tag_prefix='PT', \
+        tags=None, RR_hv_dict=None, RR_dict=None, debug=False  ):
+    """
+    Get Ox famiy of reaction tag using KPP reaction string.
+    """
+    # Get dictionary of reactions in Mechanism
+    if isinstance(RR_dict, type(None)):
+        RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, \
+            filename=filename, wd=wd)    
+    if isinstance(RR_hv_dict, type(None)):
+        RR_hv_dict = get_dictionary_of_tagged_reactions(filename='globchem.eqn',
+            Mechanism=Mechanism, wd=wd)
+
+    # Get tags for reaction unless provide.
+    if isinstance(tags, type(None)):
+        tags = get_tags4_family( fam=fam, filename=filename, \
+        Mechanism=Mechanism, tag_prefix=tag_prefix, RR_dict=RR_dict, wd=wd )
+
+    # --- Extra local variables
+    HOx = [ 'OH', 'HO2', 'H2O2']
+    # temporarily add to definition of HOx
+    HOx+=['O1D', 'O','O3','NO3']
+    ClOx =['CFC', 'Cl', 'ClO' ]
+    non_I_specs_with_I_char = [ \
+    'INO2', 'ISN1', 'ISNOOA', 'ISNOHOO', 'ISOPNB', 'ISOPND', 'ISOP', 'ISNP' ]
+    # Get list of tagged hv reactions
+    all_rxns = sorted(RR_hv_dict.keys())
+    hv_rxns_tags = [ i for i in all_rxns if ( 'hv' in RR_hv_dict[i])]
+    
+    # Loop tagged reactions and assign family
+    tagged_rxns = sorted(tags.keys())
+    fam_l = []
+    for n_rxn, rxn_ in enumerate( tagged_rxns ):
+        _debug=False 
+        # Initialise booleans 
+        Br_is_reactant = False
+        Cl_is_reactant = False
+        I_is_reactant = False
+        NOx_is_reactant = False
+        HOx_is_reactant = False
+        hv_is_reactant = False
+
+        # --- Get reaction string  and check within 
+        rxn_str = RR_dict[rxn_]
+        reactant_str = rxn_str.split('-->')[0]
+        # Check if species are in reactions
+        if 'Br' in reactant_str:
+            Br_is_reactant=True
+        if 'I' in reactant_str :
+            # account for non-iodine species with I Character in... 
+            if not any([(i in reactant_str) for i in non_I_specs_with_I_char]):
+                I_is_reactant=True            
+        if any([(i in reactant_str) for i in ClOx]):
+            Cl_is_reactant=True
+        # add gotcha for heterogenous N2O5 breakdown by Cl-
+        if tags[rxn_] == 'T172':
+            Cl_is_reactant=True
+        if 'NO' in reactant_str:
+            NOx_is_reactant=True
+        if tags[rxn_] in hv_rxns_tags:
+            hv_is_reactant=True
+        if any([(i in reactant_str) for i in HOx]):
+            HOx_is_reactant=True
+        # --- Assign familes
+        # 1st check if halogen crossover reaction... 
+        if Cl_is_reactant and Br_is_reactant:
+            fam_l += ['ClOx-BrOx']
+        elif Cl_is_reactant and I_is_reactant:
+            fam_l += ['ClOx-IOx']
+        elif Br_is_reactant and I_is_reactant:
+            fam_l += ['BrOx-IOx']
+        # Now just check if single halogen family... 
+        elif Cl_is_reactant:
+            fam_l += ['ClOx']
+        elif Br_is_reactant:
+            fam_l += ['BrOx']            
+        elif I_is_reactant:
+            fam_l += ['IOx']
+        # Now check if photolysis reaction... 
+        elif hv_is_reactant:
+            fam_l += ['hv']
+        # HOx?
+        elif HOx_is_reactant:
+            fam_l += ['HOx']
+
+        # Not assigned?!
+        else:
+            fam_l += ['NOT ASSIGNED!!!']
+            _debug=True
+
+        # debug print ?
+        if _debug:
+            specs = 'Br', 'I', 'Cl', 'NOx', 'hv', 'HOx'
+            booleans = Br_is_reactant, I_is_reactant, Cl_is_reactant,  \
+                NOx_is_reactant, hv_is_reactant, HOx_is_reactant
+            print zip(specs, booleans)
+
+        if debug:
+            print rxn_str, fam_l[n_rxn]
+
+    # Nicer family names?
+#    if mk_family_names_readable:
+    name_dict = {
+    'ClOx-BrOx': 'Cl+Br', 'BrOx-IOx': 'Br+I', 'BrOx': 'Bromine', 
+    'ClOx-IOx': 'Cl+I', 'IOx': 'Iodine', 'ClOx': 'Chlorine', 'HOx': 'Other'
+    }
+    fam_l = [ name_dict[i] for i in fam_l ]
+    tag_l = [ tags[i] for i in tagged_rxns ]
+
+    return dict(zip(tag_l, fam_l ))
 
 
 # ----
