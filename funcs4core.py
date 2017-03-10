@@ -140,7 +140,8 @@ def get_gc_lon(lon, res='4x5', wd=None, filename='ctm.nc', debug=False):
 # X.XX - Get model array dimension for a given resolution                                           
 # --------                                                                                          
 def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
-        just2D=False, full_vertical_grid=False, debug=False):
+        just2D=False, full_vertical_grid=False, add_n_time_dims=None, 
+        debug=False):
     """ 
     Get dimension of GEOS-Chem output for given resolution 
 
@@ -151,6 +152,7 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
     r_dims (boolean): return dicionary of dimensions
     just2D (boolean): just return horizontal dimensions 
     debug (boolean): legacy debug option, replaced by python logging
+    add_n_time_dims (int): number of time dimensions to add
 
     Returns
     -------
@@ -189,6 +191,13 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
         if debug:
             print dims
 
+    # Add a time dimension of length n (if add_n_time is an integer)
+    if not isinstance( add_n_time_dims, type(None) ):
+        vals =[]
+        for i in dims.values():
+            vals += [ ( i[0],i[1],i[2], add_n_time_dims) ]
+        dims = dict( zip( dims.keys(), vals ) ) 
+
     # Dictionary of lon, lat (e.g. for emissions and 2D datasets)
     if just2D:
         vals =[]
@@ -203,6 +212,8 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
 #        for res in dims.keys():
 #            _2Ddims[res] = dims[res][0,1] 
 #        dims = _2Ddims
+       
+
 
     if r_dims:
         if invert==True:

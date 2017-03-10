@@ -1069,7 +1069,7 @@ def get_GC_output( wd, vars=None, species=None, category=None, r_cubes=False, \
                 for i in arr]))
 
         # --- loop variables post processing and force inclusions of time dim if applicable
-        need_time = ['IJ_AVG', 'GMAO', 'BXHGHT', 'TIME_TPS_']
+        need_time = ['IJ_AVG', 'GMAO', 'BXHGHT', 'TIME_TPS_', 'PORL_L_S']
         for n, var in enumerate( vars ):
             
             # Add altitude dimension to 2D (lon, lat)
@@ -3728,7 +3728,7 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
     for n, arr in enumerate( ars ):
         # convert from molec/cm3/s to  molec/s
         arr  = arr *vol[...,:38,:]
-        # conver to to molec/s = > Gg/s
+        # conver to to molec/s = > g/s
         arr =  arr / constants( 'AVG') * species_mass(ref_spec)
         # to / yr
         if month_eq:
