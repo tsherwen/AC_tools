@@ -1069,7 +1069,7 @@ def get_GC_output( wd, vars=None, species=None, category=None, r_cubes=False, \
                 for i in arr]))
 
         # --- loop variables post processing and force inclusions of time dim if applicable
-        need_time = ['IJ_AVG', 'GMAO', 'BXHGHT', 'TIME_TPS_', 'PORL_L_S']
+        need_time = ['IJ_AVG', 'GMAO', 'BXHGHT', 'TIME_TPS_']
         for n, var in enumerate( vars ):
             
             # Add altitude dimension to 2D (lon, lat)
@@ -1626,7 +1626,8 @@ def get_mod_WIND_dir(  sdate=datetime.datetime(2012, 8, 1, 0 ), \
 # ----
 # X.XX - get GC years
 # ----
-def get_gc_years(ctm_f=None, wd=None, set_=True, debug=False):
+def get_gc_years(ctm_f=None, wd=None, filename='ctm.nc', set_=True, \
+        debug=False):
     """ 
     Return list of years in CTM output 
     """
@@ -1642,13 +1643,14 @@ def get_gc_years(ctm_f=None, wd=None, set_=True, debug=False):
 
     # Use updated PyGChem ( >0.3.0 ) approach
     else:
-        dates = get_gc_datetime( wd=wd )
+        dates = get_gc_datetime( wd=wd, filename=filename )
         return [ i.year for i in dates ]         
 
 # ----
 # X.XX - get GC months
 # ----
-def get_gc_months(ctm_f=None, wd=None, verbose=False, debug=False):
+def get_gc_months(ctm_f=None, wd=None, filename='ctm.nc', \
+        verbose=False, debug=False):
     """ 
     Return list of months in CTM output 
     """
@@ -1658,7 +1660,8 @@ def get_gc_months(ctm_f=None, wd=None, verbose=False, debug=False):
 
     # Use updated PyGChem ( >0.3.0 ) approach
     else:
-        dates = get_gc_datetime( wd=wd, debug=debug, verbose=verbose )
+        dates = get_gc_datetime( wd=wd, filename=filename, debug=debug,\
+             verbose=verbose )
         return [ i.month for i in dates ] 
 
 # ----
@@ -1724,6 +1727,74 @@ def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
         
         # return datetime objects
         return dates
+    
+
+# ----
+# X.XX - Get frequency of model output. 
+# ----
+def get_frequency_of_model_output( wd=None, months=None, years=None, 
+        datetimes=None, filename='ctm.nc', debug=False):
+    """
+    Get frequency of model output (e.g. monthly, weekly, daily ). 
+    
+    Parameters
+    ----------
+    wd (str): the directory to search for file in
+    filename (str): name of NetCDF file to extract from 
+    years, months (list): list of years and months in model output file
+    datetimes (list): list of datetimes of output in model output file
+    
+    Returns
+    ----
+    (str)
+    """
+    from calendar import monthrange
+    # Datetimes
+    if isinstance(datetimes, type(None)):
+        datetimes = get_gc_datetime(wd=wd, filename=filename)
+    # Differences between these?
+    diffs = [i-datetimes[n+1] for n, i in enumerate( datetimes[:-1] ) ]
+    # in days?
+    diffs =  [abs(i.total_seconds()/60./60./24.) for i in diffs]
+    # all the same value?
+    set_of_diffs = list(set(diffs))
+    if len(set_of_diffs) > 1:   
+        # Check if months are full lengths?
+        if isinstance(months, type(None)):
+            months = get_gc_months(wd=wd, filename=filename)
+        if isinstance(years, type(None)):
+            years = get_gc_years(wd=wd, filename=filename)
+        # Get number of days in month
+        daysinmonth = [monthrange(years[n],i)[-1] for n,i in enumerate(months)]         
+#        if debug:
+#            print daysinmonth, months, years, diffs, set_of_diffs
+        # if the lists are the same ... 
+        if diffs==daysinmonth[:-1]:
+            return 'Monthly'
+        else:
+            print 'WARNING - Unequal timestep in output!'
+            # enter to continue
+            sys.exit()
+    else:
+        if set_of_diffs[0] == 1.:
+            return 'Daily'
+        elif set_of_diffs[0] == 7.:
+            return 'Weekly'        
+        else:
+            # Check if months are full lengths?
+            if isinstance(months, type(None)):
+                months = get_gc_months(wd=wd, filename=filename)
+            if isinstance(years, type(None)):
+                years = get_gc_years(wd=wd, filename=filename)
+            # Get number of days in month
+            daysinmonth = [monthrange(years[n],i)[-1] \
+                for n,i in enumerate(months)]          
+            if set_of_diffs== daysinmonth[:-1]:
+                return 'Monthly'
+            else:
+                print 'Cannot work out output frequency for step diff: ', \
+                    set_of_diffs
+                sys.exit()
     
 
 # ----
@@ -3728,7 +3799,7 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
     for n, arr in enumerate( ars ):
         # convert from molec/cm3/s to  molec/s
         arr  = arr *vol[...,:38,:]
-        # conver to to molec/s = > g/s
+        # conver to to molec/s = > Gg/s
         arr =  arr / constants( 'AVG') * species_mass(ref_spec)
         # to / yr
         if month_eq:
