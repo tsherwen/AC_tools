@@ -3750,7 +3750,8 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
         months=None, years=None, vol=None, t_ps=None, trop_limit=True, \
         s_area=None, rm_strat=True, ctm_f=None, wd=None, res='4x5', \
         multiply_method=True, use_time_in_trop=True, conbine_ars=True, \
-        month_eq=False, verbose=False,  debug=False ):
+        month_eq=False, limit_Prod_loss_dim_to=38, 
+        verbose=False,  debug=False ):
     """ 
     Convert molec/cm3/s to g/grid box. This is used for converting prod/loss 
     output units.
@@ -3768,7 +3769,10 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
      ( (boolean) options for this include using multiply_method and use_time_in_trop )
     conbine_ars (boolean): return arrays as a single array? 
     month_eq (boolean): convert units to monthly equiivlents.
-
+    limit_Prod_loss_dim_to (int): level to cut off arrays at 
+     (38 in <v10, 59 in >=v11-1)
+    
+    
     Returns
     -------
     (array) of (list) of arrays if conbine_ars==True
@@ -3798,7 +3802,9 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
     # --- loop spec ars
     for n, arr in enumerate( ars ):
         # convert from molec/cm3/s to  molec/s
-        arr  = arr *vol[...,:38,:]
+        # limit arrays to the region of the atompshere in which prod/loss is 
+        # calculated (38 in <v10, 59 in >=v11-1)
+        arr  = arr *vol[...,:limit_Prod_loss_dim_to,:]
         # conver to to molec/s = > Gg/s
         arr =  arr / constants( 'AVG') * species_mass(ref_spec)
         # to / yr
@@ -4011,10 +4017,10 @@ def get_stioch_for_family_reactions( fam='LOx', filename='gckpp_Monitor.F90',
             tagged_rxns += [key_]    
             # split reaction str by '+' (excluding reactants part)
             rxn_str = rxn_str[18:].split('+')
-            print rxn_str
+#            print rxn_str
             # get product
             product_str = [i for i in rxn_str if (fam in i) ]
-            print product_str
+#            print product_str
             # Find 
 #            ind_of_rxn = [ n for n,i in product_str if (fam in i) ]
             # split Coe from 
@@ -4271,8 +4277,8 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
 
     # Get tags for reaction unless provide.
     if isinstance(tags, type(None)):
-        tags = get_tags4_family( fam=fam, filename=filename, \
-        Mechanism=Mechanism, tag_prefix=tag_prefix, RR_dict=RR_dict, wd=wd )
+        tags = get_tags4_family( wd=wd, fam=fam, filename=filename, \
+            Mechanism=Mechanism, tag_prefix=tag_prefix, RR_dict=RR_dict )
 
     # --- Extra local variables
     HOx = [ 'OH', 'HO2', 'H2O2']
@@ -4315,7 +4321,9 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
             Cl_is_reactant=True
         if 'NO' in reactant_str:
             NOx_is_reactant=True
-        if tags[rxn_] in hv_rxns_tags:
+#        print (tags[rxn_][1:] in hv_rxns_tags), tags[rxn_][1:], hv_rxns_tags
+#        print RR_dict[rxn_]
+        if (tags[rxn_][1:] in hv_rxns_tags):
             hv_is_reactant=True
         if any([(i in reactant_str) for i in HOx]):
             HOx_is_reactant=True
@@ -4338,6 +4346,9 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
         elif hv_is_reactant:
             fam_l += ['hv']
         # HOx?
+        elif NOx_is_reactant:
+            fam_l += ['NOx']
+        # HOx?
         elif HOx_is_reactant:
             fam_l += ['HOx']
 
@@ -4345,6 +4356,11 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
         else:
             fam_l += ['NOT ASSIGNED!!!']
             _debug=True
+
+        # Special cases?
+        # O1D + H2O --> 2 OH     
+        if ('O1D' in reactant_str) and ('H2O' in reactant_str):
+            fam_l[n_rxn] = 'hv'
 
         # debug print ?
         if _debug:
@@ -4360,7 +4376,8 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
 #    if mk_family_names_readable:
     name_dict = {
     'ClOx-BrOx': 'Cl+Br', 'BrOx-IOx': 'Br+I', 'BrOx': 'Bromine', 
-    'ClOx-IOx': 'Cl+I', 'IOx': 'Iodine', 'ClOx': 'Chlorine', 'HOx': 'Other'
+    'ClOx-IOx': 'Cl+I', 'IOx': 'Iodine', 'ClOx': 'Chlorine', 'HOx': 'HO$_{\\rm x}$', 
+    'hv':'Photolysis', 'NOx': 'NO$_{\\rm x}$'
     }
     fam_l = [ name_dict[i] for i in fam_l ]
     tag_l = [ tags[i] for i in tagged_rxns ]

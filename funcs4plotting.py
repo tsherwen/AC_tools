@@ -1848,7 +1848,7 @@ def plot_specs_surface_change_monthly2pdf( arr, res='4x5', dpi=160, \
             ptitle += ' concentration'
         ptitle += ' ({})'.format( units )
 
-        fig  = plt.figure(figsize=(22, 14), dpi=dpi, facecolor='w', edgecolor='k')
+        fig  = plt.figure(figsize=(22, 14), dpi=dpi, facecolor='w', edgecolor='w')
 
         # set cb ranges for whiole data period
         fixcb  = [( i.min(), i.max() ) for i in [cbarr]][0]
@@ -1936,7 +1936,7 @@ def plot_specs_zonal_change_monthly2pdf( Vars, res='4x5', dpi=160, \
             ptitle += ' zonal concentration'
         ptitle += ' ({})'.format( units )
 
-        fig  = plt.figure(figsize=(22, 14), dpi=dpi, facecolor='w', edgecolor='k')
+        fig  = plt.figure(figsize=(22, 14), dpi=dpi, facecolor='w', edgecolor='w')
 
         cbVars = Vars[n,:,:,:,:].copy()*scale
 
@@ -2081,7 +2081,7 @@ def plot_specs_poles_change_monthly2pdf(  specs=None,\
  
             # create new figure            
             fig  = plt.figure(figsize=(22, 14), dpi=dpi, 
-                facecolor='w', edgecolor='k')
+                facecolor='w', edgecolor='w')
 
             # select north or south polar areas specified to define cb
             if perspective == 'north':
@@ -2295,7 +2295,7 @@ def get_seasonal_plot( arr, fixcb=None, fig=None, f_size=15, \
     # create figure
     if isinstance( fig, type(None ) ):
         fig  = plt.figure(figsize=(22, 14), dpi=dpi, facecolor='w', \
-                edgecolor='k')     
+                edgecolor='w')     
 
     # fix color mapping 
     if isinstance( fixcb, type(None ) ):
@@ -2401,7 +2401,7 @@ def plot_specs_surface_change_annual2pdf( arr, res='4x5', dpi=160, \
             ptitle += ' concentration'
         ptitle += ' ({})'.format( units )
 
-        fig  = plt.figure(figsize=(22, 14), dpi=dpi, facecolor='w', edgecolor='k')
+        fig  = plt.figure(figsize=(22, 14), dpi=dpi, facecolor='w', edgecolor='w')
 
         # set cb ranges for whiole data period
         fixcb  = [( i.min(), i.max() ) for i in [cbarr]][0]
@@ -2485,7 +2485,7 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
             ptitle += ' zonal concentration'
         ptitle += ' ({})'.format( units )
 
-        fig  = plt.figure(figsize=(22, 14), dpi=dpi, facecolor='w', edgecolor='k')
+        fig  = plt.figure(figsize=(22, 14), dpi=dpi, facecolor='w', edgecolor='w')
 
         cbVars = Vars[n,:,:,:,:].mean(axis=-1).copy()*scale
 
@@ -2647,7 +2647,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     # setup fig if not provided
     if isinstance( fig, type(None) ):
         fig = plt.figure(figsize=(15, 10), dpi=dpi, facecolor='w', \
-                                        edgecolor='k') 
+                                        edgecolor='w') 
     # setup fig if not provided
     if not isinstance( ax, type(None) ):
         # temporary remove as mpl widget has a bug
@@ -2780,7 +2780,7 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
     # Create figure if not provided
     if isinstance( fig, type(None) ):
         fig = plt.figure(figsize=(15, 10), dpi=dpi, 
-                    facecolor='w', edgecolor='k') 
+                    facecolor='w', edgecolor='w') 
 
     # if just plotting over the ocean, remove white space
     if region == 'Oceanic':
@@ -3004,7 +3004,7 @@ def plt_4Darray_surface_by_month( arr, res='4x5', dpi=160, \
     # Setup local variables + figure
 #    left=0.015; right=0.9; bottom=0.05; top=0.95; hspace=0.225; wspace=-0.01
     left=0.015; right=0.87; bottom=0.05; top=0.95; hspace=0.225; wspace=-0.01
-    fig  = plt.figure(figsize=(14, 10), dpi=dpi, facecolor='w', edgecolor='k')
+    fig  = plt.figure(figsize=(14, 10), dpi=dpi, facecolor='w', edgecolor='w')
 
     # Get datetime
     if isinstance( dlist, type(None) ):
@@ -3017,7 +3017,7 @@ def plt_4Darray_surface_by_month( arr, res='4x5', dpi=160, \
     # Create figure if not provided
     if isinstance( fig, type(None) ):
         fig = plt.figure(figsize=(15, 10), dpi=dpi, 
-                    facecolor='w', edgecolor='k') 
+                    facecolor='w', edgecolor='w') 
 
     # Set readable levels for cb, then use these to dictate cmap
     lvls = get_human_readable_gradations( vmax=fixcb[1],  \
@@ -3108,7 +3108,7 @@ def plt_4Darray_zonal_by_month( arr, res='4x5', dpi=160, \
 
     # Setup local variables + figure
     left=0.075; right=0.875; bottom=0.085; top=0.955; hspace=0.325; wspace=0.1
-    fig  = plt.figure(figsize=(7, 7), dpi=dpi, facecolor='w', edgecolor='k')
+    fig  = plt.figure(figsize=(7, 7), dpi=dpi, facecolor='w', edgecolor='w')
 
     # Get datetime
     if isinstance( dlist, type(None) ):
@@ -3121,7 +3121,7 @@ def plt_4Darray_zonal_by_month( arr, res='4x5', dpi=160, \
     # Create figure if not provided
     if isinstance( fig, type(None) ):
         fig = plt.figure(figsize=(15, 10), dpi=dpi, 
-                    facecolor='w', edgecolor='k') 
+                    facecolor='w', edgecolor='w') 
 
     # Set readable levels for cb, then use these to dictate cmap
     lvls = get_human_readable_gradations( vmax=fixcb[1],  \
@@ -3228,7 +3228,7 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
     # --- Fig and ax provided? Otherwise create these... 
     if isinstance( fig, type(None) ):
         fig = plt.figure( figsize=(8,8), dpi=dpi, facecolor='w', \
-            edgecolor='k')
+            edgecolor='w')
         logging.info('Creating figure' )
 
     if isinstance( ax, type(None) ):
