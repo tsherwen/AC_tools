@@ -531,8 +531,8 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         # BrCl from HOBr or hv
         'JT02s' : 1.0, 'JT08':1.0, 
         # v11 KPP Tags
-        'T149': 3.0, 'T127': 0.680+1.360, 'T071':0.71, 
-        'T198':0.150, 'T199':0.150, 'T200':0.150,
+        'T149': 3.0, 'T127': 0.680+1.360, 'T126': 0.440+0.560, 'T071':3.0, 
+        'T198':0.150, 'T199':0.150, 'T200':0.150, 'T082': 1.0
         }
     elif Cl:
         d= {
@@ -551,8 +551,11 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         # N2O5+SSA=>ClNO2
         'LR114': 1.0,
         # v11 KPP Tags
-        'T174' : 3.0, 'T173': 2.0, 'T172': 1.0, 'T171': 1.0, 'T143':1.0, 
-        'T155' : 1.0, 'T135' : 1.0, 'T198':0.850, 'T199':0.850, 'T200':0.850,
+        'T174' : 3.0, 'T203': 3.0, 
+        'T173': 2.0, 'T201' : 2.0, 'T202':2.0,
+        'T172': 1.0, 'T171': 1.0, 'T143':1.0, 
+        'T155' : 1.0, 'T135' : 1.0, 'T212': 1.0, 
+        'T198':0.850, 'T199':0.850, 'T200':0.850,
         }
     else:  # ( I=True is the default... )
         d = {
@@ -916,9 +919,12 @@ def constants(input_x, rtn_dict=False ):
     -----
     """
     con_dict ={
-    'RMM_air' : ( .78*(2.*14.)+.22*(2.*16.) )  ,
-    'AVG' : 6.0221413E23, 
-    'mol2DU': 2.69E20
+    # Relative atomic mass of air (Just considering N2+O2)
+    'RMM_air' : ( .78*(2.*14.)+.22*(2.*16.) ),
+    # Avogadro constant (Mol^-1)
+    'AVG' : 6.0221413E23,
+    # Dobson unit - (molecules per meter squared)
+    'mol2DU': 2.69E20,
     }
     if rtn_dict:
         return con_dict

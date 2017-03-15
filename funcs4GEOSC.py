@@ -3756,7 +3756,6 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
     Convert molec/cm3/s to g/grid box. This is used for converting prod/loss 
     output units.
 
-
     Parameters
     -------
     s_area (array): Surface array (array of values in metres)
@@ -3771,7 +3770,6 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
     month_eq (boolean): convert units to monthly equiivlents.
     limit_Prod_loss_dim_to (int): level to cut off arrays at 
      (38 in <v10, 59 in >=v11-1)
-    
     
     Returns
     -------
@@ -3802,7 +3800,7 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
     # --- loop spec ars
     for n, arr in enumerate( ars ):
         # convert from molec/cm3/s to  molec/s
-        # limit arrays to the region of the atompshere in which prod/loss is 
+        # limit arrays to the region of the atmosphere in which prod/loss is 
         # calculated (38 in <v10, 59 in >=v11-1)
         arr  = arr *vol[...,:limit_Prod_loss_dim_to,:]
         # conver to to molec/s = > Gg/s
@@ -3937,6 +3935,181 @@ def get_2D_arr_weighted_by_X( arr, spec=None, res='4x5', print_values=False, \
     return area_weighted_avg
 
 
+# ----
+# X.XX - Get shared variables as a dictionary object. 
+# ----
+def get_default_variable_dict( wd=None, 
+        full_vertical_grid=False, limit_vertical_dim=False ):
+    """
+    Get a dictionary of default analysis variables.
+
+    Parameters
+    ----
+    full_vertical_grid (boolean): usings all levels of grid (e.g. 72 or 47)
+
+    Returns
+    ----
+    (dict)
+    """
+    # initialise dictionary
+    Var_rc = {}
+    # Get command line arguments as inputs?
+    try:
+        Var_rc['wd'] = sys.argv[1]
+    except:
+        wd = '/work/home/ts551/data/all_model_simulations/iodine_runs/'
+        wd += 'iGEOSChem_5.0/run.Iodine.v1.0.red_timestep.XII.1month.tagged/'
+        Var_rc['wd'] = wd
+    try:
+        Var_rc['filename'] = sys.argv[2]
+    except:
+        Var_rc['filename'] = 'ctm.nc'
+    # debug settings? (default = No )
+    Var_rc['debug'] = False
+    Var_rc['verbose'] = False
+    
+    # --- Analysis settings?
+    # consider just troposphere or consider full atmosphere?
+    if full_vertical_grid:
+        Var_rc['trop_limit'] = False # limit arrays to 38 levels... 
+        Var_rc['rm_strat'] = False # This is for convert_molec_cm3_s_2_g_X_s
+        Var_rc['full_vertical_grid'] = full_vertical_grid # for get_dims4res    
+        Var_rc['limit_Prod_loss_dim_to'] = 59 # limit of levels for chemistry
+        Var_rc['limit_vertical_dim'] = limit_vertical_dim # apply dim. limiting?
+    else:
+        Var_rc['trop_limit'] = True # limit arrays to 38 levels... 
+        Var_rc['rm_strat'] = True # This is for convert_molec_cm3_s_2_g_X_s
+        Var_rc['full_vertical_grid'] = full_vertical_grid # for get_dims4res
+        Var_rc['limit_Prod_loss_dim_to'] = 38 # limit of levels for chemistry
+        if Var_rc['trop_limit']:
+            Var_rc['limit_vertical_dim'] = True
+        else:
+            Var_rc['limit_vertical_dim'] = False
+
+    return Var_rc
+
+# ----
+# X.XX - Get shared data variables as a dictionary object. 
+# ----
+def get_shared_data_as_dict( Var_rc=None, var_list=[], \
+        full_vertical_grid=False ):
+    """
+    Returns (requested) common vairables as a dictionary object. Give requested
+    variables as a list of strings ("var_list").
+    
+    Parameters
+    ----
+    Var_rc (dict): dictionary containing variables for working directory ('wd')
+    var_list (list): list of names (strings) of variables to extract
+    full_vertical_grid (boolean): usings all levels of grid (e.g. 72 or 47)
+
+    Returns
+    ----
+    (dict)
+    """
+    # Use default variable dictionary if non given 
+    if isinstance(Var_rc, type(None)):
+        Var_rc = get_default_variable_dict(full_vertical_grid=full_vertical_grid)
+
+    # Setup dictionary.
+    Data_rc = {}
+    # Extract basic variables by default
+    # Resolution?
+    Data_rc['res'] = get_gc_res( wd=Var_rc['wd'] )    
+    # Version?
+    iGC_ver, GC_version = iGEOSChem_ver( Var_rc['wd'], \
+        also_return_GC_version=True )    
+    Data_rc['ver'] = iGC_ver
+    Data_rc['GC_version'] = GC_version
+
+    # Add a reference 4x5 dir that has all generic output (e.g. N/AIR.)
+    if 'generic_4x5_wd' in var_list:
+        generic_4x5_wd = '/work/home/ts551/data/all_model_simulations/iodine_runs/'
+        generic_4x5_wd += 'iGEOSChem_3.0_v10/run/'
+        Data_rc['generic_4x5_wd'] = generic_4x5_wd
+
+    # Months?
+    if 'months' in var_list:
+        Data_rc['months'] = get_gc_months( wd=Var_rc['wd'] )
+    # Years?
+    if 'years' in var_list:
+        Data_rc['years'] = get_gc_months( wd=Var_rc['wd'] )    
+    # Datetime?
+    if 'datetimes' in var_list:
+        Data_rc['datetimes'] = get_gc_datetime( wd=Var_rc['wd'] )   
+    # Model output frequency?
+    if 'output_freq' in var_list:
+        Data_rc['output_freq'] = get_frequency_of_model_output( \
+            wd=Var_rc['wd'], filename=Var_rc['filename'], 
+            datetimes=Data_rc['datetimes'], \
+            months=Data_rc['months'], years=Data_rc['years'] )  
+    # Model output vertical grid - write this!
+    if 'output_vertical_grid' in var_list:
+        Data_rc['output_vertical_grid'] = check_output_vertical_grid( \
+            wd=Var_rc['wd'])
+    # Surface area (m^2)
+    if 's_area' in var_list:
+        Data_rc['s_area'] = get_surface_area( Data_rc['res'] )    
+    # Volume ( cm3? )
+    if 'vol' in var_list:
+        Data_rc['vol'] = get_volume_np( wd=Var_rc['wd'], \
+            trop_limit=Var_rc['trop_limit'],\
+            s_area=Data_rc['s_area'][...,None], res=Data_rc['res'] )    
+    # Get time in troposphere diagnostic (fraction)
+    if 't_ps' in var_list:
+        Data_rc['t_ps'] = get_GC_output( Var_rc['wd'], \
+            vars=['TIME_TPS__TIMETROP'], trop_limit=Var_rc['trop_limit'] ) 
+    # Get N in air [molec air/m3]
+    if 'n_air' in var_list: 
+        # variable name has just changed in v11
+        if 'v11' in Data_rc['GC_version']:
+            var_ = 'BXHGHT_S__AIRNUMDE'
+        else:
+            var_ = 'BXHGHT_S__N(AIR)'
+        Data_rc['n_air'] = get_GC_output( Var_rc['wd'], dtype=np.float64, 
+            vars=[var_], trop_limit=Var_rc['trop_limit'] )  
+        # Kludge! - restrict length of array to main wd.
+        Data_rc['n_air'] = Data_rc['n_air'][...,:Data_rc['vol'].shape[-1]]
+
+    # Calculate molecules per grid box - [molec air] 
+    if 'molecs' in var_list: 
+        # (Note: volumne ('vol') is converted from [m^3] to [cm^3] concurrently )
+        Data_rc['molecs'] = Data_rc['n_air'] * Data_rc['vol']/1E6
+        # limit shape of array to prod/loss size (59 or 38)
+        # Only if troposphere only run (with trop_limit=True) or 
+        # limit_vertical_dim=True
+        if Var_rc['limit_vertical_dim'] or Var_rc['trop_limit']:
+            Data_rc['molecs'] = Data_rc['molecs'][...,:Var_rc['limit_Prod_loss_dim_to'],:]
+    # Altitude?
+    if 'alt' in var_list:     
+        # Get altitude
+        Data_rc['alt'] = gchemgrid('c_km_geos5')
+        if Var_rc['trop_limit']:    
+            Data_rc['alt']  = Data_rc['alt'][:Var_rc['limit_Prod_loss_dim_to']]
+        elif (Data_rc['output_vertical_grid'] == 'Full_72') and \
+            (Var_rc['limit_vertical_dim']):
+            Data_rc['alt'] = Data_rc['alt'][:Var_rc['limit_Prod_loss_dim_to']]
+    # Latitude (lat) and longitude (lon)?
+    if ('lon' in var_list) or ('lat' in var_list):
+        lon, lat, NIU = get_latlonalt4res( res=Data_rc['res'], wd=Var_rc['wd'], \
+            full_vertical_grid=Var_rc['full_vertical_grid'] )    
+        Data_rc['lon'] = lon
+        Data_rc['lat'] = lat
+    
+    return Data_rc
+
+# ----
+# X.XX -
+# ----
+def check_output_vertical_grid(wd=None):
+    """
+    Return whether output contains full or reduced grid
+    """
+#    return 'Reduced_47'
+    # TODO - Kludge for now. 
+    return 'Full_72'
+
+
 # ------------------ Section X.X -------------------------------------------
 # -------------- Time Processing
 #
@@ -3984,7 +4157,7 @@ def get_KPP_tagged_rxns( fam='LOx', filename='gckpp_Monitor.F90',
 # X.XX - Get stoichiometry of each tagged reaction in KPP file
 # ---- 
 def get_stioch_for_family_reactions( fam='LOx', filename='gckpp_Monitor.F90', 
-        Mechanism='Halogens', wd=None ):
+        Mechanism='Halogens', RR_dict=None, wd=None ):
     """
     Get the stiochmetery for each reaction in family from compiled KPP file 
 
@@ -4000,8 +4173,9 @@ def get_stioch_for_family_reactions( fam='LOx', filename='gckpp_Monitor.F90',
     (dict)
     """
     # Get dictionary of reactions in Mechanism
-    RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename, \
-        wd=wd)    
+    if isinstance( RR_dict, type(None)):
+        RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename, \
+            wd=wd)    
     
     # assume unity if no coeffeicent
     unity = 1.0
