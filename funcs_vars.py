@@ -556,6 +556,7 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         'T172': 1.0, 'T171': 1.0, 'T143':1.0, 
         'T155' : 1.0, 'T135' : 1.0, 'T212': 1.0, 
         'T198':0.850, 'T199':0.850, 'T200':0.850,
+        'PT213': 1.0, 'PT214':1.0, 
         }
     else:  # ( I=True is the default... )
         d = {

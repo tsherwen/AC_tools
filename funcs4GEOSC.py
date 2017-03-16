@@ -1772,8 +1772,10 @@ def get_frequency_of_model_output( wd=None, months=None, years=None,
         if diffs==daysinmonth[:-1]:
             return 'Monthly'
         else:
-            print 'WARNING - Unequal timestep in output!'
-            # enter to continue
+            err_msg= 'WARNING - Unequal timestep in output!'
+            print err_msg
+            logging.info(err_msg)                    
+            # enter to continue?
             sys.exit()
     else:
         if set_of_diffs[0] == 1.:
@@ -2158,8 +2160,7 @@ def loc_is_water_grid_box( lat, lon, res='4x5' ):
 # ----
 def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
         years=None, res='4x5', vol=None, trop_limit=True, Iodine=False, \
-        use_method_assuming_monthly_output=True, 
-        debug=False ):
+        output_freq='Monthly', debug=False ):
     """ 
     Get array of dry deposition values for a given species
 
@@ -2174,8 +2175,7 @@ def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
     spec (str): species/tracer/variable name 
     Iodine (boolean): Return in terms of unit iodine mass
     debug (boolean): legacy debug option, replaced by python logging    
-    use_method_assuming_monthly_output (boolean): scale based on number of days 
-        in a month. This will only work for monthly output.
+    output_freq (str): output step of model e.g.  monthly, daily, weekly 
 
     Returns
     -------
@@ -2194,18 +2194,18 @@ def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
 
     # Extract dry dep flux in  [molec/cm2/s]
     if pygchem.__version__ == '0.02':
-        df = get_gc_data_np( ctm_f, spec=spec+'df', category='DRYD-FLX', \
+        arr = get_gc_data_np( ctm_f, spec=spec+'df', category='DRYD-FLX', \
             debug=debug) 
     else:
-        df = get_GC_output( wd, category='DRYD-FLX', species=spec+'df' )
-    logging.debug( 'df (len=={}) descrp: {}'.format( len(df), \
-        *[ str(ii) for ii in [(i.shape, i.sum(), i.mean()) for i in [df] ]]) )
+        arr = get_GC_output( wd, category='DRYD-FLX', species=spec+'df' )
+    logging.debug( 'arr (len=={}) descrp: {}'.format( len(arr), \
+        *[ str(ii) for ii in [(i.shape, i.sum(), i.mean()) for i in [arr]]]))
 
     # Convert to Gg "Ox" (Gg X /s)
-    df = molec_cm2_s_2_Gg_Ox_np( df, spec, s_area=s_area, Iodine=Iodine, \
+    arr = molec_cm2_s_2_Gg_Ox_np( arr, spec, s_area=s_area, Iodine=Iodine, \
         res=res, debug=debug ) 
-    logging.debug( 'df (len=={}) descrp: {}'.format( len(df), \
-        *[ str(ii) for ii in [(i.shape, i.sum(), i.mean()) for i in [df] ]]) )
+    logging.debug( 'arr (len=={}) descrp: {}'.format( len(arr), \
+        *[ str(ii) for ii in [(i.shape, i.sum(), i.mean()) for i in [arr]]]))
         
     if isinstance(months, type(None)):
         months = get_gc_months( ctm_f=ctm_f, wd=wd )
@@ -2213,14 +2213,11 @@ def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
         years = get_gc_years( ctm_f=ctm_f, wd=wd, set_=False )
 
     # Adjust time dimension (to per month)
-    if use_method_assuming_monthly_output:
+    if output_freq == 'Monthly':
         day_adjust = d_adjust( months, years)
-        df = np.multiply(df, day_adjust)
-    else:
-        # manually convert Gg/s to year
-        df = df*60*60*24*365 
+        arr = np.multiply(arr, day_adjust)
 
-    return df
+    return arr
 
 
 # ----
@@ -2410,21 +2407,22 @@ def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
 def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
         scale=1E9, s_area=None, res='4x5', wd=None, specs=None, \
         Iodine=False, all_wdep=False, sep_rxn=False, ref_spec=None, \
-        ver='1.6', trop_limit=True, debug=False):
+        ver='1.6', trop_limit=True, output_freq='Monthly', debug=False):
     """ 
     Extract wet deposition for given species in terms of X Gg of ref_spec. 
 
     Parameters
     -------
-     - ctm_f: ctm.bpch file object (vestigle from PyGChem <3.0)
-     - ver: GEOSChem version with halogens (default = 3.0), ignore if not using halogen code
-     - s_area: Surface array (array of values in metres)
-     - vol: volumne of grid boxes
-     - trop_limit: limit output to "chemical troposphere" (level 38 )
-     - return in terms of mass of iodine
-     - scale: scaleing to use (e.g. 1E9 = Gg )
-     - sep_rxn: return list of arrays by "reaction"/process
-     - res: resolution of the model input (e.g. 4x5, 2x2.5 )  
+    ctm_f: ctm.bpch file object (vestigle from PyGChem <3.0)
+    ver (str): GEOSChem version with halogens (default = 3.0), ignore if not using halogen code
+    s_area (array): 4D Surface area array (m2)
+    vol (array): volumne of grid boxes
+    trop_limit (boolean): limit output to "chemical troposphere" (level 38 )
+    Iodine (boolean): return in terms of mass of iodine
+    scale (int): scaleing to use (e.g. 1E9 = Gg )
+    sep_rxn (boolean): return list of arrays by "reaction"/process
+    res (str): resolution of the model input (e.g. 4x5, 2x2.5 )  
+    output_freq (str): e.g. monthly, daily, weekly... 
      
     Returns
     -------
@@ -2510,8 +2508,9 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
             dep_w[n] = dep_w[n]*spec_stoich( spec, ref_spec=ref_spec) 
 
     # Adjust to monthly values...
-    m_adjust = d_adjust( months, years) # => Gg / month 
-    dep_w = [m_adjust *i for i in dep_w ]
+    if output_freq=='Monthly':
+        m_adjust = d_adjust( months, years) # => Gg / month 
+        dep_w = [m_adjust *i for i in dep_w ]
 
     # List wet dep rxns, concat. and sum of rxns ( and convert to Gg )
     if sep_rxn: 
@@ -4050,7 +4049,7 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
     # Surface area (m^2)
     if 's_area' in var_list:
         Data_rc['s_area'] = get_surface_area( Data_rc['res'] )    
-    # Volume ( cm3? )
+    # Volume (cm^3)
     if 'vol' in var_list:
         Data_rc['vol'] = get_volume_np( wd=Var_rc['wd'], \
             trop_limit=Var_rc['trop_limit'],\
@@ -4108,6 +4107,65 @@ def check_output_vertical_grid(wd=None):
 #    return 'Reduced_47'
     # TODO - Kludge for now. 
     return 'Full_72'
+
+# ----
+# X.XX -
+# ----
+def process_to_X_per_s( spec=None, ars=None, tags=None, ref_spec=None,  \
+        Var_rc=None, Data_rc=None, summate_routes=True, summate_altitudes=True ):
+    """
+    Process arrays of molec/cm3/s to g(ref_spec)/s.
+    
+    Parameters
+    ----
+    Var_rc (dict): dictionary containing variables for working directory ('wd')
+    var_list (list): list of names (strings) of variables to extract
+    summate_altitudes (boolean): sum over altitude dimension
+    summate_routes (boolean): sum all "routes" (all of arrays provided)
+    Data_rc (dict): Data dictionary object (contains details on model data)
+    Var_rc (dict): Variable dictionary object (contains analysis variabl deatail)
+
+    Returns
+    ----
+    (array) or (list) of array (if summate_routes==True)
+    """
+    # Covert units based on whether model output is monthly 
+    if Data_rc['output_freq']=='Monthly':
+        month_eq=True # use conversion in convert_molec_cm3_s_2_g_X_s
+    else:
+        month_eq=False
+
+    # Convert to g X/s
+    ars = convert_molec_cm3_s_2_g_X_s( ars=ars, ref_spec=ref_spec, \
+        # shared settings... 
+        months=Data_rc['months'], years=Data_rc['years'], 
+        vol=Data_rc['vol'], t_ps=Data_rc['t_ps'], \
+        trop_limit=Var_rc['trop_limit'], rm_strat=Var_rc['rm_strat'], 
+        # ... and function specific settings... 
+        month_eq=month_eq, 
+#        month_eq=False, 
+        conbine_ars=False )
+    # Adjust for # of X in tag    
+    # is the broadcasting right here? should the array just be overwritten?
+    ars = [ ars[n]* spec_stoich(tag, ref_spec=ref_spec)  \
+        for n, tag in enumerate( tags ) ]
+
+#    print [ i.shape for i in ars ]
+
+    # Summate altitudes
+    if summate_altitudes:
+        ars = [ i.sum(axis=2) for i in ars ]
+
+    # Summate routes?
+    if summate_routes:
+        # add buffer dimension for broadcasting. 
+        ars = [ i[...,None] for i in  ars ]
+        # concatenate and sum
+        arr = np.ma.concatenate( ars, axis=-1 ).sum( axis=-1 ) 
+        # return... 
+        return arr
+    else:
+        return ars
 
 
 # ------------------ Section X.X -------------------------------------------
