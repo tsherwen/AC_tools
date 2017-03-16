@@ -460,8 +460,11 @@ def iGEOSChem_ver(wd, also_return_GC_version=False, verbose=True, debug=False):
     try:
         iGC_ver = df['Versions'][ df['Run Version'] ][-1:].values[0]
     except IndexError:
-        print '(i)GEOS-Chem version number not found in working dir. path'
-        sys.exit()
+        err_msq='WARNING (i) GEOS-Chem ver. number not found in working dir. path'
+        print '!'*15, err_msq, '!'*15
+        logging.debug(err_msq)
+        iGC_ver='NOT FOUND'
+#        sys.exit()
 
     if also_return_GC_version:
         # list GEOS-Chem versions (written with dashes and underscores)
