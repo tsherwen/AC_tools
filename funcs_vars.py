@@ -594,7 +594,15 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
     # IONO2
     'LR42': 1.0, 'LR43':1.0, 'LR35': 1.0, \
     # IONO    
-    'LR46': 1.0, 'LR47': 1.0, 'LR39': 1.0
+    'LR46': 1.0, 'LR47': 1.0, 'LR39': 1.0, 
+    # --- KPP tags
+    # Iy cycling sinks... 
+    'T217': 1.0, 'T216': 1.0, 'T198': 1.0, 'T199': 1.0, 'T196': 1.0,  
+    'T183': 1.0, 'T195': 1.0, 'T184': 1.0,  'T215': 1.0, 'T197': 1.0, 
+    # I2Oy
+    'T190': 2.0, 'T193': 2.0, 'T187': 2.0,
+    'T186': 2.0, 'T189': 2.0, 'T192': 2.0,
+    'T185': 2.0, 'T188': 2.0, 'T191': 2.0,
         }
 
     # Kludge for testing. Allow values to equal 1.0 if not defined. 

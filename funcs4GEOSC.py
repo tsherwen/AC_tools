@@ -1791,11 +1791,11 @@ def get_frequency_of_model_output( wd=None, months=None, years=None,
             # Get number of days in month
             daysinmonth = [monthrange(years[n],i)[-1] \
                 for n,i in enumerate(months)]          
-            if set_of_diffs== daysinmonth[:-1]:
+            if set_of_diffs==list(set(daysinmonth[:-1])):
                 return 'Monthly'
             else:
                 print 'Cannot work out output frequency for step diff: ', \
-                    set_of_diffs
+                    set_of_diffs, daysinmonth, years, months
                 sys.exit()
     
 
@@ -4012,7 +4012,7 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
 
     # Setup dictionary.
     Data_rc = {}
-    # Extract basic variables by default
+    # --- Extract basic variables by default
     # Resolution?
     Data_rc['res'] = get_gc_res( wd=Var_rc['wd'] )    
     # Version?
@@ -4021,6 +4021,7 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
     Data_rc['ver'] = iGC_ver
     Data_rc['GC_version'] = GC_version
 
+    # ---  Now add specifically requested variables? 
     # Add a reference 4x5 dir that has all generic output (e.g. N/AIR.)
     if 'generic_4x5_wd' in var_list:
         generic_4x5_wd = '/work/home/ts551/data/all_model_simulations/iodine_runs/'
@@ -4032,7 +4033,7 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
         Data_rc['months'] = get_gc_months( wd=Var_rc['wd'] )
     # Years?
     if 'years' in var_list:
-        Data_rc['years'] = get_gc_months( wd=Var_rc['wd'] )    
+        Data_rc['years'] = get_gc_years( wd=Var_rc['wd'] )    
     # Datetime?
     if 'datetimes' in var_list:
         Data_rc['datetimes'] = get_gc_datetime( wd=Var_rc['wd'] )   
@@ -4335,7 +4336,8 @@ def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90',
         wd += '/KPP/{}/'.format(Mechanism)
 
     MECH_start_str = 'INTEGER, DIMENSION(1) :: MONITOR'
-    rxn_line_ind = '! index'
+#    rxn_line_ind = '! index'
+    strs_in_non_rxn_lines = 'N_NAMES_', 'CHARACTER', 'DIMENSION', 'PARAMETER'
     RR_dict = {}
     with open( wd+filename, 'r') as file:
         
@@ -4354,7 +4356,9 @@ def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90',
                     break
 
                 # check if the line contains a reaction str        
-                if rxn_line_ind in line:
+#                if (rxn_line_ind in line) or start_extracting_mech_line:
+                # check if line contrains strings not in reaction lines
+                if not any([(i in line) for i in strs_in_non_rxn_lines]):
                     rxn_str = line[6:106]                    
                     # RR??? dummy tags only available on v11-01 patches!
                     if GC_version == 'v11-01':
@@ -4363,9 +4367,25 @@ def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90',
                         RR_dict[RR_dummy] = rxn_str
                     # Use just reaction number for other versions... 
                     else:
-                        RR_num = int( line[118:].strip() )
-                        # add to dictionary            
-                        RR_dict[RR_num] = rxn_str
+                        try:
+                            RR_num = int( line[118:].strip() )
+                            # add to dictionary            
+                            RR_dict[RR_num] = rxn_str
+                        except ValueError:
+                            # add gotcha for lines printed without an index in 
+                            # KPP
+                            # e.g. final line is missing index in KPP output.
+                            # CHARACTER(LEN=???), PARAMETER, DIMENSION(??) :: EQN_NAMES_?? = (/ &
+                            #  ' ... ', & ! index ???
+                            #  ' ... ' /)
+                            # (no index given for the final output. so assume
+                            # n+1)
+                            logging.debug('rxn # assumed as {} for {}'.format(\
+                                RR_num+1, rxn_str ) )
+                            # use the value of the line previous and add to 
+                            # dictionary
+                            RR_dict[RR_num+1] = rxn_str
+
 
     return RR_dict
 
@@ -4498,6 +4518,18 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
         tags=None, RR_hv_dict=None, RR_dict=None, debug=False  ):
     """
     Get Ox famiy of reaction tag using KPP reaction string.
+
+    Parameters
+    -------
+    rxns (list): lisst of reactions to use for 
+    fam (str): prod/loss family in KPP file (e.g. Ox loss or "LOx" )
+    wd (str): the working (code) directory to search for files in
+    Mechanism (str): name of mechanism (e.g. dir in KPP folder)
+    filename (str): name of KPP monitor file 
+    
+    Returns
+    -------
+    (None)
     """
     # Get dictionary of reactions in Mechanism
     if isinstance(RR_dict, type(None)):
@@ -4615,6 +4647,62 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
     tag_l = [ tags[i] for i in tagged_rxns ]
 
     return dict(zip(tag_l, fam_l ))
+
+
+# ----
+# X.XX - Assign family for tag based on reaction string
+# ----
+def get_tags_in_rxn_numbers( rxn_nums=[], RR_dict=None, \
+        filename='gckpp_Monitor.F90', Mechanism='Halogens', wd=None, \
+        debug=False):
+    """
+    Get tags in given list of reactions ()
+
+    Parameters
+    -------
+    rxns (list): lisst of reactions to use for 
+    Mechanism (str): name of mechanism (e.g. dir in KPP folder)
+    filename (str): name of KPP monitor file 
+    
+    Returns
+    -------
+    (None)
+
+    """
+    # Get dictionary of reactions in Mechanism
+    if isinstance( RR_dict, type(None)):
+        RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename, \
+            wd=wd)   
+
+    # loop dictionary of reactions and save those that contain tag
+    tagged_rxns = []
+    tags_for_rxns = []
+
+    # sub dict
+    sub_dict = dict( [ (i, RR_dict[i]) for i in rxn_nums ] )
+    print sub_dict
+    
+    for key_ in sub_dict.keys():
+        # Get reaction string 
+        rxn_str = RR_dict[key_]
+        # collection reactions with tag
+        tag_strs = [' + T', '> T' ]
+        # replace this with reg ex?
+        if debug:
+            print key_, rxn_str, any([i in rxn_str for i in tag_strs])
+        if any([i in rxn_str for i in tag_strs]):
+            # split reaction str by '+' (excluding reactants part)
+            product_str_list = rxn_str[18:].split('+')
+            # select tag(s)
+            tag_ = [ i for i in product_str_list if (' T' in i) ]
+            if len(tag_) > 1:
+                print 'WARNING - more than one tag for reaction? :', tag_ 
+                sys.exit()
+            else:
+                tags_for_rxns += [ tag_[0].strip() ]
+                tagged_rxns += [ key_ ]
+
+    return dict( zip(tagged_rxns, tags_for_rxns) )
 
 
 # ----
