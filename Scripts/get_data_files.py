@@ -1,4 +1,7 @@
-# Downlaod the example files from an external source
+"""
+Downlaod the example and reference (e.g. for land area) files from an 
+external source (currently apache server at York)
+"""
 
 import os
 from urllib2 import urlopen, HTTPError
@@ -12,11 +15,11 @@ if __name__=='__main__':
                        format=FORMAT)                                                  
       logging.getLogger().setLevel(logging.DEBUG)  
 
-
+# Location of files on York visible apache server (atmosviz1)
 data_dir = "../data"
 data_url = "http://atmosviz1.york.ac.uk/~bn506/data/AC_tools/"
 
-
+# List of files to fetch
 file_list = [
 "HEMCO_Diagnostics.nc",
 "ctm.nc",
@@ -34,7 +37,9 @@ file_list = [
 
 
 def main():
-
+    """
+    Driver to download data/reference files for AC_tools
+    """
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
@@ -59,34 +64,35 @@ def main():
                 download_file(new_filename, file_url)
 
             
-        
-        
 def download_file(new_filename, file_url):        
-
-        if not os.path.exists(os.path.dirname(new_filename)):
-            try:
-                os.makedirs(os.path.dirname(new_filename))
-            except:
-                logging.error("Could not create folder for {file}".format(file=new_filename))
-        
+    """
+    Download a file from a given URL
+    """
+    if not os.path.exists(os.path.dirname(new_filename)):
         try:
-            new_file = open(new_filename, 'wb')
-            logging.debug("downloading from {url}".format(url=file_url))
-            print "Downloading file. This might take some time."
-            file_data = urlopen( file_url ).read()
-            new_file.write( file_data )
-            print "Download complete."
-            logging.debug( new_filename+" downloaded.")
-            new_file.close()
-        except HTTPError, error_code:
-            if error_code.code==404:
-                logging.error("{The following was not found on the server:")
-                logging.error("{url}".format(url=file_url))
-            else:
-                logging.error("Failed to get {url} with HTTP error {error_code}"\
-                        .format(url=file_url, error_code=error_code))
+            os.makedirs(os.path.dirname(new_filename))
         except:
-            logging.error("Failed to download {url}".format(url=file_url))
+            logging.error("Could not create folder for {file}".format(file=new_filename))
+        
+    try:
+        new_file = open(new_filename, 'wb')
+        logging.debug("downloading from {url}".format(url=file_url))
+        print "Downloading file. This might take some time."
+        file_data = urlopen( file_url ).read()
+        new_file.write( file_data )
+        print "Download complete."
+        logging.debug( new_filename+" downloaded.")
+        new_file.close()
+    except HTTPError, error_code:
+        if error_code.code==404:
+            logging.error("{The following was not found on the server:")
+            logging.error("{url}".format(url=file_url))
+        else:
+            logging.error("Failed to get {url} with HTTP error {error_code}"\
+                    .format(url=file_url, error_code=error_code))
+    except:
+        logging.error("Failed to download {url}".format(url=file_url))
+
 
 #Run weather as script or as import
 main()

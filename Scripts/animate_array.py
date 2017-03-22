@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 from matplotlib import animation
 import matplotlib.pyplot as plt
 import time
@@ -5,15 +7,23 @@ import numpy as np
 import gc
 import datetime
 import AC_tools as AC
+"""
+Animate a NetCDF array to give a video of 2D (surface)
+"""
 
-debug=True
+# --- Settings for calling main as via scripting 
 specs = [ 'O3', 'NO2' , 'PAN', 'ALD2' ]
 pcent=True
 ClearFlo_unit=True
+# verbose and debug settings for script main call 
+debug=True
+
 
 def main( spec='NO' , pcent=False, fixcb=None, limit_by_dates=False, \
         extend='neither', ClearFlo_unit=False, verbose=True, debug=False ):
-    """ Extract data array from given location and make Animation """
+    """ 
+    Extract data array from given location and make Animation 
+    """
 
     # Get data in array ( time, lat, lon ) and dates (datetime.datetime )
     arr, dates = get_data_dates( spec=spec, limit_by_dates=limit_by_dates,
@@ -48,6 +58,7 @@ def main( spec='NO' , pcent=False, fixcb=None, limit_by_dates=False, \
     animate_array( arr, dates, specplt, lvls=lvls, cnorm=cnorm, \
         cmap=cmap, debug=debug, fig=fig, m=m, lon=lon, lat=lat, \
         spec=spec, fname=fname )
+
 
 def extract_data_dates( spec='O3', file=None, dates_variable='time', \
             fill_invalid_with_mean=True, limit_by_dates=False, \
@@ -114,6 +125,7 @@ def extract_data_dates( spec='O3', file=None, dates_variable='time', \
         
     return arr, dates
 
+
 def get_data_dates( spec='O3', dates_variable='time', \
             fill_invalid_with_mean=True, limit_by_dates=False, \
             sdate=datetime.datetime(2005, 01, 01), pcent=False, \
@@ -170,6 +182,7 @@ def get_data_dates( spec='O3', dates_variable='time', \
         arr = arr.filled()
 
     return arr, dates
+
 
 def get_run_info( spec='O3', res='0.25x0.3125', region='EU', fname='', \
             scale=1, pcent=False, ClearFlo_unit=False ):
@@ -235,6 +248,7 @@ def setup_figure_ascetics(  dates, f_size=10, title=None, cmap=None, \
 
     # Add text showing model time on figure 
     plt.figtext(x=0.5,y=0.875, s=dates[0], fontsize=f_size)
+
 
 def setup_plot2animate( arr, fig=None, ax=None, lat=None, lon=None, \
         units=None, contour=False, res=None, f_size=20, min_change=0.5,  \
@@ -302,6 +316,7 @@ def setup_plot2animate( arr, fig=None, ax=None, lat=None, lon=None, \
 
     return cmap, specplt, lvls, cnorm, m, fixcb, fixcb_buffered
 
+
 def animate_array( arr, dates, specplt, spec='O3', min_change=0.5, \
         period=1, adjust_window=3, alpha=0.85, npoints=50, wd='./', \
         lvls=None, cnorm=None, cmap=None, contour=False, \
@@ -349,6 +364,7 @@ def animate_array( arr, dates, specplt, spec='O3', min_change=0.5, \
 #    gc.collect()    
 #    plt.clf()
 #    del specplt
+
     
 if __name__ == "__main__":
     for spec in specs:

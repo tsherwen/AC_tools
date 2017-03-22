@@ -28,8 +28,17 @@ GRD_input_3D=True#False#True
 # Are there mulitple sites?
 Multiple_sites=False#True  # NOTE: this option is not currently working
 
+
 def main( wd, vars=None, npwd=None, GRD_input_3D=False, renumerated=False, \
           verbose=False, debug=False ):
+    """
+    Driver to process planeflight output from GEOS-Chem
+    
+    NOTES:
+    ---
+     - more details on GEOS-Chem's planeflight diagnostic:
+     (http://acmg.seas.harvard.edu/geos/doc/man/chapter_13.html) 
+    """
     # Get save directory and set output NC name
     import os
     if not isinstance(npwd, str ):
@@ -51,6 +60,8 @@ def main( wd, vars=None, npwd=None, GRD_input_3D=False, renumerated=False, \
     if GRD_input_3D:
         make_3D_NetCDF( ncfilename=out_nc, wd=wd, debug=debug )
 
+    # Process multiple sites to "subgrouped" NetCDF file
+    # NOTE: this is currently not functioning ... TODO
     if Multiple_sites:
         make_2D_subgroup_NetCDF( ncfilename=out_nc, wd=wd, debug=debug )
         
@@ -128,6 +139,7 @@ def mk_NetCDF_of_pf_files( files, ncfilename=None, debug=False ):
         npoint += dim_len
         del df 
         ncfile.close()        
+
             
 def var2type( var, debug=False ): 
     """ Insure that strings are i8 type, add additions to list
@@ -168,6 +180,7 @@ def get_3D_vars( vars ):
     known2D = [ 'Epoch', 'LON', 'LAT', 'YYYYMMDD', 'LOC', 'HHMM', 'POINT' ] 
     return [ i for i in vars if ( i not in known2D ) ]
 
+
 def get_site_description_vars( vars ):
     """ from a list of pf variables, get known site specific varables """ 
 
@@ -175,6 +188,7 @@ def get_site_description_vars( vars ):
     'Epoch', 'LON', 'LAT', 'YYYYMMDD', 'LOC', 'HHMM', 'POINT' , 'PRESS'\
     ] 
     return [ i for i in vars if ( i not in known2D ) ]
+
     
 def make_3D_NetCDF( ncfilename, wd, debug=False ):    
     """ Create NetCDF of 3D arrays for all variables in 2D NetCDF file
@@ -433,6 +447,7 @@ def make_2D_subgroup_NetCDF( ncfilename, wd, debug=False ):
         
     # Save out final NetCDF file
     ncfile.close()
+
 
 # Call to main with wd. 
 if __name__ == "__main__":

@@ -1,6 +1,18 @@
 #!/usr/bin/python  
 import sys
 import AC_tools as AC
+"""
+Example processing of SMVGEAR prod/loss tags for GEOS-Chem diganotic (ND65). A variety
+of functions for working with KPP/SMVGEAR tags are in AC_tools  
+(funcs4GESOSC/funcs_vars).
+
+NOTES
+---
+ - This code is for working with smvgear diagnostics. for KPP P/L see 
+ process_KPP_prod_loss_tags.py
+ - details on the GEOS-Chem diagnostic are in the GEOS-Chem manual 
+ (http://acmg.seas.harvard.edu/geos/doc/man/chapter_13.html)
+"""
 
 # --- Master debug setting
 DEBUG=True

@@ -4181,7 +4181,7 @@ def process_to_X_per_s( spec=None, ars=None, tags=None, ref_spec=None,  \
 # X.XX - Get reaction numbers 
 # ----
 def get_KPP_tagged_rxns( fam='LOx', filename='gckpp_Monitor.F90', 
-        Mechanism='Halogens', wd=None ):
+        Mechanism='Halogens', RR_dict=None, wd=None ):
     """
     Search compiled KPP mechanism for reactions with a certain tag ("fam") in
     their mechanism (e.g. LOx for loss of Ox)
@@ -4198,8 +4198,9 @@ def get_KPP_tagged_rxns( fam='LOx', filename='gckpp_Monitor.F90',
     (list)
     """
     # Get dictionary of reactions in Mechanism
-    RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename, \
-        wd=wd)
+    if isinstance( RR_dict, type(None)):
+        RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename,\
+            wd=wd)
 
     # loop dictionary of reactions and save those that contain tag
     tagged_RR_dummies = []
@@ -4433,7 +4434,7 @@ def prt_families4rxns_to_input_to_PROD_LOSS_globchem_spec(fam='LOx', \
         Mechanism='Halogens' ):
     """
     Takes a list of reaction numbers or (fam) and prints out prod/loss in 
-    a form that can be copy/pasted into KPP (gckpp.kpp)
+    a form that can be copy/pasted into KPP (globchem.spc)
 
     Parameters
     -------

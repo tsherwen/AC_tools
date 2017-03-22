@@ -1,14 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
-from netCDF4 import Dataset
-import numpy as np
-import pylab as pl
-import calendar
-# add extra's for copied function... 
-import os, sys, argparse
-import datetime
-
 """
 Split off 2D variable from file with other variables
 
@@ -17,15 +8,24 @@ Notes
  - based on software carpentary example. 
 http://damienirving.github.io/capstone-oceanography/03-data-provenance.html
 """
-#
-# --- verbose and debug settings for main
+# Modules to import
+from netCDF4 import Dataset
+import numpy as np
+import pylab as pl
+import calendar
+# add extra's for copied function... 
+import os, sys, argparse
+import datetime
+
+# --- verbose and debug settings for script main call 
 VERBOSE=False
 DEBUG=False
 
 
 def main( filename=None, VarName='OLSON', verbose=False, debug=False ):
-    """Run the program"""
-    
+    """
+    Driver to split off variables
+    """
     # Get the file name and location
     wd, fn = get_file_loc_and_name()
     # name output file if name not given
@@ -72,8 +72,9 @@ def get_file_loc_and_name( ):
     
 
 def copy_dimensions(infile, outfile):
-    """Copy the dimensions of the infile to the outfile"""
-        
+    """ 
+    Copy the dimensions of the infile to the outfile
+    """    
     for dimName, dimData in iter(infile.dimensions.items()):
         outfile.createDimension(dimName, len(dimData))
 
@@ -85,9 +86,8 @@ def copy_variables(infile, outfile, VarName='OLSON'):
     """
     # Get vars
     var_list = ['lon', 'lat', 'time']
-    # also consider LANDMAP value
+    # Also consider LANDMAP value
     var_list+=[VarName]
-
     # Now loop        
     for var_name in var_list:
         varin = infile.variables[var_name]
@@ -104,10 +104,9 @@ def copy_variables(infile, outfile, VarName='OLSON'):
 
 
 def read_data(ifile, VarName='OLSON'):
+    """ 
+    Read data from ifile corresponding to the VarName 
     """
-    Read data from ifile corresponding to the VarName
-    """
-
     input_DATA = Dataset(ifile)
     VarData = input_DATA.variables[VarName][:]
 
