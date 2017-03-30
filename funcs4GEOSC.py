@@ -3225,7 +3225,7 @@ def convert_tracers2PM25( ars=[], specs=[], region='Europe' ):
         # Other species
         }
     else:
-        print 'ERROR - Region not in list - please set availibe region!!'
+        print 'ERROR - Region not in list - please set available region!!'
         sys.exit()
         
     # RMM
@@ -3436,8 +3436,8 @@ def convert_spec_v_v_2_ugm3( spec=None, data=None ):
 # ----
 # X.XX - Extract timeseries data from *ts*bpch* files (e.g. hourly surface data)
 # ----
-def get_LOC_df_from_NetCDF(site='WEY', spec='O3', wd=None, res=None, \
-        filename='ts_ctm.nc'):
+def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None, \
+        filename='ts_ctm.nc', LON=None, LAT=None, rtn_units=False):
     """
     Extract *ts*bpch* (1D) data from file for a specific site 
 
@@ -3449,13 +3449,31 @@ def get_LOC_df_from_NetCDF(site='WEY', spec='O3', wd=None, res=None, \
     wd (str): the directory to search for file in
     stioch4fam (list): list of 
     filename (str): name of NetCDF file to extract from 
+    rtn_units (boolean): return units
+    LON (float): londitude in units of degrees East
+    LAT (float): londitude in units of degrees North
+    site (Str): name of a location (must be present in "get_loc" dictionary)
 
     Returns
     -------
     (pd.DataFrame object)
     """
-    # Get locations (from "get_loc" dictionary) and find GC grid indices
-    LON, LAT, ALT = get_loc( loc=site )
+    # find GC grid indices for LAT and LON
+    if any( [ isinstance(i, type(None)) for i in LON, LAT ] ):
+        # Get LON and LAT for site if provided (from "get_loc" dictionary) 
+        try:
+            LON, LAT, ALT = get_loc( loc=site )
+        except KeyError:
+            err_msg = 'SITE not defined in get_loc'
+            print err_msg
+            logging.info(err_msg)
+            sys.exit()
+        except:
+            err_msg = 'LON+LAT or SITE must be provided!!!'
+            print err_msg
+            logging.info(err_msg)
+            sys.exit()
+    # find index for grid box.
     LON_ind = get_gc_lon( LON, res=res, wd=wd, filename=filename )
     LAT_ind = get_gc_lat( LAT, res=res, wd=wd, filename=filename)    
 
@@ -3466,6 +3484,8 @@ def get_LOC_df_from_NetCDF(site='WEY', spec='O3', wd=None, res=None, \
         print 'data shape: ', data.shape
         # extract for location (array shape = TIME, LON, LAT)
         data = data[:, LON_ind, LAT_ind]
+        # also extract NetCDF units
+        units = rootgrp['IJ_AVG_S__'+spec].units
 
     # Get dates
     dates = get_gc_datetime( filename=filename, wd=wd )
@@ -3473,7 +3493,10 @@ def get_LOC_df_from_NetCDF(site='WEY', spec='O3', wd=None, res=None, \
     # Make dataframe and return
     df = pd.DataFrame( data, index=dates, columns=[spec] )
 
-    return df
+    if rtn_units:
+        return df, units
+    else:
+        return df
 
 # ----
 # X.XX - Convert v/v to molec/cm3
@@ -4014,9 +4037,9 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
     Data_rc = {}
     # --- Extract basic variables by default
     # Resolution?
-    Data_rc['res'] = get_gc_res( wd=Var_rc['wd'] )    
+    Data_rc['res'] = get_gc_res(wd=Var_rc['wd'], filename=Var_rc['filename'])
     # Version?
-    iGC_ver, GC_version = iGEOSChem_ver( Var_rc['wd'], \
+    iGC_ver, GC_version = iGEOSChem_ver(Var_rc['wd'], \
         also_return_GC_version=True )    
     Data_rc['ver'] = iGC_ver
     Data_rc['GC_version'] = GC_version
@@ -4030,13 +4053,16 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
 
     # Months?
     if 'months' in var_list:
-        Data_rc['months'] = get_gc_months( wd=Var_rc['wd'] )
+        Data_rc['months'] = get_gc_months(wd=Var_rc['wd'], \
+            filename=Var_rc['filename'])
     # Years?
     if 'years' in var_list:
-        Data_rc['years'] = get_gc_years( wd=Var_rc['wd'] )    
+        Data_rc['years'] = get_gc_years(wd=Var_rc['wd'], \
+            filename=Var_rc['filename'])
     # Datetime?
     if 'datetimes' in var_list:
-        Data_rc['datetimes'] = get_gc_datetime( wd=Var_rc['wd'] )   
+        Data_rc['datetimes'] = get_gc_datetime( wd=Var_rc['wd'], \
+            filename=Var_rc['filename'] )   
     # Model output frequency?
     if 'output_freq' in var_list:
         Data_rc['output_freq'] = get_frequency_of_model_output( \
@@ -4046,7 +4072,7 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
     # Model output vertical grid - write this!
     if 'output_vertical_grid' in var_list:
         Data_rc['output_vertical_grid'] = check_output_vertical_grid( \
-            wd=Var_rc['wd'])
+            wd=Var_rc['wd'], filename=Var_rc['filename'])
     # Surface area (m^2)
     if 's_area' in var_list:
         Data_rc['s_area'] = get_surface_area( Data_rc['res'] )    
@@ -4092,9 +4118,25 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
     # Latitude (lat) and longitude (lon)?
     if ('lon' in var_list) or ('lat' in var_list):
         lon, lat, NIU = get_latlonalt4res( res=Data_rc['res'], wd=Var_rc['wd'], \
-            full_vertical_grid=Var_rc['full_vertical_grid'] )    
+            full_vertical_grid=Var_rc['full_vertical_grid'],\
+            filename=Var_rc['filename']  )    
         Data_rc['lon'] = lon
         Data_rc['lat'] = lat
+
+    # Tracer names? (aka those included in IJ_AVG_S__ diagnostic )
+    if 'tracers' in var_list:
+        with Dataset( Var_rc['wd']+Var_rc['filename'], 'r' ) as d:    
+            tracers = [i for i in d.variables if ('IJ_AVG_S__' in i)]
+            tracers = [i.split('IJ_AVG_S__')[-1] for i in tracers ] 
+            Data_rc['tracers'] = tracers
+
+    # Check all requested variables were extract? or call stop... 
+    vars_not_extracted = [i for i in var_list if i not in Data_rc.keys()]
+    if len(vars_not_extracted) > 0:
+        err_msg = 'NOT ALL VARS extracted! ({})'.format(vars_not_extracted)
+        print err_msg
+        logging.info(err_msg)
+        sys.exit()
     
     return Data_rc
 
@@ -4167,6 +4209,42 @@ def process_to_X_per_s( spec=None, ars=None, tags=None, ref_spec=None,  \
         return arr
     else:
         return ars
+
+# ----
+# X.XX -
+# ----
+def concvert_df_VOC_C2v( df=None, verbose=True ):
+    """
+    Convert VOC species in dataframt from ppbC/pptC to ppbv/pptv
+
+    Parameters
+    -------
+    df (dataframe): pd dataframe containing timeseries data (tracers as columns)
+    verbose (boolean): print verbose output?
+
+    Returns
+    -------
+    (list)
+    
+    Notes
+    -------    
+    """
+    # List of GEOS-Chem pptC/ppbC species 
+    C_equiv_species = [ 
+    'ALK4', 'ISOP', 'ACET', 'MEK',  'ALD2', 'PRPE',  'C2H6', 'C3H8'
+    ]
+    
+    # Loop these and try and convert
+    for spec in C_equiv_species:
+        try:
+            # is it in the dataframe? if so convert to C units
+            df[spec] = df[spec] / spec_stoich( spec, C=True, \
+                ref_spec='C' )
+        except:
+            if verbose:
+                print 'Did not convert C/v to v/v for: ', spec
+    
+    return df
 
 
 # ------------------ Section X.X -------------------------------------------

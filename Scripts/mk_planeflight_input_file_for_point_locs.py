@@ -16,7 +16,7 @@ import AC_tools as AC
 wd = '/work/home/ts551/data/'#IO_obs'
 # file of locations?
 #pf_loc_dat_file ='ClBrI_ClNO2_PI_O3_PDRA.dat'
-pf_loc_dat_file ='Weyborne.dat'
+pf_loc_dat_file ='Weybourne.dat'
 #pf_loc_dat_file ='EU_GRID_0.25x0.3125.dat' 
 # Years output is required for?
 start_year, end_year = 2014,2016

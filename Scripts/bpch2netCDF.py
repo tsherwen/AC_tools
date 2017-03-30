@@ -180,7 +180,8 @@ def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None, \
        bpch_files = file_list
 
    # Open the bpch files
-   logging.debug( "The following bpch files were found:")
+   logging.debug( "The following bpch files were found (n={}):" \
+        .format(len(bpch_files)))
    logging.debug( str(bpch_files) )
    if verbose:
         print "Creating a netCDF from {} file(s).".format(len(bpch_files))+\

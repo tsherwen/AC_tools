@@ -4988,7 +4988,7 @@ def percentile(N, percent, key=lambda x:x):
 # X.XX - Coupler to select plot type 
 # --------
 def create_plot4case( fig, ax, dates, data, spec, f_size=20, lw=None, ls=None, \
-        loc=True, legend=True, units='', boxplot=False, lname='Weyborne', \
+        loc=True, legend=True, units='', boxplot=False, lname='Weybourne', \
         run_name='run', start_month=7, end_month=7, plot_type='daily', \
         case=None, l_dict=None, label=None, alt_text=None, color=None): 
     """ 
