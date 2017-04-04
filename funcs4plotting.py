@@ -2028,137 +2028,147 @@ def plot_specs_zonal_change_monthly2pdf( Vars, res='4x5', dpi=160, \
 # --------
 # X.XX - Change as 2D plot of surface ( for column or surface change )
 # --------
-def plot_specs_poles_change_monthly2pdf(  specs=None,\
-        arr=None, res='4x5', dpi=160, no_dstr=True, f_size=20, pcent=False,\
-        diff=False, dlist=None, savetitle='', units=None, \
-        perspective='north', format=None,\
-        extend='neither', boundinglat=50, debug=False):
-        """ 
-    Takes a 5D np.array ( species, lon, lat, alt, time ) and plots up the output by 
-    species  by month , and saves this as a mulitpage pdf
+def plot_specs_poles_change_monthly2pdf( specs=None, arr=None, res='4x5', \
+        dpi=160, no_dstr=True, f_size=20, pcent=False, diff=False, \
+        dlist=None, savetitle='', units=None, perspective='north', \
+        format=None, extend='neither', boundinglat=50, 
+        verbose=True, debug=False):
+    """ 
+    Takes a 5D np.array ( species, lon, lat, alt, time ) and plots up the 
+    output by species by month, and saves this as a mulitpage pdf
 
-    NOTES:
+    Parameters
+    -------
+    arr (array): 5D np.array ( species, lon, lat, alt, time ) 
+    res (str): the resolution if wd not given (e.g. '4x5' )
+    dpi (int): dots per inch of saved output PDF... 
+    boundinglat (int): 
+    format (str): formayt of axis labels 
+    dlist (list): list of dates (datetimes)
+    no_dstr (boolean): date string in output filename ("no date string")
+    f_size (float): fontsise
+    savetitle (str): string to add to filename of PDF 
+    units (str): units label for colorbar
+    pcent (boolean): setup the plot as if the input values were %
+    diff (boolean): setup the plot as if the input values were a difference
+    boundinglat (int): latitude to show poles until. 
+    perspective (str): looking at north or south pole?
+    extend (str): colorbar format settings ( 'both', 'min', 'both' ... )
+    
+    Returns
+    -------
+    (None)
+    
+    Notes
+    -----
      - Takes 5D array  ( species ,lon , lat, alt, time) 
      - needs update to description/acsetics
-        """
+    """
+    if debug:
+        print arr, no_dstr, f_size, pcent, res, dpi, specs, dlist, savetitle
 
-        if debug:
-            print arr, no_dstr, f_size, \
-                pcent, res, dpi, specs, \
-                dlist, savetitle, debug
-
-        if perspective == 'north':
-            savetitle = 'North_'+savetitle 
-        if perspective == 'south':
-            savetitle = 'South_'+savetitle 
-        
-        pdff = plot2pdfmulti( title=savetitle, open=True, \
-                              dpi=dpi, no_dstr=no_dstr )    
-        left=0.01; right=0.925; bottom=0.025; top=0.95; hspace=0.15; wspace=-0.1
+    # Setup PDF filename for saving file 
+    if perspective == 'north':
+        savetitle = 'North_'+savetitle 
+    if perspective == 'south':
+        savetitle = 'South_'+savetitle 
+    # Initialise PDF
+    pdff = plot2pdfmulti( title=savetitle, open=True, dpi=dpi, no_dstr=no_dstr)
+    # Set ascetics
+    left=0.01; right=0.925; bottom=0.025; top=0.95; hspace=0.15; wspace=-0.1
     
-        # Loop species
-        for n, spec in enumerate( specs ):
-
+    # Loop species
+    for n, spec in enumerate( specs ):
+        # Debug print statement?
+        if verbose:
             print n, spec, arr.shape, units, perspective, '<'
 
-            # Get units/scale for species + setup fig
-            scale = 1
-            if pcent :# and (not units == 'DU') :
-                units = '%' 
-            if isinstance( units, type( None )):
-                units, scale = tra_unit( spec, scale=True, global_unit=True )
-
-            parr = arr[n,:,:,0,:]*scale
+        # Get units/scale for species + setup fig
+        scale = 1
+        if pcent :# and (not units == 'DU') :
+            units = '%' 
+        if isinstance( units, type( None )):
+            units, scale = tra_unit( spec, scale=True, global_unit=True )
+        parr = arr[n,:,:,0,:]*scale
             
-            if debug:
-                print parr.shape
-                print n, spec, [ (i.min(), i.max(), i.mean() ) \
-                    for i in [parr] ], [ (i.min(), i.max(), i.mean() ) \
-                    for i in [arr] ], units, scale
+        if debug:
+            print parr.shape
+            print n, spec,  units, scale
+            print [ (i.min(), i.max(), i.mean() ) for i in [parr, arr] ]
 
-            # Set the correct title        
-            ptitle = '{}'.format( latex_spec_name(spec) )
+        # Set the correct title        
+        ptitle = '{}'.format( latex_spec_name(spec) )
  
-            # create new figure            
-            fig  = plt.figure(figsize=(22, 14), dpi=dpi, 
-                facecolor='w', edgecolor='w')
+        # Create new figure            
+        fig = plt.figure(figsize=(22, 14),dpi=dpi,facecolor='w', edgecolor='w')
 
-            # select north or south polar areas specified to define cb
-            if perspective == 'north':
-                cbarr=parr[:,get_gc_lat(boundinglat,res=res):,:].copy()
-            if perspective == 'south':
-                cbarr=parr[:,:get_gc_lat(-boundinglat,res=res),:].copy()
+        # Select north or south polar areas specified to define cb
+        if perspective == 'north':
+            cbarr=parr[:,get_gc_lat(boundinglat,res=res):,:].copy()
+        if perspective == 'south':
+            cbarr=parr[:,:get_gc_lat(-boundinglat,res=res),:].copy()
 
-            if pcent:
-                if len( cbarr[cbarr>500])>0:
-                    cbarr = np.ma.masked_where( cbarr>500, cbarr )
-                    extend = 'max'
-                elif len( cbarr[cbarr<-500])>0:
-                    cbarr = np.ma.masked_where( cbarr<-500, cbarr )
-                    if  extend == 'max':
-                        extend = 'both'
-                    else:
-                        extend = 'min'
-
+        # Mask above and below 500/-500 % if values in array
+        if pcent:
+            if len( cbarr[cbarr>500])>0:
+                cbarr = np.ma.masked_where( cbarr>500, cbarr )
+                extend = 'max'
+            elif len( cbarr[cbarr<-500])>0:
+                cbarr = np.ma.masked_where( cbarr<-500, cbarr )
+                if  extend == 'max':
+                    extend = 'both'
                 else:
-                    extend = 'neither'
-
+                    extend = 'min'
             else:
                 extend = 'neither'
-                    
-            fixcb = [ ( i.min(), i.max() ) for i in [cbarr] ][0]
+        else:
+            extend = 'neither'
+        # Setup colormap
+        fixcb = np.array([ ( i.min(), i.max() ) for i in [cbarr] ][0])
+        if verbose:            
             print 'fixcb testing ', fixcb, parr.shape
-
-            # Kludge, force max cap at .2
-#            if units == 'ratio':
-#                fixcb = [ fixcb[0], 0.2 ]
+        # Kludge, force max cap at .2
+#        if units == 'ratio':
+#            fixcb = [ fixcb[0], 0.2 ]       
 #                extend = 'max'
+        cmap = get_colormap( fixcb )
 
-            cmap = get_colormap( fixcb )
+        # Loop thorugh months
+        for m, month in enumerate(dlist):
+            ax = fig.add_subplot(3,4,m+1)
 
-            # Loop thorugh months
-            for m, month in enumerate(dlist):
-                ax = fig.add_subplot(3,4,m+1)
+            # Plot up spatial surface change
+            if perspective == 'north':
+                north_pole_surface_plot( parr[:,:,m], no_cb=True, \
+                    fixcb=fixcb, diff=diff, pcent=pcent, res=res, \
+                    f_size=f_size*2, cmap=cmap, boundinglat=boundinglat) 
+            if perspective == 'south':
+                south_pole_surface_plot( parr[:,:,m], no_cb=True, \
+                    fixcb=fixcb, diff=diff, pcent=pcent, res=res, \
+                    f_size=f_size*2, cmap=cmap, boundinglat=-boundinglat) 
 
-                # plot up spatial surface change
-                if perspective == 'north':
-                    north_pole_surface_plot( parr[:,:,m], no_cb=True, \
-                        fixcb=fixcb, diff=diff, pcent=pcent, res=res,          \
-                        f_size=f_size*2,
-                        cmap=cmap, boundinglat=boundinglat) 
-                if perspective == 'south':
-                    south_pole_surface_plot( parr[:,:,m], no_cb=True, \
-                        fixcb=fixcb, diff=diff, pcent=pcent, res=res,         \
-                        f_size=f_size*2, 
-                        cmap=cmap, boundinglat=-boundinglat) 
+            plt.text( 1.1, -0.01, month.strftime("%b"), fontsize=f_size*2,\
+                transform=ax.transAxes, ha='right', va='bottom' )
 
-                plt.text( 1.1, -0.01, month.strftime("%b"), 
-                                transform=ax.transAxes,
-                                ha='right', va='bottom', 
-                                fontsize=f_size*2)
+        # Add single colorbar
+        mk_cb(fig, units=units, left=0.915,  cmap=cmap,vmin=fixcb[0],\
+            vmax=fixcb[1], f_size=f_size*.75, extend=extend, format=format ) 
 
-            # Add single colorbar
-            mk_cb(fig, units=units, left=0.915,  cmap=cmap,vmin=fixcb[0],\
-                 vmax=fixcb[1], f_size=f_size*.75, extend=extend, \
-                 format=format ) 
+        # Sort out ascetics -  adjust plots and add title
+        fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right, \
+            hspace=hspace, wspace=wspace)
+        fig.suptitle( ptitle, fontsize=f_size*2, x=.475 , y=.975  )
 
-            # sort out ascetics -  adjust plots and add title
-            fig.subplots_adjust( bottom=bottom, top=top, left=left, \
-                right=right,hspace=hspace, wspace=wspace)
-            fig.suptitle( ptitle, fontsize=f_size*2, x=.475 , y=.975  )
+        # Save out figure
+        plot2pdfmulti( pdff, savetitle, dpi=dpi,no_dstr=no_dstr )
 
-            # save out figure
-            plot2pdfmulti( pdff, savetitle, dpi=dpi,\
-                no_dstr=no_dstr )
+        # Close fig
+        plt.clf()
+        plt.close()
+        del parr
 
-            # close fig
-            plt.clf()
-            plt.close()
-            del parr
-
-        #  save entire pdf
-        plot2pdfmulti( pdff, savetitle, close=True, dpi=dpi,\
-                       no_dstr=no_dstr )
+    # Save entire pdf
+    plot2pdfmulti( pdff, savetitle, close=True, dpi=dpi, no_dstr=no_dstr )
 
 
 # --------
@@ -4988,7 +4998,7 @@ def percentile(N, percent, key=lambda x:x):
 # X.XX - Coupler to select plot type 
 # --------
 def create_plot4case( fig, ax, dates, data, spec, f_size=20, lw=None, ls=None, \
-        loc=True, legend=True, units='', boxplot=False, lname='Weybourne', \
+        loc=True, legend=True, units='', boxplot=False, lname='Weyborne', \
         run_name='run', start_month=7, end_month=7, plot_type='daily', \
         case=None, l_dict=None, label=None, alt_text=None, color=None): 
     """ 

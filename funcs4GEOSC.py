@@ -492,29 +492,48 @@ def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, \
 # ----
 # X.XX - Process species for given arrays to (v/v) in respective scale + DU
 # ----
-def process_data4specs( specs=None, just_bcase_std=True, preindustrial=False, \
-        just_bcase_no_hal=False, res='4x5', ver='1.6', diff=True, pcent=True, \
-        tight_constraints=True, trop_limit=True, NOy_family=False, \
-        Bry_family=False, Iy_family=False, rtn_specs=False, debug=False ): 
+def process_data4specs( specs=None, titles=None, wds=None, res='4x5', \
+        diff=True, pcent=True, 
+#         ver='1.6', 
+#        just_bcase_std=True, preindustrial=False, just_bcase_no_hal=False,\
+        tight_constraints=True, trop_limit=True, 
+        NOy_family=False, Bry_family=False, Iy_family=False, 
+        rtn_specs=False, rtn_titles=False, debug=False ): 
     """ 
     Return species values in v/v and DU. Also return datetimes for CTM output and time in 
     troposphere diagnostics  
 
-	NOTE(s):
+    Parameters
+    -------
+    specs (list): list of specs to extract 
+    wds (list): list of working directories containing model output files 
+    titles (list): reference names for working directories 
+
+
+    Returns
+    -------
+
+    Notes
+    -----
+    
 	 - This function is fairly inefficient, but is compbatible with pygchem 0.2.0 and 0.3.0
+     ( Since the above comment, the function has been updated to tak a list of 
+      working directories (wds) and  )
+
     """
-
-    # Get runs data and descriptors
-    wds, titles = MUTD_runs( titles=True, just_bcase_std=just_bcase_std, \
-        res=res, ver=ver, just_bcase_no_hal=just_bcase_no_hal, \
-        preindustrial=preindustrial )
-    if debug:
-        print wds, titles
-
-    if preindustrial:
-        # Force 'Cl+Br+I (PI)' to be base case and 'Cl+Br+I' to be second entry
-        wds = [wds[3],  wds[1] ]
-        titles = [ titles[3], titles[1] ]
+    # Get runs data and descriptors - N/A (moved this to user specific module)
+#    if isinstance(
+#    wds, titles = MUTD_runs( titles=True, just_bcase_std=just_bcase_std, \
+#        res=res, ver=ver, just_bcase_no_hal=just_bcase_no_hal, \
+#        preindustrial=preindustrial )
+#    if debug:
+#        print wds, titles
+#    if preindustrial:
+#        # Force 'Cl+Br+I (PI)' to be base case and 'Cl+Br+I' to be second entry
+#        wds = [wds[3],  wds[1] ]
+#        titles = [ titles[3], titles[1] ]
+    logging.info('process_data4specs called for wds={},{}'.format(str(wds), 
+        str(titles)) )
     if debug:
         print wds, titles
 
@@ -687,9 +706,15 @@ def process_data4specs( specs=None, just_bcase_std=True, preindustrial=False, \
     if Iy_family:
         Vars, DUarrs, specs = add_family2arrays(  fam='Iy', I=True, \
                     Vars=Vars, DUarrs=DUarrs, specs=specs )
-    logging.debug( *[ i.shape for i in Vars, DUarrs] )
+    logging.debug( *[ str(i.shape) for i in Vars, DUarrs] )
 
     # consider difference in v/v and DU
+    if any( [len(i) != 2 for i in wds, titles ]):
+        err_msg= 'WARNING diff/pcent calcuation require two arrays!'
+        print err_msg
+        logging.info(err_msg)
+        sys.exit()
+
     if diff:
         if pcent:
             Vars, DUarrs = [ np.ma.array(i) for i in Vars, DUarrs ]
@@ -707,12 +732,14 @@ def process_data4specs( specs=None, just_bcase_std=True, preindustrial=False, \
     logging.debug( *[ i.shape for i in Vars, DUarrs] )
 
     # Close/remove memory finished with
-    del molecs, tmp_s_area, wds, titles
+    del molecs, tmp_s_area, wds
 
     # return requested variables
     rtn_vars =[  Vars, DUarrs, dlist, t_ps.mean(axis=0) ]
     if rtn_specs:
-        rtn_vars += [specs ]
+        rtn_vars += [specs]
+    if rtn_titles:
+        rtn_vars += [titles]
     return rtn_vars
 
 # ----
@@ -4003,6 +4030,7 @@ def get_default_variable_dict( wd=None,
         Var_rc['rm_strat'] = True # This is for convert_molec_cm3_s_2_g_X_s
         Var_rc['full_vertical_grid'] = full_vertical_grid # for get_dims4res
         Var_rc['limit_Prod_loss_dim_to'] = 38 # limit of levels for chemistry
+        Var_rc['tight_constraints'] =  False # only consider boxes that are 100 % tropospheric
         if Var_rc['trop_limit']:
             Var_rc['limit_vertical_dim'] = True
         else:
