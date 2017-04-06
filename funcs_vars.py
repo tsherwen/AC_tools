@@ -262,7 +262,8 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, ver='1.7', \
     '1.7': 'GCFP_d2TRA_all_1.7',
     '2.0': 'GCFP_d2TRA_all_2.0',    
     '3.0':  'GCFP_d2TRA_all_2.0', # Same as 2.0
-    '4.0':  'GCFP_d2TRA_all_2.0' # Same as 2.0
+    '4.0':  'GCFP_d2TRA_all_2.0', # Same as 2.0
+    '5.0':  'GCFP_d2TRA_all_2.0', # Same as 2.0? - Kludge for now
     }[ver]
 
 #    special_case = 'EOH'

@@ -1096,7 +1096,7 @@ def get_GC_output( wd, vars=None, species=None, category=None, r_cubes=False, \
                 for i in arr]))
 
         # --- loop variables post processing and force inclusions of time dim if applicable
-        need_time = ['IJ_AVG', 'GMAO', 'BXHGHT', 'TIME_TPS_']
+        need_time = ['IJ_AVG', 'GMAO', 'BXHGHT', 'TIME_TPS_', 'PORL_L_S_']
         for n, var in enumerate( vars ):
             
             # Add altitude dimension to 2D (lon, lat)
@@ -1805,26 +1805,32 @@ def get_frequency_of_model_output( wd=None, months=None, years=None,
             # enter to continue?
             sys.exit()
     else:
-        if set_of_diffs[0] == 1.:
-            return 'Daily'
-        elif set_of_diffs[0] == 7.:
-            return 'Weekly'        
-        else:
-            # Check if months are full lengths?
-            if isinstance(months, type(None)):
-                months = get_gc_months(wd=wd, filename=filename)
-            if isinstance(years, type(None)):
-                years = get_gc_years(wd=wd, filename=filename)
-            # Get number of days in month
-            daysinmonth = [monthrange(years[n],i)[-1] \
-                for n,i in enumerate(months)]          
-            if set_of_diffs==list(set(daysinmonth[:-1])):
-                return 'Monthly'
+        try:
+            if set_of_diffs[0] == 1.:
+                return 'Daily'
+            elif set_of_diffs[0] == 7.:
+                return 'Weekly'        
             else:
-                print 'Cannot work out output frequency for step diff: ', \
-                    set_of_diffs, daysinmonth, years, months
-                sys.exit()
-    
+                # Check if months are full lengths?
+                if isinstance(months, type(None)):
+                    months = get_gc_months(wd=wd, filename=filename)
+                if isinstance(years, type(None)):
+                    years = get_gc_years(wd=wd, filename=filename)
+                # Get number of days in month
+                daysinmonth = [monthrange(years[n],i)[-1] \
+                    for n,i in enumerate(months)]          
+                if set_of_diffs==list(set(daysinmonth[:-1])):
+                    return 'Monthly'
+                else:
+                    print 'Cannot work out output frequency for step diff: ', \
+                        set_of_diffs, daysinmonth, years, months
+                    sys.exit()
+        except IndexError:
+            err_msg = 'Only one output point - assuming weekly output!'
+            logging.info(err_msg)
+            print err_msg
+            return 'Weekly'
+            
 
 # ----
 # X.XX - Get CH4 Lifetime in years
@@ -4171,7 +4177,7 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
 # ----
 # X.XX -
 # ----
-def check_output_vertical_grid(wd=None):
+def check_output_vertical_grid(wd=None, filename=None):
     """
     Return whether output contains full or reduced grid
     """

@@ -1881,7 +1881,7 @@ def get_2D_solartime_array4_date( date=None, ncfile=None, res='4x5', \
 # --------
 def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
         lats=None, varname='MASK', Description=None, Contact=None, \
-        filename='misc_output', debug=False ):
+        filename='misc_output', var_type='f8', debug=False ):
     """
     makes a NetCDF from a list of dates and list of (lon, lat) arrays
 
@@ -1894,6 +1894,7 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
     lats (list): lats for use for NetCDF cooridinate variables
     filename (str): name for output netCDF file 
     varname (str): name for variable in NetCDF
+    var_type (str): variable type (e.g. 'f8' (64-bit floating point))
 
     Returns
     -------
@@ -1913,9 +1914,9 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
     # Get lons and lats... 
     if any( [isinstance(i, type(None)) for i in lats, lons] ):
         lons, lats, NIU = get_latlonalt4res(res=res)
-    else:
-        print 'WARNING: non-standard lats/lons not implemented!!! - TODO. '
-        sys.exit()
+#    else:
+#        print 'WARNING: non-standard lats/lons not implemented!!! - TODO. '
+#        sys.exit()
 
     # --- Setup new file
     # write file
@@ -1973,8 +1974,9 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
     # Assign to time variable
     time[:] = dates
 
-    # --- Create  mask variable (as i8) with common dimensions 
-    ncfile.createVariable( varname, 'i8', ('time','lat','lon'), )
+    # --- Create new NetCDF variable (as f8) with common dimensions 
+    # (e.g. 'f8' = 64-bit floating point, 'i8'=(64-bit singed integer) )
+    ncfile.createVariable( varname, var_type, ('time','lat','lon'), )
     # Close NetCDF
     ncfile.close()
 
