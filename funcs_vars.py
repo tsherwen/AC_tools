@@ -407,6 +407,21 @@ def species_mass( spec ):
     'Iodine': 127.0, 'Iy': 127., 'Bromine': 80.0, 'Bry': 80.0,'Chlorine':35.0,
     'Cly':35.0, 'NOy': 14.0, 'NOx': 14.0, 'SOx': 32.0,\
      'Sulfate': 32.0, 'sulfur': 32.0, 'VOCs':12.0, 
+    # v11-01 standard extra tracers...
+    'ASOA1': 150.0, 'ASOA3': 150.0, 'ASOA2': 150.0, 'ASOG3': 150.0, \
+    'ASOG2': 150.0, 'ASOG1': 150.0, 'TSOA0': 150.0, 'TSOA1': 150.0, \
+    'TSOA2': 150.0, 'TSOA3': 150.0, 'TSOG2': 150.0, 'TSOG3': 150.0, \
+    'TSOG0': 150.0, 'TSOG1': 150.0, 'MVKN': 149.0, 'MACRN': 149.0, \
+    'MTPO': 136.0, 'ISOPND': 147.0, 'LIMO': 136.0, 'ISOPNB': 147.0, \
+    'MTPA': 136.0, 'NITS': 31.0, 'ISOG3': 150.0, 'ISOG2': 150.0, \
+    'ISOG1': 150.0, 'ISOA1': 150.0, 'ISOA3': 150.0, 'ISOA2': 150.0, \
+    'ASOAN': 150.0, 
+    # more v11-01 advected tracers...
+    'H2O': 18.0, 'N2O': 44.0, 'CFC11': 137.0, 'CFC12': 121.0, \
+    'H1211': 165.0, 'BENZ': 78.11, 'H1301': 149.0, 'CFC114': 187.0, \
+    'TOLU': 92.14, 'CH3CCl3': 133.0, 'CCl4': 152.0, 'HCFC22': 86.0, \
+    'CFC113': 187.0, 'HCFC141b': 117.0, 'CFC115': 187.0, 'OCS': 60.0, \
+    'XYLE': 106.16, 'H2402': 260.0, 'HCFC142b': 117.0, 'HCFC123': 117.0, \
     }
     
     return d[spec]

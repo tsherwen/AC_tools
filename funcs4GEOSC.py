@@ -279,6 +279,11 @@ def get_air_mass_np( ctm_f=None, wd=None, times=None, trop_limit=True,\
 
     Parameters
     -------
+    wd (str): Specify the wd to get the results from a run.
+    trop_limit (boolean): limit 4D arrays to troposphere     
+    ctm_f (file object): PyGChem (v2.0) opened ctm.bpch file  - vestigial 
+    times (list): list of times to extract model for - vestigial 
+    debug (boolean): legacy debug option, replaced by python logging
 
     Returns
     -------
@@ -1788,9 +1793,9 @@ def get_frequency_of_model_output( wd=None, months=None, years=None,
     if len(set_of_diffs) > 1:   
         # Check if months are full lengths?
         if isinstance(months, type(None)):
-            months = get_gc_months(wd=wd, filename=filename)
+            months = [i.month for i in datetimes]
         if isinstance(years, type(None)):
-            years = get_gc_years(wd=wd, filename=filename)
+            years = [i.year for i in datetimes]
         # Get number of days in month
         daysinmonth = [monthrange(years[n],i)[-1] for n,i in enumerate(months)]         
 #        if debug:
@@ -1813,9 +1818,9 @@ def get_frequency_of_model_output( wd=None, months=None, years=None,
             else:
                 # Check if months are full lengths?
                 if isinstance(months, type(None)):
-                    months = get_gc_months(wd=wd, filename=filename)
+                    months = [i.month for i in datetimes]
                 if isinstance(years, type(None)):
-                    years = get_gc_years(wd=wd, filename=filename)
+                    years = [i.year for i in datetimes]
                 # Get number of days in month
                 daysinmonth = [monthrange(years[n],i)[-1] \
                     for n,i in enumerate(months)]          
@@ -4015,6 +4020,8 @@ def get_default_variable_dict( wd=None,
         wd = '/work/home/ts551/data/all_model_simulations/iodine_runs/'
         wd += 'iGEOSChem_5.0/run.Iodine.v1.0.red_timestep.XII.1month.tagged/'
         Var_rc['wd'] = wd
+    if Var_rc['wd'][-1] != '/':
+        Var_rc['wd']+='/'
     try:
         Var_rc['filename'] = sys.argv[2]
     except:
@@ -4101,8 +4108,7 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
     if 'output_freq' in var_list:
         Data_rc['output_freq'] = get_frequency_of_model_output( \
             wd=Var_rc['wd'], filename=Var_rc['filename'], 
-            datetimes=Data_rc['datetimes'], \
-            months=Data_rc['months'], years=Data_rc['years'] )  
+            datetimes=Data_rc['datetimes'], )
     # Model output vertical grid - write this!
     if 'output_vertical_grid' in var_list:
         Data_rc['output_vertical_grid'] = check_output_vertical_grid( \
@@ -4123,6 +4129,7 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
     if 'n_air' in var_list: 
         # variable name has just changed in v11
         if 'v11' in Data_rc['GC_version']:
+#        if False:
             var_ = 'BXHGHT_S__AIRNUMDE'
         else:
             var_ = 'BXHGHT_S__N(AIR)'
@@ -4130,6 +4137,9 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
             vars=[var_], trop_limit=Var_rc['trop_limit'] )  
         # Kludge! - restrict length of array to main wd.
         Data_rc['n_air'] = Data_rc['n_air'][...,:Data_rc['vol'].shape[-1]]
+    # Pressure ? ( in hPa )
+    if 'hPa' in var_list:
+        Data_rc['hPa'] = get_GC_output( wd=Var_rc['wd'], vars=[u'PEDGE_S__PSURF'])
 
     # Calculate molecules per grid box - [molec air] 
     if 'molecs' in var_list: 
@@ -4140,6 +4150,10 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
         # limit_vertical_dim=True
         if Var_rc['limit_vertical_dim'] or Var_rc['trop_limit']:
             Data_rc['molecs'] = Data_rc['molecs'][...,:Var_rc['limit_Prod_loss_dim_to'],:]
+    # Air mass? ("a_m")
+    if 'a_m' in var_list: 
+        Data_rc['a_m'] = get_air_mass_np( wd=Var_rc['wd'], \
+            trop_limit=Var_rc['trop_limit'])
     # Altitude?
     if 'alt' in var_list:     
         # Get altitude
