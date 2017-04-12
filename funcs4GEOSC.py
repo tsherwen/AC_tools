@@ -1831,10 +1831,12 @@ def get_frequency_of_model_output( wd=None, months=None, years=None,
                         set_of_diffs, daysinmonth, years, months
                     sys.exit()
         except IndexError:
-            err_msg = 'Only one output point - assuming weekly output!'
+            assumed_freq = 'Monthly'
+#            assumed_freq 'Weekly'
+            err_msg = '1 time dim., assuming {} output!'.format(assumed_freq)
             logging.info(err_msg)
-            print err_msg
-            return 'Weekly'
+            print err_msg            
+            return assumed_freq
             
 
 # ----
@@ -3496,7 +3498,7 @@ def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None, \
     -------
     (pd.DataFrame object)
     """
-    # find GC grid indices for LAT and LON
+    # Get LAT and LON for site, if values not given. 
     if any( [ isinstance(i, type(None)) for i in LON, LAT ] ):
         # Get LON and LAT for site if provided (from "get_loc" dictionary) 
         try:
@@ -3511,11 +3513,11 @@ def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None, \
             print err_msg
             logging.info(err_msg)
             sys.exit()
-    # find index for grid box.
+    # Find index for grid box.
     LON_ind = get_gc_lon( LON, res=res, wd=wd, filename=filename )
     LAT_ind = get_gc_lat( LAT, res=res, wd=wd, filename=filename)    
 
-    # extract data for 
+    # Extract data for location 
     with Dataset( wd+'/'+filename, 'r') as rootgrp:
         data = rootgrp['IJ_AVG_S__'+spec]
         print 'Extracted data:', data
@@ -3525,7 +3527,7 @@ def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None, \
         # also extract NetCDF units
         units = rootgrp['IJ_AVG_S__'+spec].units
 
-    # Get dates
+    # Extract dates in NetCDF
     dates = get_gc_datetime( filename=filename, wd=wd )
 
     # Make dataframe and return
@@ -4006,6 +4008,7 @@ def get_default_variable_dict( wd=None,
     Parameters
     ----
     full_vertical_grid (boolean): usings all levels of grid (e.g. 72 or 47)
+    wd (str): Specify the wd to get the results from a run.
 
     Returns
     ----
@@ -4036,7 +4039,7 @@ def get_default_variable_dict( wd=None,
         Var_rc['trop_limit'] = False # limit arrays to 38 levels... 
         Var_rc['rm_strat'] = False # This is for convert_molec_cm3_s_2_g_X_s
         Var_rc['full_vertical_grid'] = full_vertical_grid # for get_dims4res    
-        Var_rc['limit_Prod_loss_dim_to'] = 59 # limit of levels for chemistry
+        Var_rc['limit_Prod_loss_dim_to'] = 59 # limit of levels for chemistry?
         Var_rc['limit_vertical_dim'] = limit_vertical_dim # apply dim. limiting?
     else:
         Var_rc['trop_limit'] = True # limit arrays to 38 levels... 
@@ -4055,7 +4058,7 @@ def get_default_variable_dict( wd=None,
 # X.XX - Get shared data variables as a dictionary object. 
 # ----
 def get_shared_data_as_dict( Var_rc=None, var_list=[], \
-        full_vertical_grid=False ):
+        full_vertical_grid=False, Data_rc={} ):
     """
     Returns (requested) common vairables as a dictionary object. Give requested
     variables as a list of strings ("var_list").
@@ -4063,6 +4066,7 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
     Parameters
     ----
     Var_rc (dict): dictionary containing variables for working directory ('wd')
+    Data_rc (dict): dictionary containing model data (default intiallised empty)
     var_list (list): list of names (strings) of variables to extract
     full_vertical_grid (boolean): usings all levels of grid (e.g. 72 or 47)
 
@@ -4073,9 +4077,7 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
     # Use default variable dictionary if non given 
     if isinstance(Var_rc, type(None)):
         Var_rc = get_default_variable_dict(full_vertical_grid=full_vertical_grid)
-
-    # Setup dictionary.
-    Data_rc = {}
+    
     # --- Extract basic variables by default
     # Resolution?
     Data_rc['res'] = get_gc_res(wd=Var_rc['wd'], filename=Var_rc['filename'])
@@ -4139,8 +4141,8 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
         Data_rc['n_air'] = Data_rc['n_air'][...,:Data_rc['vol'].shape[-1]]
     # Pressure ? ( in hPa )
     if 'hPa' in var_list:
-        Data_rc['hPa'] = get_GC_output( wd=Var_rc['wd'], vars=[u'PEDGE_S__PSURF'])
-
+        Data_rc['hPa'] = get_GC_output( wd=Var_rc['wd'], \
+            vars=[u'PEDGE_S__PSURF'])
     # Calculate molecules per grid box - [molec air] 
     if 'molecs' in var_list: 
         # (Note: volumne ('vol') is converted from [m^3] to [cm^3] concurrently )
@@ -4165,6 +4167,8 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
             Data_rc['alt'] = Data_rc['alt'][:Var_rc['limit_Prod_loss_dim_to']]
     # Latitude (lat) and longitude (lon)?
     if ('lon' in var_list) or ('lat' in var_list):
+        # Why is this variable extracted from an offline dictionary? 
+        # UPDATE to use NetCDF coordinate variable. 
         lon, lat, NIU = get_latlonalt4res( res=Data_rc['res'], wd=Var_rc['wd'], \
             full_vertical_grid=Var_rc['full_vertical_grid'],\
             filename=Var_rc['filename']  )    
@@ -4431,7 +4435,7 @@ def get_tags4_family( fam='LOx', filename='gckpp_Monitor.F90',
             if len(tags)>=1:
                 tagged_rxn_tags += tags 
             else:
-                tagged_rxn_tags += [ 'WARNING - NOT TAGGED!!!' ]
+                tagged_rxn_tags+=['WARNING: RXN. NOT TAGGED! ({})'.format(key_)]
 
     return dict(zip(tagged_rxns, tagged_rxn_tags))
 
