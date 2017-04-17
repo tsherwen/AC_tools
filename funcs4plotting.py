@@ -142,14 +142,16 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 
     # Make sure the input data is usable and try to fix it if not.
     (res_lat, res_lon) = get_dims4res(res, just2D=True)
-
-    if arr.shape==(res_lon, res_lat):
+    expected_shape = (res_lon, res_lat)
+    print expected_shape, arr.shape
+    if arr.shape==expected_shape:
         pass
-    elif arr.shape==(res_lat, res_lon):
+    elif arr.shape==expected_shape:
         arr = arr.T
         logging.warning("Array was wrong shape and has been transposed!")
     else:
-        logging.error("Array is the wrong shape, Got: " + str(arr.shape))
+        logging.error("Array is the wrong shape. Should be {}. Got {}"\
+         .format( str(expected_shape), arr.shape) )
         raise AssertionError, "Incorrect array shape."
 
     #### Add a invalid warning!
@@ -399,7 +401,11 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
         xlabel=True, wd=None, verbose=True, debug=False, tight_layout=False, \
         **Kwargs):
     """ 
-    Plots Global/regional 2D (lon, lat) slices.  
+    Plots Global/regional 2D (lon, lat) slices.
+    
+    WARNING - This is an updated version of map_plot (incomplement/develop), 
+       use map_plot instead!
+      
     Parameters
     ----------
     adjust_window (int): amount of array entries to remove the edges of array 
@@ -503,15 +509,16 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 
     # Make sure the input data is usable and try to fix it if not.
     (res_lat, res_lon) = get_dims4res(res, just2D=True)
+    expected_shape = (res_lon, res_lat)
 
-    if arr.shape==(res_lon, res_lat):
+    if arr.shape==expected_shape:
         pass
-    elif arr.shape==(res_lat, res_lon):
+    elif arr.shape==expected_shape:
         arr = arr.T
         logging.warning("Array was wrong shape and has been transposed!")
     else:
-        logging.error("Array is the wrong shape. \
-                Should be (46,72). Got " + str(arr.shape))
+        logging.error("Array is the wrong shape. Should be {}. Got {}"\
+         .format( str(expected_shape), arr.shape) )
         raise AssertionError, "Incorrect array shape."
 
     #### Add a invalid warning!

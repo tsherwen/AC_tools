@@ -2000,6 +2000,87 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
     if debug:
         logging.debug('saved NetCDF file:{}'.format(ncfilename) )
 
+
+# --------
+# X.XX - Interpolate values from subset of 2D array 
+# --------
+def get_value_interpolated_from_nearby_values( Y_CORDS=None, X_CORDS=None, \
+        X=None, Y=None, XYarray=None, buffer_CORDS=5, \
+        verbose=True, debug=False ):
+    """
+    Get an interpolated value for a location (X,Y) from surrounding array values
+
+    Parameters
+    -------
+    X_CORDS (np.array): coordinate values for X axis of 2D array (e.g. lon)
+    Y_CORDS (np.array): coordinate values for Y axis of 2D array (e.g. lat)
+    X (float): value of interest (in same terms at X_CORDS, e.g. lon)
+    Y (float): value of interest (in same terms at Y_CORDS, e.g. lat)
+    XY (array): array of values with shape (X_CORDS, Y_CORDS)
+    buffer_CORDS (int): number of units of X_CORDS and Y_CORDS to interpolate 
+        around (great this value, greater the cost.)
+    verbose (boolean): print out extra infomation
+    debug (boolean): print out debugging infomation
+    
+    Returns
+    -------
+    (float)
+    """
+    # X_CORDS=file_lonc; Y_CORDS=file_latc; X=lon; Y=lat; XYarray=file_data; buffer_CORDS=10
+    import scipy.interpolate as interpolate
+    # ---  Select a sub grid. 
+    # WARNING THIS APPRAOCH WILL NOT WORK NEAR ARRAY EDGES!!! 
+    # (TODO: add functionality for this.)
+    # Get indices buffer sub-selection of grid. 
+    s_low_X_ind = AC.find_nearest_value( X_CORDS, X-buffer_CORDS )
+    s_high_X_ind = AC.find_nearest_value( X_CORDS, X+buffer_CORDS )
+    s_low_Y_ind = AC.find_nearest_value( Y_CORDS, Y-buffer_CORDS )
+    s_high_Y_ind = AC.find_nearest_value( Y_CORDS, Y+buffer_CORDS )
+    if verbose:
+        print 'Y={}, subrange=({}(ind={}),{}(ind={}))'.format( Y, \
+        Y_CORDS[s_low_Y_ind], s_low_Y_ind, Y_CORDS[s_high_Y_ind], s_high_Y_ind)
+        print 'X={}, subrange=({}(ind={}),{}(ind={}))'.format( X, \
+        X_CORDS[s_low_X_ind], s_low_X_ind, X_CORDS[s_high_X_ind], s_high_X_ind)
+    # Select sub array and get coordinate axis 
+    subXY = XYarray[s_low_X_ind:s_high_X_ind, s_low_Y_ind:s_high_Y_ind]
+    subX = X_CORDS[s_low_X_ind:s_high_X_ind]
+    subY = Y_CORDS[s_low_Y_ind:s_high_Y_ind]
+    # Debug (?) by showing 2D grid prior to interpolation
+    if debug:    
+        print [ i.shape for i in subX, subY, subXY ], XYarray.shape
+        plt.pcolor(subX, subY, subXY.T)
+        plt.colorbar()    
+        plt.show()
+    
+    # ---  interpolate over subgrid. 
+    M = subXY
+    rr, cc = np.meshgrid(subX, subY)
+    # fill masked values with nans
+    M = np.ma.filled(M, fill_value=np.nan)
+    # only consider non nan values as values to interpolate with
+    vals = ~np.isnan(M)
+    if debug:    
+        print vals
+    # interpolate
+    f = interpolate.Rbf(rr[vals], cc[vals], M[vals], function='linear')
+    # extract interpolation... 
+    interpolated = f(rr, cc)
+    
+    # ---  Select value of interest
+    # Debug (?) by showing 2D grid post to interpolation
+    if debug:    
+        print interpolated.shape
+        plt.pcolor(subX, subY, interpolated.T)
+        plt.colorbar()
+        plt.show()
+    
+    # indix value from subgrid?
+    Y_ind = AC.find_nearest_value( subY, Y )
+    X_ind = AC.find_nearest_value( subX, X )
+
+    return interpolated[X_ind, Y_ind]
+
+
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------

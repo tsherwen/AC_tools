@@ -169,6 +169,7 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
     '0.25x0.3125_CH' : (225,161,47), 
     '0.25x0.3125_WA' : (145,89,47), 
     '0.5x0.625'      : (145,133,47),
+    '0.083x0.083'    : (4320, 2160), # 9km resolution?
     }
     if debug:
         print dims
@@ -280,6 +281,8 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
         '0.25x0.3125_CH' :'LANDMAP_LWI_ctm_025x03125_CH',  \
         '0.25x0.3125_WA' :'LANDMAP_LWI_ctm_025x03125_WA',  \
         # Need to add a 0.5x0.625!
+        # Temporary inclusion of local 0.083x0.083 file. 
+        '0.083x0.083' : 'LANDMAP_LWI_ctm_0083x0083'
         }
         try:
             dir = dir_dict[res]
@@ -317,7 +320,7 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
             raise IOError, error        
 
     # Get edge values
-    exception_res = ('1x1', '0.5x0.5')
+    exception_res = ('1x1', '0.5x0.5', '0.083x0.083')
     if (not centre) and (res not in exception_res):
         # Extract lat and lon from model output data file
         try:
@@ -339,7 +342,7 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
             logging.error(error)
             raise IOError, error
 
-    # Kludge - manually give values for 0.25x0.3125_CH
+    # Manually set values for 0.25x0.3125_CH
 #    if res=='0.25x0.3125_CH':
 #        if centre:
 #        lat = np.arange(15., 55.+.25, .25)
@@ -348,24 +351,42 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
 #            lat = np.array( [-90]+list(np.arange(-89-0.5, 90+.5, 1))+[90] )
 #            lon = np.arange(-180-0.5, 180+.5, 1)
 
-    # Kludge - manually give values for 1.0x1.0
+    # Manually set values for 1.0x1.0
     if res=='1x1':
+        step_size = 1.0
         if centre:
-            lat = np.arange(-90, 90+1, 1)
-            lon = np.arange(-180, 180, 1)     
+            lat = np.arange(-90, 90+step_size, step_size)
+            lon = np.arange(-180, 180, step_size)     
         else:
-            lat = np.array( [-90]+list(np.arange(-89-0.5, 90+.5, 1))+[90] )
-            lon = np.arange(-180-0.5, 180+.5, 1)
+            lat = np.array([-90]+list(np.arange(-89-0.5, 90+.5, step_size))+[90])
+            lon = np.arange(-180-(step_size/2), 180+(step_size/2), step_size)
 
-    # Kludge - manually give values for 0.5x0.5
+    # Manually set values for 0.5x0.5
     if res=='0.5x0.5':
+        step_size = 0.5
         if centre:
-            lat = np.array( [-90]+list(np.arange(-89, 90, .5))+[90] )
-            lon = np.arange(-180, 180, .5)             
+            lat = np.array( [-90]+list(np.arange(-89, 90, step_size))+[90] )
+            lon = np.arange(-180, 180, step_size)
         else:
-            lat = np.array( [-90]+list(np.arange(-89.75, 90+.25, .5))+[90] )
-            lon = np.arange(-180-0.25, 180+.25, .5)        
+            lat = np.array([-90]+list(np.arange(-89.75, 90+.25, step_size))+[90])
+            lon = np.arange(-180-(step_size/2), 180+(step_size/2), step_size)
+    # Manually set values for 0.5x0.5
+#    if res=='0.083x0.083':
 
+    # Manually set values for 0.5x0.5
+    if res=='0.083x0.083':
+        step_size = 0.083333336
+
+        if centre:
+            lat = np.arange( -89.95833588, 89.95833588+step_size, step_size )
+            lon = np.arange(-179.95832825, 179.95835876, step_size )        
+            # adjust to center point
+            lat = [i+step_size/2 for i in lat[:-1] ]
+            lon = [i+step_size/2 for i in lon[:-1] ]
+            
+        else:
+            lat = np.arange( -89.95833588, 89.95833588+step_size, step_size)
+            lon = np.arange(-179.95832825, 179.95835876, step_size)        
 
     # Get dictionary variable name in Gerrit's GEOS-Chem dimensions list
     # ( now only doing this for alt, as alt values not in model output? )
