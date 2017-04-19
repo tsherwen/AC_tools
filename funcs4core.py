@@ -370,10 +370,9 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
         else:
             lat = np.array([-90]+list(np.arange(-89.75, 90+.25, step_size))+[90])
             lon = np.arange(-180-(step_size/2), 180+(step_size/2), step_size)
-    # Manually set values for 0.5x0.5
-#    if res=='0.083x0.083':
+    # Manually set values for 0.1x0.1
 
-    # Manually set values for 0.5x0.5
+    # Manually set values for 0.083x0.083
     if res=='0.083x0.083':
         step_size = 0.083333336
 

@@ -1908,18 +1908,21 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
     """
     logging.info('save_2D_arrays_to_3DNetCDF called')
     from funcs4time import unix_time, dt64_2_dt
+    print locals()
 
     # ---  Settings 
     ncfilename = '{}_{}.nc'.format( filename, res )
     # Get lons and lats... 
     if any( [isinstance(i, type(None)) for i in lats, lons] ):
         lons, lats, NIU = get_latlonalt4res(res=res)
+        logging.debug('Using offline lons/lats, as either lats/lons==None')
 #    else:
 #        print 'WARNING: non-standard lats/lons not implemented!!! - TODO. '
 #        sys.exit()
 
     # --- Setup new file
     # write file
+    logging.debug('setting up new NetCDF file: {}'.format(ncfilename))
     ncfile = Dataset( ncfilename,'w', format='NETCDF4') 
     ncfile.createDimension('lat', len(lats) )
     ncfile.createDimension('lon', len(lons) )
@@ -1993,7 +1996,14 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
         ncfile = Dataset( ncfilename,'a', format='NETCDF4')     
     
         # Add data to array
-        ncfile.variables[ varname ][ n ] = ars[n]
+        try:
+            ncfile.variables[ varname ][ n ] = ars[n]
+        except ValueError:
+            err_msg = '>total size of new array must be unchanged<'
+            err_msg += '(new arr shape {})'.format(str(ars[n].shape))
+            print err_msg
+            logging.info(err_msg)
+            sys.exit()
 
     # Close NetCDF
     ncfile.close()        
@@ -2032,10 +2042,10 @@ def get_value_interpolated_from_nearby_values( Y_CORDS=None, X_CORDS=None, \
     # WARNING THIS APPRAOCH WILL NOT WORK NEAR ARRAY EDGES!!! 
     # (TODO: add functionality for this.)
     # Get indices buffer sub-selection of grid. 
-    s_low_X_ind = AC.find_nearest_value( X_CORDS, X-buffer_CORDS )
-    s_high_X_ind = AC.find_nearest_value( X_CORDS, X+buffer_CORDS )
-    s_low_Y_ind = AC.find_nearest_value( Y_CORDS, Y-buffer_CORDS )
-    s_high_Y_ind = AC.find_nearest_value( Y_CORDS, Y+buffer_CORDS )
+    s_low_X_ind = find_nearest_value( X_CORDS, X-buffer_CORDS )
+    s_high_X_ind = find_nearest_value( X_CORDS, X+buffer_CORDS )
+    s_low_Y_ind = find_nearest_value( Y_CORDS, Y-buffer_CORDS )
+    s_high_Y_ind = find_nearest_value( Y_CORDS, Y+buffer_CORDS )
     if verbose:
         print 'Y={}, subrange=({}(ind={}),{}(ind={}))'.format( Y, \
         Y_CORDS[s_low_Y_ind], s_low_Y_ind, Y_CORDS[s_high_Y_ind], s_high_Y_ind)
@@ -2075,8 +2085,8 @@ def get_value_interpolated_from_nearby_values( Y_CORDS=None, X_CORDS=None, \
         plt.show()
     
     # indix value from subgrid?
-    Y_ind = AC.find_nearest_value( subY, Y )
-    X_ind = AC.find_nearest_value( subX, X )
+    Y_ind = find_nearest_value( subY, Y )
+    X_ind = find_nearest_value( subX, X )
 
     return interpolated[X_ind, Y_ind]
 

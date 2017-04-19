@@ -1280,7 +1280,7 @@ def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
     """
 
     # setup color list if not provided            
-    if color == None:
+    if isinstnace(color, type(None)):
         color = color_list( posn )[ pos ]
 
     # if this is a window plot, then reduce text size
