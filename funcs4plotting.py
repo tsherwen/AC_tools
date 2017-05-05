@@ -3448,27 +3448,42 @@ def markers_list( rm_plain_markers=False ):
 # -------------
 # X.XX linear trendline calculator for X-Y plot (with histograms)
 # -------------
-def Trendline( ax, X, Y, order =1, intervals= 700, f_size=20, 
-            color='blue', lw=1, debug=False ):
+def Trendline( ax, X, Y, order=1, intervals=700, f_size=20, color='blue', 
+        lw=1, debug=False ):
     """ 
-    Add a trend line to existing plot 
+    Adds a trendline and legend instance to existing axis instance.
+
+    Parameters
+    -------
+    ax (axis instance): (required) axis instance
+    X, Y (array): arrays of X,Y values to perform regression on
+    order (int): order of line to fit 
+    intervals (int): number of intervals to use
+    f_size (float): font size
+    color (str): color of line
+    lw (float): line width of plotted trendline
+    debug (boolean): legacy debug option, replaced by python logging
     
+    Returns
+    -------    
+    (None)
     """
+    # Poly fit data
     params, xp = np.polyfit( X, Y, order  ), \
         np.linspace( min(np.ma.min(X), np.ma.min(Y) ), \
         max(np.ma.max(X), np.ma.max(Y) ), intervals )
-    if debug:
-        print params
+    print params, type(params)
+    logging.debug( 'params: {}'.format(str(params)) )
     yp = np.polyval( params, xp )
 
-    # Regression 
-    r_sq =  [ r_squared(X, i ) for i in [Y]]
+    # Calculate regression fit
+    r_sq = [ r_squared(X, i ) for i in [Y] ]
 
     # Plot up
     ax.plot( xp, yp, ls='--', lw=lw, color=color, 
-        label = '{0} (R^2 = {1:<,.3f}, m={2:,.3f}, c={3:.3f})'.format(\
-        '', r_sq[0], params[0], params[1] )   )
-
+        label=' (R$^{2}$'+'={0:<,.3f}, y={1:,.3f}x+{2:.3f})'.format(\
+        r_sq[0], params[0], params[1] )   )
+    # Add legend to plot
     ax.legend()
 
 
@@ -4032,7 +4047,9 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
     if ( ( not positive) and (not negative) ) or divergent:
         logging.debug('Data is divergent' )
         arr.mask = False
-        cmap = plt.cm.RdBu_r
+#        cmap = plt.cm.RdBu_r
+        cb = 'RdBu_r'
+        cmap = plt.get_cmap( cb )
 #        cmap = plt.cm.Spectral
         # Centre color bar around zero
         if center_zero:

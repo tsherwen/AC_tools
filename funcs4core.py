@@ -770,7 +770,7 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
     # 
     Temp_arrays = ['c_km_geos5', 'c_hPa_geos5']
     if input in Temp_arrays:
-        print 'WARNING array ({}) is tempoary! - Please check it!'.format(input)
+        print 'WARNING array ({}) is temporary! - Please check it!'.format(input)
 
     if rtn_dict:
         return d

@@ -1075,6 +1075,8 @@ def get_GC_output( wd, vars=None, species=None, category=None, r_cubes=False, \
             and ( (72,46,38) != arr[0].shape ) \
             # also consider for vertical levels=72 (full_vertical_grid=True)
             and ( (72,46,72) != arr[0].shape ) \
+            # and the prod/loss reduced grid
+            and ( (72,46,59) != arr[0].shape ) \
             # -- '2x2.5'
             and ( (144,91,47) != arr[0].shape ) \
             and ( (144,91,38) != arr[0].shape ) \
@@ -3477,7 +3479,8 @@ def convert_spec_v_v_2_ugm3( spec=None, data=None ):
 # X.XX - Extract timeseries data from *ts*bpch* files (e.g. hourly surface data)
 # ----
 def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None, \
-        filename='ts_ctm.nc', LON=None, LAT=None, rtn_units=False):
+        filename='ts_ctm.nc', LON=None, LAT=None, rtn_units=False, \
+        rtn_ctm_units=False ):
     """
     Extract *ts*bpch* (1D) data from file for a specific site 
 
@@ -3490,6 +3493,7 @@ def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None, \
     stioch4fam (list): list of 
     filename (str): name of NetCDF file to extract from 
     rtn_units (boolean): return units
+    rtn_ctm_units (boolean): return "ctm_units" (e.g. ppbC, instead of ppb)
     LON (float): londitude in units of degrees East
     LAT (float): londitude in units of degrees North
     site (Str): name of a location (must be present in "get_loc" dictionary)
@@ -3526,6 +3530,7 @@ def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None, \
         data = data[:, LON_ind, LAT_ind]
         # also extract NetCDF units
         units = rootgrp['IJ_AVG_S__'+spec].units
+        ctm_units = rootgrp['IJ_AVG_S__'+spec].ctm_units
 
     # Extract dates in NetCDF
     dates = get_gc_datetime( filename=filename, wd=wd )
@@ -3535,6 +3540,8 @@ def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None, \
 
     if rtn_units:
         return df, units
+    elif rtn_ctm_units:
+        return df, ctm_units
     else:
         return df
 
@@ -4086,6 +4093,10 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
         also_return_GC_version=True )    
     Data_rc['ver'] = iGC_ver
     Data_rc['GC_version'] = GC_version
+    # Model output vertical grid - write this!
+#    if 'output_vertical_grid' in var_list:
+    Data_rc['output_vertical_grid'] = check_output_vertical_grid( \
+        wd=Var_rc['wd'], filename=Var_rc['filename'])
 
     # ---  Now add specifically requested variables? 
     # Add a reference 4x5 dir that has all generic output (e.g. N/AIR.)
@@ -4111,10 +4122,7 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
         Data_rc['output_freq'] = get_frequency_of_model_output( \
             wd=Var_rc['wd'], filename=Var_rc['filename'], 
             datetimes=Data_rc['datetimes'], )
-    # Model output vertical grid - write this!
-    if 'output_vertical_grid' in var_list:
-        Data_rc['output_vertical_grid'] = check_output_vertical_grid( \
-            wd=Var_rc['wd'], filename=Var_rc['filename'])
+
     # Surface area (m^2)
     if 's_area' in var_list:
         Data_rc['s_area'] = get_surface_area( Data_rc['res'] )    
@@ -4182,6 +4190,11 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
             tracers = [i.split('IJ_AVG_S__')[-1] for i in tracers ] 
             Data_rc['tracers'] = tracers
 
+    # Add a dictionary for converting between planeflight and input.geos names
+    if 'tracers2planeflight' in var_list:
+        Data_rc['tracers2planeflight'] = get_dict_of_tracers2planeflight_IDs(\
+            wd=Var_rc['wd'])
+
     # Check all requested variables were extract? or call stop... 
     vars_not_extracted = [i for i in var_list if i not in Data_rc.keys()]
     if len(vars_not_extracted) > 0:
@@ -4192,6 +4205,41 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
     
     return Data_rc
 
+# ----
+# X.XX -
+# ----
+def get_dict_of_tracers2planeflight_IDs( wd=None ):
+    """
+    Make dictionary of tracers and planeflight IDs from input.geos file
+    """
+    # local variables
+    filename ='input.geos'
+    tracer_str = 'Tracer #'
+    header_str ='Tracer Entries ------->'
+    tracers_l = []
+    tracer_num = []
+    mwt_l =[]
+    # open file and read the lines with tracer infomation
+    with open( wd+filename, 'rb') as file_:
+        
+        # loop lines in file
+        for line_ in file_:
+            
+            # Get header
+            if header_str in line_:
+                headers =line_[25:47]
+            
+            if tracer_str in line_:
+                num, tracer, mwt = line_[25:47].strip().split()
+    
+                # save tracer name
+                # save tracer number
+                tracer_num +=[num]
+                tracers_l +=[tracer]
+                mwt_l+=[mwt]
+                
+    return dict( zip(tracers_l, tracer_num) )
+    
 # ----
 # X.XX -
 # ----
