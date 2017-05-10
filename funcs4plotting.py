@@ -146,14 +146,16 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     print expected_shape, arr.shape
     if arr.shape==expected_shape:
         pass
-    elif arr.shape==expected_shape:
+    elif arr.shape!=expected_shape:
         arr = arr.T
         logging.warning("Array was wrong shape and has been transposed!")
-    else:
-        err_msg = "Array is the wrong shape. Should be {}. Got {}"\
-         .format( str(expected_shape), arr.shape)
-        logging.error(err_msg)
-        raise AssertionError, err_msg
+        if arr.shape==expected_shape:
+            pass
+        else:        
+            err_msg = "Array is the wrong shape. Should be {}. Got {}"\
+             .format( str(expected_shape), arr.shape)
+            logging.error(err_msg)
+            raise AssertionError, err_msg
 
     #### Add a invalid warning!
     # Mask for percent arrays containing invalid values ( to allow PDF save )
