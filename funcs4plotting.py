@@ -2605,7 +2605,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         title_x=0.5, no_cb=True, return_m=False, log=False, wd=None, \
         resolution='c', lat_min = None, lat_max=None, lon_min=None, \
         lon_max=None, xlabel=True, limit_window=False, axis_titles=False,  \
-        verbose=False, debug=False ):
+        figsize=(15, 10), verbose=False, debug=False ):
     """ 
     Wrapper for map_plot - Creates a "standard" spatial plot with acceptable 
     ascethics. Customise with a range of arguements provide during the call 
@@ -2671,8 +2671,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 
     # setup fig if not provided
     if isinstance( fig, type(None) ):
-        fig = plt.figure(figsize=(15, 10), dpi=dpi, facecolor='w', \
-                                        edgecolor='w') 
+        fig = plt.figure(figsize=figsize, dpi=dpi, facecolor='w',edgecolor='w') 
     # setup fig if not provided
     if not isinstance( ax, type(None) ):
         # temporary remove as mpl widget has a bug
@@ -2735,7 +2734,9 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 
     # limit displayed extent of plot?
 #	limit_window=False
-    if limit_window:
+    x_y_limits = [ lon_min, lon_max, lat_min, lat_max ]
+    x_y_limited = any([ (not isinstance(i, type(None))) for i in x_y_limits ])
+    if limit_window or x_y_limited:
         ax = plt.gca()
         #  set axis limits
         ax.set_xlim( lon_min, lon_max )
