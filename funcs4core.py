@@ -523,6 +523,7 @@ def iGEOSChem_ver(wd, also_return_GC_version=False, verbose=True, debug=False):
         '1.6.2':'v9-2',
         '1.6.3':'v9-2',
         '1.6.1':'v9-2',
+        'NOT FOUND':'NOT FOUND', 
             }
             # 
             GC_ver = dict_iGC_GC[iGC_ver]

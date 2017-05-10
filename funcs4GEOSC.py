@@ -2225,7 +2225,7 @@ def spec_dep(ctm_f=None, wd=None, spec='O3', s_area=None, months=None, \
 
     Notes
     -----
-     - Values are returned as a spatial arry with a time dimension 
+     - Values are returned as a spatial array with a time dimension 
     (e.g. shape= (72, 46, 12) )
     """
     logging.info( 'spec dep called for: {}'.format(spec) )

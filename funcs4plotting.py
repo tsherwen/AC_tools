@@ -150,9 +150,10 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
         arr = arr.T
         logging.warning("Array was wrong shape and has been transposed!")
     else:
-        logging.error("Array is the wrong shape. Should be {}. Got {}"\
-         .format( str(expected_shape), arr.shape) )
-        raise AssertionError, "Incorrect array shape."
+        err_msg = "Array is the wrong shape. Should be {}. Got {}"\
+         .format( str(expected_shape), arr.shape)
+        logging.error(err_msg)
+        raise AssertionError, err_msg
 
     #### Add a invalid warning!
     # Mask for percent arrays containing invalid values ( to allow PDF save )
@@ -1035,7 +1036,7 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None,
         xlabel=True, ylabel=True, label=None, title=None, f_size=10, 
         units='ppbv',lgnd_f_size=None, alpha=0.5, rotatexlabel=45, 
         loc='upper right', time_resolution_str="%H:%M", stat2plot='mean', 
-        legend=False, ylim=None, debug=False ):
+        legend=False, ylim=None, lw=2.0, debug=False ):
     """ 
     Creates a diurnal plot for given data and dates using pandas Dataframe
 
@@ -1059,6 +1060,7 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None,
     rotatexlabel (numnber/str): rotation of x axis labels 
     pos, posn (int): vestigle(!) location indices for window plots
     ylim (list): min and max y axis limit
+    lw (str): linewidth
 
     Returns
     -------
@@ -1095,7 +1097,7 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None,
     # --- Plot up average line (median or mean)
     if stat2plot == 'median':
         stat2plot='50%'
-    ax.plot(df.index, df['data'][stat2plot], color=color, linewidth=2.0, \
+    ax.plot(df.index, df['data'][stat2plot], color=color, linewidth=lw, \
         label=label)
 
     # Add quartiles
@@ -2656,6 +2658,10 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     NOTES:
         Provide an 3D array of lon, lat, and alt
     """
+    # If just lat and lon provided, add a dummy dimension. 
+    if len(arr.shape) == 2:
+        arr = arr[...,None]
+
     logging.info( 'plot_spatial_figure called, with shape {}, fixcb: {}'.format(\
         arr.shape,  fixcb)+', min: {}, max:{}'.format( arr.min(), arr.max()) )
     logging.debug('@ surface, min: {} and max: {}'.format( arr[...,0].min(), \
@@ -3446,7 +3452,7 @@ def markers_list( rm_plain_markers=False ):
 
 
 # -------------
-# X.XX linear trendline calculator for X-Y plot (with histograms)
+# X.XX linear (polyfit) trendline calculator for X-Y plot (with histograms)
 # -------------
 def Trendline( ax, X, Y, order=1, intervals=700, f_size=20, color='blue', 
         lw=1, debug=False ):
