@@ -35,6 +35,122 @@ import datetime as datetime
 # -- Variables
 from funcs_vars import *
 
+# ---------------------------------- Section X.X ---------------------------
+# -------------- Planeflight Processors
+#
+# (most programmes with these functions are in AC_tools/Scripts)
+
+
+# ----
+# X.XX - 
+# ----
+def update_Planeflight_files( wd=None, num_tracers=103, ver='3.0' ):
+    """
+    ***OVERWRITE*** planeflight files in directory with updated # of tracers
+
+    Parameters
+    -------
+    wd (str): the working (code) directory to search for files in
+
+    """
+    # 
+    
+    slist = pf_var( fill_var_with_zeroes=True, ver=ver )
+
+
+
+def prt_PlaneFlight_files( df=None, LAT_var='LAT', LON_var='LON', \
+        PRESS_var='PRESS', loc_var='TYPE', Username='Tomas Sherwen', 
+        output4freq=None, slist=None ):
+    """
+    Takes a dataframe of lats, lons, alts, and times and makes Planeflight.dat.*
+    files
+
+    Parameters
+    -------
+    df (pd.DataFrame): dataframe of data (as floats) indexed by times(datetime)
+    wd (str): the working (code) directory to search for files in
+    loc_var (str): name for (e.g. plane name), could be more than one. 
+    LAT_var, LON_var, PRESS_var (str): name for pressure(HPa),lat and lon in df
+    Username (str): name of the programme's user
+    Extra_spacings (boolean): add extra spacing? (needed for large amounts of 
+        output, like nested grids)
+    output4freq (str): just output for locs with a set frequency (e.g. hourly)
+    slist (list): list of tracers/species to output
+    """
+    # --- Packages
+#    import numpy as np
+    from time import gmtime, strftime
+    import time
+
+    # --- Local variables
+    # extra spaces need for runs with many points
+    if Extra_spacings:
+        pstr = '{:>6}  {:<4} {:0>2}-{:0>2}-{:0>4} {:0>2}:{:0>2}  {:>6,.2f} {:>7,.2f} {:>7.2f}'
+        endstr = '999999   END  0- 0-   0  0: 0    0.00    0.00    0.00'
+    else:
+        pstr = '{:>5}  {:<3} {:0>2}-{:0>2}-{:0>4} {:0>2}:{:0>2}  {:>6,.2f} {:>7,.2f} {:>7.2f}'
+        endstr ='99999   END  0- 0-   0  0: 0    0.00    0.00    0.00 '
+
+    # --- work out how many (UTC) days in the output
+    # Get list of unique dates & remove mean from dates
+    dates = [ datetime.datetime(*i.timetuple()[:3]) for i in df.index]
+    dates =np.ma.array((sorted(set( dates ) ) ))    
+    
+    # --- loop days and create the files 
+    for date in dates:
+    
+        # get data for date
+        sub_df = df[ df.index == date ]
+        print sub_df.shape
+
+        # Create/Open up pf.dat setup     
+        a=open('Planeflight.dat.'+date.strftime('%Y%m%d'),'w')  
+
+        # Print out file headers to pf.dat file
+        print >>a, 'Planeflight.dat -- input file for ND40 diagnostic GEOS_FP'
+        print >>a, Username
+        print >>a, strftime("%B %d %Y", gmtime())
+        print >>a, '-----------------------------------------------'
+        print >>a, '{:<4}'.format(nvar),'! Number of variables to be output'
+        print >>a, '-----------------------------------------------'
+
+        # Print out species for GEOS-Chem to output to pf.dat file
+        for i in range(0,len(slist)):
+            print >>a, slist[i]
+
+        # Print out species for GEOS-Chem to output to pf.dat file            
+        print >>a, '-------------------------------------------------'
+        print >>a, 'Now give the times and locations of the flight'
+        print >>a, '-------------------------------------------------'
+        print >>a, 'Point   Type DD-MM-YYYY HH:MM     LAT     LON   PRESS'
+
+        # Loop requested Locations 
+        for n, lat_ in sub_df[LAT_var].values:
+        
+            # Also loop times frequency if provided (e.g. hourly)
+            if not isinstance( output4freq, type(None)):
+                #
+                if output4freq == 'Hour':
+                    pass
+                elif output4freq == 'Minute':
+                    pass
+                else:
+                    print 'ERROR:output4freq () not known!'.format(output4freq)
+            else:
+            
+                # variables to output
+                
+                # print 
+            
+                print >>a, pstr.format( counter, locs[i], c, b,  date.year, d, \
+                    minute, lats[i], lons[i], pres[i])
+                counter+=1
+
+        # Add footer to pf.dat file
+        print >>a, endstr
+        a.close()
+
 
 # ---------------------------------- Section X.X ---------------------------
 # -------------- Planeflight Extractors
@@ -127,9 +243,18 @@ def readfile_basic(files, location, debug=False, Kludge_fortan_output=False, \
     """ 
     basic readfile function for planeflight output in csv 
 
-    ARUGEMENTS:
-     - Kludge_fortan_output (boolean): This is a "kludge" option, for when the numbering 
-     is printed out as "***" due to incorrect format statements in planeflight_mod.F
+    Parameters
+    -------
+    files (list): list of filename name strings 
+    location (str): location name used in provide planeflight files
+    debug (boolean): legacy debug option, replaced by python logging
+    Kludge_fortan_output (boolean): This is a "kludge" option, for when the 
+        numbering is printed out as "***" due to incorrect format statements 
+        in planeflight_mod.F
+    rm_empty (boolean): remove empty values (last in list)
+
+    Notes
+    -----
     """
     if debug:
     	print "files: {}, Location: {}".format( files, location )
