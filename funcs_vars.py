@@ -39,7 +39,7 @@ from funcs4core import *
 # --------------
 # X.XX - dictionary of variables used for planeflight_mod.F output
 # -------------
-def pf_var( input, ver='1.7', ntracers=85 ):
+def pf_var( input, ver='1.7', ntracers=85, fill_var_with_zeroes=False ):
     """ 
     Dictionary store for planeflight ("pf") names/tracers
 
@@ -48,7 +48,7 @@ def pf_var( input, ver='1.7', ntracers=85 ):
     input (string): tracer name to convert from GEOS-Chem to pf nomenclature
     ver (string): version number of halogen code (atop of GEOS-Chem)
     ntracers (integer): number of tracers in a given version of GEOSchem
-    ntracers (integer): number of tracers in a given version of GEOSchem
+    fill_var_with_zeroes (boolean): fill tracer name with zeroes (e.g.'1'=='001')
 
     Returns
     -------
@@ -96,37 +96,42 @@ def pf_var( input, ver='1.7', ntracers=85 ):
     # Setup list of tracers
     if any( [(ver == i) for i in '1.6', '1.6.1', '1.6.2'] ):
         ntracers=96
-    if any( [(ver == i) for i in '1.6.3', '1.6.4' ] ):
+    elif any( [(ver == i) for i in '1.6.3', '1.6.4' ] ):
         ntracers=98
-    if ver == '1.7':
+    elif ver == '1.7':
         ntracers=85
-    if any( [ (ver == i) for i in '2.0', '3.0' ] ):
+    elif any( [ (ver == i) for i in '2.0', '3.0' ] ):
         ntracers=103
-    if ver == 'johan_br.v92':
+    if    ver == 'johan_br.v92':
         ntracers=87
+    # fill with zeros?
     TRAs = ['TRA_'+ str(i) for i in range(1, ntracers+1) ] 
-#    TRAs = ['TRA_{:0>2}'.format(i) for i in range(1, ntracers+1) ]
+    if fill_var_with_zeroes:
+    #    TRAs = ['TRA_{:0>2}'.format(i) for i in range(1, ntracers+1) ]
+        TRAs = ['TRA_{:0>3}'.format(i) for i in range(1, ntracers+1) ]
 
     # Setup list of reactions ( photolysis and general )
     if ver == '1.5':
         PHOT_1st, PHOT_last = 455, 533
-    if ver == '1.6':
+    elif ver == '1.6':
         PHOT_1st, PHOT_last = 453, 531
-    if ver == '1.6.1':
+    elif ver == '1.6.1':
         PHOT_1st, PHOT_last = 453, 530
-    if ver == '1.6.2':
+    elif ver == '1.6.2':
         PHOT_1st, PHOT_last = 452, 529
-    if ver == '1.6.3':
+    elif ver == '1.6.3':
         PHOT_1st, PHOT_last = 461, 538
-    if ver == '1.7':    
+    elif ver == '1.7':    
         PHOT_1st, PHOT_last = 453, 529
-    if ver == '2.0':    
+    elif ver == '2.0':    
 #        PHOT_1st, PHOT_last = 413, 614 # dev
         PHOT_1st, PHOT_last = 519, 607 
-    if ver == '3.0':    
+    elif ver == '3.0':    
 #        PHOT_1st, PHOT_last = 537, 627 # coupled sim.
 #        PHOT_1st, PHOT_last = 554, 644 # With IX split rxns
         PHOT_1st, PHOT_last = 548, 638 # With 0.25 IBr split rxns
+    else:
+        print 'pf_var not setup for ver: ', ver
 
     JREAs = ['REA_'+ str(i) for i in range(PHOT_1st, PHOT_last) ] 
     REAs_all = ['REA_'+ str(i) for i in range(0, 533) ] 
@@ -373,29 +378,36 @@ def species_mass( spec ):
     use of older model run data  )
     """
     d = {
-    'HIO3': 176.0, 'OCPO': 12.0, 'Br2': 160.0, 'OCPI': 12.0, 'O3': 48.0, \
-    'PAN': 121.0, 'ACET': 12.0, 'RIP': 118.0, 'BrNO3': 142.0, 'Br': 80.0, \
-    'HBr': 81.0, 'HAC': 74.0, 'ALD2': 12.0, 'HNO3': 63.0, 'HNO2': 47.0, \
-    'C2H5I': 168.0, 'HNO4': 79.0, 'OIO': 159.0, 'MAP': 76.0, 'PRPE': 12.0, \
+    'HIO3': 176.0, 'Br2': 160.0,  'O3': 48.0, \
+    'PAN': 121.0, 'RIP': 118.0, 'BrNO3': 142.0, 'Br': 80.0, \
+    'HBr': 81.0, 'HAC': 74.0,  'HNO3': 63.0, 'HNO2': 47.0, \
+    'C2H5I': 168.0, 'HNO4': 79.0, 'OIO': 159.0, 'MAP': 76.0, \
     'CH2I2': 268.0, 'IONO2': 189.0, 'NIT': 62.0, 'CH3Br': 95.0, \
-    'C3H7I': 170.0, 'C3H8': 12.0, 'DMS': 62.0, 'CH2O': 30.0, 'CH3IT': 142.0, \
+    'C3H7I': 170.0, 'DMS': 62.0, 'CH2O': 30.0, 'CH3IT': 142.0, \
     'NO2': 46.0, 'NO3': 62.0, 'N2O5': 105.0, 'H2O2': 34.0, 'DST4': 29.0, \
     'DST3': 29.0, 'DST2': 29.0, 'DST1': 29.0, 'MMN': 149.0, 'HOCl': 52.0, \
-    'NITs': 62.0, 'RCHO': 58.0, 'C2H6': 12.0, 'MPN': 93.0, 'INO': 157.0, \
+    'NITs': 62.0, 'RCHO': 58.0,  'MPN': 93.0, 'INO': 157.0, \
     'MP': 48.0, 'CH2Br2': 174.0, 'SALC': 31.4, 'NH3': 17.0, 'CH2ICl': 167.0, \
     'IEPOX': 118.0, 'ClO': 51.0, 'NO': 30.0, 'SALA': 31.4, 'MOBA': 114.0, \
     'R4N2': 119.0, 'BrCl': 115.0, 'OClO': 67.0, 'PMN': 147.0, 'CO': 28.0, \
-    'BCPI': 12.0, 'ISOP': 12.0, 'BCPO': 12.0, 'MVK': 70.0, 'BrNO2': 126.0, \
+     'MVK': 70.0, 'BrNO2': 126.0, \
     'IONO': 173.0, 'Cl2': 71.0, 'HOBr': 97.0, 'PROPNN': 109.0, 'Cl': 35.0, \
-    'I2O2': 286.0, 'I2O3': 302.0, 'I2O4': 318.0, 'I2O5': 334.0, 'MEK': 12.0, \
-    'HI': 128.0, 'ISOPN': 147.0, 'SO4s': 96.0, 'I2O': 270.0, 'ALK4': 12.0, \
+    'I2O2': 286.0, 'I2O3': 302.0, 'I2O4': 318.0, 'I2O5': 334.0, 
+    'HI': 128.0, 'ISOPN': 147.0, 'SO4s': 96.0, 'I2O': 270.0,  \
     'MSA': 96.0, 'I2': 254.0, 'PPN': 135.0, 'IBr': 207.0, 'MACR': 70.0, \
     'I': 127.0, 'AERI': 127.0, 'HOI': 144.0, 'BrO': 96.0, 'NH4': 18.0, \
     'SO2': 64.0, 'SO4': 96.0, 'IO': 143.0, 'CHBr3': 253.0, 'CH2IBr': 221.0, \
     'ICl': 162.0, 'GLYC': 60.0, \
+    # Carbon/VOC species - WARNING these are considered in units cf C equiv.
+    # (following GEOS-Chem approach)
+    'ALD2': 12.0, 'ACET': 12.0, 'PRPE': 12.0, 'OCPO': 12.0,  'OCPI': 12.0, \
+    'C3H8': 12.0, 'C2H6': 12.0,'BCPI': 12.0, 'ISOP': 12.0, 'BCPO': 12.0,\
+    'ALK4': 12.0,'MEK': 12.0, \
     # species, not in GEOS-Chem tracer list
     'HO2': 33.0, 'OH': 17.0,'CH4':16.0 , 'N':14.0, 'CH3I':142.0, \
     'CH2OO':46.0, 'S': 32.0, \
+    # Carbon species not in GEOS-Chem
+    'C2H4': 12.0
     # Additional 2.0 species 
     'HCl': 36.5, 'HOCl': 52.5, 'ClNO2': 81.5, 'ClNO3': 97.5 , 'ClOO': 67.5, \
     'Cl2O2': 103.0,  'CH3Cl':  50.5, 'CH2Cl2': 85.0, 'CHCl3': 119.5, \
@@ -406,7 +418,7 @@ def species_mass( spec ):
     # Add families for ease of processing
     'Iodine': 127.0, 'Iy': 127., 'Bromine': 80.0, 'Bry': 80.0,'Chlorine':35.0,
     'Cly':35.0, 'NOy': 14.0, 'NOx': 14.0, 'SOx': 32.0,\
-     'Sulfate': 32.0, 'sulfur': 32.0, 'VOCs':12.0, 
+    'Sulfate': 32.0, 'sulfur': 32.0, 'VOCs':12.0, 
     # v11-01 standard extra tracers...
     'ASOA1': 150.0, 'ASOA3': 150.0, 'ASOA2': 150.0, 'ASOG3': 150.0, \
     'ASOG2': 150.0, 'ASOG1': 150.0, 'TSOA0': 150.0, 'TSOA1': 150.0, \
