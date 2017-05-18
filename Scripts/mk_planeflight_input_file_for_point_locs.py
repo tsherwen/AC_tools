@@ -1,105 +1,82 @@
 #!/usr/bin/python
-"""
-This programme makes the planeflight*.dat files required to output for specific locations and times in the model. The deafult settting is for hourly output.
-
-NOTES:
- - This programme can be used to produce files to output data for observational sites (e.g. goverment air quality sites)
-"""
 # --- Packages
 import numpy as np
 from time import gmtime, strftime
+import datetime as datetime
 import time
 import glob
+import pandas as pd
+import sys
 import AC_tools as AC
 
-# --- Settings
-wd = '/work/home/ts551/data/'#IO_obs'
-# file of locations?
-#pf_loc_dat_file ='ClBrI_ClNO2_PI_O3_PDRA.dat'
-pf_loc_dat_file ='Weybourne.dat'
-#pf_loc_dat_file ='EU_GRID_0.25x0.3125.dat' 
-# Years output is required for?
-start_year, end_year = 2014,2016
-# debug?
-debug = False
-# output all reactions?
-all_REAs = False
-# 
-# Which (halogen) code version is being used?
-#ver = '1.6' # Iodine simulation in v9-2
-#ver = '2.0' # Iodine + Bromine simulation
-ver = '3.0' # Cl-Br-I simulation 
-# add extra spacing? (needed for large amounts of output, like nested grids)
-Extra_spacings =False
+def main(filename=None, LAT_var='LAT', LON_var='LON', \
+        PRESS_var='PRESS', loc_var='TYPE', Username='Tomas Sherwen', \
+        slist=None, Extra_spacings=False, \
+        freq='H', start_year=2014, end_year=2016, debug=False):
+    """
+    Mk planeflight input files for GEOS-Chem ND40 diagnostic from a csv file 
+    contains sites of interest (TYPE) and their descriptors (LON, LAT, PRESS)
+    
+    Parameters
+    -------
+    freq (str): output frequency of diagnostic ('H' or 'D')
+    start_year,end_year (int): start and end year to output.
+    wd (str): the working (code) directory to search for files in
+    loc_var (str): name for (e.g. plane name), could be more than one. 
+    LAT_var, LON_var, PRESS_var (str): name for pressure(HPa),lat and lon in df
+    Username (str): name of the programme's user
+    Extra_spacings (boolean): add extra spacing? (needed for large amounts of 
+        output, like nested grids)
+    Notes
+    -----
+     - command line call with the following:
+    "python mk_planeflight_input_file_for_point_locs.py <name of dat file>"
+    ( default file provided (Planeflight_point_sites.csv) to edit)
+     - This programme can be used to produce files to output data for 
+    observational sites (e.g. goverment air quality sites)
+     - This programme makes the planeflight*.dat files required to output 
+    for specific locations and times in the model. 
+    - The deafult settting is for hourly output.
+    """
+    # ---  Local settings 
+    # file of locations? (from 1st argument of command line)
+    if isinstance(filename, type(None)):
+        filename = sys.argv[1]
+    else:
+        filename = 'Planeflight_point_sites.csv'    
+    # set species list to output if not provided
+    if isinstance(slist, type(None)):
+        # Which (halogen) code version is being used?
+        #ver = '1.6' # Iodine simulation in v9-2
+        #ver = '2.0' # Iodine + Bromine simulation
+        ver = '3.0' # Cl-Br-I simulation 
+        # Get Variables to output (e.g. tracers, species, met values )
+        slist = AC.pf_var('slist', ver=ver, fill_var_with_zeroes=True )
 
-# --- Read in site Detail
-numbers, lats, lons, pres, locs = AC.readin_gaw_sites( pf_loc_dat_file )
-# make sure the format is numpt float 64
-lats, lons, pres = [ np.float64(i) for i in lats, lons, pres ]
-print lats[0:4]
+    # --- Read in site Detail
+    # ( must contain LAT, LON, PRESS, TYPE (name of sites) )
+    LOCS_df = pd.read_csv( filename )
+    vars_ = ['LAT', 'LON', 'PRESS', 'TYPE' ]
+    LAT, LON, PRESS, TYPE = [ LOCS_df[i].values for i in vars_ ]
 
-# --- Set Variables
-slist = AC.pf_var('slist', ver=ver )#_REAs_all')
+    # --- Make DataFrame of locations 
+    dates = pd.date_range( datetime.datetime(start_year, 1, 1), \
+        datetime.datetime(end_year, 12, 31, 23), freq='H' )
+    # for each location make a DataFrame, then conbime
+    dfs =[]
+    for n, type_ in enumerate( TYPE ):
+        # dictionary of data
+        nvar = len(dates)
+        d = {
+        'datetime':dates,'LAT':[LAT[n]]*nvar, 'LON':[LON[n]]*nvar,
+        'TYPE':[TYPE[n]]*nvar, 'PRESS':[PRESS[n]]*nvar}
+        dfs += [ pd.DataFrame(d, index=np.arange(nvar)+(n*1E6)) ]
+    # combine all TYPE (sites) and sort by date
+    df = pd.concat(dfs).sort_values('datetime',ascending=True)
+    
+    # --- Print out files 
+    AC.prt_PlaneFlight_files(df=df, slist=slist, Extra_spacings=Extra_spacings)
 
-# extra scpaes need for runs with many points
-if Extra_spacings:
-    pstr = '{:>6}  {:<4} {:0>2}-{:0>2}-{:0>4} {:0>2}:{:0>2}  {:>6,.2f} {:>7,.2f} {:>7.2f}'
-    endstr = '999999   END  0- 0-   0  0: 0    0.00    0.00    0.00'
-else:
-    pstr = '{:>5}  {:<3} {:0>2}-{:0>2}-{:0>4} {:0>2}:{:0>2}  {:>6,.2f} {:>7,.2f} {:>7.2f}'
-    endstr ='99999   END  0- 0-   0  0: 0    0.00    0.00    0.00 '
 
-# remove 2nd reaction following 3 body reactions.
-if all_REAs:
-    # Get dictionary of rxns for wd/ver
-    MUTDwd =  MUTD_runs()[0]
-    rdict = AC.rxn_dict_from_smvlog( MUTDwd, ver=ver)
-
-# setup required time range
-nvar=len(slist)
-yr = range(start_year, end_year )
-m  = range(01,13)
-da  = range(01,32,1)
-h  = range(00,24,1)
-mi = range(00,60,1)
-minute = 0
-
-# --- loop dates and make Planeflight log files for given points 
-for year in yr:
-    for b in m: 
-        for c in da:
-
-            if debug:
-                print year, b, c
-            a=open('Planeflight.dat.'+str(year)+'{:0>2}{:0>2}'.format( b, c), 'w')  
-
-            # Print out file headers to pf.dat file
-            print >>a, 'Planeflight.dat -- input file for ND40 diagnostic GEOS_FP'
-            print >>a, 'Tomas Sherwen'
-            print >>a, strftime("%B %d %Y", gmtime())
-            print >>a, '-----------------------------------------------'
-            print >>a, '{:<4}'.format(nvar),'! Number of variables to be output'
-            print >>a, '-----------------------------------------------'
-
-            # Print out species for GEOS-Chem to output to pf.dat file
-            for i in range(0,len(slist)):
-                print >>a, slist[i]
-
-            # Print out species for GEOS-Chem to output to pf.dat file            
-            print >>a, '-------------------------------------------------'
-            print >>a, 'Now give the times and locations of the flight'
-            print >>a, '-------------------------------------------------'
-            print >>a, 'Point   Type DD-MM-YYYY HH:MM     LAT     LON   PRESS'
-
-            # Loop requested dates and times
-            counter=0
-            for d in h:
-                
-                for i in range(len(lats)):
-                    print >>a, pstr.format( counter, locs[i], c, b,  year, d, \
-                                            minute, lats[i], lons[i], pres[i])
-                    counter+=1
-
-            # Add footer to pf.dat file
-            print >>a, endstr
-            a.close()
+if __name__ == "__main__":
+    main()

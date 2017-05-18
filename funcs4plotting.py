@@ -1117,7 +1117,7 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None,
 
     # --- Beautify 
     # title?
-    if (title != None):
+    if not isinstance(title, type(None) ):
         plt.title( title )
     # axis labels?
     if xlabel:
