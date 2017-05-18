@@ -40,28 +40,84 @@ from funcs_vars import *
 #
 # (most programmes with these functions are in AC_tools/Scripts)
 
+# ----
+# X.XX - Make planeflight files from
+# ----
+
 
 # ----
 # X.XX - 
 # ----
 def update_Planeflight_files( wd=None, num_tracers=103, ver='3.0' ):
     """
-    ***OVERWRITE*** planeflight files in directory with updated # of tracers
+    Create new planeflight from old files (with updated # of tracers)
 
     Parameters
     -------
     wd (str): the working (code) directory to search for files in
-
     """
+    # Local vairablse
+    output_data_str = 'Now give the times and locations of the flight'
     # 
+    met_vars = [
+    'GMAO_ABSH' 'GMAO_PSFC','GMAO_SURF', 'GMAO_TEMP', 'GMAO_UWND', 'GMAO_VWND'
+    ]
+    slist = ['TRA_{:0>3}'.format(i) for i in np.arange(1, num_tracers+1 ) ]
+#    slist = pf_var( fill_var_with_zeroes=True, ver=ver )
+    # ---  
+    # Get wd 
+    if isinstance(wd, type(None)):
+        try:
+            wd = sys.argv[1]    
+        except:
+            print 'FAIL - Please provide working directory!'
+    # vars to use?
+    # read in files and extract locations.
+    files = glob.glob( wd+'Planeflight.dat*' )
     
-    slist = pf_var( fill_var_with_zeroes=True, ver=ver )
+    # loop files and extract data
+    dfs = []
+    for n_file, file in enumerate( files ):
+        with open(file, 'rb') as file_:
+            # loop variables
+            data_from_line_num = 9999    
+            data =[]        
+            for n, line in enumerate( file_ ):
+                # get header
+                if ('Point' in line) and ('Type' in line):
+                    header = [i.strip().upper() for i in line.split()]
+                    data_from_line_num = n
+                # Break if passed all data
+                elif ('99999' in line) and ('END' in line):   
+                    break
+                elif (n>data_from_line_num):
+                    data += [ [i.strip() for i in line.split()] ]         
+                else:
+                    pass 
+            
 
+            # add datetime column, then add data to list of dataframes 
+            df = pd.DataFrame( np.array(data), columns=header )
+#            df.index = df['POINT']+(n_file*1E6))
+            df['datetime'] = df['DD-MM-YYYY'].astype(str)+df['HH:MM'].astype(str)
+            df['datetime'] = pd.to_datetime(df['datetime'],\
+                format='%d-%m-%Y%H:%M')
+            dfs += [ df ] 
+
+    # concatenate         
+    print dfs[0]
+    df = pd.concat(dfs).sort_values('datetime',ascending=True)
+    print 'FINAL!!!!' , df
+
+
+    # --- Print out new files 
+    prt_PlaneFlight_files(df=df, slist=slist, Extra_spacings=False)
 
 
 def prt_PlaneFlight_files( df=None, LAT_var='LAT', LON_var='LON', \
-        PRESS_var='PRESS', loc_var='TYPE', Username='Tomas Sherwen', 
-        output4freq=None, slist=None ):
+        PRESS_var='PRESS', loc_var='TYPE', Username='Tomas Sherwen', \
+        Date_var='datetime', slist=None, Extra_spacings=False, \
+        verbose=False, debug=False ):
     """
     Takes a dataframe of lats, lons, alts, and times and makes Planeflight.dat.*
     files
@@ -72,40 +128,54 @@ def prt_PlaneFlight_files( df=None, LAT_var='LAT', LON_var='LON', \
     wd (str): the working (code) directory to search for files in
     loc_var (str): name for (e.g. plane name), could be more than one. 
     LAT_var, LON_var, PRESS_var (str): name for pressure(HPa),lat and lon in df
+    Date_var (str): column name of df containing datetime variables
     Username (str): name of the programme's user
     Extra_spacings (boolean): add extra spacing? (needed for large amounts of 
         output, like nested grids)
-    output4freq (str): just output for locs with a set frequency (e.g. hourly)
     slist (list): list of tracers/species to output
+
+    Notes
+    -----
+     - to get output of a specific frequency for given point locations, just 
+    add the times to the axis of the dataframe provided. 
+     -  datetime columns is required (as this allows mulitple output loations
+     (e.g. sepeerate planes/sites) to be present in input df)
+     - This function expects the dataframe to be ordered by datetime
     """
     # --- Packages
-#    import numpy as np
     from time import gmtime, strftime
     import time
 
     # --- Local variables
     # extra spaces need for runs with many points
     if Extra_spacings:
-        pstr = '{:>6}  {:<4} {:0>2}-{:0>2}-{:0>4} {:0>2}:{:0>2}  {:>6,.2f} {:>7,.2f} {:>7.2f}'
+        pstr = '{:>6}  {:>4} {:0>2}-{:0>2}-{:0>4} {:0>2}:{:0>2}  {:>6,.2f} {:>7,.2f} {:>7.2f}'
         endstr = '999999   END  0- 0-   0  0: 0    0.00    0.00    0.00'
     else:
-        pstr = '{:>5}  {:<3} {:0>2}-{:0>2}-{:0>4} {:0>2}:{:0>2}  {:>6,.2f} {:>7,.2f} {:>7.2f}'
-        endstr ='99999   END  0- 0-   0  0: 0    0.00    0.00    0.00 '
-
+#        pstr = '{:>5}  {:<3} {:0>2}-{:0>2}-{:0>4} {:0>2}:{:0>2}  {:>6,.2f} {:>7,.2f} {:>7.2f}'
+#        endstr ='99999   END  0- 0-   0  0: 0    0.00    0.00    0.00 '
+        pstr = '{:>5}  {:>4} {:0>2}-{:0>2}-{:0>4} {:0>2}:{:0>2}  {:>6,.2f} {:>7,.2f} {:>7.2f}'
+        endstr ='99999   END 00-00-0000 00:00    0.00    0.00    0.00'
+    # number of variables to output
+    nvar = len(slist)
     # --- work out how many (UTC) days in the output
     # Get list of unique dates & remove mean from dates
-    dates = [ datetime.datetime(*i.timetuple()[:3]) for i in df.index]
-    dates =np.ma.array((sorted(set( dates ) ) ))    
+    dates = [datetime.datetime(*i.timetuple()[:3]) for i in df[Date_var] ]
+    # add list of just YYYYMMDD strings to dataframe
+    df['YYYYMMDD'] = [i.strftime('%Y%m%d') for i in dates ]
+    # get list of unique days
+    dates = np.ma.array( sorted( set(dates) ) )
     
     # --- loop days and create the files 
-    for date in dates:
+    for date_ in dates:
     
         # get data for date
-        sub_df = df[ df.index == date ]
-        print sub_df.shape
-
+        sub_df = df[ df['YYYYMMDD'].values == date_.strftime('%Y%m%d') ]
+        if verbose:
+            print 'Entries for day ({}): '.format(date_), sub_df.shape
+#        print sub_df
         # Create/Open up pf.dat setup     
-        a=open('Planeflight.dat.'+date.strftime('%Y%m%d'),'w')  
+        a=open('Planeflight.dat.'+date_.strftime('%Y%m%d'),'w')  
 
         # Print out file headers to pf.dat file
         print >>a, 'Planeflight.dat -- input file for ND40 diagnostic GEOS_FP'
@@ -116,36 +186,27 @@ def prt_PlaneFlight_files( df=None, LAT_var='LAT', LON_var='LON', \
         print >>a, '-----------------------------------------------'
 
         # Print out species for GEOS-Chem to output to pf.dat file
-        for i in range(0,len(slist)):
-            print >>a, slist[i]
+        for n in range(0,len(slist)):
+            print >>a, slist[n]
 
         # Print out species for GEOS-Chem to output to pf.dat file            
         print >>a, '-------------------------------------------------'
         print >>a, 'Now give the times and locations of the flight'
         print >>a, '-------------------------------------------------'
-        print >>a, 'Point   Type DD-MM-YYYY HH:MM     LAT     LON   PRESS'
+        print >>a, 'Point  Type DD-MM-YYYY HH:MM     LAT     LON   PRESS'
 
-        # Loop requested Locations 
-        for n, lat_ in sub_df[LAT_var].values:
-        
-            # Also loop times frequency if provided (e.g. hourly)
-            if not isinstance( output4freq, type(None)):
-                #
-                if output4freq == 'Hour':
-                    pass
-                elif output4freq == 'Minute':
-                    pass
-                else:
-                    print 'ERROR:output4freq () not known!'.format(output4freq)
-            else:
-            
-                # variables to output
-                
-                # print 
-            
-                print >>a, pstr.format( counter, locs[i], c, b,  date.year, d, \
-                    minute, lats[i], lons[i], pres[i])
-                counter+=1
+        # Loop requested times 
+        for n, time_ in enumerate( sub_df[Date_var] ):
+            # - Setup variable list to print
+            vars_ = [ n+1, sub_df[loc_var].values[n], time_.day, time_.month ]
+            vars_ += [ time_.year, time_.hour, time_.minute ]
+            # extract lat, lon, and pressure for time
+            coord_vars = LAT_var, LON_var, PRESS_var
+            vars_ += [ float( sub_df[i].values[n] ) for i in coord_vars ]
+            # Set formating
+            vars_ = pstr.format( *vars_ )
+            #  - print to file
+            print >>a, vars_
 
         # Add footer to pf.dat file
         print >>a, endstr

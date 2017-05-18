@@ -39,7 +39,7 @@ from funcs4core import *
 # --------------
 # X.XX - dictionary of variables used for planeflight_mod.F output
 # -------------
-def pf_var( input, ver='1.7', ntracers=85, fill_var_with_zeroes=False ):
+def pf_var( input, ver='3.0', ntracers=85, fill_var_with_zeroes=False ):
     """ 
     Dictionary store for planeflight ("pf") names/tracers
 
