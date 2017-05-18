@@ -85,7 +85,7 @@ def prt_PlaneFlight_files( df=None, LAT_var='LAT', LON_var='LON', \
 
     # --- Local variables
     # extra spaces need for runs with many points
-    if Extra_spacings or :
+    if Extra_spacings:
         pstr = '{:>6}  {:<4} {:0>2}-{:0>2}-{:0>4} {:0>2}:{:0>2}  {:>6,.2f} {:>7,.2f} {:>7.2f}'
         endstr = '999999   END  0- 0-   0  0: 0    0.00    0.00    0.00'
     else:
@@ -126,17 +126,23 @@ def prt_PlaneFlight_files( df=None, LAT_var='LAT', LON_var='LON', \
         print >>a, 'Point   Type DD-MM-YYYY HH:MM     LAT     LON   PRESS'
 
         # Loop requested Locations 
-        
+        for n, lat_ in sub_df[LAT_var].values:
         
             # Also loop times frequency if provided (e.g. hourly)
-            if not isinstnace( output4freq, type(None)):
-                if time_freq == 'X'    
-        
-
-
-        counter=0
-        for d in h:    
-            for i in range(len(lats)):
+            if not isinstance( output4freq, type(None)):
+                #
+                if output4freq == 'Hour':
+                    pass
+                elif output4freq == 'Minute':
+                    pass
+                else:
+                    print 'ERROR:output4freq () not known!'.format(output4freq)
+            else:
+            
+                # variables to output
+                
+                # print 
+            
                 print >>a, pstr.format( counter, locs[i], c, b,  date.year, d, \
                     minute, lats[i], lons[i], pres[i])
                 counter+=1
