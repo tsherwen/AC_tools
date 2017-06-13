@@ -38,12 +38,15 @@ def main(filename=None, LAT_var='LAT', LON_var='LON', \
     for specific locations and times in the model. 
     - The deafult settting is for hourly output.
     """
+    print 'filename:{}'.format(filename) 
     # ---  Local settings 
     # file of locations? (from 1st argument of command line)
     if isinstance(filename, type(None)):
-        filename = sys.argv[1]
-    else:
-        filename = 'Planeflight_point_sites.csv'    
+        if __name__ == "__main__":
+            filename = sys.argv[1]
+        else:
+            filename = 'Planeflight_point_sites.csv'    
+
     # set species list to output if not provided
     if isinstance(slist, type(None)):
         # Which (halogen) code version is being used?
@@ -55,6 +58,7 @@ def main(filename=None, LAT_var='LAT', LON_var='LON', \
 
     # --- Read in site Detail
     # ( must contain LAT, LON, PRESS, TYPE (name of sites) )
+    
     LOCS_df = pd.read_csv( filename )
     vars_ = ['LAT', 'LON', 'PRESS', 'TYPE' ]
     LAT, LON, PRESS, TYPE = [ LOCS_df[i].values for i in vars_ ]

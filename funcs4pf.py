@@ -41,11 +41,6 @@ from funcs_vars import *
 # (most programmes with these functions are in AC_tools/Scripts)
 
 # ----
-# X.XX - Make planeflight files from
-# ----
-
-
-# ----
 # X.XX - 
 # ----
 def update_Planeflight_files( wd=None, num_tracers=103, ver='3.0' ):
@@ -63,6 +58,8 @@ def update_Planeflight_files( wd=None, num_tracers=103, ver='3.0' ):
     'GMAO_ABSH' 'GMAO_PSFC','GMAO_SURF', 'GMAO_TEMP', 'GMAO_UWND', 'GMAO_VWND'
     ]
     slist = ['TRA_{:0>3}'.format(i) for i in np.arange(1, num_tracers+1 ) ]
+    species  = ['OH', 'HO2']
+    slist = slist + species + met_vars
 #    slist = pf_var( fill_var_with_zeroes=True, ver=ver )
     # ---  
     # Get wd 
@@ -74,6 +71,7 @@ def update_Planeflight_files( wd=None, num_tracers=103, ver='3.0' ):
     # vars to use?
     # read in files and extract locations.
     files = glob.glob( wd+'Planeflight.dat*' )
+    print files
     
     # loop files and extract data
     dfs = []
@@ -95,25 +93,30 @@ def update_Planeflight_files( wd=None, num_tracers=103, ver='3.0' ):
                 else:
                     pass 
             
-
-            # add datetime column, then add data to list of dataframes 
-            df = pd.DataFrame( np.array(data), columns=header )
-#            df.index = df['POINT']+(n_file*1E6))
-            df['datetime'] = df['DD-MM-YYYY'].astype(str)+df['HH:MM'].astype(str)
-            df['datetime'] = pd.to_datetime(df['datetime'],\
+            if len(data) > 1: 
+                # add datetime column, then add data to list of dataframes 
+                df = pd.DataFrame( np.array(data), columns=header )
+    #            df.index = df['POINT']+(n_file*1E6))
+                df['datetime'] = df['DD-MM-YYYY'].astype(str)+df['HH:MM'].astype(str)
+                df['datetime'] = pd.to_datetime(df['datetime'],\
                 format='%d-%m-%Y%H:%M')
-            dfs += [ df ] 
+                dfs += [ df ] 
+            else:
+                err_msg = 'WARNING: no data in {}'.format( file )
+                logging.info( err_msg )
+                print err_msg
 
     # concatenate         
     print dfs[0]
     df = pd.concat(dfs).sort_values('datetime',ascending=True)
     print 'FINAL!!!!' , df
 
-
     # --- Print out new files 
     prt_PlaneFlight_files(df=df, slist=slist, Extra_spacings=False)
 
-
+# ----
+# X.XX - 
+# ----
 def prt_PlaneFlight_files( df=None, LAT_var='LAT', LON_var='LON', \
         PRESS_var='PRESS', loc_var='TYPE', Username='Tomas Sherwen', \
         Date_var='datetime', slist=None, Extra_spacings=False, \
@@ -295,6 +298,21 @@ def wd_pf_2_data( wd, spec, location='TOR', scale=1E12, r_datetime=False, \
         vars = [ model[:,names.index( i) ] \
             for i in [ 'LAT', 'LON', 'YYYYMMDD', 'HHMM' ]]
         return [data] + vars
+
+# -------------- 
+# X.XX - Planeflight reader using pandas
+# -------------- 
+def read_PlaneFlight_output(wd=None, sdate=None, edate=None):
+    """
+    """
+    # --- 
+    
+    
+    # ---
+    files = glob.glob( wd+ '/plane.log.*' )
+    
+    
+
 
 # -------------- 
 # X.XX - Basic planeflight Output reader - mje
@@ -482,21 +500,28 @@ def get_pf_headers(file, debug=False):
 # -------------- 
 # X.0X - converts planeflight.dat file to pandas array
 # ----------
-def pf_csv2pandas( file=None, vars=None, epoch=False, r_vars=False, \
-            debug=False ):
+def pf_csv2pandas(file=None, vars=None, epoch=False, r_vars=False, \
+        debug=False):
     """ 
     Planeflight.dat CSV reader - used for processor GEOS-Chem PF output
-    """
 
+    Parameters
+    -------
+    file (str): file name (inc. directory)
+    vars (list): vars to extract
+    epoch (boolean):
+    r_vars (boolean): return list of vars
+
+    Returns
+    -------
+    (pd.DataFrame)
+    """
     # Open file
     with open(file, 'rb') as f :
-
-#        if debug:
-#            print '>'*30, f
         logging.debug( f )
 
         # Label 1st column ( + LOC ) if names not in vars
-        # ( This effectively means that pandas arrays are the same
+        # ( This effectively means that pandas arrays are the same )
         if debug:
             print [ type(i) for i in vars, ['POINT', 'LOC']  ]
         if 'POINT' not in vars:
@@ -506,19 +531,15 @@ def pf_csv2pandas( file=None, vars=None, epoch=False, r_vars=False, \
         if debug:
             print vars, names 
 
-        # convert to pandas array
+        # Convert to pandas array
         df = pd.read_csv( f, header=None, skiprows=1, \
             delim_whitespace=True, names=names, dtype={'HHMM':str, \
             'YYYYMMDD':str, 'POINT':object}   )
 
-        # convert strings to datetime using pandas mapping
+        # Convert strings to datetime using pandas mapping
         df = DF_YYYYMMDD_HHMM_2_dt( df, rmvars=None, epoch=epoch )
-
         if debug:
             print df, df.shape
-
-#    print df.columns   
-#    print list( df.columns )
 
     # return pandas DataFrame
     if r_vars:

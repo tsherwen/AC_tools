@@ -1386,7 +1386,7 @@ def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
     else: # Just extract v/v 
         arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ],
             trop_limit=trop_limit, r_list=True ) 
-    logging.debug( [ i.shape for i in arr], len( arr), np.sum( arr ), specs )
+#    logging.debug( locals() )
 
     # Adjust to stiochmetry  ( Vars )
     arr = [ arr[n]*spec_stoich(i, ref_spec=fam) \
@@ -2949,7 +2949,7 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
         spec = 'HO2'
         arr = get_GC_output( wd=wd, vars=['CHEM_L_S__'+spec], \
             trop_limit=trop_limit )
-        units = 'pmol mol${^-1}$'
+        units = 'pmol mol$^{-1}$'
 
     # --- HOX 
     if fam == 'HOx' :

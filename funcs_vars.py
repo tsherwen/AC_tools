@@ -2566,7 +2566,8 @@ def gaw_2_loc( site, f='GLOBAL_SURFACE_O3_2006_2012.nc' ):
      - Another file is availible with just GAW sites:
     ( 'GAW_SURFACE_O3_2006_2012.nc' )
     """
-    from ..funcs4generic import hPa_to_Km
+#    from ..funcs4generic import hPa_to_Km
+    from funcs4generic import hPa_to_Km
 
     # Use simple dictionary if site listed
     try:

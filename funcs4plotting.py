@@ -867,7 +867,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
     if lat40_2_40  :
         mask =  tropics_unmasked(res=res)
         arr = arr * mask[0,:,:c_off+1]         
-    logging.debug( lat, [ np.array(i).shape for i in lat, alt, arr, arr.T ] )
+#    logging.debug( [lat] + [ np.array(i).shape for i in lat, alt, arr, arr.T ] )
 
     if set_window:
         arr = arr[ get_gc_lat(lat_0, res=res):get_gc_lat(lat_1, res=res), :]
@@ -1284,7 +1284,7 @@ def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
     """
 
     # setup color list if not provided            
-    if isinstnace(color, type(None)):
+    if isinstance(color, type(None)):
         color = color_list( posn )[ pos ]
 
     # if this is a window plot, then reduce text size
