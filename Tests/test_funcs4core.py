@@ -7,7 +7,7 @@ logging.basicConfig(filename='test.log',level=logging.DEBUG)
 data_dir = '../data'
 
 def test_get_sigfig():                                                          
-    print get_sigfig(100,1)
+    print(get_sigfig(100,1))
     assert(get_sigfig(3.22294, 1)==3)                                           
     assert(get_sigfig(3.29294, 2)==3.3)                                         
     assert(get_sigfig(3.29294, 3)==3.29)                                        
@@ -75,7 +75,7 @@ def test_get_latlonalt4res_default():
 
     # Test default
     (lon, lat, alt) = get_latlonalt4res()
-    print "lon = ", lon
+    print("lon = ", lon)
     assert len(lat)==46, 'The default latitude is wrong'
     assert len(lon)==72, 'The default longitude is wrong'
     assert len(alt)==47, 'The default altidure is wrong'

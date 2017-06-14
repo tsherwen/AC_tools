@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # modules
-import AC_tools as AC
+from . import AC_tools as AC
 import numpy as np
 import sys
 import matplotlib.pyplot as plt
@@ -26,7 +26,7 @@ except: # Otherwise use path below
 # get data as 4D array ( lon, lat, alt, time ) 
 mixing_ratio  = AC.get_GC_output( wd, species=species, category='IJ-AVG-$', \
     trop_limit=trop_limit ) 
-print mixing_ratio.shape
+print(mixing_ratio.shape)
 
 # Get data to calculate burden
 if calc_burden:
@@ -38,7 +38,7 @@ if calc_burden:
     time_in_trop = AC.get_GC_output( wd, vars=['TIME_TPS__TIMETROP'],
                                   trop_limit=trop_limit )
     # print shapes of array to screen
-    print [i.shape for i in mixing_ratio, air_mass, time_in_trop ]
+    print([i.shape for i in (mixing_ratio, air_mass, time_in_trop) ])
 
     # calc the total & mean mass of a speices - select data you want to calc & print
     # mass (convert to g) / RMM air
@@ -49,22 +49,22 @@ if calc_burden:
 
     # convert to mass
     species_mass = species_moles * RMM_species              
-    print species_mass.shape
+    print(species_mass.shape)
 
     # Get Global Burden, converting to Tg and removing stratosphere
-    print np.sum( np.mean( species_mass[:,:,:38,:]*time_in_trop, axis=3 ) ) / 1E12   
+    print(np.sum( np.mean( species_mass[:,:,:38,:]*time_in_trop, axis=3 ) ) / 1E12)   
 
 #  select data you want to plot - set as mean() of time, but simply remove 'mean(axis=3)' & give number to select desired timestamp
 mixing_ratio = mixing_ratio[:,:,:,:].mean( axis=3 ) 
 
 # select surface layer
-print mixing_ratio.shape
+print(mixing_ratio.shape)
 mixing_ratio = mixing_ratio[:,:,0]
-print mixing_ratio.shape
+print(mixing_ratio.shape)
 
 # Transpose to X vs. Y coordinate
 mixing_ratio = np.transpose( mixing_ratio )
-print mixing_ratio.shape, res
+print(mixing_ratio.shape, res)
 
 # plot surface
 #plt, cb = AC.basic_map_plot( mixing_ratio, species, unit, res=res, debug=debug )

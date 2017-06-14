@@ -6,7 +6,7 @@ import time
 import numpy as np
 import gc
 import datetime
-import AC_tools as AC
+from . import AC_tools as AC
 """
 Animate a NetCDF array to give a video of 2D (surface)
 """
@@ -29,7 +29,7 @@ def main( spec='NO' , pcent=False, fixcb=None, limit_by_dates=False, \
     arr, dates = get_data_dates( spec=spec, limit_by_dates=limit_by_dates,
         debug=debug)
     if debug:
-        print [ (i[:5], i.shape ) for i in arr, dates]
+        print([ (i[:5], i.shape ) for i in (arr, dates)])
     
     # Get titles and other varibles for run (e.g. res, lons and lats for GC config. )
     lat, lon, units, fname, res, title, scale = get_run_info( spec=spec, \
@@ -62,8 +62,8 @@ def main( spec='NO' , pcent=False, fixcb=None, limit_by_dates=False, \
 
 def extract_data_dates( spec='O3', file=None, dates_variable='time', \
             fill_invalid_with_mean=True, limit_by_dates=False, \
-            sdate=datetime.datetime(2005, 01, 01), ver = '1.7', \
-            edate=datetime.datetime(2005, 01, 07), debug=False  ):
+            sdate=datetime.datetime(2005, 0o1, 0o1), ver = '1.7', \
+            edate=datetime.datetime(2005, 0o1, 0o7), debug=False  ):
     """ Extracts dates and data from a given location """
 
     from pandas import DataFrame
@@ -78,58 +78,58 @@ def extract_data_dates( spec='O3', file=None, dates_variable='time', \
     with Dataset( file, 'r' ) as rootgrp:
 
         if debug:
-            print [i for i in rootgrp.variables ]
+            print([i for i in rootgrp.variables ])
 
         # Return data as an array
 #        arr = np.ma.array( rootgrp.variables[ pspec ]   )
         arr = np.array( rootgrp.variables[ pspec ]   )
-        print rootgrp.variables[ pspec ] 
-        print np.array( rootgrp.variables[ pspec ]  )
+        print(rootgrp.variables[ pspec ]) 
+        print(np.array( rootgrp.variables[ pspec ]  ))
 
         # get dates
         dates = np.ma.array( rootgrp.variables[ dates_variable ]   )
 
     if debug:
-        print [ ( type( i ), i.shape ) for i in arr, dates ]
-        print [ (i.min(), i.max(), i.mean()) for i in arr, dates ]
+        print([ ( type( i ), i.shape ) for i in (arr, dates) ])
+        print([ (i.min(), i.max(), i.mean()) for i in (arr, dates) ])
 
     # Mask with invalid values ( fill values in array) 
     arr = np.ma.masked_invalid( arr  )
     if debug:
-        print [ (i.min(), i.max(), i.mean()) for i in [arr] ]
+        print([ (i.min(), i.max(), i.mean()) for i in [arr] ])
         
     # Make sure dates are as datetime and in a numpy array
     dates = [datetime.datetime.fromtimestamp(i) for i in dates ]    
     dates = np.array(dates )
 
     if debug:
-        print [ i.shape for i in arr, dates ]
+        print([ i.shape for i in (arr, dates) ])
     
-        print edate, sdate, dates[0]
-        print [ type(i) for i in edate, sdate, dates[0] ]
+        print(edate, sdate, dates[0])
+        print([ type(i) for i in (edate, sdate, dates[0]) ])
     
-        print dates > sdate 
-        print dates < edate 
+        print(dates > sdate) 
+        print(dates < edate) 
  
     # Limit to given dates ( e.g. 1st month 2005)
     if limit_by_dates:
         dates = dates[ np.where( dates >= sdate ) ] 
-        print [i.shape for i in arr, dates ]
+        print([i.shape for i in (arr, dates) ])
         dates = dates[ np.where( dates < edate ) ] 
-        print [i.shape for i in arr, dates ]
+        print([i.shape for i in (arr, dates) ])
         # Kludge, remove 1st dimension added by method.  <= improve this. 
         arr = arr[ np.where( dates >= sdate ), ... ][0,...] 
-        print [i.shape for i in arr, dates ]
+        print([i.shape for i in (arr, dates) ])
         arr = arr[ np.where( dates < edate ), ... ][0,...] 
-        print [i.shape for i in arr, dates ]
+        print([i.shape for i in (arr, dates) ])
         
     return arr, dates
 
 
 def get_data_dates( spec='O3', dates_variable='time', \
             fill_invalid_with_mean=True, limit_by_dates=False, \
-            sdate=datetime.datetime(2005, 01, 01), pcent=False, \
-            edate=datetime.datetime(2005, 01, 07), debug=False ):
+            sdate=datetime.datetime(2005, 0o1, 0o1), pcent=False, \
+            edate=datetime.datetime(2005, 0o1, 0o7), debug=False ):
     """ Set dirs/files to use.
         Extracts dates and data from a given location
         NOTE:
@@ -149,7 +149,7 @@ def get_data_dates( spec='O3', dates_variable='time', \
 'pf_iGEOSChem_1.7_v10_G5_EU.EOH_run.x50SUMMER_ClearFlo.EMEPx4.RETROx4.OH_output.ALD2_3D.nc'
     ]    
     files =  [ wd+i for i in files ]
-    print files
+    print(files)
 
     # Extract data, by looping file list 
     data_l, dates_l = [] , []
@@ -264,8 +264,8 @@ def setup_plot2animate( arr, fig=None, ax=None, lat=None, lon=None, \
     plt.ioff() # turn off interactive plotting
     global specplt
 
-    print 3, 'detail on output: ', [ [ np.ma.min(i), np.ma.max(i), \
-        np.ma.mean(i), type(i),i.shape ] for i in [arr] ]
+    print(3, 'detail on output: ', [ [ np.ma.min(i), np.ma.max(i), \
+        np.ma.mean(i), type(i),i.shape ] for i in [arr] ])
 
     # Setup basemap
     m = get_basemap( lat=lat, lon=lon, resolution=resolution, res=res,\
@@ -310,9 +310,9 @@ def setup_plot2animate( arr, fig=None, ax=None, lat=None, lon=None, \
         #, antialiased=True )
 
     if debug:
-        print [len(i) for i in lat, lon, x, y ]
-        print arr.shape, type( arr) 
-        print arr.shape, type( arr) 
+        print([len(i) for i in (lat, lon, x, y) ])
+        print(arr.shape, type( arr)) 
+        print(arr.shape, type( arr)) 
 
     return cmap, specplt, lvls, cnorm, m, fixcb, fixcb_buffered
 
@@ -329,8 +329,8 @@ def animate_array( arr, dates, specplt, spec='O3', min_change=0.5, \
     # Function to loop frame and save to animation
     def plotgc(i):
         global specplt
-        print i, 'for {} @ model time of {} @  real time of {}'.format( spec, \
-             dates[i], time.strftime('%Y %m %d %H:%M:%S') )
+        print(i, 'for {} @ model time of {} @  real time of {}'.format( spec, \
+             dates[i], time.strftime('%Y %m %d %H:%M:%S') ))
         if contour:
             # Remove previous plot data, but retain basemap....
             for c in specplt.collections:
@@ -358,7 +358,7 @@ def animate_array( arr, dates, specplt, spec='O3', min_change=0.5, \
     # Save
     ani.save( wd + fname, 'ffmpeg', fps=24, extra_args=['-vcodec', 
             'libx264','-pix_fmt', 'yuv420p'])
-    print 'Video saved & Closed as/at: ', fname
+    print('Video saved & Closed as/at: ', fname)
 
     # Clean memory
 #    gc.collect()    

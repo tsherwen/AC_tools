@@ -2,6 +2,9 @@ from ..bpch2netCDF import *
 import logging
 import pytest
 import os
+#import urllib.parse, urllib.error
+# temporality restore urllib2 as urllib not installed                                                                                                           
+from urllib import urlopen
 import urllib2
 
 slow = pytest.mark.skipif(                                                     

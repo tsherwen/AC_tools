@@ -78,7 +78,7 @@ def nonISOdate2ISO( ds ):
     logging.info( 'nonISOdate2ISO called' )
     regex = re.compile( '(\d\d\d\d-\d-\d\d)')
     regexII = re.compile( '(.*\s\d:.*)')    
-    print ds
+    print(ds)
     for d in ds:
 #        print 0, d, len(d[0]), [ re.match(regexII, d[0]) ]
         d = d[0]
@@ -104,9 +104,9 @@ def nonISOdate2ISO( ds ):
             if len(d) != 19:
                 d= d[:8]+'0'+d[8:]       
         if len(d) != 19:
-            print 1.3, d, len(d[0])                        
+            print(1.3, d, len(d[0]))                        
         d = [d] 
-        print 2, d, len(d[0])
+        print(2, d, len(d[0]))
     return ds
 
 
@@ -157,7 +157,7 @@ def YYYYMMDD_HHMM_2_datetime( str1=None, str2=None, conbined=False,  \
         # make pandas dataframe 
         data = np.array( [str1,str2] )
         if debug:
-            print data.shape, data[:5,:], [ type(i) for i in str1,str2 ]
+            print(data.shape, data[:5,:], [ type(i) for i in (str1,str2) ])
         df = pd.DataFrame( data=data.T, columns=['YYYYMMDD', 'HHMM'] )
 
         # convert to datetime 
@@ -201,7 +201,7 @@ def add_hrs(sourcedate,hrs_, debug=False):
     Incremental increase of datetime by given hours 
     """ 
     if debug:
-        print sourcedate, hrs_
+        print(sourcedate, hrs_)
     sourcedate += datetime.timedelta(hours=hrs_)    
     return  sourcedate
 
@@ -237,7 +237,7 @@ def d_adjust( months=None, years=None ):
     """
     # Get months and years if not given
     if not isinstance(months, list):
-        months = range(1,13)
+        months = list(range(1,13))
     if not isinstance(years, list):
         years  = [2009]* len(months)
 
@@ -292,11 +292,11 @@ def dt_hrs_a2b( a, b, period=1, debug=False ) :
     """
     dates = [a]
     if debug:
-        print dates, a, b, period
+        print(dates, a, b, period)
     while dates[-1] < b:
         dates += [ add_hrs(dates[-1], period) ]
     if debug:
-        print dates[0], dates[-1]
+        print(dates[0], dates[-1])
     return dates
 
     
@@ -314,7 +314,7 @@ def normalise2dailymax(dates, data, debug=False ):
     """
     logging.info( 'normalise2dailymax called' )
     if debug:
-        logging.debug( [( type(i), i.shape ) for i in data, dates ] )
+        logging.debug( [( type(i), i.shape ) for i in (data, dates) ] )
 
     # Get list of unique dates & remove mean from dates
     dates = np.ma.array([ datetime.datetime(*i.timetuple()[:3]) for i in dates ] )
@@ -367,7 +367,7 @@ def num2month(input=None, reverse=False, rtn_dict=False):
     }
 
     if reverse:
-        d = {v: k for k, v in d.items()}
+        d = {v: k for k, v in list(d.items())}
 
     if rtn_dict:
         return d 
@@ -454,11 +454,11 @@ def dt_days_a2b( a, b, period=1, debug=False ) :
     """
     dates = [a]
     if debug:
-        print dates, a, b, period
+        print(dates, a, b, period)
     while dates[-1] < b:
         dates += [ add_days(dates[-1], period) ]
     if debug:
-        print dates[0], dates[-1]
+        print(dates[0], dates[-1])
     return dates
 
 # --------------
@@ -466,14 +466,14 @@ def dt_days_a2b( a, b, period=1, debug=False ) :
 # -------------
 def get_nighttime_values( dates=None, data=None, select_nighttime=True,\
         select_daytime=False,
-        daybreak=datetime.datetime(1970,01,01,06), 
-        dayend=datetime.datetime(1970,01,01,18) ):
+        daybreak=datetime.datetime(1970,0o1,0o1,0o6), 
+        dayend=datetime.datetime(1970,0o1,0o1,18) ):
     """
     Calculate nighttime values using dates array and pandas
     """
     # use dataframe to map daytime boolean 
     df = pd.DataFrame( np.array(dates) )
-    print df
+    print(df)
     df.columns = ['Datetime']
     # function to generate boolean for daytime
     def is_daytime( input, daybreak=daybreak, dayend=dayend ):
@@ -527,12 +527,12 @@ def get_daily_maximum( dates=None, data=None ):
     data = np.array(data)
     for day in sorted(set( df['days']) ):
 
-        print day, df['days'][:5]
+        print(day, df['days'][:5])
         # select data for day
         a_day_ind = df[ df['days'] == day ]
         # select data for day
         a_day_data = data[a_day_ind['ind'].values, ... ]
-        print [i.shape for i in a_day_data, a_day_ind, data ]
+        print([i.shape for i in (a_day_data, a_day_ind, data) ])
         # get daily maximum
         daily_max_data += [ a_day_data.max(axis=0) ]
 
@@ -614,7 +614,7 @@ def gaw_lc_2_UT(time_s, site, half_hour=None, debug=False):
         - This function is redundent. 
     """
     if debug:
-        print 'gaw_lc_2_UT called'
+        print('gaw_lc_2_UT called')
     UT_diff={'CVO':-1.}                    #  UT diff library for sites ....
     t_diff= float(  UT_diff[site] )*float(1./24.)     # look  up diff and adjust to decimal hours
     time_s_adjust = [ i + t_diff for i in time_s]  # adjust time series to UT
@@ -623,7 +623,7 @@ def gaw_lc_2_UT(time_s, site, half_hour=None, debug=False):
     debug = True
     if debug:
         for i,ii in enumerate(time_s):
-            print i, ii, time_s_adjust[i]
+            print(i, ii, time_s_adjust[i])
     return time_s_adjust
 
 
@@ -637,25 +637,25 @@ def adjust_UT_2_lt( time, date, data, site='CVO', dUTC=None, debug=False ):
     NOTEs:
      - This function is redundent. It is reverse of function "gaw_lc_2_UT"
     """
-    from funcs4generic import chunks
+    from .funcs4generic import chunks
 
     if (dUTC ==  None ):
         dUTC   = gaw_2_loc(site)[-1]
     if debug:
-        print 'adjust_UT_2_lt called and dUTC = {}'.format(dUTC)
+        print('adjust_UT_2_lt called and dUTC = {}'.format(dUTC))
 
     # np.roll works in reverse to UTC change (reversed date also)  
     time = np.array([np.roll( i, -1*dUTC ) for i in chunks(time,24) ]).flatten()
     date = np.roll(date, -1*dUTC )
     dUTC = -1*dUTC
     if (dUTC >= 0 ):
-        print [ ( len(i),len(i)/24. ) for i in [time, data, date] ]
+        print([ ( len(i),len(i)/24. ) for i in [time, data, date] ])
         time, data, date = [i[dUTC:-24+dUTC] for i in [time, data, date] ] 
-        print [ ( len(i),len(i)/24. ) for i in [time, data, date] ]
+        print([ ( len(i),len(i)/24. ) for i in [time, data, date] ])
     else:
-        print [ ( len(i),len(i)/24. ) for i in [time, data, date] ]
+        print([ ( len(i),len(i)/24. ) for i in [time, data, date] ])
         time, data, date = [i[24+dUTC:dUTC] for i in [time, data, date] ] 
-        print [ ( len(i),len(i)/24. ) for i in [time, data, date] ]
+        print([ ( len(i),len(i)/24. ) for i in [time, data, date] ])
     return time,date, data
 
 

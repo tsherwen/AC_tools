@@ -1,6 +1,6 @@
 #!/usr/bin/python  
 import sys
-import AC_tools as AC
+from . import AC_tools as AC
 """
 Example processing of SMVGEAR prod/loss tags for GEOS-Chem diganotic (ND65). A variety
 of functions for working with KPP/SMVGEAR tags are in AC_tools  
@@ -36,10 +36,10 @@ def main( trop_limit=True, res='4x5',  debug=False):
     try:
         tags = [  i[0] for i in tags ] # just consider first tag
     except:
-        print 'WARNING! - attempting to process just tagged reactions'
-        detail_zip = zip( rxnstr_l, zip( nums, tags) )
+        print('WARNING! - attempting to process just tagged reactions')
+        detail_zip = list(zip( rxnstr_l, list(zip( nums, tags)) ))
         untagged = [n for n,i in enumerate(tags) if (len(i)<1) ]
-        print 'Untagged reactions: ', [ detail_zip[i] for i in untagged ]
+        print('Untagged reactions: ', [ detail_zip[i] for i in untagged ])
         tags = [ i for n, i in enumerate( tags ) if (n not in untagged) ]
         tags = [  i[0] for i in tags ] # just consider first tag
 #        tags.pop( tags.index('LR71') )  # rm tag for ClOO loss... 
@@ -59,19 +59,19 @@ def main( trop_limit=True, res='4x5',  debug=False):
     fam_loss = convert_molec_cm3_s_2_g_X_s( ars=fam_loss, \
             ref_spec=ref_spec, wd=wd, conbine_ars=False,  \
             rm_strat=True, month_eq=True  ) 
-    print [ i.shape for i in fam_loss ]
+    print([ i.shape for i in fam_loss ])
 
     # sum and convert to Gg
     p_l =[i.sum()/ 1E9 for i in fam_loss ]
     
     # --- print output as: reaction, magnitude, percent of family
     pcent  = [ np.sum( i )/np.sum(p_l)*100 for i in p_l ]
-    d = dict( zip( tags, zip( rxnstr_l, p_l, pcent ) ) )
+    d = dict( list(zip( tags, list(zip( rxnstr_l, p_l, pcent )) )) )
     df = pd.DataFrame( d ).T
     df.columns = [ 'rxn','Gg X', '% of total' ]
     # sort
     df = df.sort_values( ['% of total'], ascending=False )
-    print df
+    print(df)
 
 
 if __name__ == "__main__":

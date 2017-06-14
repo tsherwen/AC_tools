@@ -4,7 +4,7 @@ import numpy as np
 from time import gmtime, strftime
 import time
 import glob
-import AC_tools as AC
+from . import AC_tools as AC
 import sys
 import pandas as pd
 

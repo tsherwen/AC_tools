@@ -13,7 +13,7 @@ NOTES
 """
 # import modules
 import sys
-import AC_tools as AC
+from . import AC_tools as AC
 
 
 def main( fam='LOx'):

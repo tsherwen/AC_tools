@@ -4,9 +4,14 @@ external source (currently apache server at York)
 """
 
 import os
-from urllib2 import urlopen, HTTPError
+# temporality restore urllib2 (as default urllib not working)
+#from urllib.request import urlopen
+#from urllib.error import HTTPError
+#import urllib
+#import urllib2
+from urllib import urlopen
+from urllib2 import HTTPError
 import logging
-
 
 # Set up logging only if running as a script.
 if __name__=='__main__':
@@ -77,13 +82,13 @@ def download_file(new_filename, file_url):
     try:
         new_file = open(new_filename, 'wb')
         logging.debug("downloading from {url}".format(url=file_url))
-        print "Downloading file. This might take some time."
+        print("Downloading file. This might take some time.")
         file_data = urlopen( file_url ).read()
         new_file.write( file_data )
-        print "Download complete."
+        print("Download complete.")
         logging.debug( new_filename+" downloaded.")
         new_file.close()
-    except HTTPError, error_code:
+    except HTTPError as error_code:
         if error_code.code==404:
             logging.error("{The following was not found on the server:")
             logging.error("{url}".format(url=file_url))

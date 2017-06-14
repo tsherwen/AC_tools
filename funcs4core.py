@@ -172,39 +172,39 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
     '0.083x0.083'    : (4320, 2160), # 9km resolution?
     }
     if debug:
-        print dims
+        print(dims)
 
     # If full using full vertical 
     if full_vertical_grid:
         vals =[]
-        for i in dims.values():
+        for i in list(dims.values()):
             vals += [ ( i[0],i[1],72) ]
-        dims = dict( zip( dims.keys(), vals ) )
+        dims = dict( list(zip( list(dims.keys()), vals )) )
         if debug:
-            print dims
+            print(dims)
 
     # Only consider the GEOS-Chem chemical troposphere
     if trop_limit:
         vals =[]
-        for i in dims.values():
+        for i in list(dims.values()):
             vals += [ ( i[0],i[1],38) ]
-        dims = dict( zip( dims.keys(), vals ) )
+        dims = dict( list(zip( list(dims.keys()), vals )) )
         if debug:
-            print dims
+            print(dims)
 
     # Add a time dimension of length n (if add_n_time is an integer)
     if not isinstance( add_n_time_dims, type(None) ):
         vals =[]
-        for i in dims.values():
+        for i in list(dims.values()):
             vals += [ ( i[0],i[1],i[2], add_n_time_dims) ]
-        dims = dict( zip( dims.keys(), vals ) ) 
+        dims = dict( list(zip( list(dims.keys()), vals )) ) 
 
     # Dictionary of lon, lat (e.g. for emissions and 2D datasets)
     if just2D:
         vals =[]
-        for i in dims.values():
+        for i in list(dims.values()):
             vals += [ ( i[0],i[1]) ]
-        dims = dict( zip( dims.keys(), vals ) )
+        dims = dict( list(zip( list(dims.keys()), vals )) )
 #        if debug:
 #            print dims
 
@@ -218,7 +218,7 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
 
     if r_dims:
         if invert==True:
-            return {v: k for k, v in dims.items()}
+            return {v: k for k, v in list(dims.items())}
         else:
             return dims
     else:
@@ -229,8 +229,8 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
 # ----                                                                                                                                                        
 def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
         dtype=None, wd=None, filename='ctm.nc', full_vertical_grid=False, \
-        lat_bounds=u'latitude_bnds', lon_bounds=u'longitude_bnds',\
-        lon_var=u'longitude', lat_var=u'latitude', \
+        lat_bounds='latitude_bnds', lon_bounds='longitude_bnds',\
+        lon_var='longitude', lat_var='latitude', \
 #        lon_var=u'lon', lat_var=u'lat', 
         verbose=True, debug=False ):
     """ 
@@ -301,7 +301,7 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
     data_fname = os.path.join(wd, filename)
     if not os.path.exists(data_fname):
         logging.error("Could not find {fn}".format(fn=data_fname))
-        raise IOError, "Could not find {fn}".format(fn=data_fname)
+        raise IOError("Could not find {fn}".format(fn=data_fname))
 
     if centre:
         try:
@@ -315,9 +315,9 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
                             lon=lon_bounds)
             logging.error(error)
             if verbose:
-                print "ERROR: are the refernces files in 'AC_tools/data/LM' ?"
-                print "(To download just run AC_tools/Scripts/get_data_files.py)"
-            raise IOError, error        
+                print("ERROR: are the refernces files in 'AC_tools/data/LM' ?")
+                print("(To download just run AC_tools/Scripts/get_data_files.py)")
+            raise IOError(error)        
 
     # Get edge values
     exception_res = ('1x1', '0.5x0.5', '0.083x0.083')
@@ -331,16 +331,16 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
                 # select lower edge of each bound, and final upper edge
                 lat = [i[0] for i in lat ]+[ lat[-1][1] ]
                 lon = [i[0] for i in lon ]+[ lon[-1][1] ]            
-                lat, lon = [np.array(i) for i in lat, lon ]
+                lat, lon = [np.array(i) for i in (lat, lon) ]
         except:
             error = "Could not get {lat}, {lon} from {fn}"\
                     .format(fn=data_fname,lat=lat_bounds,
                             lon=lon_bounds)
             if verbose:
-                print "ERROR: are the refernces files in 'AC_tools/data/LM' ?"
-                print "(To download just run AC_tools/Scripts/get_data_files.py)"
+                print("ERROR: are the refernces files in 'AC_tools/data/LM' ?")
+                print("(To download just run AC_tools/Scripts/get_data_files.py)")
             logging.error(error)
-            raise IOError, error
+            raise IOError(error)
 
     # Manually set values for 0.25x0.3125_CH
 #    if res=='0.25x0.3125_CH':
@@ -405,7 +405,7 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
         return lon, lat, alt
 
     if debug:
-        print lon, lat, alt
+        print(lon, lat, alt)
     rtn_list = lon, lat, alt 
     if not isinstance( dtype, type( None ) ):
         return [ i.astype( dtype ) for i in rtn_list ]
@@ -471,7 +471,7 @@ def iGEOSChem_ver(wd, also_return_GC_version=False, verbose=True, debug=False):
     ]
     df = DataFrame( versions, columns=['Versions'] )
     if debug:
-        print wd, versions, df
+        print(wd, versions, df)
 
     # Which versions are in name?
     def element_in_str( element ): 
@@ -483,7 +483,7 @@ def iGEOSChem_ver(wd, also_return_GC_version=False, verbose=True, debug=False):
         iGC_ver = df['Versions'][ df['Run Version'] ][-1:].values[0]
     except IndexError:
         err_msq='WARNING (i) GEOS-Chem ver. number not found in working dir. path'
-        print '!'*15, err_msq, '!'*15
+        print('!'*15, err_msq, '!'*15)
         logging.debug(err_msq)
         iGC_ver='NOT FOUND'
 #        sys.exit()
@@ -500,7 +500,7 @@ def iGEOSChem_ver(wd, also_return_GC_version=False, verbose=True, debug=False):
         ]
         df = DataFrame( versions, columns=['Versions'] )
         if debug:
-            print wd, versions, df
+            print(wd, versions, df)
         #
         df['Run Version'] = df['Versions'].apply( element_in_str )
         # selection 
@@ -584,8 +584,8 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
     # 4x5                                                                                        
    'c_lon_4x5' : np.arange(-180, 175+5, 5) ,
    'e_lon_4x5' : np.arange(-182.5, 177.5+5, 5) ,
-   'c_lat_4x5' : np.array( [-89]+ range(-86, 90, 4)+ [89] ),
-   'e_lat_4x5' : np.array( [-90]+ range(-88, 92, 4)+ [90] ),
+   'c_lat_4x5' : np.array( [-89]+ list(range(-86, 90, 4))+ [89] ),
+   'e_lat_4x5' : np.array( [-90]+ list(range(-88, 92, 4))+ [90] ),
 
     # Altitude - Grid box level edges (eta coordinate):                                          
     'e_eta_geos5_r' : np.array([
@@ -771,7 +771,7 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
     # 
     Temp_arrays = ['c_km_geos5', 'c_hPa_geos5']
     if input in Temp_arrays:
-        print 'WARNING array ({}) is temporary! - Please check it!'.format(input)
+        print('WARNING array ({}) is temporary! - Please check it!'.format(input))
 
     if rtn_dict:
         return d
@@ -912,13 +912,13 @@ def get_scientific_number( number, precision, string=False ):
                                                      
     # Fix for leading 10                             
     if mantisa >= 10:                                
-        print "hello from 10"                        
+        print("hello from 10")                        
         mantisa = mantisa/10.0                       
         exponent = exponent+1                        
                                                      
     # Fix for mantisa=1                              
     if mantisa == 1.0:                               
-        print "mantisa = 1.0"                        
+        print("mantisa = 1.0")                        
         mantisa = "1." + "0"*(precision-1)           
                                                    
 

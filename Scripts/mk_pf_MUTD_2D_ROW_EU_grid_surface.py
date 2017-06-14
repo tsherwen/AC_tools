@@ -4,7 +4,7 @@ import numpy as np
 from time import gmtime, strftime
 import time
 import glob
-import AC_tools as AC
+from . import AC_tools as AC
 import sys
 import pandas as pd
 
@@ -50,9 +50,9 @@ def main(filename=None, LAT_var='LAT', LON_var='LON', \
     # --- Read in site Detail
     location = AC.readin_gaw_sites( filename, all=True )
     numbers, locs, lats, lons, pres =  [ location[:,i] for i in range(5) ]
-    lats, lons, pres = [ np.float64(i) for i in lats, lons, pres ]
+    lats, lons, pres = [ np.float64(i) for i in (lats, lons, pres) ]
     locs = np.array(locs)
-    print lats[0:4]
+    print(lats[0:4])
 
     # --- Set Variables
     #slist = pf_var( 'slist_v9_2_NREA_red_NOy', ver=ver )#'slist_v9_2_NREA_red' )

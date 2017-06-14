@@ -30,7 +30,7 @@ import numpy as np
 
 # --  This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
-from funcs4core import *
+from .funcs4core import *
 
 # ----------------------------- Section 1 -----------------------------------
 # -------------- Planeflight variables
@@ -94,13 +94,13 @@ def pf_var( input, ver='3.0', ntracers=85, fill_var_with_zeroes=False ):
     inactive_spec = ['ACTA', 'CH4', 'H2', 'HCOOH', 'MOH', 'O2'] # 'EOH',
 
     # Setup list of tracers
-    if any( [(ver == i) for i in '1.6', '1.6.1', '1.6.2'] ):
+    if any( [(ver == i) for i in ('1.6', '1.6.1', '1.6.2')] ):
         ntracers=96
-    elif any( [(ver == i) for i in '1.6.3', '1.6.4' ] ):
+    elif any( [(ver == i) for i in ('1.6.3', '1.6.4') ] ):
         ntracers=98
     elif ver == '1.7':
         ntracers=85
-    elif any( [ (ver == i) for i in '2.0', '3.0' ] ):
+    elif any( [ (ver == i) for i in ('2.0', '3.0') ] ):
         ntracers=103
     if    ver == 'johan_br.v92':
         ntracers=87
@@ -131,22 +131,22 @@ def pf_var( input, ver='3.0', ntracers=85, fill_var_with_zeroes=False ):
 #        PHOT_1st, PHOT_last = 554, 644 # With IX split rxns
         PHOT_1st, PHOT_last = 548, 638 # With 0.25 IBr split rxns
     else:
-        print 'pf_var not setup for ver: ', ver
+        print('pf_var not setup for ver: ', ver)
 
     JREAs = ['REA_'+ str(i) for i in range(PHOT_1st, PHOT_last) ] 
     REAs_all = ['REA_'+ str(i) for i in range(0, 533) ] 
     
     # reduced list for high time and spatial resolution
-    if any( [ input ==i for i in 'slist_v9_2_NREA_red', 
-        'slist_v9_2_NREA_red_NOy'] ):
+    if any( [ input ==i for i in ('slist_v9_2_NREA_red', 
+        'slist_v9_2_NREA_red_NOy')] ):
         TRAs = GC_var('active_I') + ['AERI']
         TRAs= [ num2spec( i, ver=ver, invert=True) for i in TRAs ]
         TRAs = [ 'TRA_{:0>2}'.format( i)  for i in TRAs ]
 
         metvars = [ i for i in metvars if not any( [ (i==ii) \
-            for ii in   'GMAO_ABSH', 'GMAO_SURF', 'GMAO_PSFC' ] ) ]
+            for ii in   ('GMAO_ABSH', 'GMAO_SURF', 'GMAO_PSFC') ] ) ]
         species = [ i for i in species if not any( [ (i==ii) for ii in  
-        'R4N2', 'MP', 'CH2O', 'MO2', 'ETO2', 'CO', 'C2H6', 'C3H8', 'PRPE', 'ALK4', 'ACET', 'ALD2', 'MEK', 'RCHO', 'MVK', 'DMS', 'MSA', 'ISOP'  
+        ('R4N2', 'MP', 'CH2O', 'MO2', 'ETO2', 'CO', 'C2H6', 'C3H8', 'PRPE', 'ALK4', 'ACET', 'ALD2', 'MEK', 'RCHO', 'MVK', 'DMS', 'MSA', 'ISOP')  
         ]) ]
 
     if input =='slist_ClearFlo':
@@ -223,9 +223,9 @@ def pf_var( input, ver='3.0', ntracers=85, fill_var_with_zeroes=False ):
 
     # remove inactive tracers/species
     inactive_spec = [ n for n, i in enumerate( vars ) if (i in inactive_spec ) ]
-    print inactive_spec
+    print(inactive_spec)
     [ vars.pop(i) for i in sorted( inactive_spec )[::-1] ]
-    print vars
+    print(vars)
 
     return vars
 
@@ -292,10 +292,10 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, ver='1.7', \
     d =  GC_var( var ) 
 
     if debug:
-        print d, special_case
+        print(d, special_case)
 
     if invert:
-        d = {v: k for k, v in d.items()}
+        d = {v: k for k, v in list(d.items())}
 
     # return dictionary
     if rtn_dict:
@@ -338,19 +338,19 @@ def num2spec( num=69, rtn_dict=False, invert=False, ver = '1.7' ):
 
     # --- Slice off just numbers
     # special case for dev version?
-    if any( [ (ver == i) for i in '1.6', '1.6.2', ] ): 
+    if any( [ (ver == i) for i in ('1.6', '1.6.2',) ] ): 
         d = GC_var('GCFP_d2TRA_justTRA_1.6' )
-    if any( [ (ver == i) for i in'1.6.3', '1.6.4' ] ):
+    if any( [ (ver == i) for i in('1.6.3', '1.6.4') ] ):
         d = GC_var('GCFP_d2TRA_justTRA_1.6.3' )
     # Then slice
-    nums =[ int(i[4:]) for i in d.keys()]
+    nums =[ int(i[4:]) for i in list(d.keys())]
 
     # --- Re-make dictionary
-    d = dict( zip(nums, d.values() ) )
+    d = dict( list(zip(nums, list(d.values()) )) )
     
     # --- Invert to give spec for num
     if invert:
-        d = { v: k for k, v in d.items() }
+        d = { v: k for k, v in list(d.items()) }
 
     if rtn_dict:
         return d
@@ -472,29 +472,29 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
     """
     # If reference species provided automatically select family
     if not isinstance( ref_spec, type(None) ):
-        if any( [(ref_spec==i)  for i in 'I', 'Iy', 'Iodine' ] ):
+        if any( [(ref_spec==i)  for i in ('I', 'Iy', 'Iodine') ] ):
             I=True
-        if any( [(ref_spec==i) for i in 'Br', 'Bry', 'Bromine' ] ):
+        if any( [(ref_spec==i) for i in ('Br', 'Bry', 'Bromine') ] ):
             Br=True
-        if any( [(ref_spec==i)  for i in 'Cl', 'Cly', 'Chlorine' ] ):
+        if any( [(ref_spec==i)  for i in ('Cl', 'Cly', 'Chlorine') ] ):
             Cl=True
-        if any( [(ref_spec==i) for i in  'C', 'VOC' ] ):
+        if any( [(ref_spec==i) for i in  ('C', 'VOC') ] ):
             C=True
-        if any( [(ref_spec==i) for i in  'N', 'NOy', 'NOx' ] ):
+        if any( [(ref_spec==i) for i in  ('N', 'NOy', 'NOx') ] ):
             N=True
-        if any( [(ref_spec==i) for i in  'OH', 'HO2' ] ):
+        if any( [(ref_spec==i) for i in  ('OH', 'HO2') ] ):
             OH=True
         if ref_spec == 'IO':
             IO=True
         if ref_spec == 'NO':
             NO=True
-        if any( [(ref_spec==i) for i in  'S', 'SOx', 'Sulfate' ] ):
+        if any( [(ref_spec==i) for i in  ('S', 'SOx', 'Sulfate') ] ):
             S=True
 
     if debug:
         vars = ref_spec, IO, I, NO, OH, N, C, Br, Cl
         varsn = 'ref_spec', 'IO', 'I', 'N', 'OH', 'N', 'C', 'Br', 'Cl'        
-        print "'spec_stoich'  called for: ", zip( varsn, vars ) 
+        print("'spec_stoich'  called for: ", list(zip( varsn, vars ))) 
 
     # Select dictionary ( I=True is the default... )
     if IO:
@@ -636,13 +636,13 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
     # Kludge for testing. Allow values to equal 1.0 if not defined. 
     try:
         if debug:
-            print '{} (ref_spec: {}) stoichiometry : {}'.format( spec, \
-                ref_spec,  d[spec] )
+            print('{} (ref_spec: {}) stoichiometry : {}'.format( spec, \
+                ref_spec,  d[spec] ))
         return d[spec]
 
     except:
-        print '!'*20, 'WARNING - Kludge assumming stoichiometry = 1.0, for'+ \
-            ' {} (ref_spec given as: {})'.format( spec, ref_spec )
+        print('!'*20, 'WARNING - Kludge assumming stoichiometry = 1.0, for'+ \
+            ' {} (ref_spec given as: {})'.format( spec, ref_spec ))
         return 1.0
 
 
@@ -709,18 +709,18 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,\
     'PRESS': 'hPa', 'CH2OO':'pptv', 'Bry':'ppbv', 'NOx': 'ppbv', 'HOx':'HOx',
     'VOC': 'ppbC','TNO3': 'ppbv', 
     # Extra ClearFlo compounds
-    u'acetylene': 'pptv', u'propene': 'pptv', u'Napthalene': 'pptv', \
-    u'Styrene': 'pptv', u'1,3-butadiene': 'pptv', u'1,2-butadiene': 'pptv', \
-    u'iso-butene': 'pptv', u'm+p-xylene': 'pptv', u'1-butene': 'pptv', \
-    u't-2 pentene': 'pptv', u'cis-2-butene': 'pptv', u'1  pentene': 'pptv', \
-    u'Trans-2-butene': 'pptv', u'o-xylene': 'pptv',\
-    u'iso-pentane': 'pptv', u'n-hexane': 'pptv',  \
-    u'iso-butane': 'pptv', u'Nonane, 2-methyl-': 'pptv', \
-    u'Butane, 2,2,3-trimethyl-': 'pptv', u'Dodecane': 'pptv', \
-    u'Pentane, 2,2,4-trimethyl-': 'pptv', u'2,3methylpentane': 'pptv', \
-    u'Nonane': 'pptv', u'cyclopentane': 'pptv', u'n- heptane': 'pptv', \
-    u'n-butane': 'pptv', u'n-pentane': 'pptv', u'Undecane': 'pptv', \
-    u'Decane': 'pptv', u'Octane': 'pptv', u'n-octane': 'pptv',\
+    'acetylene': 'pptv', 'propene': 'pptv', 'Napthalene': 'pptv', \
+    'Styrene': 'pptv', '1,3-butadiene': 'pptv', '1,2-butadiene': 'pptv', \
+    'iso-butene': 'pptv', 'm+p-xylene': 'pptv', '1-butene': 'pptv', \
+    't-2 pentene': 'pptv', 'cis-2-butene': 'pptv', '1  pentene': 'pptv', \
+    'Trans-2-butene': 'pptv', 'o-xylene': 'pptv',\
+    'iso-pentane': 'pptv', 'n-hexane': 'pptv',  \
+    'iso-butane': 'pptv', 'Nonane, 2-methyl-': 'pptv', \
+    'Butane, 2,2,3-trimethyl-': 'pptv', 'Dodecane': 'pptv', \
+    'Pentane, 2,2,4-trimethyl-': 'pptv', '2,3methylpentane': 'pptv', \
+    'Nonane': 'pptv', 'cyclopentane': 'pptv', 'n- heptane': 'pptv', \
+    'n-butane': 'pptv', 'n-pentane': 'pptv', 'Undecane': 'pptv', \
+    'Decane': 'pptv', 'Octane': 'pptv', 'n-octane': 'pptv',\
     # Extra Cly species 
     'ClNO2': 'pptv', 'ClNO3': 'pptv', 'HCl': 'pptv', 'ClOO': 'pptv', \
 	'Cl2O2': 'pptv', 'CH2Cl2': 'pptv', 'CHCl3': 'pptv', 'CH3Cl': 'pptv', \
@@ -740,11 +740,11 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,\
         spec_2_pptC = GC_var('spec_2_pptC') 
         if ( x in spec_2_pptv ):
             if debug:
-                print 'adjusting {} ({}) to {}'.format(x, units, 'pptv'   )
+                print('adjusting {} ({}) to {}'.format(x, units, 'pptv'   ))
             units = 'pptv'
         if ( x in spec_2_pptC ):
             if debug:
-                print 'adjusting {} ({}) to {}'.format(x, units, 'pptC' )
+                print('adjusting {} ({}) to {}'.format(x, units, 'pptC' ))
             units = 'pptC'
 
     # Over ride adjustments for globally appro. units
@@ -753,11 +753,11 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,\
         spec_2_ppbC = GC_var('spec_2_ppbC')
         if ( x in spec_2_ppbv ):
             if debug:
-                print 'adjusting {} ({}) to {}'.format(x, units, 'ppbv'   )
+                print('adjusting {} ({}) to {}'.format(x, units, 'ppbv'   ))
             units = 'ppbv'
         if ( x in spec_2_ppbC ):
             if debug:
-                print 'adjusting {} ({}) to {}'.format(x, units, 'ppbC'   )
+                print('adjusting {} ({}) to {}'.format(x, units, 'ppbC'   ))
             units = 'ppbC'
 
     if ClearFlo_unit:
@@ -845,10 +845,10 @@ def get_unit_scaling( units, scaleby=1 ):
             'molec/m3', 'W/m2'
 
     # parts per trillion
-    if any( [ (units ==  i) for i in 'pptv', 'pptC', 'ppt' ]):
+    if any( [ (units ==  i) for i in ('pptv', 'pptC', 'ppt') ]):
         scaleby = 1E12
     # parts per billion
-    elif any( [ (units ==  i) for i in 'ppbv', 'ppbC', 'ppb' ]):
+    elif any( [ (units ==  i) for i in ('ppbv', 'ppbC', 'ppb') ]):
         scaleby = 1E9
     elif any( [units ==i for i in misc ] ):
         scaleby = 1
@@ -879,7 +879,7 @@ class species:
         try:
             species_file = open(species_filename, 'rb')
         except IOError:
-            print "Error: Species.csv does not appear to exist."
+            print("Error: Species.csv does not appear to exist.")
         species_csv = csv.reader(species_file)
         
         if (name == 'OH'):
@@ -896,7 +896,7 @@ class species:
                     self.RMM       = float(row[4])
                     self.Latex     = row[5]
             except NameError:
-                print "Species not found in CSV file"   
+                print("Species not found in CSV file")   
 
         # TODO - Add in function to return stiochmetery using smile str
         # (e.g. how many carbons in species )
@@ -926,12 +926,12 @@ def get_ctm_nc_var( variable ):
 
     """
     d = {
-    u'DAO_3D_S__CMFMC': u'DAO_3D_S___4',
-     u'DAO_3D_S__DTRAIN': u'DAO_3D_S___3',
-     u'DAO_3D_S__SPHU': u'DAO_3D_S___2',
-     u'DAO_3D_S__TMPU': u'DAO_3D_S___1',
-     u'DAO_3D_S__UWND': u'DAO_3D_S__',
-     u'DAO_3D_S__VWND': u'DAO_3D_S___0'
+    'DAO_3D_S__CMFMC': 'DAO_3D_S___4',
+     'DAO_3D_S__DTRAIN': 'DAO_3D_S___3',
+     'DAO_3D_S__SPHU': 'DAO_3D_S___2',
+     'DAO_3D_S__TMPU': 'DAO_3D_S___1',
+     'DAO_3D_S__UWND': 'DAO_3D_S__',
+     'DAO_3D_S__VWND': 'DAO_3D_S___0'
      }
     return d[ variable ]
 
@@ -981,8 +981,8 @@ def rm_ClBrI_het_loss( spec_l=None, r_=None, fam=None, debug=False):
 
     # Print argument variables
     if debug:
-        print 'before ind removal', spec_l, fam
-        print [ len(i) for i in spec_l, fam ], \
+        print('before ind removal', spec_l, fam)
+        print([ len(i) for i in (spec_l, fam) ]) \
     
 
     # --- Local variables
@@ -1002,7 +1002,7 @@ def rm_ClBrI_het_loss( spec_l=None, r_=None, fam=None, debug=False):
     # remove ind from "r_" list
     if not isinstance( r_, type(None) ):
         if debug:
-            print len( [item for sublist in r_ for item in sublist] ), len(r_)
+            print(len( [item for sublist in r_ for item in sublist] ), len(r_))
         count = len( spec_l )        
         for list_ in r_[::-1]:
             for element in list_[::-1]:
@@ -1011,12 +1011,12 @@ def rm_ClBrI_het_loss( spec_l=None, r_=None, fam=None, debug=False):
                 # reduce count
                 count = count - 1
         if debug:
-            print len( [item for sublist in r_ for item in sublist] )
+            print(len( [item for sublist in r_ for item in sublist] ))
         rtn_list += [ r_ ]
 
     if debug:
-        print 'after ind removal', spec_l, fam, ind, sorted( ind )[::-1]
-        print [ len(i) for i in spec_l, fam ], \
+        print('after ind removal', spec_l, fam, ind, sorted( ind )[::-1])
+        print([ len(i) for i in (spec_l, fam) ]) \
 
     return rtn_list
 
@@ -1069,7 +1069,7 @@ def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
     
     fn =  'smv2.log'
     if debug:
-        print wd+'/'+fn
+        print(wd+'/'+fn)
     file_ =  open( wd+'/'+fn, 'rb' )
     readrxn  = False
     for row in file_:
@@ -1088,7 +1088,7 @@ def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
     rxns = [ i for i in rxns if (  'NMBR' not in i ) ]
     n = [int(rxn[0]) for rxn in rxns ]
     rxns = [rxn[1:] for rxn in rxns ]
-    rdict = dict( zip(n, rxns) )
+    rdict = dict( list(zip(n, rxns)) )
     
     # --- Process to Latex
     if LaTeX:
@@ -1110,7 +1110,7 @@ def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
                 else:
                     pass
                 if debug:
-                    print rxn_str
+                    print(rxn_str)
                 try:
                     rxn_strs +=  [ rxn_str  ]
                     rxns += [ rxn   ]
@@ -1118,8 +1118,8 @@ def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
                     rxn_strs = [ rxn_str ]
                     rxns = [ rxn ]
             except:
-                print '!'*100, 'ERROR HERE: >{}<  >{}<'.format(  rxn, rxn_str )
-        rdict = dict( zip(rxns, rxn_strs ) )
+                print('!'*100, 'ERROR HERE: >{}<  >{}<'.format(  rxn, rxn_str ))
+        rdict = dict( list(zip(rxns, rxn_strs )) )
     return rdict
     
 # -------------
@@ -1148,14 +1148,14 @@ def rxns_in_pl( wd, spec='LOX', debug=False ):
     fn =  'smv2.log'
     file_ =  open( wd+'/'+fn, 'rb' )
     if debug:
-        print file_
+        print(file_)
     readrxn  = False
     # required strings in file line
     conditions = 'Family','coefficient' , 'rxns', spec
     for row in file_:
         row = row.split()
         if debug:
-            print row, spec, all( [ i in row for i in conditions ] )
+            print(row, spec, all( [ i in row for i in conditions ] ))
         if all( [ i in row for i in conditions ] ):
             readrxn=True
         if (len(row) < 1) or ( 'REACTANTS:' in row ):
@@ -1168,17 +1168,17 @@ def rxns_in_pl( wd, spec='LOX', debug=False ):
 
     # -- Check that rxns ahave been found? 
     if len( rxns ) < 1:
-        print 'ERROR: No rxns. found for >{}<, correct family?'.format( spec )
+        print('ERROR: No rxns. found for >{}<, correct family?'.format( spec ))
         sys.exit(0)
         
     # -- remove 'Family' 
     rxns = [ i for i in rxns if (  'Family' not in i ) ]
     if debug:
-        print 'number (len of list) of reacitons: ', len( rxns )
+        print('number (len of list) of reacitons: ', len( rxns ))
     n = [int(rxn[1]) for rxn in rxns ]
     rxns = [rxn[2:] for rxn in rxns ]
 
-    rdict = dict( zip(n, rxns) )
+    rdict = dict( list(zip(n, rxns)) )
     return rdict
 
 # ------------- 
@@ -1209,31 +1209,31 @@ def rxn4pl( pls, wd='example/example', rdict=None, reduce_size=True, \
 
     # ---  Get Dict of reaction detail
     if debug:
-        print 'rxn4pl called'
+        print('rxn4pl called')
     if isinstance(rdict, type(None) ):
         #   Get Dict of all reactions, Keys = #s
         rdict = rxn_dict_from_smvlog( wd, ver=ver ) 
         
     if debug:
-        for i in rdict.keys():
+        for i in list(rdict.keys()):
             if any( [ (s_ in ''.join( rdict[i] ) ) for s_ in pls ] ):
-                print i, 'yes'
+                print(i, 'yes')
 
     # --- Indices for 
     # reduce dict size
     if reduce_size:
-        keys = [ i  for  i  in rdict.keys()  if \
+        keys = [ i  for  i  in list(rdict.keys())  if \
             any( [ (s_ in ''.join( rdict[i] ) ) for s_ in pls ]) ] 
 
         # re-make dictionary         
-        rdict = dict( zip( keys, [rdict[i] for i in keys] ))
+        rdict = dict( list(zip( keys, [rdict[i] for i in keys] )))
 
     # loop via pl    
-    keys = np.array([ [ pl, [ i  for  i  in rdict.keys()   \
+    keys = np.array([ [ pl, [ i  for  i  in list(rdict.keys())   \
         if any( [ (pl in ''.join( rdict[i] ) ) ]) ][0] ] for pl in pls ])
 
     # --- Return as reactions referenced by tag
-    return  dict( zip( keys[:,0],  [ rdict[int(i)] for i in keys[:,1] ]) )
+    return  dict( list(zip( keys[:,0],  [ rdict[int(i)] for i in keys[:,1] ])) )
     
 # -------------
 # X.XX - Construct a list of indicies for each fam from given tags
@@ -1276,7 +1276,7 @@ def get_indicies_4_fam( tags, fam=False, IO_BrOx2=False, rtnspecs=False,
         fams = [x if (x!='NOy') else 'HOx' for x in fams]
 
     # Create dictionary from tags and fam assignment    
-    fd = dict(zip(tags, fams) )
+    fd = dict(list(zip(tags, fams)) )
 
 
     # Select tags with assigned family in list ("famsn")
@@ -1344,7 +1344,7 @@ def get_p_l_tags( rxns, debug=False):
 
     for rxn in rxns:
         if debug:
-            print [i for i in rxn if any( [ (x in i) for x in prefixs ]) ]
+            print([i for i in rxn if any( [ (x in i) for x in prefixs ]) ])
         tags = [i for i in rxn if any( [ (x in i) for x in prefixs ]) ]
 
         try:
@@ -1379,12 +1379,12 @@ def p_l_species_input_geos( wd, ver='1.7', rm_multiple_tagged_rxs=False, debug=F
     """
     # find and open input.geos file
     fn = glob.glob(wd+'/*input.geos*')[0] 
-    if  any( [ (i in fn) for i in '~', '#' ] ):
-        print 'Trying next "input.geos" file - as FAIL for :', fn, 
+    if  any( [ (i in fn) for i in ('~', '#') ] ):
+        print('Trying next "input.geos" file - as FAIL for :', fn) 
         fn = glob.glob(wd+'/*input.geos*')[1] 
 
     if debug:
-        print 'p_l_species_input_geos called using : ', wd, fn
+        print('p_l_species_input_geos called using : ', wd, fn)
     file_ =  open( fn, 'rb' )
 
     # Read in just the prod loss section 
@@ -1421,11 +1421,11 @@ def p_l_species_input_geos( wd, ver='1.7', rm_multiple_tagged_rxs=False, debug=F
     PD = [rxn[4] for rxn in rxns ]
     vars =  [rxn[5:] for rxn in rxns ]
     if debug:
-        print rxns, PD, vars, ver
+        print(rxns, PD, vars, ver)
 
     # remove p/l with muliple values ( start from 12th input) - Kludge?
     if rm_multiple_tagged_rxs:
-        PD, vars = [ i[11:] for i in PD, vars ]
+        PD, vars = [ i[11:] for i in (PD, vars) ]
         vars =  [ i[0] for i in  vars ]
         
     return PD, vars
@@ -1463,7 +1463,7 @@ def tags_from_smvlog( wd ): #, spec='LOX' ):
     
     # --- only consider tags
     return [i for i in rxns if any( [x in i  \
-        for x in 'PD', 'RD', 'PO3','LO3' , 'LR' ]) ]
+        for x in ('PD', 'RD', 'PO3','LO3' , 'LR') ]) ]
 
 # -------------
 # X.XX - extract all active PDs from smv.log
@@ -1543,7 +1543,7 @@ def rxns4tag( tag, rdict=None, ver='1.7', wd=None ):
 #        if any( [tag in i for i in rxn]): # <= This will lead to false +ve
         # However, fortran print statment err for (  LO3_87 )
         if  any( [ i.endswith(tag) for i in expanded_rxn_str ] ):
-            rxns.append(  [rdict.keys()[n] ]+ rxn )
+            rxns.append(  [list(rdict.keys())[n] ]+ rxn )
 
     return rxns
 
@@ -1591,12 +1591,12 @@ def get_tag_details( wd, tag=None, PDs=None,  rdict=None, PHOTOPROCESS=None, ver
 #        else:
 #            pass
         if debug:
-            print rxn_str
+            print(rxn_str)
         dets = [ tag, trxns[0][0], rxn_str   ]   
     except:
-        print '!'*100, 'ERROR HERE: >{}< >{}<'.format(  tag, trxns  )
+        print('!'*100, 'ERROR HERE: >{}< >{}<'.format(  tag, trxns  ))
     if print_details:
-        print dets
+        print(dets)
     # --- return a dictionary of all active tagged reactions details by tag : PD, number, rxn str, coeeffiecn
     else:
         return dets
@@ -1618,14 +1618,14 @@ def get_rxn_Coe(wd, num, tag, nums=None, rxns=None, tags=None, Coe=None, spec='L
     """
 
     # --- get dictionaries for reactions within
-    if all( [ (i == None) for i in nums, rxns, tags, Coe ] ):
+    if all( [ (i == None) for i in (nums, rxns, tags, Coe) ] ):
         nums, rxns, tags, Coe = prod_loss_4_spec( wd,  spec, all_clean=True, \
                 ver=ver )
     if debug:
-        print nums, Coe
+        print(nums, Coe)
     
     # Pull reaction coefficient  from dictionary
-    Coe_dict = dict( zip(nums, Coe) )             
+    Coe_dict = dict( list(zip(nums, Coe)) )             
     Coe = float(Coe_dict[ num ])
     # Consider all change positive - Kludge 
     # ( This is due to the assignment approach, where P=prod, L=loss )
@@ -1689,19 +1689,19 @@ def get_pldict_reactants( pl_dict=None, only_rtn_tracers=True, rm_OH=True, rm_Cl
 
     # Get reaction strings
     if isinstance( tags, type(None) ):
-        tags = pl_dict.keys() 
+        tags = list(pl_dict.keys()) 
     strs = [pl_dict[i][1] for i in tags ]    
     if debug:
-        print 'rxn strs: ',  strs, len(strs)
+        print('rxn strs: ',  strs, len(strs))
     # remove arrows from reactions 
     strs = [ i.replace('+M=','+=').replace('+O2=','+=').replace('+N2=','+=') \
         for i in strs ]
     if debug:
-        print strs, len(strs)
+        print(strs, len(strs))
     # select reactants
     strs = [ i.split('+=')[0] for i in strs ]
     if debug:
-        print strs, len(strs)
+        print(strs, len(strs))
     if rm_OH:     # remove OH from reaction strings
         strs = [ i.replace('+OH','+') for i in strs ] 
         for n, str in enumerate( strs ):
@@ -1716,7 +1716,7 @@ def get_pldict_reactants( pl_dict=None, only_rtn_tracers=True, rm_OH=True, rm_Cl
     # remove "+" punctuation 
     strs = [ i.replace('+','').strip() for i in strs ] 
     if debug:
-        print strs, len(strs)
+        print(strs, len(strs))
 
     return strs
 
@@ -1739,14 +1739,14 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5', verbose=False, debug=
     """
 
     if verbose:
-        print 'PLO3_to_PD called for wd = ', wd
+        print('PLO3_to_PD called for wd = ', wd)
 
     versions = [ \
     '1.3' ,'1.4' ,'1.5' , '1.6', '1.6.1','1.6.2', '1.6.3', '1.7', '2.0', '3.0', '4.0' ]
     if any( [(ver ==i) for i in versions ]):
 
         if isinstance( wd, type(None) ):
-            print 'WARNING: Using MUTD wd'
+            print('WARNING: Using MUTD wd')
             wd = MUTD_runs(ver=ver, res=res, debug=debug)[0]
             
         # Get list of assigned PDs for vars
@@ -1763,11 +1763,11 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5', verbose=False, debug=
         PDs += non_PDs
         
         if debug:
-            print vars, PDs
+            print(vars, PDs)
     
-        return dict( zip(vars, PDs))[PL ]
+        return dict( list(zip(vars, PDs)))[PL ]
     else:
-        print 'update programme - manual PLdict now obsolete. '
+        print('update programme - manual PLdict now obsolete. ')
 
 # -------------
 # X.XX - Uses functions to build a dictionary for a given family of loss
@@ -1783,14 +1783,14 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', rm_redundent_ClBrI_tags
      - UPDATED NEEDED: MORE DETAILED DESCRIPT.
     """
     if debug:
-        print 'get_pl_dict called for ', ver, spec, wd
+        print('get_pl_dict called for ', ver, spec, wd)
         
     # Extract details on reactio in p/l family
     nums, rxns, tags, Coe = prod_loss_4_spec( wd,  spec, all_clean=True, \
         ver=ver, debug=debug )
 
     # Make a dictionary of coeffiecnts of reaction
-    Coe_dict = dict( zip(nums, Coe) )
+    Coe_dict = dict( list(zip(nums, Coe)) )
 
     # unpack for mulutple tags of same reactions, then get details
     unpacked_tags = [ j for k in tags for j in k ]
@@ -1800,7 +1800,7 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', rm_redundent_ClBrI_tags
     unpacked_tags = [ i for i in unpacked_tags if ( 'PO3_10' not in i) ]
     
     if debug:
-        print unpacked_tags
+        print(unpacked_tags)
     
     details  = [ get_tag_details( wd, tag, ver=ver ) for tag in unpacked_tags ]
     
@@ -1864,18 +1864,18 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', rm_redundent_ClBrI_tags
         ind = list( sorted( set( ind ) ) )
 
         if debug:
-            print d, ind, [len(i) for i in details, Coes ],  \
-                [ [i[0] for i in details][ii] for ii in ind ][::-1]
+            print(d, ind, [len(i) for i in (details, Coes) ],  \
+                [ [i[0] for i in details][ii] for ii in ind ][::-1])
         # If cases have been found, remove these
         if len( ind ) > 0:
             [ l.pop(i) for i in ind[::-1] for l in details, Coes ]
         if debug:
-            print  [len(i) for i in details, Coes ]
+            print([len(i) for i in (details, Coes) ])
             
     # return a dictionary indexed by p/l tracer, with rxn #, 
     # reaction str and Coe of rxn.
-    return dict( zip( [i[0] for i in details], [ i[1:] + [ Coes[n] ]  \
-            for n, i in enumerate( details) ] ) )
+    return dict( list(zip( [i[0] for i in details], [ i[1:] + [ Coes[n] ]  \
+            for n, i in enumerate( details) ] )) )
 
 # -------------
 # X.XX - Get prod loss reactions for a given family.
@@ -1896,8 +1896,8 @@ def prod_loss_4_spec( wd, fam, all_clean=True, ver='1.7', debug=False ):
 
     # ---  Get reaction # tracked by p/l diag for spec and coefficient.
     rxns = rxns_in_pl( wd, fam )
-    nums = rxns.keys() 
-    Coe = [ rxn[-1] for rxn in rxns.values() ]
+    nums = list(rxns.keys()) 
+    Coe = [ rxn[-1] for rxn in list(rxns.values()) ]
 
     # --- get all details from full reaction dictionary
     rxns =  [ rdict[i] for i in nums ]
@@ -1914,8 +1914,8 @@ def prod_loss_4_spec( wd, fam, all_clean=True, ver='1.7', debug=False ):
         # ---  Fortran write error leads to combination of species at the
         #  end of long line of a chemical reaction in globchem.dat
         if debug:
-            print [  i[:3] for i in nums, rxns, tags, Coe]
-            print [ len(i) for i in nums, rxns, tags, Coe]
+            print([  i[:3] for i in (nums, rxns, tags, Coe)])
+            print([ len(i) for i in (nums, rxns, tags, Coe)])
 
         # LO3_36RD95 is present twice as this reaction is present 2 times in the code
         # update 16 01 11: LO3_36RD95 is now present x3 in version 3.0 
@@ -1964,34 +1964,34 @@ def prod_loss_4_spec( wd, fam, all_clean=True, ver='1.7', debug=False ):
                 ind = [ nn  for nn, i in enumerate( tags) if \
                                 any([ ( e in ii) for ii in i ]) ] [0]
                 # Extract vars for a given index
-                vars =  [ i[ind] for i in nums, rxns, tags, Coe]
+                vars =  [ i[ind] for i in (nums, rxns, tags, Coe)]
                 if debug:
-                    print 3, [ i[-1] for i in nums, rxns, tags, Coe], vars,  \
-                            [ len(i) for i in nums, rxns, tags, Coe]
+                    print(3, [ i[-1] for i in (nums, rxns, tags, Coe)], vars,  \
+                            [ len(i) for i in (nums, rxns, tags, Coe)])
                 # remove index ( "ind" ) value from nums, rxns, tags, and Coe 
-                [ i.pop(ind) for i in nums, rxns, tags, Coe ]
+                [ i.pop(ind) for i in (nums, rxns, tags, Coe) ]
 
                 # Add the cerrs values on the end
                 if debug:
-                    print 4, [ i[-1] for i in nums, rxns, tags, Coe],  \
-                            [ len(i) for i in nums, rxns, tags, Coe]
+                    print(4, [ i[-1] for i in (nums, rxns, tags, Coe)],  \
+                            [ len(i) for i in (nums, rxns, tags, Coe)])
                 nums +=  [ vars[0] ]
                 rxns +=  [ vars[1] ]
                 tags += [ cerrs[n] ]
                 Coe  +=  [ vars[-1] ]
 
                 if debug:
-                    print 6, [ i[-1] for i in nums, rxns, tags, Coe], \
-                         [ len(i) for i in nums, rxns, tags, Coe]
-                    print '->'*30,  'SUCCESS >{}<  >{}<'.format( n, e )
+                    print(6, [ i[-1] for i in (nums, rxns, tags, Coe)], \
+                         [ len(i) for i in (nums, rxns, tags, Coe)])
+                    print('->'*30,  'SUCCESS >{}<  >{}<'.format( n, e ))
             except:
-                print '>'*50, 'FAIL (NOT REPLACED) >{}< >{}<'.format( n, e )
+                print('>'*50, 'FAIL (NOT REPLACED) >{}< >{}<'.format( n, e ))
 
     # KLUDGE! - rm empty list values of ones that contain errs
 #    ind = [ n for n,i in enumerate(tags) if ( (len(i)==0) or (i[0] in errs) ) ] 
 #    [ [ l.pop(i) for i in sorted(ind)[::-1] ] for  l in nums, rxns, tags, Coe ]
     if debug:
-        print tags 
+        print(tags) 
 
 #    print '1'*300, tags 
 
@@ -2060,7 +2060,7 @@ def latex_spec_name(input_x, debug=False):
     'Cl':'Cl','HOCl':'HOCl','ClO':'ClO','OClO':'OClO','BrCl':'BrCl', \
     'HI+OIO+IONO+INO':'HI+OIO+INO$_{2}$+INO', \
     'CH2IX':'CH$_{2}$IX (X=Cl, Br, I)', \
-    'IxOy':u'I$_{2}$O$_{X}$ ($_{X}$=2,3,4)',\
+    'IxOy':'I$_{2}$O$_{X}$ ($_{X}$=2,3,4)',\
     'CH3I':'CH$_{3}$I', 'OH':'OH', 'HO2':'HO$_{2}$', 'MO2':'MO$_{2}$', \
     'RO2':'RO$_{2}$' , 'ISALA': 'Iodine on SALA',  \
     'ISALC': 'Iodine on SALC', 'CH4': 'CH$_{4}$', 'MOH': 'Methanol', \
@@ -2068,13 +2068,13 @@ def latex_spec_name(input_x, debug=False):
     # Adjusted names
     'ALD2':'Acetaldehyde', 
     # Analysis names 
-    'iodine_all':'All Iodine', 'Iy': u'I$_{\\rm y}$',\
-    'IOy': u'IO$_{\\rm y}$', \
-    'IyOx': u'I$_{y}$O$_{x}$', 
-    'IOx': u'IO$_{\\rm x}$', \
+    'iodine_all':'All Iodine', 'Iy': 'I$_{\\rm y}$',\
+    'IOy': 'IO$_{\\rm y}$', \
+    'IyOx': 'I$_{y}$O$_{x}$', 
+    'IOx': 'IO$_{\\rm x}$', \
     'iodine_all_A':'All Iodine (Inc. AERI)',  \
-    'I2Ox': u'I$_{2}$O$_{\\rm X}$' , 'AERI/SO4': 'AERI/SO4', \
-    'EOH':'Ethanol','OH reactivity / s-1': u'OH reactivity / s$^{-1}$', \
+    'I2Ox': 'I$_{2}$O$_{\\rm X}$' , 'AERI/SO4': 'AERI/SO4', \
+    'EOH':'Ethanol','OH reactivity / s-1': 'OH reactivity / s$^{-1}$', \
     'PSURF': 'Pressure at the bottom of level', \
     'GMAO_TEMP' : 'Temperature', 'TSKIN' : 'Temperature at 2m', \
     'GMAO_UWND':'Zonal Wind', 'GMAO_VWND':'Meridional Wind', \
@@ -2083,11 +2083,11 @@ def latex_spec_name(input_x, debug=False):
     'GMAO_ABSH' : 'Absolute humidity', 'GMAO_SURF': 'Aerosol surface area', \
     'GMAO_PSFC': 'Surface pressure', 
     # Family/group species/tracer Names
-    'N_specs':u'NO$_{\\rm y}$', 'NOy':u'NO$_{\\rm y}$', 
-    'Bry':u'Br$_{\\rm y}$', 'Cly':u'Cl$_{\\rm y}$', 'NIT+NITs':'NIT+NITs',  \
-    'N_specs_no_I': u'NO$_{\\rm y}$ exc. iodine', 'TSO4': 'TSO$_4$',
-    'NOx':u'NO$_{\\rm x}$', 'HOx':u'HO$_{\\rm x}$', 'TNO3': 'TNO$_3$', \
-    'SOx':u'SO$_{\\rm x}$','PM2.5': 'PM$_{2.5}$', 'VOC': 'VOC', \
+    'N_specs':'NO$_{\\rm y}$', 'NOy':'NO$_{\\rm y}$', 
+    'Bry':'Br$_{\\rm y}$', 'Cly':'Cl$_{\\rm y}$', 'NIT+NITs':'NIT+NITs',  \
+    'N_specs_no_I': 'NO$_{\\rm y}$ exc. iodine', 'TSO4': 'TSO$_4$',
+    'NOx':'NO$_{\\rm x}$', 'HOx':'HO$_{\\rm x}$', 'TNO3': 'TNO$_3$', \
+    'SOx':'SO$_{\\rm x}$','PM2.5': 'PM$_{2.5}$', 'VOC': 'VOC', \
     'NIT+NH4+SO4': 'NO${_3}{^-}$+NH${_4}{^+}$+SO${_4}{^{2-}}$', 
     # typos
     'CH2BR2':'CH$_{2}$Br$_{2}$',\
@@ -2118,7 +2118,7 @@ class GEO_Site:
 
         # Check file exists
         if not os.path.exists( wd + filename ):
-            print "ERROR. Is this file correct?: ",  wd + filename 
+            print("ERROR. Is this file correct?: ",  wd + filename) 
         # Open File and extract info on site
         df = pd.read_csv( wd+'/'+filename, skipinitialspace=True )
 
@@ -2132,7 +2132,7 @@ class GEO_Site:
             self.ALT = float( df['PRESS'].values ) # hPa
             self.UTC = float( df['UTC'].values ) # Time zone (UTC diff )
         else:
-            print 'ERROR whilst reading site details', name  
+            print('ERROR whilst reading site details', name)  
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
@@ -2190,15 +2190,15 @@ def get_adjustment4tags( tags, PDs=None, pl_dict=None, ver='1.6', \
         # times by tag Coefficient (if not ==1) all -Coes start from unity
         try:            
             if debug:
-                print 'Accounting for (non unity) Coe in globchem.dat for:' + \
+                print('Accounting for (non unity) Coe in globchem.dat for:' + \
                     '{}, PD:{}, to Coe:{} (from {})'.format(  tag, PDs[n],  \
-                    Coes[n]*p_l_unity(tag), Coes[n]  )
+                    Coes[n]*p_l_unity(tag), Coes[n]  ))
             Coes[n] = Coes[n]*p_l_unity(tag)
 
         except:
             if debug:
-                print 'Just using Coe from smv.log @:'+ \
-                    '{} for {}, PD:{}, Coe:{}'.format( wd, tag, PDs[n], Coes[n])
+                print('Just using Coe from smv.log @:'+ \
+                    '{} for {}, PD:{}, Coe:{}'.format( wd, tag, PDs[n], Coes[n]))
 
     # Reduce route by half if considered twice (e.g. for two families )
     for n, tag in enumerate( tags ):    
@@ -2206,19 +2206,19 @@ def get_adjustment4tags( tags, PDs=None, pl_dict=None, ver='1.6', \
         # If Br + I
         if ( tag == 'LO3_24' ) and IO_BrOx2:
             if debug:
-                print 'before: ', tag, Coe[n] 
+                print('before: ', tag, Coe[n]) 
             Coes[n] = Coes[n] * adjust2half4crossover( tag )
             if debug:
-                print 'after: ', tag, Coe[n] 
+                print('after: ', tag, Coe[n]) 
 
         # If  Cl+Br+I ("Include_Chlorine")
-        if any( [ (tag == i ) for i in 'LO3_87' , 'LO3_82' ] ) and \
+        if any( [ (tag == i ) for i in ('LO3_87' , 'LO3_82') ] ) and \
              Include_Chlorine:
             if debug:
-                print 'before: ', tag, Coes[n] 
+                print('before: ', tag, Coes[n]) 
             Coes[n] = Coes[n] * adjust2half4crossover( tag )
             if debug:
-                print 'after: ', tag, Coes[n] 
+                print('after: ', tag, Coes[n]) 
     
     return Coes
 
@@ -2262,7 +2262,7 @@ def gaw_2_name():
         ( i =='Cape Verde Atmospheric Observatory' ) ]
     names[ind[0]] = 'Cape Verde'
 
-    return dict( zip( df.index, names ))
+    return dict( list(zip( df.index, names )))
 
 # ----
 #  X.XX - Returns list of gaw sites in HDF file of O3 surface data
@@ -2567,7 +2567,7 @@ def gaw_2_loc( site, f='GLOBAL_SURFACE_O3_2006_2012.nc' ):
     ( 'GAW_SURFACE_O3_2006_2012.nc' )
     """
 #    from ..funcs4generic import hPa_to_Km
-    from funcs4generic import hPa_to_Km
+    from .funcs4generic import hPa_to_Km
 
     # Use simple dictionary if site listed
     try:
@@ -2591,7 +2591,7 @@ def gaw_2_loc( site, f='GLOBAL_SURFACE_O3_2006_2012.nc' ):
             lon= f.groups[site].longitude
             alt =  f.groups[site].altitude /1E3
             lat =  f.groups[site].latitude
-            print [ (i, type(i) ) for i in lat, lon, alt ]
+            print([ (i, type(i) ) for i in (lat, lon, alt) ])
         return (lat, lon, float( hPa_to_Km([alt], reverse=True)[0] ), -9999 )
 
 # --------------
@@ -2614,10 +2614,10 @@ def get_NO2_phot_REA_XXX( ver='1.6', debug=False ):
 
     # Request value /debug        
     else:
-        print 'PLEASE ADD NO2 photolysis reaction for iGC version'
+        print('PLEASE ADD NO2 photolysis reaction for iGC version')
         sys.exit()
     if debug:
-        print ver, num
+        print(ver, num)
 
     return 'REA_' +str(num)
 
@@ -2752,7 +2752,7 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     f_strat  = strat flux (to tropsosphere) (category, name = species) 
     """
     if debug:
-        print 'GC_var called'
+        print('GC_var called')
     GC_var_dict = { 
     # --- Ox budget analysis
     'f_var' : ['EW-FLX-$', 'NS-FLX-$', 'UP-FLX-$' ], 
@@ -3182,7 +3182,7 @@ def Ox_in_species(in_=None, rxns=False, keys=False):
     if (rxns):
         return rxn_Ox[ in_ ]
     if (keys):
-        return species_Ox.keys()
+        return list(species_Ox.keys())
     else:
         return species_Ox[ in_ ]
 

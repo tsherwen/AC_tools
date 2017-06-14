@@ -26,7 +26,7 @@ def test_data():
 
 # Leave the default plot in as not slow.
 def test_map_plot_default(test_data):
-    print test_data.shape
+    print(test_data.shape)
     map_plot( test_data[:,:,0,0] )
     return
 

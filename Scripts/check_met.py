@@ -34,7 +34,7 @@ files.sort()
 prt_detail=False
 
 # --- loop files and test for zero values
-print files
+print(files)
 counter=0
 for file in files:
 	# Debug? - print file accessed... 
@@ -42,7 +42,7 @@ for file in files:
 	# Open NetCDF as dataset ("d" )	
 	with Dataset(file) as d:
 	# loop keys
-		for key in d.variables.keys():
+		for key in list(d.variables.keys()):
 			# check on a per field basis
 			field=d[key][:]
 			# If multi-dimensional
@@ -50,10 +50,10 @@ for file in files:
 				# print zero fields
 				if (field.min() == 0.):
 					# print to screen
-					print file, key, field.shape
+					print(file, key, field.shape)
 					# Print detail?
 					if prt_detail:
 						for j in np.arange(0,8):
 							for k in np.arange(0,72):
 								if (field[j,k,:,:].min() == 0.):
-									print key,j,k,file
+									print(key,j,k,file)

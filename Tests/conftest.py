@@ -5,6 +5,8 @@
 import pytest
 import logging
 import os
+# temporality restore urllib2 as urllib not installed
+#import urllib.request, urllib.error, urllib.parse
 import urllib2
 
 #FORMAT = "[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"            

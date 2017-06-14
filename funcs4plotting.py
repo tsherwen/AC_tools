@@ -33,11 +33,11 @@ import gc
 
 # ---  This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
-from funcs_vars import *
-from funcs4generic import *
-from funcs4time import *
-from funcs4pf import *
-from funcs4GEOSC import * # wd2ctms, get_gc_res
+from .funcs_vars import *
+from .funcs4generic import *
+from .funcs4time import *
+from .funcs4pf import *
+from .funcs4GEOSC import * # wd2ctms, get_gc_res
 
 # math
 from math import log10, floor
@@ -122,7 +122,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     """
     if isinstance(arr, type(None)):
         logging.error("No data given to map_plot!")
-        raise AssertionError, "No data given to map_plot"
+        raise AssertionError("No data given to map_plot")
     elif not len(arr.shape)==2:
         logging.error("Input array should be 2D. Got shape {shape}"\
             .format(shape=arr.shape))
@@ -143,7 +143,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     # Make sure the input data is usable and try to fix it if not.
     (res_lat, res_lon) = get_dims4res(res, just2D=True)
     expected_shape = (res_lon, res_lat)
-    print expected_shape, arr.shape
+    print(expected_shape, arr.shape)
     if arr.shape==expected_shape:
         pass
     elif arr.shape!=expected_shape:
@@ -155,7 +155,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
             err_msg = "Array is the wrong shape. Should be {}. Got {}"\
              .format( str(expected_shape), arr.shape)
             logging.error(err_msg)
-            raise AssertionError, err_msg
+            raise AssertionError(err_msg)
 
     #### Add a invalid warning!
     # Mask for percent arrays containing invalid values ( to allow PDF save )
@@ -182,11 +182,11 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     if set_window:
         # Convert lats and lons to GC lats and restrict lats, lons, and arr
         if not isinstance( lat_0, type(None) ):
-            gclat_0, gclat_1 = [ get_gc_lat(i, res=res) for i in lat_0, lat_1 ]
+            gclat_0, gclat_1 = [ get_gc_lat(i, res=res) for i in (lat_0, lat_1) ]
             lat = lat[ gclat_0:gclat_1 ]
 
         if not isinstance( lon_0, type(None) ):
-            gclon_0, gclon_1 = [ get_gc_lon(i, res=res) for i in lon_0, lon_1 ]
+            gclon_0, gclon_1 = [ get_gc_lon(i, res=res) for i in (lon_0, lon_1) ]
             lon = lon[ gclon_0:gclon_1]
 
     # ----------------  Basemap setup  ----------------  
@@ -242,7 +242,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     elif case=="log":
         log=True
     else:
-        raise ValueError, "Unknown case of {case}".format(case=case)
+        raise ValueError("Unknown case of {case}".format(case=case))
 ####################################################################################################
 
     # -------- colorbar variables...
@@ -284,7 +284,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     linear_cases = ["default",9]
     if case in linear_cases:
         if debug:
-            print fixcb_, arr.shape, [ len(i) for i in lon, lat ], norm, cmap
+            print(fixcb_, arr.shape, [ len(i) for i in (lon, lat) ], norm, cmap)
         poly = m.pcolor( lon, lat, arr, cmap=cmap, norm=norm, alpha=alpha, \
             vmin=fixcb_[0], vmax=fixcb_[1]  )
 
@@ -372,10 +372,10 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     if not isinstance( title, type(None) ):
         # Check if the title is too long and if not split it over lines
         if len(title)>max_title_len:
-            print "tile takes up multiple lines. Splitting over lines now."
+            print("tile takes up multiple lines. Splitting over lines now.")
             import textwrap
             title="\n".join(textwrap.wrap(title,max_title_len))
-            print title
+            print(title)
             # Adjust the top of the plot by 0.05 for every line the title takes
 #            plt.subplots_adjust(top=1-0.05*(len(title)%max_title_len))
 
@@ -459,7 +459,7 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     """
     if isinstance(arr, type(None)):
         logging.error("No data given to map_plot!")
-        raise AssertionError, "No data given to map_plot"
+        raise AssertionError("No data given to map_plot")
     elif not len(arr.shape)==2:
         logging.error("Input array should be 2D. Got shape {shape}"\
             .format(shape=arr.shape))
@@ -507,7 +507,7 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     elif case=="log":
         log=True
     else:
-        raise ValueError, "Unknown case of {case}".format(case=case)
+        raise ValueError("Unknown case of {case}".format(case=case))
 #################################################################################################### 
 
     # Make sure the input data is usable and try to fix it if not.
@@ -522,7 +522,7 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     else:
         logging.error("Array is the wrong shape. Should be {}. Got {}"\
          .format( str(expected_shape), arr.shape) )
-        raise AssertionError, "Incorrect array shape."
+        raise AssertionError("Incorrect array shape.")
 
     #### Add a invalid warning!
     # Mask for percent arrays containing invalid values ( to allow PDF save )
@@ -549,11 +549,11 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     if set_window:
         # Convert lats and lons to GC lats and restrict lats, lons, and arr
         if not isinstance( lat_0, type(None) ):
-            gclat_0, gclat_1 = [ get_gc_lat(i, res=res) for i in lat_0, lat_1 ]
+            gclat_0, gclat_1 = [ get_gc_lat(i, res=res) for i in (lat_0, lat_1) ]
             lat = lat[ gclat_0:gclat_1 ]
 
         if not isinstance( lon_0, type(None) ):
-            gclon_0, gclon_1 = [ get_gc_lon(i, res=res) for i in lon_0, lon_1 ]
+            gclon_0, gclon_1 = [ get_gc_lon(i, res=res) for i in (lon_0, lon_1) ]
             lon = lon[ gclon_0:gclon_1]
 
     # ----------------  Basemap setup  ----------------  
@@ -627,7 +627,7 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
         linear_cases = ["default",9]
         if case==9 or default:
             if debug:
-                print fixcb_, arr.shape, [ len(i) for i in lon, lat ], norm, cmap
+                print(fixcb_, arr.shape, [ len(i) for i in (lon, lat) ], norm, cmap)
             poly = m.pcolor( lon, lat, arr, cmap=cmap, norm=norm, alpha=alpha, \
                 vmin=fixcb_[0], vmax=fixcb_[1]  )
 
@@ -772,10 +772,10 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     if not isinstance( title, type(None) ):
         # Check if the title is too long and if not split it over lines
         if len(title)>max_title_len:
-            print "tile takes up multiple lines. Splitting over lines now."
+            print("tile takes up multiple lines. Splitting over lines now.")
             import textwrap
             title="\n".join(textwrap.wrap(title,max_title_len))
-            print title
+            print(title)
             # Adjust the top of the plot by 0.05 for every line the title takes
 #            plt.subplots_adjust(top=1-0.05*(len(title)%max_title_len))
 
@@ -874,7 +874,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
         lat = lat[ get_gc_lat(lat_0, res=res):get_gc_lat(lat_1, res=res) ]
         logging.debug( 'output post set_window: {}'.format( arr.shape)+
             'lens={}, res={}, mean={}, min={}, max={}'.format(
-            [ len(i) for i in lon,lat,alt], res,  \
+            [ len(i) for i in (lon,lat,alt)], res,  \
             [(i.mean(), i.min(), i.max()) for i in [arr[: ,:c_off]] ]) )
     min, max = [ (i.min(), i.max()) for i in [ arr[: ,:c_off]  ] ][0] 
 
@@ -896,7 +896,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
     # -------- Colorbar/colomap variables...
     # Set cmap range I to limit poly, if not given cmap )
     fixcb_ = fixcb
-    print fixcb, fixcb_,  [ (i.min(), i.max()) for i in [arr ] ]
+    print(fixcb, fixcb_,  [ (i.min(), i.max()) for i in [arr ] ])
     if isinstance( fixcb_, type(None) ) :#and isinstance( cmap, type(None) ):
         fixcb_ = np.array( [ (i.min(), i.max()) for i in [arr ] ][0] )
 
@@ -918,7 +918,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
     fixcb_ = fixcb_buffered
 
     if verbose:
-        print 'colorbar variables: ', fixcb_buffered, fixcb, fixcb_, lvls, cmap
+        print('colorbar variables: ', fixcb_buffered, fixcb, fixcb_, lvls, cmap)
     # -----------------  Log plots ---------------------------------------------
     # Create a Log Zonal plot of the given data,  ??? ( updated needed )
     # where fixcb is the min and max of a given array (aka not log )
@@ -947,8 +947,8 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
     # standard plot 
     else:
         if verbose:
-            print fixcb, fixcb_,  \
-                    [ np.array(i).shape for i in lat, alt, arr, arr.T ]
+            print(fixcb, fixcb_,  \
+                    [ np.array(i).shape for i in (lat, alt, arr, arr.T) ])
         # Create poly collection
         poly = ax.pcolor( lat, alt, arr.T, cmap=cmap, vmin=fixcb_[0],  \
                                 vmax=fixcb_[1], norm=norm, alpha=alpha )
@@ -988,7 +988,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
         cb.set_ticklabels( lvls )#, format=format )
 
         logging.debug( 'variables post log plot setup: ', tick_locs, lvls, \
-            [ type(i) for i in tick_locs, lvls ], cb.get_clim(), title, format )
+            [ type(i) for i in (tick_locs, lvls) ], cb.get_clim(), title, format )
 
 
     # Setup Y axis    
@@ -1027,8 +1027,8 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
 
     # Add title if provided    
     if (title != None):
-        print [ type( i ) for i in ax, plt ]
-        print title
+        print([ type( i ) for i in (ax, plt) ])
+        print(title)
         ax.set_title(title, fontsize=f_size*1.5)
 
 # --------   
@@ -1191,14 +1191,14 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, \
     """
 
     # Get overall vars
-    alt, press = [ gchemgrid(i) for i in 'c_km_geos5_r' , 'c_hPa_geos5_r']
+    alt, press = [ gchemgrid(i) for i in ('c_km_geos5_r' , 'c_hPa_geos5_r')]
 
     # Cut off at Tropopause?
     if obs:
         arr = arr[:c_off,:] 
     else:
         arr = arr[:c_off]         
-    alt, press = [ i[:c_off] for i in alt, press ]
+    alt, press = [ i[:c_off] for i in (alt, press) ]
 
     # if color  not set, get color
     if isinstance( color, type(None) ):
@@ -1302,9 +1302,9 @@ def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
                     
     # Beautify
     ax.set_xticklabels( [i.strftime("%b") \
-            for i in [datetime.datetime(2009, int(i), 01)  \
+            for i in [datetime.datetime(2009, int(i), 0o1)  \
             for i in np.arange(1,13 ) ] ] )
-    plt.xticks(range(1,13),  fontsize=f_size )
+    plt.xticks(list(range(1,13)),  fontsize=f_size )
     plt.xticks(rotation=xrotation)
     if not xlabel:
         plt.tick_params( axis='x', which='both', bottom='on', top='off',        
@@ -1314,7 +1314,7 @@ def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
     if ylabel != None:
         plt.ylabel(  ylabel, fontsize=f_size  )
     plt.yticks( fontsize=f_size )        
-    print pos, posn-1
+    print(pos, posn-1)
     if not isinstance(title, type(None)):
         t = plt.title(title, fontsize = f_size)
         t.set_y( title_loc_y )
@@ -1349,15 +1349,15 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     df = DataFrame(data,index=dates )
 #    resample = df.resample('M' )#, how='mean')
 #    labels = [i.strftime("%b") for i in resample]
-    months = range(1, 13) 
+    months = list(range(1, 13)) 
     labels = [i.strftime("%b") for i in 
-    [ datetime.datetime(2009, int(i), 01) for i in months ]
+    [ datetime.datetime(2009, int(i), 0o1) for i in months ]
     ]
-    print labels
+    print(labels)
 
     # Get Data by month
     monthly =[ df[df.index.month==i]  for i in months ]
-    print [i.shape for i in monthly ]
+    print([i.shape for i in monthly ])
 
     if boxplot:    
         bp = ax.boxplot( monthly, months, showmeans=showmeans ) 
@@ -1390,9 +1390,9 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     if not isinstance( ylim, type(None) ):
         ax.set_ylim( ylim )
 
-    print '!'*50, alt_text, alt_text_x, alt_text_y
+    print('!'*50, alt_text, alt_text_x, alt_text_y)
     if not isinstance( alt_text, type(None) ):
-        print '!'*50, alt_text, alt_text_x, alt_text_y, f_size
+        print('!'*50, alt_text, alt_text_x, alt_text_y, f_size)
 #        alt_text_x=0.5; alt_text_y=0.5; f_size=20
 #        ax.annotate( alt_text , xy=(alt_text_x, alt_text_y), \
 #            textcoords='axes fraction', fontsize=f_size*1.5, color='k' )
@@ -1401,7 +1401,7 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
                     transform=ax.transAxes, fontsize=f_size*.5)
 
     if legend:
-        print '>'*500, 'Adding legend', '<'*50, loc
+        print('>'*500, 'Adding legend', '<'*50, loc)
         plt.legend( fontsize=f_size*.75, loc=loc )
     if not isinstance( title, type(None) ):
         plt.title( title )
@@ -1534,12 +1534,12 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     # Color in line another provided variables
     if color_by_z:
         if debug:
-            print 'Coloring line by normalised z values'
-        print df.columns
+            print('Coloring line by normalised z values')
+        print(df.columns)
         x = df.index
         y, z = [ df[ df.columns[i] ] for i in range(2) ]
         cmap = get_colormap( z.copy(), positive=positive )
-        print [ ( i.min(), i.max() ) for i in x, y, z ]
+        print([ ( i.min(), i.max() ) for i in (x, y, z) ])
         colorline(x, y, z, cmap=cmap, linewidth=lw, ax=ax, \
             norm=plt.Normalize( 0, 360 ), fig=fig ) 
     else:
@@ -1590,7 +1590,7 @@ def north_pole_surface_plot( arr, return_m=False, grid=True, centre=False, \
         cmap = get_colormap( arr.copy() )
 
     if debug:
-        print '>'*5, [ [ i.min(), i.max(), i.mean(), type(i) ] for i in [arr] ]
+        print('>'*5, [ [ i.min(), i.max(), i.mean(), type(i) ] for i in [arr] ])
     lon, lat, NIU = get_latlonalt4res( res, centre=centre )
 
     # restrict lat to projection
@@ -1617,12 +1617,12 @@ def north_pole_surface_plot( arr, return_m=False, grid=True, centre=False, \
     # set x and y 
     x,y = m( lon, lat )
     if debug:
-        print 1, len(x), len(y)
+        print(1, len(x), len(y))
 
     if debug:
-        print 2, 'len:',  [ len(i) for i in x,y,lat,lon ]
-        print '>'*5, [ [ i.min(), i.mean(), i.max(), i.shape ] for i in arr, 
-            arr[:,get_gc_lat(boundinglat,res=res):]  ]
+        print(2, 'len:',  [ len(i) for i in (x,y,lat,lon) ])
+        print('>'*5, [ [ i.min(), i.mean(), i.max(), i.shape ] for i in (arr, 
+            arr[:,get_gc_lat(boundinglat,res=res):])  ])
 
     # -------- colorbar variables...
     # set cb label sizes
@@ -1638,7 +1638,7 @@ def north_pole_surface_plot( arr, return_m=False, grid=True, centre=False, \
 #    if fixcb:
     polar_arr = arr[:,get_gc_lat(boundinglat, res=res):].T
     if debug:
-        print [ (i.min(), i.max(), i.mean()) for i in [polar_arr]  ]
+        print([ (i.min(), i.max(), i.mean()) for i in [polar_arr]  ])
     if not isinstance( fixcb, type(None) ):
         poly = m.pcolor( x, y, polar_arr, cmap=cmap, alpha=alpha,  \
             vmin=fixcb[0], vmax=fixcb[1] )
@@ -1700,7 +1700,7 @@ def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False,
         cmap = get_colormap( arr.copy() )
 
     if debug:
-        print '>'*5, [ [ i.min(), i.max(), i.mean(), type(i) ] for i in [arr] ]
+        print('>'*5, [ [ i.min(), i.max(), i.mean(), type(i) ] for i in [arr] ])
     lon, lat, NIU = get_latlonalt4res( res, centre=centre )
 
     # restrict lat to projection
@@ -1715,7 +1715,7 @@ def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False,
     # set x and y 
     x,y = m( lon, lat )
     if debug:
-        print 1, len(x), len(y)
+        print(1, len(x), len(y))
 
     # Beautify plot
     m.drawcoastlines()
@@ -1729,8 +1729,8 @@ def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False,
         fontsize=f_size*.25 )
                     
     if debug:
-        print 2, 'len:',  [ len(i) for i in x,y,lat,lon ]
-        print '>'*5, [ [ i.min(), i.mean(), i.max() ] for i in [arr ] ]
+        print(2, 'len:',  [ len(i) for i in (x,y,lat,lon) ])
+        print('>'*5, [ [ i.min(), i.mean(), i.max() ] for i in [arr ] ])
 
     # -------- colorbar variables...
     # set cb label sizes
@@ -1745,7 +1745,7 @@ def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False,
 #    if fixcb:
     polar_arr = arr[:,:get_gc_lat(boundinglat, res=res)+2].T
     if debug:
-        print [ (i.min(), i.max(), i.mean()) for i in [polar_arr]  ]    
+        print([ (i.min(), i.max(), i.mean()) for i in [polar_arr]  ])    
     if not isinstance( fixcb, type(None) ):
         poly = m.pcolor( x, y, polar_arr, cmap=cmap, alpha=alpha, \
             vmin=fixcb[0], vmax=fixcb[1] )
@@ -1810,7 +1810,7 @@ def plot_specs_surface_change_monthly2pdf( arr, res='4x5', dpi=160, \
     # Loop species
     for n, spec in enumerate( specs ):
         if debug:
-            print n, spec
+            print(n, spec)
 
         # Get units/scale for species + setup fig (allow of 
         if isinstance( units, type( None) ):
@@ -1929,7 +1929,7 @@ def plot_specs_zonal_change_monthly2pdf( Vars, res='4x5', dpi=160, \
     # Loop species
     for n, spec in enumerate( specs ):
         if debug:
-            print n, spec, Vars.shape
+            print(n, spec, Vars.shape)
 
         # Get units/scale for species + setup fig        
         scale=1
@@ -1971,11 +1971,11 @@ def plot_specs_zonal_change_monthly2pdf( Vars, res='4x5', dpi=160, \
         if set_lon:
             set_lon = get_gc_lon( set_lon, res=res )
             fixcb  = [( i.min(), i.max() ) for i in [ cbVars[set_lon,...] ]][0]               
-            print 'SETTING LON to GC index: ', set_lon
+            print('SETTING LON to GC index: ', set_lon)
         else:
             cbVars = cbVars.mean( axis=0 )
         if set_window:
-            gclat_0, gclat_1 = [ get_gc_lat(i, res=res ) for i in lat_0, lat_1 ]
+            gclat_0, gclat_1 = [ get_gc_lat(i, res=res ) for i in (lat_0, lat_1) ]
             cbVars = cbVars[...,gclat_0:gclat_1, :]
 
         fixcb  = [( i.min(), i.max() ) for i in [ cbVars ]][0]
@@ -2076,7 +2076,7 @@ def plot_specs_poles_change_monthly2pdf( specs=None, arr=None, res='4x5', \
      - needs update to description/acsetics
     """
     if debug:
-        print arr, no_dstr, f_size, pcent, res, dpi, specs, dlist, savetitle
+        print(arr, no_dstr, f_size, pcent, res, dpi, specs, dlist, savetitle)
 
     # Setup PDF filename for saving file 
     if perspective == 'north':
@@ -2092,7 +2092,7 @@ def plot_specs_poles_change_monthly2pdf( specs=None, arr=None, res='4x5', \
     for n, spec in enumerate( specs ):
         # Debug print statement?
         if verbose:
-            print n, spec, arr.shape, units, perspective, '<'
+            print(n, spec, arr.shape, units, perspective, '<')
 
         # Get units/scale for species + setup fig
         scale = 1
@@ -2103,9 +2103,9 @@ def plot_specs_poles_change_monthly2pdf( specs=None, arr=None, res='4x5', \
         parr = arr[n,:,:,0,:]*scale
             
         if debug:
-            print parr.shape
-            print n, spec,  units, scale
-            print [ (i.min(), i.max(), i.mean() ) for i in [parr, arr] ]
+            print(parr.shape)
+            print(n, spec,  units, scale)
+            print([ (i.min(), i.max(), i.mean() ) for i in [parr, arr] ])
 
         # Set the correct title        
         ptitle = '{}'.format( latex_spec_name(spec) )
@@ -2137,7 +2137,7 @@ def plot_specs_poles_change_monthly2pdf( specs=None, arr=None, res='4x5', \
         # Setup colormap
         fixcb = np.array([ ( i.min(), i.max() ) for i in [cbarr] ][0])
         if verbose:            
-            print 'fixcb testing ', fixcb, parr.shape
+            print('fixcb testing ', fixcb, parr.shape)
         # Kludge, force max cap at .2
 #        if units == 'ratio':
 #            fixcb = [ fixcb[0], 0.2 ]       
@@ -2217,9 +2217,9 @@ def X_Y_scatter( x, y, z=None, fig=None, ax=None, vmin=None, vmax=None, \
 
 
     if lim2std != False:
-        stds = [ np.std( i ) for i in x, y ]
-        means = [ np.mean( i ) for i in x, y ]
-        print stds, means
+        stds = [ np.std( i ) for i in (x, y) ]
+        means = [ np.mean( i ) for i in (x, y) ]
+        print(stds, means)
         mins = [ means[0]-(stds[0]*lim2std), means[1]-(stds[1]*lim2std) ]
         maxs = [ means[0]+(stds[0]*lim2std), means[1]+(stds[1]*lim2std) ]
 
@@ -2373,7 +2373,7 @@ def plot_specs_surface_change_annual2pdf( arr, res='4x5', dpi=160, \
     # Loop species
     for n, spec in enumerate( specs ):
 #            if debug:
-        print n, spec
+        print(n, spec)
 
         # Get units/scale for species + setup fig (allow of 
         if isinstance( units, type( None) ):
@@ -2488,7 +2488,7 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
     # Loop species
     for n, spec in enumerate( specs ):
 #           if debug:
-        print n, spec, Vars.shape
+        print(n, spec, Vars.shape)
 
         # Get units/scale for species + setup fig        
 #           scale=1
@@ -2530,11 +2530,11 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
         if set_lon:
             set_lon = get_gc_lon( set_lon, res=res )
             fixcb  = [( i.min(), i.max() ) for i in [ cbVars[set_lon,...] ]][0]               
-            print 'SETTING LON to GC index: ', set_lon
+            print('SETTING LON to GC index: ', set_lon)
         else:
             cbVars = cbVars.mean( axis=0 )
         if set_window:
-            gclat_0, gclat_1 = [ get_gc_lat(i, res=res ) for i in lat_0, lat_1 ]
+            gclat_0, gclat_1 = [ get_gc_lat(i, res=res ) for i in (lat_0, lat_1) ]
             cbVars = cbVars[...,gclat_0:gclat_1, :]
 
         fixcb  = [( i.min(), i.max() ) for i in [ cbVars ]][0]
@@ -2690,8 +2690,8 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 
     else:
         if log:
-            print 'WARNING: Code (to create levels for log colorbar)'+\
-                'below needs checking'
+            print('WARNING: Code (to create levels for log colorbar)'+\
+                'below needs checking')
             # Get logarithmically spaced integers
             lvls = np.logspace( np.log10(fixcb[0]), np.log10(fixcb[1]), \
                                                  num=nticks)
@@ -2795,10 +2795,10 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
             show, arr.min(), arr.max()
     logging.info( all_str )
     if verbose:
-        print all_str
+        print(all_str)
 
     # If lon, lat, alt array provided then take mean of lon
-    if any( [arr.shape[0] ==i for i in 72, 144, 121, 177] ):
+    if any( [arr.shape[0] ==i for i in (72, 144, 121, 177)] ):
 #        arr = arr.mean(axis=0)
         arr = molec_weighted_avg( arr, weight_lon=True, res=res, \
             trop_limit=trop_limit, rm_strat=False, wd=wd) 
@@ -2964,12 +2964,12 @@ def timeseries_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     # Color in line another provided variables
     if color_by_z:
         if debug:
-            print 'Coloring line by normalised z values'
-        print df.columns
+            print('Coloring line by normalised z values')
+        print(df.columns)
         x = df.index
         y, z = [ df[ df.columns[i] ] for i in range(2) ]
         cmap = get_colormap( z.copy(), positive=positive )
-        print [ ( i.min(), i.max() ) for i in x, y, z ]
+        print([ ( i.min(), i.max() ) for i in (x, y, z) ])
         colorline(x, y, z, cmap=cmap, linewidth=lw, ax=ax, \
             norm=plt.Normalize( 0, 360 ), fig=fig ) #np.min(z), 1500))
 #        colorline(x, y, linewidth=lw, ax=ax)
@@ -3059,7 +3059,7 @@ def plt_4Darray_surface_by_month( arr, res='4x5', dpi=160, \
                 vmin=fixcb[0], vmax=fixcb[1], cmap=cmap )
 
     if debug:
-        print  [ (i.min(), i.max(), i.mean()) for i in [ arr.mean(axis=0) ] ]
+        print([ (i.min(), i.max(), i.mean()) for i in [ arr.mean(axis=0) ] ])
                 
     # Loop thorugh months
     for m, month in enumerate(dlist):
@@ -3068,7 +3068,7 @@ def plt_4Darray_surface_by_month( arr, res='4x5', dpi=160, \
         axn = [4,3,m+1]
         ax = fig.add_subplot( *axn )
 
-        print arr[...,m].mean(axis=0).shape, arr.shape
+        print(arr[...,m].mean(axis=0).shape, arr.shape)
 
         # Only show x/y axis on edge plots 
         ylabel=False
@@ -3095,7 +3095,7 @@ def plt_4Darray_surface_by_month( arr, res='4x5', dpi=160, \
     mk_cb(fig, units=units, left=0.87, cmap=cmap, vmin=fixcb[0], format=format,\
         vmax=fixcb[1], nticks=nticks, f_size=f_size, extend=extend ) 
 
-    print nticks, fixcb, lvls
+    print(nticks, fixcb, lvls)
 
 
     # Sort out ascetics -  adjust plots and add title
@@ -3163,7 +3163,7 @@ def plt_4Darray_zonal_by_month( arr, res='4x5', dpi=160, \
                 vmin=fixcb[0], vmax=fixcb[1], cmap=cmap )
 
     if debug:
-        print  [ (i.min(), i.max(), i.mean()) for i in [ arr ] ]
+        print([ (i.min(), i.max(), i.mean()) for i in [ arr ] ])
 
     # Get time in the troposphere diagnostic if not provide as agrument
     if isinstance( t_ps, type(None) ):
@@ -3203,7 +3203,7 @@ def plt_4Darray_zonal_by_month( arr, res='4x5', dpi=160, \
         vmax=fixcb[1], nticks=nticks, f_size=f_size*1.25, extend=extend,
          width=0.015*1.5, height=.95, bottom=0.11 ) 
     if debug:
-        print nticks, fixcb, lvls
+        print(nticks, fixcb, lvls)
 
     # sort out ascetics -  adjust plots and add title
     fig.subplots_adjust( bottom=bottom, top=top, left=left, \
@@ -3260,7 +3260,7 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
     if isinstance( ax, type(None) ):
         ax = fig.add_subplot( 1,1,1  )
         logging.info('Creating ax' )
-    logging.debug( '{}'.format( zip( labels, [np.sum(i) for i in X] ) )  )
+    logging.debug( '{}'.format( list(zip( labels, [np.sum(i) for i in X] )) )  )
 
     # --- Stack arrays if not stacked... 
     if isinstance( X, np.ndarray ):
@@ -3279,14 +3279,14 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
     logging.info('stack shape={}'.format(stack.shape) )
     if pcent:
         max =  np.ma.max( stack, axis=1 ) # get accumulated maximum
-        print [ (i.min(), i.max(), i.mean(), i.shape) for i in stack, max ]
+        print([ (i.min(), i.max(), i.mean(), i.shape) for i in (stack, max) ])
         stack = np.ma.divide( stack,  max[:,None] ) *100
-        print [ (i.min(), i.max(), i.mean(), i.shape) for i in stack, max ]
+        print([ (i.min(), i.max(), i.mean(), i.shape) for i in (stack, max) ])
         xlim = [ 0, 100 ]
 
     if debug:
-        print zip( labels, [np.sum(stack[:,n]) for n, i in enumerate(labels) ] )    
-        print zip( labels, [np.max(stack[:,n]) for n, i in enumerate(labels) ] )    
+        print(list(zip( labels, [np.sum(stack[:,n]) for n, i in enumerate(labels) ] )))    
+        print(list(zip( labels, [np.max(stack[:,n]) for n, i in enumerate(labels) ] )))    
 
     # --- Setup baseline ( can expand to include other options... )
     if baseline == 'zero':
@@ -3296,12 +3296,12 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
     # Get list of colors
     if isinstance( colors, type(None) ):
         colors = color_list( len(stack[0,:]) )
-    logging.debug( '{}'.format( zip( labels, [ colors[:len(labels)] ] ) ))
+    logging.debug( '{}'.format( list(zip( labels, [ colors[:len(labels)] ] )) ))
 
     # Color between x = 0 and the first array.
     logging.debug( '{}'.format(stack[:, 0]) )
     logging.debug( 'len colors={}, labels={}, stack={}'.format( 
-        *[len(i) for i in colors, labels, stack[0, :] ]) )
+        *[len(i) for i in (colors, labels, stack[0, :]) ]) )
     r =[]
     r += [ ax.fill_betweenx( Y, first_line, stack[:, 0],
                                color=colors[0], 
@@ -3322,8 +3322,8 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
 
     # Print maxima
     if debug:
-        print title, [ [ (i.min(), i.max(), i.mean() ) for i in [stack[:,n] ] ]
-            for n, label in enumerate(labels) ]
+        print(title, [ [ (i.min(), i.max(), i.mean() ) for i in [stack[:,n] ] ]
+            for n, label in enumerate(labels) ])
 
     # --- Beautify plot
     if not isinstance( ylim, type(None) ):
@@ -3418,7 +3418,7 @@ def set_bp( bp, num, c_list=['k', 'red'], white_fill=True, set_all=True,
     Manually set properties of boxplot ("bp") 
     """
     if debug:
-        print num, c_list
+        print(num, c_list)
     if set_all:
         setp(bp['boxes'][:], color=c_list[num], linewidth=linewidth*.5)
         setp(bp['caps'][:], color=c_list[num], linewidth=linewidth*.5)
@@ -3481,7 +3481,7 @@ def Trendline( ax, X, Y, order=1, intervals=700, f_size=20, color='blue',
     params, xp = np.polyfit( X, Y, order  ), \
         np.linspace( min(np.ma.min(X), np.ma.min(Y) ), \
         max(np.ma.max(X), np.ma.max(Y) ), intervals )
-    print params, type(params)
+    print(params, type(params))
     logging.debug( 'params: {}'.format(str(params)) )
     yp = np.polyval( params, xp )
 
@@ -3503,7 +3503,7 @@ def plot_gc_bin_bands(facecolor='#B0C4DE'):
     """ 
     Plot highlighted lines of ("tropospheric") GEOS-Chem/Fast-J photolysis bins 
     """
-    vars = [ GC_var(i) for i in 'FastJ_lower' , 'FastJ_upper']
+    vars = [ GC_var(i) for i in ('FastJ_lower' , 'FastJ_upper')]
     alphas = [ 0.3,0.1 ]*len(vars[0])
     [ plt.axvspan( vars[0][n], vars[1][n], facecolor=facecolor, \
         alpha=alphas[n]) for n in range(len(vars[0])) ]
@@ -3762,21 +3762,21 @@ def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     definitions when conbining with colorbar objects within a plot 
     """
     if debug:
-        print 'mk_cb called with: ', norm, vmin, vmax, log, lvls
+        print('mk_cb called with: ', norm, vmin, vmax, log, lvls)
 
     # Get colormap (by feeding get_colormap array of min and max )
     if isinstance( cmap, type(None) ):
         cmap = get_colormap( arr=np.array( [vmin,vmax]   ) )
 
     if debug:
-        print left, bottom, width, height
-        print vmin, vmax, orientation, ticklocation, extend, extendfrac
+        print(left, bottom, width, height)
+        print(vmin, vmax, orientation, ticklocation, extend, extendfrac)
 
     # Make new axis
     if isinstance( cb_ax, type(None) ):
         cb_ax = fig.add_axes([left, bottom, width, height])
         if debug:
-            print '>'*5, left, bottom, width, height
+            print('>'*5, left, bottom, width, height)
 
     # Setup normalisation for colorbar
     if isinstance( norm, type(None) ):
@@ -3791,7 +3791,7 @@ def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
             norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
 
     if verbose:
-        print lvls, vmin, vmax, norm
+        print(lvls, vmin, vmax, norm)
 
     if isinstance( lvls, type(None) ):            
         # make graduations in colourbar to be human readable
@@ -3829,7 +3829,7 @@ def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
             extend = 'both'
 
     if debug:
-        print lvls, norm, extend, format, ticklocation
+        print(lvls, norm, extend, format, ticklocation)
 
     # Make cb with given details 
     if discrete_cmap:
@@ -3837,11 +3837,11 @@ def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
 #        if debug:
 #            print 'WARNING: adding extensions to colorbar'
         if log==True:
-            print 'Will not work as colrbar adjustment not configured'+\
-                ' for log scales'
+            print('Will not work as colrbar adjustment not configured'+\
+                ' for log scales')
             sys.exit(0)
         else:
-            print lvls
+            print(lvls)
             if discrete_cmap:
                 boundaries = lvls
             else:
@@ -3867,8 +3867,8 @@ def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     # Standard approach below
     else:
         if verbose:
-            print lvls, norm, boundaries, extend, orientation, ticklocation, \
-                    cb_ax
+            print(lvls, norm, boundaries, extend, orientation, ticklocation, \
+                    cb_ax)
         cb = mpl.colorbar.ColorbarBase(cb_ax, cmap=cmap, format=format,\
                 norm=norm, ticks=lvls, extend=extend, \
                 orientation=orientation, ticklocation=ticklocation)
@@ -4128,8 +4128,8 @@ def colorline( x, y, z=None, cmap=plt.get_cmap('copper'),  \
     z = np.asarray(z)
 
     if debug:
-        print [ type(i[0]) for i in x, z, y ]
-        print [ i[0] for i in x, z, y ]
+        print([ type(i[0]) for i in (x, z, y) ])
+        print([ i[0] for i in (x, z, y) ])
 
     # --- make sure x axis is float ( not a datetime )
     # convert to dataframe
@@ -4138,12 +4138,12 @@ def colorline( x, y, z=None, cmap=plt.get_cmap('copper'),  \
     # convert to datetime.datetime
     x = np.array(df.index.to_pydatetime(), dtype=datetime.datetime)
     if debug:
-        print type(x[0]), x[0]
+        print(type(x[0]), x[0])
 
     # convert in float form
     x = matplotlib.dates.date2num(x) 
     if debug:
-        print type(x[0]), x[0]
+        print(type(x[0]), x[0])
 
     # convert x and y into indices    
     segments = make_segments(x, y)
@@ -4180,7 +4180,7 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
         cb_error ="Colourbar has a NaN in it. vmin={vmin}, vmax={vmax}"\
                 .format(vmin=vmin, vmax=vmax)
         logging.error(cb_error)
-        raise ValueError, cb_error
+        raise ValueError(cb_error)
 
     logging.debug('get_human_readable_gradiations called with the following:')
     logging.debug('vmin = {vmin}, vmax = {vmax}, lvls = {lvls}'\
@@ -4196,15 +4196,15 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     # between vmin and vmax.
     if vmin==vmax:
         logging.error("There is no difference between vmin and vmax!")
-        raise ValueError, "There is no difference between the min and max of the data"
+        raise ValueError("There is no difference between the min and max of the data")
     try:
         if ( ( abs( int( vmin)) == 0) and (abs( int( vmax)) == 0) ):
             sigfig_rounding_on_cb += 1
         logging.debug("Significant figures needed for plot is {sf}"\
                 .format(sf=sigfig_rounding_on_cb))
     except np.ma.core.MaskError:
-        print 'Gotcha: numpy.ma.core.MaskError'
-        print lvls, vmin, vmax
+        print('Gotcha: numpy.ma.core.MaskError')
+        print(lvls, vmin, vmax)
 
 
 #    # bjn updated sigfig finder
@@ -4237,13 +4237,13 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     # handle if values (2,3) are both negative or abs. of both <0
     except:
         if debug:
-            print abs(lvls[-4])-abs(lvls[-3]), sigfig_rounding_on_cb_ticks
+            print(abs(lvls[-4])-abs(lvls[-3]), sigfig_rounding_on_cb_ticks)
         try:    # handle if values (2,3) are both negative
             lvls_diff = round_to_n( abs(lvls[-4])-abs(lvls[-3]), \
                                 sigfig_rounding_on_cb_ticks)                                
         except: # If both absolute of vmin and vmax  are <0 ( and +ve )
             if debug:
-                print lvls, lvls[-3], lvls[-4], sigfig_rounding_on_cb_ticks
+                print(lvls, lvls[-3], lvls[-4], sigfig_rounding_on_cb_ticks)
             lvls_diff = round_to_n( lvls[-3]-lvls[-4], \
                                 sigfig_rounding_on_cb_ticks)                                
 
@@ -4255,7 +4255,7 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     #  if values are >0, 
     if vmax > lvls_diff:
         if debug:
-            print vmax, lvls_diff
+            print(vmax, lvls_diff)
         vmax_rounded = myround( vmax, base=lvls_diff,  integer=False )
         vmax_rounded = round_to_n( vmax_rounded, sigfig_rounding_on_cb)
     else:
@@ -4338,7 +4338,7 @@ def mk_discrete_cmap( lvls=None, cmap=None, arr=None,\
         cmap = get_colormap( np.array([vmin, vmax]) )
 
     if debug:
-        print lvls, vmin, vmax, nticks
+        print(lvls, vmin, vmax, nticks)
     
     # extract colors
 #    cmaplist = [ cmap(i) for i in range( len(lvls ) ) ]
@@ -4505,11 +4505,11 @@ def timeseries_by_day_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         # xticks are numbers, therefore set all to ''
         # except those you want to show dates
         fill_label = ['']*len(sel_days)
-        fill_points =range(len(sel_days))[::everyother] 
+        fill_points =list(range(len(sel_days)))[::everyother] 
         for n,i in enumerate( fill_points) :
             fill_label[i] = labels[n]
     
-        plt.xticks( range(len(sel_days)), fill_label, \
+        plt.xticks( list(range(len(sel_days))), fill_label, \
                         rotation='vertical')
     else:
         plt.plot( sel_days, [np.mean(i) for i in daily] )
@@ -4594,7 +4594,7 @@ def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
     plt.xlabel(  X_title )
     plt.ylabel( Y_title )
     if  line121:
-        print lim_min, lim_max
+        print(lim_min, lim_max)
         plt.plot( np.arange(lim_min, lim_max*1.5 )  , np.arange(lim_min, \
             lim_max*1.5  ), linestyle='--', color=(0.5, 0.5, 0.5))
     
@@ -4624,8 +4624,8 @@ def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
     axHisty.set_ylim( axScatter.get_ylim() )
     
     # make sure scales are linear
-    [ i.set_yscale('linear') for i in axHisty, axScatter ]
-    [ i.set_xscale('linear') for i in axHistx, axScatter ]
+    [ i.set_yscale('linear') for i in (axHisty, axScatter) ]
+    [ i.set_xscale('linear') for i in (axHistx, axScatter) ]
 
     plt.rcParams.update({'font.size': f_size})
 #    [ i.rcParams.update({'font.size': f_size}) for i in axHisty, axHistx, axScatter ]
@@ -4684,10 +4684,10 @@ def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
 #        y = ( avgs - np.ma.max( avgs )  )  / avgs *100
 #        y = ( avgs - np.ma.max( avgs )  )  / avg *100
         y = ( avgs - np.ma.max( avgs )  )  / max_*100
-        print 'test'*100, avg, max_, avgs
+        print('test'*100, avg, max_, avgs)
 
         ymin, ymax =  -0.15, 0.025 
-        ymin, ymax =  [i*100 for i in ymin, ymax ]
+        ymin, ymax =  [i*100 for i in (ymin, ymax) ]
         units = '%'
     elif diurnal:        
         y =  avgs - np.ma.max( avgs )
@@ -4810,8 +4810,8 @@ def obs_month_plot(data, color=None, title=None, rtn_data=False, plt_day=True, d
     # Setup decimal day list
     day_time= [i+float(1/23) for i in range(23) ]
     if debug:
-        print data.shape
-        print day_time
+        print(data.shape)
+        print(day_time)
 
     # Plot up all data <= this is inefficient. 
 	if plt_day:
@@ -4822,14 +4822,14 @@ def obs_month_plot(data, color=None, title=None, rtn_data=False, plt_day=True, d
     # Return data?
 	if rtn_data:
 		if debug:
-			print 'rtn_data'
+			print('rtn_data')
 #		day_time, 
 		data_ = np.ma.mean(data[:,:],axis=1)
 		return day_time, data_
     # Plot up daily decimal days
 	else :
 		if debug:
-			print ' not - rtn_data'
+			print(' not - rtn_data')
 		plt.plot( day_time, np.ma.mean(data[:,:],axis=1) , lw=3 , color=color, \
 		     label=title)
 		return plt    
@@ -4854,31 +4854,31 @@ def get_input_vars(debug=False):
     # If working directory (wd) provided, use command line arguments
     try:
         wd = sys.argv[1]
-        print '$>'*5, sys.argv
+        print('$>'*5, sys.argv)
 
     # else prompt for input settings
     except:
-        wd = raw_input("ctm.bpch dir: ")
-        spec = raw_input("species (default = O3): ")
+        wd = input("ctm.bpch dir: ")
+        spec = input("species (default = O3): ")
         if (len(spec) < 1):
             spec = 'O3'
-        fn = raw_input("ctm.bpch name (default = ctm.bpch): ")
+        fn = input("ctm.bpch name (default = ctm.bpch): ")
         if (len(fn) < 1):
             fn = 'ctm.bpch'
-        cat_ = raw_input("Category (default = 'IJ-AVG-$'): ")
+        cat_ = input("Category (default = 'IJ-AVG-$'): ")
         if (len(cat_) < 1):
             cat_ = "IJ-AVG-$"
-        start = raw_input("Enter start time as 'YYYY,MM,DD' (default = all): ")
+        start = input("Enter start time as 'YYYY,MM,DD' (default = all): ")
         if (len(list(start)) < 1):
             start = None
         else:
             start = datetime.datetime( *tuple( map( int, start.split('-')) ) )
-        end = raw_input("Enter end time as 'YYYY,MM,DD' (default = all): ")
+        end = input("Enter end time as 'YYYY,MM,DD' (default = all): ")
         if (len(end) < 1):
             end = None
         else:
             end = datetime.datetime( *tuple( map( int, end.split('-')) ) )            
-        print wd, fn, cat_, spec, start, end
+        print(wd, fn, cat_, spec, start, end)
 
     # Has species file name been provided? ( e.g.  "O3" )
     try:
@@ -4909,7 +4909,7 @@ def get_input_vars(debug=False):
 
     # Has start date been provided? ( in form "YYYY, MM, DD" )
     try:  
-        print sys.argv[5].split('-')
+        print(sys.argv[5].split('-'))
         start = datetime.datetime( *tuple( map( int, sys.argv[5].split('-')) ) )
     except:
         try:
@@ -4919,7 +4919,7 @@ def get_input_vars(debug=False):
 
     # Has end date been provided? ( in form "YYYY, MM, DD" )
     try:  
-        print sys.argv[6].split('-')
+        print(sys.argv[6].split('-'))
         end = datetime.datetime( *tuple( map( int, sys.argv[6].split('-')) ) )
     except:
         try:
@@ -4928,7 +4928,7 @@ def get_input_vars(debug=False):
             end = None
 
     if debug:
-        print '$>'*5, wd, fn, cat_, spec, start, end
+        print('$>'*5, wd, fn, cat_, spec, start, end)
 
     # if final character not '/' add this
     if wd[-1]  != '/':
@@ -4953,7 +4953,7 @@ def weighted_average( data, interval , bins_used=False, debug=False):
     min_v, max_v = int( data.min() ), int( data.max() ) 
     bins = np.arange(min_v, max_v, interval)
     if debug:
-        print [ (i, type(i) ) for i in [ min_v, max_v, bins ] ]
+        print([ (i, type(i) ) for i in [ min_v, max_v, bins ] ])
     int_d = np.int_(data)
     binned, bins_used  = [], []
     for bin_ in bins:
@@ -4962,10 +4962,10 @@ def weighted_average( data, interval , bins_used=False, debug=False):
             binned.append( b_mean )
             bins_used.append( bin_ ) 
         else: 
-            print 'no data for bin {}'.format(bin_)
+            print('no data for bin {}'.format(bin_))
             pass
     if debug:
-        print [ ( i, len(i) ) for i in [binned , bins] ]
+        print([ ( i, len(i) ) for i in [binned , bins] ])
     if (bins_used):
         return binned, bins_used
     else:

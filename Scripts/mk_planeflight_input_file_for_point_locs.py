@@ -7,7 +7,7 @@ import time
 import glob
 import pandas as pd
 import sys
-import AC_tools as AC
+from . import AC_tools as AC
 
 def main(filename=None, LAT_var='LAT', LON_var='LON', \
         PRESS_var='PRESS', loc_var='TYPE', Username='Tomas Sherwen', \
@@ -38,7 +38,7 @@ def main(filename=None, LAT_var='LAT', LON_var='LON', \
     for specific locations and times in the model. 
     - The deafult settting is for hourly output.
     """
-    print 'filename:{}'.format(filename) 
+    print('filename:{}'.format(filename)) 
     # ---  Local settings 
     # file of locations? (from 1st argument of command line)
     if isinstance(filename, type(None)):
