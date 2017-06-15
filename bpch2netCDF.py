@@ -1,1 +1,1 @@
-../bpch2netCDF.py
+Scripts/bpch2netCDF.py

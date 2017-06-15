@@ -18,8 +18,6 @@ import sys
 import csv
 import glob
 import pandas as pd
-from pandas import HDFStore
-from pandas import DataFrame
 import logging
 
 # Math functions
@@ -615,8 +613,7 @@ def pf2datetime( model, debug=False ):
         print([ i[:10] for i in vars ], model.shape)
 
     # make pandas dataframe 
-    df = DataFrame( data=np.array(vars).T, 
-        columns=['YYYYMMDD', 'HHMM' ])
+    df = pd.DataFrame( data=np.array(vars).T, columns=['YYYYMMDD', 'HHMM' ])
 
     # convert to datetime and retrun 
     df = DF_YYYYMMDD_HHMM_2_dt( df )
@@ -852,7 +849,7 @@ def pf2pandas(wd, files, vars=None, npwd=None, rmvars=None,   \
         vars, sites = get_pf_headers( files[0], debug=debug )
     if not isinstance(npwd, str ):
         npwd = get_dir('npwd')
-    hdf =HDFStore( npwd+ 'pf_{}_{}.h5'.format( wd.split('/')[-3], \
+    hdf = pd.HDFStore( npwd+ 'pf_{}_{}.h5'.format( wd.split('/')[-3], \
         wd.split('/')[-2], wd.split('/')[-1]  ))
     
     if debug:

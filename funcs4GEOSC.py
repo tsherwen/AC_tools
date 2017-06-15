@@ -18,7 +18,7 @@ import os
 import sys
 import csv
 import glob
-if sys.version_info <= (2,7):
+if (sys.version_info.major <= 2):
     import pygchem
     if pygchem.__version__ == '0.2.0':
         import pygchem.diagnostics as gdiag
@@ -29,7 +29,6 @@ if sys.version_info <= (2,7):
             import pygchem.datafields as datasets
 import pandas as pd
 import re
-from bisect import bisect_left
 from netCDF4 import Dataset
 import iris 
 import logging
@@ -38,10 +37,6 @@ import logging
 import numpy as np
 from time import mktime
 import scipy.stats as stats
-from pandas import HDFStore
-from pandas import DataFrame
-from pandas import Series
-from pandas import Panel
 import math
 
 # -- Time                                                                                           
@@ -49,7 +44,6 @@ import time
 import calendar
 import datetime as datetime
 from datetime import datetime as datetime_
-from iris.time import PartialDateTime 
 
 # --  This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
@@ -1643,7 +1637,7 @@ def get_mod_WIND_dir(  sdate=datetime.datetime(2012, 8, 1, 0 ), \
         datal += [data ]
 
     # Make dataframe to allow for function mapping 
-    df = DataFrame( data=np.array(datal).T, columns=vars )
+    df = pd.DataFrame( data=np.array(datal).T, columns=vars )
 
     # Calculate wind dir  " (270-atan2(V,U)*180/pi)%360  "
     def f(x):    
