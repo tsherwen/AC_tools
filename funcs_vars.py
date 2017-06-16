@@ -30,7 +30,10 @@ import numpy as np
 
 # --  This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
-from .funcs4core import *
+if __package__ is None:
+    from .funcs4core import *
+else:
+    from funcs4core import *
 
 # ----------------------------- Section 1 -----------------------------------
 # -------------- Planeflight variables

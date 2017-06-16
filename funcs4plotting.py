@@ -33,11 +33,18 @@ import gc
 
 # ---  This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
-from .funcs_vars import *
-from .funcs4generic import *
-from .funcs4time import *
-from .funcs4pf import *
-from .funcs4GEOSC import * # wd2ctms, get_gc_res
+if __package__ is None:
+    from .funcs_vars import *
+    from .funcs4generic import *
+    from .funcs4time import *
+    from .funcs4pf import *
+    from .funcs4GEOSC import * # wd2ctms, get_gc_res
+else:
+    from funcs_vars import *
+    from funcs4generic import *
+    from funcs4time import *
+    from funcs4pf import *
+    from funcs4GEOSC import * # wd2ctms, get_gc_res
 
 # math
 from math import log10, floor

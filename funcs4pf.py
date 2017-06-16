@@ -25,15 +25,20 @@ import numpy as np
 
 # -- This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
-from .funcs4core import *
-from .funcs4generic import *
-from .funcs4time import *
+if __package__ is None:
+    from .funcs4core import *
+    from .funcs4generic import *
+    from .funcs4time import *
+    from .funcs_vars import *
+else:
+    from funcs4core import *
+    from funcs4generic import *
+    from funcs4time import *
+    from funcs_vars import *
 
 # -- Time functions
 import datetime as datetime
 
-# -- Variables
-from .funcs_vars import *
 
 # ---------------------------------- Section X.X ---------------------------
 # -------------- Planeflight Processors

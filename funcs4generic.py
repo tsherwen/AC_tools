@@ -31,9 +31,12 @@ from ephem import AlwaysUpError, NeverUpError
 
 # --  This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
-from .funcs4core import *
-from .funcs_vars import *
-
+if __package__ is None:
+    from .funcs4core import *
+    from .funcs_vars import *
+else:
+    from funcs4core import *
+    from funcs_vars import *
 
 # -------------------------- Section 7 -------------------------------
 # -------------- Generic Processing
