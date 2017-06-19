@@ -33,7 +33,7 @@ from netCDF4 import Dataset
 try:
     import iris 
 except  ImportError:
-    print 'WARNING iris and cartopy have stability issues'
+    print('WARNING iris and cartopy have stability issues')
 import logging
 
 # -- Math/Analysis                                                                                   
