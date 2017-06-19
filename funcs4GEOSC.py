@@ -30,7 +30,10 @@ if (sys.version_info.major <= 2):
 import pandas as pd
 import re
 from netCDF4 import Dataset
-import iris 
+try:
+    import iris 
+except  ImportError:
+    print 'WARNING iris and cartopy have stability issues'
 import logging
 
 # -- Math/Analysis                                                                                   

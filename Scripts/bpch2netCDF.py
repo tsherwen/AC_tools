@@ -13,7 +13,10 @@ import sys
 import glob
 import os
 import netCDF4
-import iris
+try:
+    import iris 
+except  ImportError:
+    print 'WARNING iris and cartopy have stability issues'
 # retain back compatibility for PyGChem
 try:
   from pygchem import datasets
@@ -125,100 +128,101 @@ def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None, \
         remake=False, filetype="*ctm.bpch*", \
         check4_trac_avg_if_no_ctm_bpch=True, verbose=False, **kwargs):
 
-   """    
-   Converts GEOS-Chem ctm.bpch output file(s) to NetCDF
+    """    
+    Converts GEOS-Chem ctm.bpch output file(s) to NetCDF
 
-   Parameters
-   ----------
-   folder (str): working directory for data files
-   filename (str): name to give created NetCDF
-   bpch_file_list (list): list of files to convert 
-   remake (boolean): overwrite existing NetCDF file
-   filetype (str): string with wildcards to match filenames 
-   ( e.g. *ctm.bpch*, trac_avg.*, or *ts*bpch* )
-   verbose (boolean): print (minor) logging to screen
+    Parameters
+    ----------
+    folder (str): working directory for data files
+    filename (str): name to give created NetCDF
+    bpch_file_list (list): list of files to convert 
+    remake (boolean): overwrite existing NetCDF file
+    filetype (str): string with wildcards to match filenames 
+    ( e.g. *ctm.bpch*, trac_avg.*, or *ts*bpch* )
+    verbose (boolean): print (minor) logging to screen
    
-   Returns
-   -------
-   (None) saves a NetCDF file to disk
-   """   
+    Returns
+    -------
+    (None) saves a NetCDF file to disk
+    """   
 
-   # Check if file already exists and warn about remaking
+    # Check if file already exists and warn about remaking
     if __package__ is None:
         from bpch2netCDF import get_folder
     else:
         from .bpch2netCDF import get_folder
-   folder = get_folder(folder)
-   output_file = os.path.join(folder, filename)
+    folder = get_folder(folder)
+    output_file = os.path.join(folder, filename)
 
-   # If the netCDf file already exists dont overwrite it without remake=True.
-   if not remake:
-       if os.path.exists(output_file):
-           logging.warning(output_file + ' already exists. Not recreating.')
-           return
-       
-   # Look for files if file list is not provided.
-   if isinstance( bpch_file_list, type(None) ):
-       logging.debug("Searching for the following bpch filetype: {filetype}"\
-                .format(filetype=filetype))
-       bpch_files = glob.glob( folder + '/' + filetype )
-       # Also check if directory contains *trac_avg* files, if no ctm.bpch
-       if (len(bpch_files) == 0) and check4_trac_avg_if_no_ctm_bpch:
-            filetype = '*trac_avg*'
-            logging.info('WARNING! - now trying filetype={}'.format(filetype))
-            bpch_files = glob.glob( folder + '/' + filetype )
-       # Raise error if no files matching filetype
-       if len(bpch_files) == 0:
-           logging.error("No bpch files ({}) found in {}".format(filetype, 
-           folder) )
-           raise IOError("{} contains no bpch files.".format(folder))
+    # If the netCDf file already exists dont overwrite it without remake=True.
+    if not remake:
+        if os.path.exists(output_file):
+            logging.warning(output_file + ' already exists. Not recreating.')
+            return
+        
+    # Look for files if file list is not provided.
+    if isinstance( bpch_file_list, type(None) ):
+        logging.debug("Searching for the following bpch filetype: {filetype}"\
+                 .format(filetype=filetype))
+        bpch_files = glob.glob( folder + '/' + filetype )
+        # Also check if directory contains *trac_avg* files, if no ctm.bpch
+        if (len(bpch_files) == 0) and check4_trac_avg_if_no_ctm_bpch:
+             filetype = '*trac_avg*'
+             logging.info('WARNING! - now trying filetype={}'.format(filetype))
+             bpch_files = glob.glob( folder + '/' + filetype )
+        # Raise error if no files matching filetype
+        if len(bpch_files) == 0:
+            logging.error("No bpch files ({}) found in {}".format(filetype, 
+            folder) )
+            raise IOError("{} contains no bpch files.".format(folder))
 
-   # Use the specified files.
-   else:
-       file_list = []
-       for bpch_file in bpch_file_list:
-         full_path = folder + '/' + bpch_file
-         if not os.path.exists(full_path):
-            logging.error(full_path + " could not be found")
-            raise IOError("Full path could not be found")
-         file_list.append(full_path)
-       bpch_files = file_list
+    # Use the specified files.
+    else:
+        file_list = []
+        for bpch_file in bpch_file_list:
+            full_path = folder + '/' + bpch_file
+            if not os.path.exists(full_path):
+                logging.error(full_path + " could not be found")
+                raise IOError("Full path could not be found")
+            file_list.append(full_path)
+        bpch_files = file_list
 
-   # Open the bpch files
-   logging.debug( "The following bpch files were found (n={}):" \
-        .format(len(bpch_files)))
-   logging.debug( str(bpch_files) )
-   if verbose:
+    # Open the bpch files
+    logging.debug( "The following bpch files were found (n={}):" \
+         .format(len(bpch_files)))
+    logging.debug( str(bpch_files) )
+    if verbose:
         print "Creating a netCDF from {} file(s).".format(len(bpch_files))+\
             " This can take some time..."
-   bpch_data = datasets.load(bpch_files)
+    bpch_data = datasets.load(bpch_files)
 
-   # Save the netCDF file
-#   iris.fileformats.netcdf.save(data, output_file)
-   datasets.save( bpch_data, output_file )
-   logging.info( "A netCDF file has been created with the name {ctm}".format(ctm=output_file)) 
-   return
+    # Save the netCDF file
+#    iris.fileformats.netcdf.save(data, output_file)
+    datasets.save( bpch_data, output_file )
+    logging.info( "A netCDF file has been created with the name {ctm}"\
+                .format(ctm=output_file)) 
+    return
 
 
 def get_folder(folder):
-   """
-   Get name of folder that contains ctm.bpch data from command line 
-   """
-   if isinstance( folder, type(None) ):
-      # getting the folder location from system argument
-      if len(sys.argv)<=1:
-         logging.warning( "No folder location specified for the data")
-         folder = os.getcwd()
-      else:
-         folder = str(sys.argv[1])
+    """
+    Get name of folder that contains ctm.bpch data from command line 
+    """
+    if isinstance( folder, type(None) ):
+       # getting the folder location from system argument
+        if len(sys.argv)<=1:
+            logging.warning( "No folder location specified for the data")
+            folder = os.getcwd()
+        else:
+           folder = str(sys.argv[1])
 
-   # Check folder exists
-   if not os.path.exists( folder ):
-      print "Folder does not exist"
-      print folder
-      sys.exit()
+    # Check folder exists
+    if not os.path.exists( folder ):
+       print "Folder does not exist"
+       print folder
+       sys.exit()
 
-   return folder;
+    return folder;
 
    
 if __name__ == "__main__":

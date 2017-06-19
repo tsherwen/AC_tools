@@ -16,8 +16,8 @@ import logging
 
 # -- Math/Analysis                                                                                   
 import numpy as np
-from time import mktime
-from pandas import DataFrame
+#from time import mktime
+#from pandas import DataFrame
 import pandas as pd
 # astronomical math
 import ephem 
@@ -149,7 +149,7 @@ def YYYYMMDD_HHMM_2_datetime( str1=None, str2=None, conbined=False,  \
 
         # translate from str to datetime
         dtime = [ time.strptime( i, '%Y%m%d%H%M' ) for i in dtime ]
-        dtime = [ datetime_.fromtimestamp(mktime(i)) for i in dtime ]
+        dtime = [ datetime_.fromtimestamp(time.mktime(i)) for i in dtime ]
 
     # combine to one string
     else: 
@@ -337,7 +337,7 @@ def time2datetime( dates ):
     """ 
     Convert time object to datetime object
     """
-    return [ datetime_.fromtimestamp(mktime(i)) for i in dates ]
+    return [ datetime_.fromtimestamp(time.mktime(i)) for i in dates ]
 
     
 # ----  
@@ -597,7 +597,7 @@ def data2monthly( data, dates ):
     NOTES:
         - Why is this a seperate function?
     """
-    df = DataFrame(data,index=dates )
+    df = pd.DataFrame(data,index=dates )
     df['Month'] =  [ i.month for i in dates ]
     grouped = df.groupby('Month')
     totals = grouped.mean()
@@ -669,7 +669,7 @@ def data2daily( data, dates ):
     NOTES:
      - Redundent? Why is this a seperate function?
     """
-    df = DataFrame(data,index=dates )
+    df = pd.DataFrame(data,index=dates )
     totals = df.resample('D', how='mean')
     return  totals.values, totals.index
 
