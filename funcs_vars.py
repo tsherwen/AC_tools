@@ -653,7 +653,8 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
 #  X.XX - Get tracer's unit (and scale if requested)
 # --------------
 def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,\
-        ClearFlo_unit=False, IUPAC_unit=False, debug=False ):
+        ClearFlo_unit=False, IUPAC_unit=False, use_pf_species_units=False, 
+        debug=False ):
     """ 
     Get appropirate unit for Tracer (and scaling if requested)
 
@@ -729,7 +730,9 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,\
 	'Cl2O2': 'pptv', 'CH2Cl2': 'pptv', 'CHCl3': 'pptv', 'CH3Cl': 'pptv', \
 	'BrSALA': 'pptv', 'BrSALC':'pptv', 'Cly':'pptv', \
     # extra tag "species" for  easy of processing 
-    'PD421' : 'molec cm$^{-3}$ s$^{-1}$'
+    'PD421' : 'molec cm$^{-3}$ s$^{-1}$', 
+    # add planeflight variabels  for ease of processing
+    'LON': '$^{\circ}$E', 'LAT': '$^{\circ}$N', 'PRESS':'hPa',
     } 
     try:
         units = tra_unit[x]
@@ -771,6 +774,13 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,\
             units = 'pptv'
         if any( [ x == i for i in  [ 'ISOP' ] ] ):
             units = 'ppbC'
+
+    if use_pf_species_units:
+        TRA_v10_species = [
+    'A3O2', 'ATO2', 'B3O2', 'EOH', 'ETO2', 'ETP', 'GLYX', 'HO2', 'IAP', 'INO2', 'INPN', 'ISN1', 'ISNOOA', 'ISNOOB', 'ISNOHOO', 'ISNP', 'KO2', 'MAN2', 'MAO3', 'MAOP', 'MAOPO2', 'MCO3', 'MGLY', 'MO2', 'MRO2', 'MRP', 'OH', 'PO2', 'PP', 'PRN1', 'PRPN', 'R4N1', 'R4O2', 'R4P', 'RA3P', 'RB3P', 'RCO3', 'RIO2', 'ROH', 'RP', 'VRO2', 'VRP', 'LISOPOH', 'ISOPND', 'ISOPNB', 'HC5', 'DIBOO', 'HC5OO', 'DHMOB', 'MOBAOO', 'ISOPNBO2', 'ISOPNDO2', 'ETHLN', 'MACRN', 'MVKN', 'PYAC', 'IEPOXOO', 'ATOOH', 'PMNN', 'MACRNO2', 'PMNO2'
+        ]         
+        if (x in TRA_v10_species):
+            units = 'molec/cm3'
 
     if scale: 
         scaleby = get_unit_scaling( units )
@@ -2103,6 +2113,8 @@ def latex_spec_name(input_x, debug=False):
     'CHCl3': 'CHCl$_{3}$', 
     # Bry names 
     'BrSALC': 'Br- on SALC', 'BrSALA': 'Br- on SALA',
+    # add planeflight variabels  for ease of processing
+    'LON': 'Lon.', 'LAT':'Lat.', 'PRESS':'Press.',
     }
     return spec_dict[input_x]
     

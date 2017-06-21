@@ -60,7 +60,7 @@ def update_Planeflight_files( wd=None, num_tracers=103, ver='3.0' ):
     output_data_str = 'Now give the times and locations of the flight'
     # 
     met_vars = [
-    'GMAO_ABSH' 'GMAO_PSFC','GMAO_SURF', 'GMAO_TEMP', 'GMAO_UWND', 'GMAO_VWND'
+    'GMAO_ABSH', 'GMAO_PSFC','GMAO_SURF', 'GMAO_TEMP', 'GMAO_UWND', 'GMAO_VWND'
     ]
     slist = ['TRA_{:0>3}'.format(i) for i in np.arange(1, num_tracers+1 ) ]
     species  = ['OH', 'HO2']
@@ -111,7 +111,7 @@ def update_Planeflight_files( wd=None, num_tracers=103, ver='3.0' ):
                 logging.info( err_msg )
                 print(err_msg)
 
-    # concatenate         
+    # Concatenate         
     print(dfs[0])
     df = pd.concat(dfs).sort_values('datetime',ascending=True)
     print('FINAL!!!!' , df)
@@ -136,7 +136,7 @@ def prt_PlaneFlight_files( df=None, LAT_var='LAT', LON_var='LON', \
     wd (str): the working (code) directory to search for files in
     loc_var (str): name for (e.g. plane name), could be more than one. 
     LAT_var, LON_var, PRESS_var (str): name for pressure(HPa),lat and lon in df
-    Date_var (str): column name of df containing datetime variables
+    Date_var (str): column name of df containing datetime (UTC) variables
     Username (str): name of the programme's user
     Extra_spacings (boolean): add extra spacing? (needed for large amounts of 
         output, like nested grids)

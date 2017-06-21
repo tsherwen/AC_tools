@@ -4111,7 +4111,8 @@ def make_segments(x, y):
 # --------
 def colorline( x, y, z=None, cmap=plt.get_cmap('copper'),  \
         norm=None, linewidth=3, alpha=1.0, ax=None, fig=None, \
-        cb_title='Modelled wind direction', debug=False ):
+        cb_title='Modelled wind direction', convert_x_2datetime=True, 
+        debug=False ):
     """
     http://nbviewer.ipython.org/github/dpsanders/matplotlib-examples/blob/master/colorline.ipynb
     http://matplotlib.org/examples/pylab_examples/multicolored_line.html
@@ -4138,19 +4139,19 @@ def colorline( x, y, z=None, cmap=plt.get_cmap('copper'),  \
         print([ type(i[0]) for i in (x, z, y) ])
         print([ i[0] for i in (x, z, y) ])
 
-    # --- make sure x axis is float ( not a datetime )
-    # convert to dataframe
-    df = DataFrame( data=y, index=x) 
-
     # convert to datetime.datetime
-    x = np.array(df.index.to_pydatetime(), dtype=datetime.datetime)
-    if debug:
-        print(type(x[0]), x[0])
+    if convert_x_2datetime:
+        # --- make sure x axis is float ( not a datetime )
+        # convert to dataframe
+        df = DataFrame( data=y, index=x) 
+        x = np.array(df.index.to_pydatetime(), dtype=datetime.datetime)
+        if debug:
+            print(type(x[0]), x[0])
 
-    # convert in float form
-    x = matplotlib.dates.date2num(x) 
-    if debug:
-        print(type(x[0]), x[0])
+        # convert in float form
+        x = matplotlib.dates.date2num(x) 
+        if debug:
+            print(type(x[0]), x[0])
 
     # convert x and y into indices    
     segments = make_segments(x, y)
