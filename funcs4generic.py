@@ -2094,6 +2094,48 @@ def get_value_interpolated_from_nearby_values( Y_CORDS=None, X_CORDS=None, \
     return interpolated[X_ind, Y_ind]
 
 
+# --------
+# X.XX - Split a NetCDF by month
+# --------
+def split_NetCDF_by_month(folder=None, filename=None, ext_str='', 
+        file_prefix='ts_ctm' ):
+    """ 
+    Split a NetCDF file by month into new NetCDF files using xarray 
+
+    Parameters
+    -------
+    folder (str): the directory to search for files in
+    filename (str): the NetCDF filename (e.g. ctm.nc)
+    file_prefix (str): prefix to attach to new saved file
+    ext_str (str): extra string for new filenames
+    """
+    import xarray as xr
+    # --- Open data
+    ds = xr.open_dataset(folder+filename)
+    months = list( sorted( set( ds['time.month'].values ) ) )
+    
+    # --- Loop months
+    for month_ in months:
+
+        # Custom mask
+        def is_month(month):
+            return (month == month_)
+        # Make sure time is the dimension not module
+        time = ds.time
+        # Now select for month
+        ds_tmp = ds.sel(time=is_month(ds['time.month']))            
+
+        # --- Save as NetCDF
+        # Name of new NetCDF?
+        year_ = list( set( ds_tmp['time.year'].values ) )[0]
+        file2save = '{}_{}_{}_{:0>2}.nc'.format(file_prefix, ext_str, year_, \
+            str(month_))
+        # Save the file... 
+        ds_tmp.to_netcdf(file2save)
+        # Delete temporary dataset
+        del ds_tmp
+
+
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
