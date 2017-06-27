@@ -327,7 +327,6 @@ def get_pf_data_from_NetCDF_table( ncfile=None, req_var='TRA_69', spec='IO', \
     """ 
     Extracts data from NetCDF file processed by pf2NetCDF (pandas) converter in PhD_Progs
 
-    NOTES
     Returns
     -------
     (np.array, np.array)    
@@ -335,6 +334,7 @@ def get_pf_data_from_NetCDF_table( ncfile=None, req_var='TRA_69', spec='IO', \
     Notes
     -------
      - TODO re-write and update to comments!
+     (this function should just used xarray) 
     """
     # Convert to plane-flight (pf) variable name ('req_var') if not given
     if isinstance( req_var, type(None) ):

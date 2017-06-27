@@ -334,23 +334,32 @@ def get_OH_mean( wd, debug=False ):
     Get mean OH concentration (1e5 molec/cm3) from geos.log files
     in given directory 
     """
-
-    if debug:
-        print(wd)
-    # find all geos log files...
+    logging.debug('get_OH_mean called for wd={}'.format(wd))
+    # --- Find all geos log files in directory...
     files = glob.glob( wd+'/*geos*log*' )
+    if len(files) < 1:
+        err_str = 'WARNING! - no *geos.log* files found - assuming as .log*'
+        logging.info(err_str)
+        print err_str
+        files = glob.glob( wd+'/log.*' )
 
-    # Loop and extract OH means, take an average if n>0
-    z=[]
-    for file in files:
-        with open(file) as f:
-            if debug:
-                print(file, f, z)
-            for line in f:
-                if "Mean OH =    " in line:
-                    z += [ float(line.split()[3] ) ]
-    return np.mean(z)
-
+    # --- If there are any, then 
+    if len(files) > 1:
+        # Loop and extract OH means, take an average if n>0
+        z=[]
+        for file in files:
+            with open(file) as f:
+                if debug:
+                    print(file, f, z)
+                for line in f:
+                    if "Mean OH =    " in line:
+                        z += [ float(line.split()[3] ) ]
+        logging.info( 'mean OH calculated from {} files'.format( len(z) ) )
+        return np.mean(z)
+    else:
+        print 'No *log files found!'
+        sys.exit()
+    
 # ----
 # X.XX - Get CH4 mean value - v/v
 # ----
@@ -2387,7 +2396,8 @@ def get_DU_mean(s_area=None, a_m=None, t_p=None, O3_arr=None, \
 # X.XX - Get Prod / loss for O3
 # ----
 def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
-        wd=None, year_eq=True, res='4x5', return_as_int_sum=False, debug=False):
+        wd=None, year_eq=True, res='4x5', return_as_int_sum=False, \
+        GC_version='v10-01', debug=False):
     """ 
     Get production and loss terms for O3 from prod/loss diagnostic 
 
@@ -2399,6 +2409,7 @@ def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
     ver (str): The GEOS-Chem halogen version that is being used
     all_data(boolean): return the full data (instead of two single numbers)
     ctms (list): list of ctm.bpch file objects (vestigle from PyGChem <3.0)
+    GC_version (str): GEOS-Chem version (e.g. v11-01 or v10-01)
 
     Returns
     -------
@@ -2407,8 +2418,11 @@ def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
     logging.info( 'get_POxLOx called with iGC ver={}'.format( ver ) )
 
     # Get names of POx and LOx diagnostics 
-    specs = GC_var('POxLOx')
-
+    if GC_version == 'v10-01':
+        specs = GC_var('POxLOx')
+    else:
+        specs = ['POx', 'LOx']
+    
     # Get prod/loss in [molec/cm3/s]
     if pygchem.__version__ ==  '0.2.0':
         arrs = [ np.concatenate( [get_gc_data_np( ctm, spec=PLO3_to_PD(spec, \
@@ -4029,26 +4043,28 @@ def get_default_variable_dict( wd=None,
     """
     # initialise dictionary
     Var_rc = {}
-    # Get command line arguments as inputs?
+    # --- Get command line arguments as inputs?
+    # Which working directory?
     if isinstance( wd, type(None) ):
         try:
-            Var_rc['wd'] = sys.argv[1]
+            wd = sys.argv[1]
         except:
             wd = '/work/home/ts551/data/all_model_simulations/iodine_runs/'
             wd += 'iGEOSChem_5.0/run.Iodine.v1.0.red_timestep.XII.1month.tagged/'
     Var_rc['wd'] = wd
     if Var_rc['wd'][-1] != '/':
         Var_rc['wd']+='/'
+    # What is the filename?
     try:
         Var_rc['filename'] = sys.argv[2]
     except:
         Var_rc['filename'] = 'ctm.nc'
-    # debug settings? (default = No )
+    # Debug settings? (default = No )
     Var_rc['debug'] = False
     Var_rc['verbose'] = False
     
     # --- Analysis settings?
-    # consider just troposphere or consider full atmosphere?
+    # Consider just troposphere or consider full atmosphere?
     if full_vertical_grid:
         Var_rc['trop_limit'] = False # limit arrays to 38 levels... 
         Var_rc['rm_strat'] = False # This is for convert_molec_cm3_s_2_g_X_s
@@ -4129,12 +4145,13 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
         Data_rc['output_freq'] = get_frequency_of_model_output( \
             wd=Var_rc['wd'], filename=Var_rc['filename'], 
             datetimes=Data_rc['datetimes'], )
-
     # Surface area (m^2)
-    if 's_area' in var_list:
+    dependacies_for_this_var = ['vol']
+    if ('s_area' in var_list) or (dependacies_for_this_var in var_list):
         Data_rc['s_area'] = get_surface_area( Data_rc['res'] )    
     # Volume (cm^3)
     if 'vol' in var_list:
+        assert ('s_area' in var_list), "please add 's_area' to var_rc (dependent)"
         Data_rc['vol'] = get_volume_np( wd=Var_rc['wd'], \
             trop_limit=Var_rc['trop_limit'],\
             s_area=Data_rc['s_area'][...,None], res=Data_rc['res'] )    
