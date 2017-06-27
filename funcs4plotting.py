@@ -2612,7 +2612,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         title_x=0.5, no_cb=True, return_m=False, log=False, wd=None, \
         resolution='c', lat_min = None, lat_max=None, lon_min=None, \
         lon_max=None, xlabel=True, limit_window=False, axis_titles=False,  \
-        figsize=(15, 10), verbose=False, debug=False ):
+        bottom_cb_pos=0.2,  figsize=(15, 10), verbose=False, debug=False ):
     """ 
     Wrapper for map_plot - Creates a "standard" spatial plot with acceptable 
     ascethics. Customise with a range of arguements provide during the call 
@@ -2757,7 +2757,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 
         cb_ax = mk_cb(fig, units=units, left=left_cb_pos,  cmap=cmap, \
                 vmin=fixcb_buffered[0], cb_ax=cb_ax, width=width, \
-                rotatecbunits=rotatecbunits, \
+                rotatecbunits=rotatecbunits, bottom=bottom_cb_pos, \
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
                 extend=extend, lvls=lvls, log=log, orientation=orientation, \
                 sigfig_rounding_on_cb=sigfig_rounding_on_cb, nticks=nticks, \
@@ -3924,7 +3924,7 @@ def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
     parallels = np.arange(-90,91,15*interval)
     meridians = np.arange(-180,181,30*interval)
     if (res == '0.25x0.3125') :
-        parallels = np.arange(-90,91,15*interval/3  ) 
+        parallels = np.arange(-90,91,15*interval/1.5  ) 
         meridians = np.arange(-180,181,30*interval/3) 
 
     # use small font size for greater the runs with more axis labele
