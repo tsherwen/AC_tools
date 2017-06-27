@@ -4030,12 +4030,13 @@ def get_default_variable_dict( wd=None,
     # initialise dictionary
     Var_rc = {}
     # Get command line arguments as inputs?
-    try:
-        Var_rc['wd'] = sys.argv[1]
-    except:
-        wd = '/work/home/ts551/data/all_model_simulations/iodine_runs/'
-        wd += 'iGEOSChem_5.0/run.Iodine.v1.0.red_timestep.XII.1month.tagged/'
-        Var_rc['wd'] = wd
+    if isinstance( wd, type(None) ):
+        try:
+            Var_rc['wd'] = sys.argv[1]
+        except:
+            wd = '/work/home/ts551/data/all_model_simulations/iodine_runs/'
+            wd += 'iGEOSChem_5.0/run.Iodine.v1.0.red_timestep.XII.1month.tagged/'
+    Var_rc['wd'] = wd
     if Var_rc['wd'][-1] != '/':
         Var_rc['wd']+='/'
     try:
