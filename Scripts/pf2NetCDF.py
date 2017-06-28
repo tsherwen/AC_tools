@@ -45,8 +45,8 @@ def main( wd, vars=None, npwd=None, GRD_input_3D=False, renumerated=False, \
         npwd = get_dir('npwd')
     out_nc = npwd+ 'pf_{}_{}.nc'.format( wd.split('/')[-3], \
         wd.split('/')[-2], wd.split('/')[-1]  )
-    print("Atempting to append/create file (already exists?:{}): {}".format( \
-            os.path.isfile( out_nc ), out_nc ))
+    print(("Atempting to append/create file (already exists?:{}): {}".format( \
+            os.path.isfile( out_nc ), out_nc )))
 
     # Get pf files
     if not os.path.isfile( out_nc ):
@@ -81,7 +81,7 @@ def get_pf_files( wd, renumerated=False, debug=False ):
 
     files = glob.glob( wd+ filenames )
     if debug:   
-        print(wd, filenames, files)
+        print((wd, filenames, files))
 
     return files
 
@@ -106,7 +106,7 @@ def mk_NetCDF_of_pf_files( files, ncfilename=None, debug=False ):
             df, vars = AC.pf_csv2pandas( file=file, vars=vars, epoch=True,\
                  r_vars=True )
             if debug:
-                print(df.shape, df.columns)
+                print((df.shape, df.columns))
 
             # set unlimited data points dimension (POINT)
             POINT = ncfile.createDimension( 'POINT', None )
@@ -128,7 +128,7 @@ def mk_NetCDF_of_pf_files( files, ncfilename=None, debug=False ):
         # Open the file in append mode
         ncfile = Dataset( ncfilename,'a', format='NETCDF4') 
         if debug:
-            print(df.index)
+            print((df.index))
 
         # Fill variables for given
         dim_len = len( df.index )
@@ -292,7 +292,7 @@ def make_3D_NetCDF( ncfilename, wd, debug=False ):
             lons_ = ncfile2D.variables['LON'][start:end]
             lats_ = ncfile2D.variables['LAT'][start:end]
             if debug:
-                print(t, var, [ i.shape for i in (data_, lats_, lons_) ])
+                print((t, var, [ i.shape for i in (data_, lats_, lons_) ]))
 
             # stack data by LAT/LON to 3D array ( using pandas )
             df = DataFrame( data_, index=[lats_,lons_ ] ).unstack()
@@ -392,49 +392,49 @@ def make_2D_subgroup_NetCDF( ncfilename, wd, debug=False ):
         # Open NetCDF in append mode
         ncfile = Dataset( ncfilename,'a', format='NETCDF4') 
         if debug:
-            print(ts_chunk[0], timesteps[0])
+            print((ts_chunk[0], timesteps[0]))
         # Get 1st and last indices for time stamp chunk
         start = np.where( ncfile2D.variables['Epoch'] == ts_chunk[0] )
         start = np.array( start ).min()
         end = np.where( ncfile2D.variables['Epoch'] == ts_chunk[-1] )
         end = np.array( end ).max()
         if debug:
-            print(start, end, len(LOC))
+            print((start, end, len(LOC)))
 
         # Extract Data for timestep & species 
         for var in vars3D:
             # Select data for variable
             if debug:
-                print([ len(i) for i in (timesteps, ts_chunks, LOC, 
-                    ncfile2D.variables['Epoch']) ],  LOC)
-                print(start, start+len(LOC)+1+chunk_size, \
-                    start+((end-start)*len(LOC)))
+                print(([ len(i) for i in (timesteps, ts_chunks, LOC, 
+                    ncfile2D.variables['Epoch']) ],  LOC))
+                print((start, start+len(LOC)+1+chunk_size, \
+                    start+((end-start)*len(LOC))))
             # the end index is 1 short 
             # (as with all of the NetCDF indcies accessed, why?  )
             data_ = ncfile2D.variables[ var ][ start:end+1]    
             if debug:
 #                print data_
-                print(np.array( data_ ).shape)
-                print(ts_chunk[0], var, data_.shape)#, data_
+                print((np.array( data_ ).shape))
+                print((ts_chunk[0], var, data_.shape))#, data_
 
             # For each site
             for n, site in enumerate( LOC ):
                 # Select data for site
                 if debug:
-                    print(ts_chunk[0], var, data_.shape,  site, LOC)#, data_
+                    print((ts_chunk[0], var, data_.shape,  site, LOC))#, data_
 
                 # Add data to array
                 if debug:
-                    print(timesteps[:200])
-                    print(timesteps.index(ts_chunk[0]),  \
-                        timesteps.index(ts_chunk[-1]), ts_chunk[0], ts_chunk[-1])
-                    print(ts_chunk, len(ts_chunk))
-                    print(np.array( ncfile.variables[ site+'_'+var ][ 
+                    print((timesteps[:200]))
+                    print((timesteps.index(ts_chunk[0]),  \
+                        timesteps.index(ts_chunk[-1]), ts_chunk[0], ts_chunk[-1]))
+                    print((ts_chunk, len(ts_chunk)))
+                    print((np.array( ncfile.variables[ site+'_'+var ][ 
                         timesteps.index(ts_chunk[0]):
                         timesteps.index(ts_chunk[-1])+1 \
-                        ] ).shape)                
-                    print(np.array( data_ ).shape)
-                    print(np.array( data_[n::len(LOC)] ).shape)
+                        ] ).shape))                
+                    print((np.array( data_ ).shape))
+                    print((np.array( data_[n::len(LOC)] ).shape))
 
                 # Also add an extra index here
                 ncfile.variables[ site+'_'+var ][ 

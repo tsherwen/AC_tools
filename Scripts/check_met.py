@@ -50,10 +50,10 @@ for file in files:
 				# print zero fields
 				if (field.min() == 0.):
 					# print to screen
-					print(file, key, field.shape)
+					print((file, key, field.shape))
 					# Print detail?
 					if prt_detail:
 						for j in np.arange(0,8):
 							for k in np.arange(0,72):
 								if (field[j,k,:,:].min() == 0.):
-									print(key,j,k,file)
+									print((key,j,k,file))

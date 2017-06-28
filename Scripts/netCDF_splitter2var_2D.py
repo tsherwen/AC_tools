@@ -32,7 +32,7 @@ def main( filename=None, VarName='OLSON', verbose=False, debug=False ):
     if isinstance( filename, type(None) ):
         filename = wd.split('/')[-2]
     if debug:
-        print(wd, fn, filename)
+        print((wd, fn, filename))
     inFile = wd+'/'+fn
 
     # Set output name

@@ -73,7 +73,7 @@ def hemco_to_netCDF( folder, hemco_file_list=None, remake=False ):
 
     """
     if __package__ is None:
-        from bpch2netCDF import get_folder
+        from .bpch2netCDF import get_folder
     else:
         from .bpch2netCDF import get_folder
     folder = get_folder(folder)
@@ -148,7 +148,7 @@ def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None, \
 
     # Check if file already exists and warn about remaking
     if __package__ is None:
-        from bpch2netCDF import get_folder
+        from .bpch2netCDF import get_folder
     else:
         from .bpch2netCDF import get_folder
     folder = get_folder(folder)
@@ -192,8 +192,8 @@ def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None, \
          .format(len(bpch_files)))
     logging.debug( str(bpch_files) )
     if verbose:
-        print "Creating a netCDF from {} file(s).".format(len(bpch_files))+\
-            " This can take some time..."
+        print("Creating a netCDF from {} file(s).".format(len(bpch_files))+\
+            " This can take some time...")
     bpch_data = datasets.load(bpch_files)
 
     # Save the netCDF file
@@ -218,8 +218,8 @@ def get_folder(folder):
 
     # Check folder exists
     if not os.path.exists( folder ):
-       print "Folder does not exist"
-       print folder
+       print("Folder does not exist")
+       print(folder)
        sys.exit()
 
     return folder;
@@ -227,5 +227,5 @@ def get_folder(folder):
    
 if __name__ == "__main__":
    convert_to_netCDF()
-   print "Complete"
+   print("Complete")
 
