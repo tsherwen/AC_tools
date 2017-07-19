@@ -2073,7 +2073,7 @@ def get_LWI(lon, lat, res='4x5',debug=False):
     """ Return LWI for a given lon and lat """
     lat=get_gc_lat(lat, res=res)
     lon=get_gc_lon(lon, res=res)
-    LWI=get_land_map(res, res=res)
+    LWI=get_land_map(res=res)
     return LWI[lon,lat,0]
 
     
