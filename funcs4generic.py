@@ -2136,6 +2136,42 @@ def split_NetCDF_by_month(folder=None, filename=None, ext_str='',
         del ds_tmp
 
 
+# --------
+# X.XX - stack a 2D table (DataFrame) of lat/lon coords
+# --------
+def get_2D_df_of_lon_lats_and_time(res='4x5', df_lar_var='lat', df_lon_var='lon', 
+        df_time_var='month', add_all_months=False, lons=None, lats=None ):
+    """ stack a 2D table (DataFrame) of lat/lon coords """
+    # Get lon and lat resolution (Add other ways to get lat and lon here...
+    if (not isinstance(lons, type(None))) and (not isinstance(lats, type(None))):
+        pass
+    elif isinstance( res, str ):
+        lons, lats, NIU = get_latlonalt4res(res=res)
+    else:
+        print('please provide lons/lats or a res in get_latlonalt4res')
+   
+    # Make Table like array
+    b = np.zeros( (len(lons), len(lats)) )
+    df = pd.DataFrame( b )
+    # Use lats and lons as labels for index and columns
+    df.index = lons
+    df.columns = lats    
+    # Stack, then reset index to obtain table structure
+    df = df.stack()
+    df = df.reset_index()
+    # Set column headers
+    df.columns = df_lon_var, df_lar_var, df_time_var    
+
+    # Add time dims... 
+    if add_all_months:
+        print( ' all month addition not setup yet' )
+        sys.exit()
+    else: # Just use September for now
+        df[df_time_var] = 9 
+
+    return df
+
+
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
