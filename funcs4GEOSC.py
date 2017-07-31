@@ -4371,6 +4371,63 @@ def concvert_df_VOC_C2v( df=None, verbose=True ):
     return df
 
 
+def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*", filename='ctm.nc', \
+		folder=None, ext_str='_TEST_', file_prefix='ctm_', split_by_month=False, \
+		verbose=True):
+    """
+	Wrapper function to process ctm bpch files in folder to NetCDF file(s)
+
+    Parameters
+    -------
+	bpch_file_type (str): str of standard file (wildcard) str with file naming structure 
+    filename (str): name of NetCDF file to make
+    verbose (boolean): print verbose output?
+	ext_str (str): extra str to inc. in monthly filenames
+	file_prefix (str): prefox str to use for monthly split files
+	split_by_month (boolean): split new NetCDF file by month?
+
+    Returns
+    -------
+    (None)
+    
+    Notes
+    ------- 
+    """
+    logging.info('process_bpch_files_in_dir2NetCDF called for:', locals())
+    from bpch2netCDF import convert_to_netCDF
+    
+    # Get folder from command line. 
+    if isinstance( folder, type(None)):
+        folder = sys.argv[1]
+        if folder[-1] != '/':
+            folder+='/'
+    
+    # Get list of files 
+    files = glob.glob(folder+bpch_file_type)
+    nfiles = len(files)
+    if nfiles >0:
+        if verbose:
+            print 'Found {} files'.format(nfiles)
+    else:
+        if verbose:
+            print 'No files found in wd:{}'.format( folder )
+        sys.exit()
+        
+    # split off file names
+    filenames = [i.split('/')[-1] for i in files ]
+    
+    # Convert to NetCDF
+    convert_to_netCDF( folder=folder, filename=filename, bpch_file_list=filenames,\
+        bpch_file_type=bpch_file_type )
+
+    # If split by month
+    if split_by_month:
+        print 'Splitting NetCDF file by month - {}'.format(folder+filename)
+        split_NetCDF_by_month(folder=folder, filename=filename, 
+            ext_str=ext_str, file_prefix=file_prefix)	
+        print 'Split NetCDF file by month - {}'.format(folder+filename)
+
+
 # ------------------ Section X.X -------------------------------------------
 # -------------- Time Processing
 #

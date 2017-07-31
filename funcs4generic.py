@@ -2130,8 +2130,9 @@ def split_NetCDF_by_month(folder=None, filename=None, ext_str='',
         year_ = list( set( ds_tmp['time.year'].values ) )[0]
         file2save = '{}_{}_{}_{:0>2}.nc'.format(file_prefix, ext_str, year_, \
             str(month_))
+        logging.info('saving month NetCDF as: {}'.format(file2save))
         # Save the file... 
-        ds_tmp.to_netcdf(file2save)
+        ds_tmp.to_netcdf(folder+file2save)
         # Delete temporary dataset
         del ds_tmp
 
