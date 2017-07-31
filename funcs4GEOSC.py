@@ -52,12 +52,12 @@ from datetime import datetime as datetime_
 # --  This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
 if __package__ is None:
-    from funcs4core import *
-    from funcs4generic import *
-    from funcs4time import *
-    from funcs4pf import *
-    from funcs_vars import *
-    from Scripts.bpch2netCDF import convert_to_netCDF
+    from .funcs4core import *
+    from .funcs4generic import *
+    from .funcs4time import *
+    from .funcs4pf import *
+    from .funcs_vars import *
+    from .Scripts.bpch2netCDF import convert_to_netCDF
 else:
     from .funcs4core import *
     from .funcs4generic import *
@@ -340,7 +340,7 @@ def get_OH_mean( wd, debug=False ):
     if len(files) < 1:
         err_str = 'WARNING! - no *geos.log* files found - assuming as .log*'
         logging.info(err_str)
-        print err_str
+        print(err_str)
         files = glob.glob( wd+'/log.*' )
 
     # --- If there are any, then 
@@ -350,14 +350,14 @@ def get_OH_mean( wd, debug=False ):
         for file in files:
             with open(file) as f:
                 if debug:
-                    print(file, f, z)
+                    print((file, f, z))
                 for line in f:
                     if "Mean OH =    " in line:
                         z += [ float(line.split()[3] ) ]
         logging.info( 'mean OH calculated from {} files'.format( len(z) ) )
         return np.mean(z)
     else:
-        print 'No *log files found!'
+        print('No *log files found!')
         sys.exit()
     
 # ----
@@ -389,12 +389,12 @@ def get_CH4_mean( wd, rtn_global_mean=True, rtn_avg_3D_concs=False, \
     for file in files:
         with open(file) as f:
             if debug:
-                print(file, f, z)
+                print((file, f, z))
             for line in f:
                 if re.match(regex, line):
                     z += [ float(line.split()[-2])/1E9 ]
     if debug:
-        print(z, np.mean(z))
+        print((z, np.mean(z)))
     if rtn_global_mean:
         rtn_value = np.mean(z)
     if rtn_avg_3D_concs:
@@ -416,7 +416,7 @@ def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, \
     """
 
     if debug:
-        print('get_OH_HO2 called for ', wd)
+        print(('get_OH_HO2 called for ', wd))
 
     # --- Set specs, get constants, and extract output variables
     specs = ['OH','HO2']
@@ -486,15 +486,15 @@ def get_OH_HO2( ctm=None, t_p=None, a_m=None, vol=None, \
 
     if debug:
         print([ ( np.ma.sum(i), np.ma.mean(i) ) for i in (HO2, OH) ])
-        print('volume weighted: ', [ np.ma.sum( i *vol) / np.ma.sum(vol) \
-            for i in (HO2, OH) ]) 
+        print(('volume weighted: ', [ np.ma.sum( i *vol) / np.ma.sum(vol) \
+            for i in (HO2, OH) ])) 
 
     if HOx_weight: # weigh by [HO]+[HO2] molecules
         HOx = HO2 + OH
         HO2, OH  = [ np.ma.sum( ( i* HOx )) /np.ma.sum(HOx) for i in (HO2, OH)   ]
         if debug:
             print([ i.shape for i in (OH, HO2, moles, vol, HOx) ])
-            print('HOx weighted: ',HO2, OH)
+            print(('HOx weighted: ',HO2, OH))
 
     elif molec_weight: # weight by # of molecules
         HO2, OH  = [ ( i*molecs).sum() /molecs.sum() for i in (HO2, OH)   ]
@@ -555,7 +555,7 @@ def process_data4specs( specs=None, titles=None, wds=None, res='4x5', \
     logging.info('process_data4specs called for wds={},{}'.format(str(wds), 
         str(titles)) )
     if debug:
-        print(wds, titles)
+        print((wds, titles))
 
     # --- Previous pygchem approach <= REDUNDENT
     if pygchem.__version__ == '0.2.0':
@@ -1541,7 +1541,7 @@ def get_CH4_3D_concenctrations( z, res='4x5', trop_limit=True, debug=False ):
 
         # Check all values have been filled
         if debug:
-            print(z.shape, arr.shape, arr[ arr<0 ])        
+            print((z.shape, arr.shape, arr[ arr<0 ]))        
 
     return arr
 
@@ -1757,7 +1757,7 @@ def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
         with Dataset( fname, 'r' ) as rootgrp:
             dates = rootgrp['time']
             if verbose:
-                print(dates, dates.units)
+                print((dates, dates.units))
             # Get units from cube, default is 'hours since 1985-01-01 00:00:00'
             starttime = time.strptime( str(dates.units),\
                     'hours since %Y-%m-%d %H:%M:%S' )
@@ -1844,8 +1844,8 @@ def get_frequency_of_model_output( wd=None, months=None, years=None,
                 if set_of_diffs==list(set(daysinmonth[:-1])):
                     return 'Monthly'
                 else:
-                    print('Cannot work out output frequency for step diff: ', \
-                        set_of_diffs, daysinmonth, years, months)
+                    print(('Cannot work out output frequency for step diff: ', \
+                        set_of_diffs, daysinmonth, years, months))
                     sys.exit()
         except IndexError:
             assumed_freq = 'Monthly'
@@ -1890,8 +1890,8 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
      and weights output by **molecules** if ( average_value=True  ) 
     """
     if debug:
-        print('get_CH4_lifetime called ( using time in trop diag?={})'.format(
-            use_time_in_trop )) 
+        print(('get_CH4_lifetime called ( using time in trop diag?={})'.format(
+            use_time_in_trop ))) 
 
     # --- Get shared variables that are not provided
     if not isinstance(vol, np.ndarray): # cm^3 
@@ -1974,9 +1974,9 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
             LCH4_Cl =1/ np.ma.divide( CH4, Lrate_CH4_Cl  )
 
         if debug:
-            print(( 1 / ( (LCH4*a_m).sum()/a_m.sum() )   ) /60/60/24/365)
+            print((( 1 / ( (LCH4*a_m).sum()/a_m.sum() )   ) /60/60/24/365))
             print([ (i*a_m).sum()/a_m.sum() for i in (OH, LCH4, KCH4) ])
-            print(get_OH_mean( wd ) * 1E5)   
+            print((get_OH_mean( wd ) * 1E5))   
             print([ ( i.shape, i.sum(), i.mean(), i.min(), i.max()) \
                 for i in  (LCH4, LCH4_Cl, Lrate_CH4_Cl, Cl) ])
 
@@ -1994,7 +1994,7 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
 
         if include_Cl_ox:
             CH4_tau_s = np.ma.sum( [LCH4_Cl, LCH4] ) 
-        print('Using 1st apporach: ', LCH4, LCH4_Cl, CH4_tau_s)
+        print(('Using 1st apporach: ', LCH4, LCH4_Cl, CH4_tau_s))
 
         return 1/CH4_tau_s /60/60/24/365 
 
@@ -2061,7 +2061,7 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
 
         if include_Cl_ox:
             CH4_tau_s = np.ma.sum( [LCH4_Cl, LCH4] ) 
-        print('Using 2nd apporach: ', LCH4, LCH4_Cl, CH4_tau_s)
+        print(('Using 2nd apporach: ', LCH4, LCH4_Cl, CH4_tau_s))
 
         return 1/ CH4_tau_s / (3600*24*365)
 
@@ -2110,7 +2110,7 @@ def species_v_v_to_Gg(arr, spec, a_m=None, Iodine=True, All =False, \
       of back compatibility.
     """
     var_list = All, Iodine, Ox, spec
-    print('WARNING: Check settings in species_v_v_to_Gg: ',  var_list)
+    print(('WARNING: Check settings in species_v_v_to_Gg: ',  var_list))
 
     if not isinstance(a_m, np.ndarray):
         a_m = get_air_mass_np( ctm_f, wd=wd, debug=debug )  # kg
@@ -2329,7 +2329,7 @@ def molec_cm2_s_2_Gg_Ox_np( arr, spec='O3', s_area=None, ctm_f=None, \
         arr = arr* 60*60*24*365  
 
     if debug:
-        print('arr', arr.shape)
+        print(('arr', arr.shape))
     return arr
 
 
@@ -2529,7 +2529,7 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
         sys.exit()
 
     if debug:
-        print(specs , len(specs))
+        print((specs , len(specs)))
 
      # --- Extract and convert [kg/s] => g / s of ref_spec ( e.g. I equiv. )
     # Retain back compatibility
@@ -2555,7 +2555,7 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
         dep_w = []
         for n, spec in enumerate( specs ):
             if debug:
-                print(n, spec, ref_spec, spec_stoich( spec, ref_spec=ref_spec)) 
+                print((n, spec, ref_spec, spec_stoich( spec, ref_spec=ref_spec))) 
 
             # Combine convective scavenging and Frontal rain
             dep_w += [ WETDLS_S__[n] + WETDCV_S__[n] ] 
@@ -2653,8 +2653,8 @@ def molec_weighted_avg( arr, wd=None, ctm_f=None, vol=None, t_p=None, n_air=None
         try:
             molecs  = np.ma.array( molecs, mask=arr.mask )
         except:# MaskError:
-            print("MaskError for array shapes in 'molec_weighted_avg': ", \
-                [ i.shape for i in (molecs, arr) ])
+            print(("MaskError for array shapes in 'molec_weighted_avg': ", \
+                [ i.shape for i in (molecs, arr) ]))
 
     if weight_lon and (not weight_lat):  # 1st axis  
         return (arr *molecs).sum(axis=LON_axis)/molecs.sum(axis=LON_axis)
@@ -2684,7 +2684,7 @@ def split_4D_array_into_seasons( arr, annual_plus_seasons=True, \
     """
     
     if debug:
-        print(arr.shape) 
+        print((arr.shape)) 
     
     if annual_plus_seasons:
         seasons  = ['Annual', 'DJF', 'MAM', 'JJA', 'SON']
@@ -2702,16 +2702,16 @@ def split_4D_array_into_seasons( arr, annual_plus_seasons=True, \
     # extract data by month
     for n, s in enumerate( seasons ):
         if debug:
-            print(s, n , indices[n]) 
+            print((s, n , indices[n])) 
         ars += [ [ arr[...,i] for i in indices[n] ] ]
     
     # average by season
     if debug:
     #    print [ np.array(i).shape for i in ars ], np.array(ars).mean(), seasons
-        print([ np.ma.array(i).shape for i in ars ], seasons)
+        print(([ np.ma.array(i).shape for i in ars ], seasons))
     ars =  [ np.ma.array(i).mean(axis=0) for i in ars]
     if debug:
-        print([ i.shape for i in ars ], np.ma.array(ars).mean(), seasons)
+        print(([ i.shape for i in ars ], np.ma.array(ars).mean(), seasons))
 
     # return list array averaged by season 
     return ars, seasons
@@ -2754,7 +2754,7 @@ def convert_v_v2ngm3( arr, wd=None, spec='AERI', trop_limit=True, \
     # Adjust to mols, then mass 
     arr = arr*mols*species_mass( spec )
     if debug:
-        print(species_mass( spec ), np.sum( arr ))
+        print((species_mass( spec ), np.sum( arr )))
 
     # Convert to (nano, x1E9)g/m3
     arr = arr*1E9/vol 
@@ -2774,8 +2774,8 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
     """
 
     if verbose:   
-        print('function prt_seaonal_values called for region: ', region, \
-            'debug: {},verbose: {}'.format( debug, verbose ))
+        print(('function prt_seaonal_values called for region: ', region, \
+            'debug: {},verbose: {}'.format( debug, verbose )))
 
     print([ (i.min(), i.max(), i.mean() ) for i in  [arr] ])
     print([ (i.min(), i.max(), i.mean() ) for i in [ arr.mean(axis=-1)[...,0] ]])
@@ -2803,8 +2803,8 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
     arr = np.ma.array( arr, mask=np.ma.mask_or(m, arr.mask) ) 
     #    ars = [ np.ma.array( i, mask=m ) for i in ars ]
     if debug:
-        print(m, region, [ (type(i), i.shape) for i in [ m ] +[arr] ], \
-                    arr.mask, [ ( i.min(), i.max(),i.mean() ) for i in [arr] ])
+        print((m, region, [ (type(i), i.shape) for i in [ m ] +[arr] ], \
+                    arr.mask, [ ( i.min(), i.max(),i.mean() ) for i in [arr] ]))
 
     if debug:
         print([ ( i.min(), i.max(),i.mean(), len(i.mask[i.mask==True].ravel()) ) 
@@ -2841,23 +2841,23 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
         # --- Print values by 3D region 
         pstr  = '{:<20}'*( len(regions) +1 )
         npstr  = '{:<20}'+ '{:<20,.3f}'*len(regions)
-        print(pstr.format( 'spec' , *regions ))
+        print((pstr.format( 'spec' , *regions )))
         
-        print(seasons, ars[0].mean()) 
+        print((seasons, ars[0].mean())) 
         # Mean of 3D region
         for n, s in enumerate( seasons ):
             vars = [ float( (i*ars[n]).mean() ) for i in sects3D] 
-            print(npstr.format( s, *vars ))
+            print((npstr.format( s, *vars )))
 
         # Min of 3D region
         for n, s in enumerate( seasons ):
             vars = [float( (i*ars[n]).min() ) for i in sects3D] 
-            print(npstr.format( s, *vars ))
+            print((npstr.format( s, *vars )))
 
         # Max of 3D region
         for n, s in enumerate( seasons ):
             vars = [ float( (i*ars[n]).max() ) for i in sects3D] 
-            print(npstr.format( s, *vars ))
+            print((npstr.format( s, *vars )))
         
     # ---- Get surface or Zonal array ( prt by 2D region )
     else:
@@ -2868,8 +2868,8 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
 #            ars = [ i[...,0] for i in ars ]
             ars = [ np.ma.array( i[...,0], mask=m[...,0,0] ) for i in ars ]
         if debug:
-            print([i.shape for i in ars ], s_area.shape, \
-                    [type(i) for i in (ars, ars[0],  s_area) ])
+            print(([i.shape for i in ars ], s_area.shape, \
+                    [type(i) for i in (ars, ars[0],  s_area) ]))
 
 
         # --- Print out 
@@ -2879,7 +2879,7 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
         ]
         pstr =  '{:<15}'*(len( header))
         npstr =  '{:<15}'+'{:<15,.4f}'*(len( header)-1)
-        print(pstr.format( *header ))
+        print((pstr.format( *header )))
         for n, s in enumerate( seasons ):
 
             # Get vars for printing 
@@ -2893,7 +2893,7 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
             for i in [ ars[n] ] 
             ][0]
             # Print vars
-            print(npstr.format( s,  *vars ))
+            print((npstr.format( s,  *vars )))
 
 
 # ----
@@ -3415,10 +3415,10 @@ def fam_data_extractor4ts_bpch_files(spec='NOy', wd=None, \
         with Dataset( wd+'/'+filename, 'r') as rootgrp:
            for fam_spec in specs:
                 # Extract
-                print("Extracting spec='{}'".format( fam_spec ))
+                print(("Extracting spec='{}'".format( fam_spec )))
                 data_ = rootgrp['IJ_AVG_S__'+fam_spec]
-                print('Extracted data:', data_)
-                print('data shape: ', data_.shape)
+                print(('Extracted data:', data_))
+                print(('data shape: ', data_.shape))
                 # extract units - WARNING assuming same for all species 
                 units = data_.ctm_units
                 # save extracted data to list
@@ -3544,8 +3544,8 @@ def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None, \
     # Extract data for location 
     with Dataset( wd+'/'+filename, 'r') as rootgrp:
         data = rootgrp['IJ_AVG_S__'+spec]
-        print('Extracted data:', data)
-        print('data shape: ', data.shape)
+        print(('Extracted data:', data))
+        print(('data shape: ', data.shape))
         # extract for location (array shape = TIME, LON, LAT)
         data = data[:, LON_ind, LAT_ind]
         # also extract NetCDF units
@@ -3947,8 +3947,8 @@ def prt_2D_vals_by_region( specs=None, res='4x5', arrs=None, prt_pcent=False, \
     pstr  = '{:<25}'+'{:<15}'*( len(m_titles)-1 )
     pstrn = '{:<25}' +'{:<15,.3f}'*( len(m_titles)-1 )
     arrsn = [ 'Species', 'Total'] + m_titles
-    print(m_titles, arrsn)
-    print(pstr.format( *arrsn ))    
+    print((m_titles, arrsn))
+    print((pstr.format( *arrsn )))    
     for n, s in enumerate( specs ):
 
         if summate:
@@ -3957,7 +3957,7 @@ def prt_2D_vals_by_region( specs=None, res='4x5', arrs=None, prt_pcent=False, \
         else:
             vars = [ s, np.ma.mean(arrs[n]) ]
             vars += [ np.ma.mean(arrs[n]*m) for m in masks ]        
-        print(pstrn.format( *vars ))
+        print((pstrn.format( *vars )))
 
     # --- Print out percent values 
     if prt_pcent :
@@ -3972,7 +3972,7 @@ def prt_2D_vals_by_region( specs=None, res='4x5', arrs=None, prt_pcent=False, \
         # update numerical string to print
         pstr  = '{:<25}'+'{:<15}'*( len(arrsn)-1 )
         pstrn = '{:<25}' +'{:<15,.3f}'*( len(arrsn)-1 )
-        print(pstr.format( *arrsn ))    
+        print((pstr.format( *arrsn )))    
         # loop maskes and print
         vars_l = []
         for n, s in enumerate( specs ):
@@ -3980,7 +3980,7 @@ def prt_2D_vals_by_region( specs=None, res='4x5', arrs=None, prt_pcent=False, \
             vars += [ np.ma.sum(s_arrs[n]*m)/np.ma.sum(s_arrs[n])*100 \
                 for m in masks ]
             vars_l += [ vars ]
-            print(pstrn.format( *vars ))
+            print((pstrn.format( *vars )))
 
         # --- Convert to DataFrame, then save to csv
         if save2csv:
@@ -4018,9 +4018,9 @@ def get_2D_arr_weighted_by_X( arr, spec=None, res='4x5', print_values=False, \
     # Calculate average and area weighted average
     area_weighted_avg = ( arr*s_area ).sum()/ s_area.sum() 
     if print_values:
-        print('mean surface {} conc {}'.format(spec, arr.mean() )) 
-        print('area weighted mean surface {} conc {}'.format( \
-            spec, area_weighted_avg ))
+        print(('mean surface {} conc {}'.format(spec, arr.mean() ))) 
+        print(('area weighted mean surface {} conc {}'.format( \
+            spec, area_weighted_avg )))
     return area_weighted_avg
 
 
@@ -4366,7 +4366,7 @@ def concvert_df_VOC_C2v( df=None, verbose=True ):
                 ref_spec='C' )
         except:
             if verbose:
-                print('Did not convert C/v to v/v for: ', spec)
+                print(('Did not convert C/v to v/v for: ', spec))
     
     return df
 
@@ -4394,7 +4394,7 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*", filename='ctm.n
     ------- 
     """
     logging.info('process_bpch_files_in_dir2NetCDF called for:', locals())
-    from bpch2netCDF import convert_to_netCDF
+    from .bpch2netCDF import convert_to_netCDF
     
     # Get folder from command line. 
     if isinstance( folder, type(None)):
@@ -4407,10 +4407,10 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*", filename='ctm.n
     nfiles = len(files)
     if nfiles >0:
         if verbose:
-            print 'Found {} files'.format(nfiles)
+            print('Found {} files'.format(nfiles))
     else:
         if verbose:
-            print 'No files found in wd:{}'.format( folder )
+            print('No files found in wd:{}'.format( folder ))
         sys.exit()
         
     # split off file names
@@ -4422,10 +4422,10 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*", filename='ctm.n
 
     # If split by month
     if split_by_month:
-        print 'Splitting NetCDF file by month - {}'.format(folder+filename)
+        print('Splitting NetCDF file by month - {}'.format(folder+filename))
         split_NetCDF_by_month(folder=folder, filename=filename, 
             ext_str=ext_str, file_prefix=file_prefix)	
-        print 'Split NetCDF file by month - {}'.format(folder+filename)
+        print('Split NetCDF file by month - {}'.format(folder+filename))
 
 
 # ------------------ Section X.X -------------------------------------------
@@ -4682,7 +4682,7 @@ def prt_families4rxns_to_input_to_PROD_LOSS(fam='LOx', rxns=None, wd=None, \
     print('>>>> Copy and paste the below text into gckpp.kpp <<<')
     print(header_Str)
     for rxn in rxns:
-        print(pstr.format(rxn, rxn )) 
+        print((pstr.format(rxn, rxn ))) 
 
 
 # ----
@@ -4718,7 +4718,7 @@ def prt_families4rxns_to_input_to_PROD_LOSS_globchem_spec(fam='LOx', \
     print('>>>> Copy and paste the below text into globchem.spc <<<')
     print(header_Str)
     for rxn in rxns:
-        print(pstr.format(rxn, rxn )) 
+        print((pstr.format(rxn, rxn ))) 
 
 # ----
 # X.XX - Get dictionary of all reactions strings for tagged reactions
@@ -4891,10 +4891,10 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
             specs = 'Br', 'I', 'Cl', 'NOx', 'hv', 'HOx'
             booleans = Br_is_reactant, I_is_reactant, Cl_is_reactant,  \
                 NOx_is_reactant, hv_is_reactant, HOx_is_reactant
-            print(list(zip(specs, booleans)))
+            print((list(zip(specs, booleans))))
 
         if debug:
-            print(rxn_str, fam_l[n_rxn])
+            print((rxn_str, fam_l[n_rxn]))
 
     # Nicer family names?
 #    if mk_family_names_readable:
@@ -4949,14 +4949,14 @@ def get_tags_in_rxn_numbers( rxn_nums=[], RR_dict=None, \
         tag_strs = [' + T', '> T' ]
         # replace this with reg ex?
         if debug:
-            print(key_, rxn_str, any([i in rxn_str for i in tag_strs]))
+            print((key_, rxn_str, any([i in rxn_str for i in tag_strs])))
         if any([i in rxn_str for i in tag_strs]):
             # split reaction str by '+' (excluding reactants part)
             product_str_list = rxn_str[18:].split('+')
             # select tag(s)
             tag_ = [ i for i in product_str_list if (' T' in i) ]
             if len(tag_) > 1:
-                print('WARNING - more than one tag for reaction? :', tag_) 
+                print(('WARNING - more than one tag for reaction? :', tag_)) 
                 sys.exit()
             else:
                 tags_for_rxns += [ tag_[0].strip() ]
@@ -5076,7 +5076,7 @@ def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
         logging.info( 'get_trop_burden returning whole atmosphere (not troposphere)' )
 
     if debug:
-        print('Got buden for {} from {}'.format( spec, ctm ))
+        print(('Got buden for {} from {}'.format( spec, ctm )))
     if (all_data):
         return ar
     else:
@@ -5195,7 +5195,7 @@ def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None, \
     # --- Process conversion
     if (Iodine):
         if debug:
-            print(rxn , arr.shape, vol.shape) 
+            print((rxn , arr.shape, vol.shape)) 
 
         #  [molec/cm3/s] => * vol / moles * RAM *I in species / 1E9 
         arr = ( arr * vol[:,:,:38,:] ) /  constants( 'AVG')* (127.) /1E9 * \
@@ -5219,7 +5219,7 @@ def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None, \
         arr = arr * day_adjust
 
     if debug:
-        print('arr', arr.shape , 'vol', vol.shape)
+        print(('arr', arr.shape , 'vol', vol.shape))
     return arr
 
 
@@ -5247,7 +5247,7 @@ def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
     """
             
     if debug:
-        print('get_emiss called for >{}<'.format(spec))
+        print(('get_emiss called for >{}<'.format(spec)))
     if not isinstance(years, list):
         years = get_gc_years( ctm_f=ctm_f, set_=False, wd=wd )
     if not isinstance(months, list):
@@ -5291,7 +5291,7 @@ def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
         arr_ = arr_*1E9
 
         if debug:
-            print('get_emiss - 2', arr_.shape)
+            print(('get_emiss - 2', arr_.shape))
 
     if molec_cm2_s:
         # From  "I Gg/month" to "I Gg/month/cm/2" #convert to /m2 => cm/2
@@ -5305,7 +5305,7 @@ def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
                         constants('AVG')  
 
         if debug:
-            print('get_emiss - 3', arr_.shape)
+            print(('get_emiss - 3', arr_.shape))
 
     return arr_
 
