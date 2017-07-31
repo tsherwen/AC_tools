@@ -732,8 +732,9 @@ def year_to_since_2006(model):
     """
     Converts planeflight output date and time to unit Cape Verde (CVAO) years.  
 
-    ARGUEMTNS:
-     -  extracted model data from funcs4pf.readfile_basic 
+    Parameters
+    ----------
+    model (numpy.array): extracted model data from funcs4pf.readfile_basic 
 
     NOTES:
      - Credit MJE
