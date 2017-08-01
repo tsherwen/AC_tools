@@ -5016,9 +5016,9 @@ def get_oxidative_release4specs(filename='gckpp_Monitor.F90',
 # ----
 def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
         Iodine=False, all_data=True, total_atmos=False , res='4x5',  \
-        trop_limit=True, debug=False ):
+        trop_limit=True, arr=None, debug=False ):
     """  
-    Get Trosposheric burden. 
+    Get Trosposheric burden for species ("spec")
     
     Parameters
     ----------
@@ -5032,6 +5032,7 @@ def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
     total_atmos (boolean): return whole atmosphere or just troposphere?
     spec (str): species/tracer/variable name 
     wd (str): Specify the wd to get the results from a run.
+	arr (np.array): array of v/v for species 
 
     Returns
     -------
@@ -5076,11 +5077,11 @@ def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
         logging.info( 'get_trop_burden returning whole atmosphere (not troposphere)' )
 
     if debug:
-        print(('Got buden for {} from {}'.format( spec, ctm )))
-    if (all_data):
+        print(('Got burden for {} from {}'.format( spec, ctm )))
+    if all_data:
         return ar
     else:
-        return np.ma.mean( ar, axis=3 )
+        return ar.mean(axis=3)
 
 # ----
 # X.XX - Get O3 Burden
@@ -5088,68 +5089,19 @@ def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
 def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None, \
         ctm_f=False, trop_limit=True, all_data=False, annual_mean=True, \
         debug=False ):
-    """ 
-    Get O3 burden in CTM output 
+    """ Wrapper of get_trop_burden for O3 """
+    # ---  Local vars.
+    # (	all_data == annual_mean )	
+    if annual_mean:
+        all_data = True
+    # ( total_atmos == trop_limit )
+    if trop_limit:
+        total_atmos =  True
 
-    Parameters
-    ----------
-    wd (str): Specify the wd to get the results from a run.
-    spec (str): species/tracer/variable name 
-    O3_arr (np.array): 4D array of O3 concentration (v/v)
-    t_p (np.array): 4D array of (fractional) time a grid box has spent in tropospehre
-    a_m (np.array): 4D array of air mass
-    trop_limit (boolean): limit 4D arrays to troposphere 
-    all_data (boolean): return complete 4D array 
-    annual_mean (boolean): take average of time dimension (variable name assumes 12 months)
-    debug (boolean): legacy debug option, replaced by python logging
-    ctm_f (file object): PyGChem (v2.0) opened ctm.bpch file  - vestigle 
-
-    Returns
-    -------
-    (np.array) O3 burden in Gg
-    """
-    # extract arrays not provided from wd
-    if not isinstance(a_m, np.ndarray):
-        logging.info( 'WARNING: Getting a_m in get_O3_burden (inefficient)')
-        if pygchem.__version__ == '0.2.0':
-            a_m = get_air_mass_np( ctm_f, debug=debug )[:,:,:38,:]
-
-        # use updated pygchem
-        else:
-            a_m = get_GC_output( wd, vars=['BXHGHT_S__AD'], trop_limit=trop_limit) 
-
-    if not isinstance(t_p, np.ndarray):
-        logging.info('WARNING: Getting t_p in get_O3_burden (inefficient)')
-        if pygchem.__version__ == '0.2.0':
-            t_p = get_gc_data_np( ctm_f, spec='TIMETROP', category='TIME-TPS', \
-                debug=debug)[:,:,:38,:]
-
-        # use update pygchem
-        else:
-            t_p = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], trop_limit=trop_limit ) 
-            
-    if not isinstance(O3_arr, np.ndarray):
-        logging.info('WARNING: Getting O3_arr in get_O3_burden (inefficient)')
-        if pygchem.__version__ == '0.2.0':
-            ar = get_gc_data_np( ctm_f, 'O3', debug=debug )[:,:,:38,:]
-        else:
-            ar = get_GC_output( wd, species='O3' )[:,:,:38,:]
-            
-    else:
-        ar = O3_arr[:,:,:38,:]
-
-    # v/v * (mass total of air (kg)/ 1E3 (converted kg to g))  = moles of tracer
-    ar = ar * ( a_m[:,:,:38,:]*1E3 / constants( 'RMM_air') ) 
-
-    # convert moles to mass (* RMM) , then to Gg 
-    ar = ar * species_mass(spec) /1E9             
-    ar = ar[:,:,:38,:] * t_p[:,:,:38,:]
-    # take mean over time  or return full data
-    if all_data or (not annual_mean):
-        return ar
-    else:
-        return ar.mean(axis=3 )
-
+    # --- just call existing function
+    return get_trop_burden(wd=wd, total_atmos=False, all_data=all_data, 
+        trop_limit=trop_limit, spec=spec, a_m=a_m, t_p=t_p, arr=O3_arr, 
+        ctm=ctm_f, debug=debug )
 
 
 # --------------------------------------------------------------------------
