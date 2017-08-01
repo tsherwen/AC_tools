@@ -25,9 +25,6 @@ import datetime as datetime
 
 # -- math
 from math import radians, sin, cos, asin, sqrt, pi, atan2
-# astronomical math
-import ephem 
-from ephem import AlwaysUpError, NeverUpError
 
 # --  This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
@@ -1618,6 +1615,10 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
     -----    
      - if ncfile provide programme will work for that grid.     
     """
+    # Astronomical math
+    import ephem 
+    from ephem import AlwaysUpError, NeverUpError
+    # And functions in other AC_tools modules
     from .funcs4time import add_days, add_hrs
     logging.info('get_2D_nighttime_mask4date_pd called for {}'.format(date))
 
@@ -1803,7 +1804,11 @@ def get_2D_solartime_array4_date( date=None, ncfile=None, res='4x5', \
     -----    
      - if ncfile provide programme will work for that grid.     
     """
-    from .funcs4time import add_days, add_hrs, unix_time
+    # Astronomical math
+    import ephem 
+    from ephem import AlwaysUpError, NeverUpError
+    # And functions in other AC_tools modules
+    from .funcs4time import add_days, add_hrs
     logging.info('get_2D_solartime_array4_dates called for {}'.format(date))
 
     # Profile function... 

@@ -19,16 +19,17 @@ import numpy as np
 #from time import mktime
 #from pandas import DataFrame
 import pandas as pd
-# astronomical math
-import ephem 
-from ephem import AlwaysUpError, NeverUpError
 
 # -- Time                                                                                           
 import time
 import calendar
 import datetime as datetime
 from datetime import datetime as datetime_
-
+# Attempt to import ephem if installed
+try:
+	import ephem 
+except:
+	print( 'ephem package not installed')
 
 # ----------------------- Section X.X -------------------------------------------
 # -------------- Time Processing
@@ -704,6 +705,8 @@ def get_int_btwn(start, end, months=False, years=False ):
 def solartime(observer, sun=ephem.Sun()):
     """
     """
+    # Astronomical math
+    import ephem 
     # Credit: J.F. Sebastian
     # http://stackoverflow.com/questions/13314626/local-solar-time-function-from-utc-and-longitude
     sun.compute(observer)
@@ -732,9 +735,8 @@ def year_to_since_2006(model):
     """
     Converts planeflight output date and time to unit Cape Verde (CVAO) years.  
 
-    Parameters
-    ----------
-    model (numpy.array): extracted model data from funcs4pf.readfile_basic 
+    ARGUEMTNS:
+     -  extracted model data from funcs4pf.readfile_basic 
 
     NOTES:
      - Credit MJE
