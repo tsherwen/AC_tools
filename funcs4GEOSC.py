@@ -4429,9 +4429,67 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*", filename='ctm.n
 
 
 # ------------------ Section X.X -------------------------------------------
-# -------------- Time Processing
+# -------------- Smvgear input/output file Processing
 #
 
+
+def prt_Prod_Loss_list4input_geos(spec_list=None, prefix_list=None, start_num=1):
+    """
+    Print to screen lines to be inserted into input.geos to track prod/loss of species
+
+    Parameters
+    -------
+    spec_list (list): list of species to print lines for
+    start_num (int): number to start labeling reaction index for input.geos
+    prefix_list (list): list of prefixs to dictacte if prod or loss calc ("P" or "L")
+
+    Returns
+    -------
+    (None)
+    
+    Notes
+    ------- 
+    """
+    # Formatted string to be filled by variables 
+    line_str = '{:<6}chemical family   : {}: {}'	
+
+    # Activity for species? 
+    if isinstance(prefix_list, type(None)):
+        prefix_list =['P']* len(spec_list)
+
+    # Loop species (specs) provided 
+    for n, spec in enumerate( spec_list ):
+        index = start_num+n
+        print line_str.format( AC.get_suffix(index), prefix_list[n]+spec, spec)
+
+
+def prt_Species_List_lines4globchem_dat(spec_list=None, activty_list=None):
+    """
+    Print to screen lines to be inserted into globchem.dat for given list of species 
+
+    Parameters
+    -------
+    spec_list (list): list of species to print lines for
+    acvtivty_list (list): list of activitys ("A"=Active, "L"=live, "D"=Dead)
+
+    NOTES
+    -------	
+    - Globchem.dat contains the chemistry for the smvgear solver.
+    - These lines must be present at the top to initialise each species 
+    """
+    line1_str ='{} {:<10}         1.00 1.000E-20 1.000E-20 1.000E-20 1.000E-20'
+    line2_str ='                     0   0   0   0   0   0   0   0   0     '
+
+    # Activity for species? 
+    if isinstance(activty_list, type(None)):
+        activty_list =['A']* len(spec_list)
+
+    # Print lines to insert into globchem.dat
+    for n, spec in enumerate( spec_list ):
+        print( line1_str.format( acvtivty_list[n], spec ) )
+        print( line2_str )
+	
+	
 # ------------------ Section X.X -------------------------------------------
 # -------------- KPP input/output file Processing
 #
