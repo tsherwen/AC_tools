@@ -4382,6 +4382,7 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*", filename='ctm.n
 	bpch_file_type (str): str of standard file (wildcard) str with file naming structure 
     filename (str): name of NetCDF file to make
     verbose (boolean): print verbose output?
+	folder (str): directory address for folder contain files
 	ext_str (str): extra str to inc. in monthly filenames
 	file_prefix (str): prefox str to use for monthly split files
 	split_by_month (boolean): split new NetCDF file by month?
@@ -4426,6 +4427,39 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*", filename='ctm.n
         split_NetCDF_by_month(folder=folder, filename=filename, 
             ext_str=ext_str, file_prefix=file_prefix)	
         print('Split NetCDF file by month - {}'.format(folder+filename))
+
+
+def process_all_bpch_files_in_dir(folder=None, ext_str=None):
+	""" 
+	Process all bpch files in a given directory 
+	(Warpper of process_bpch_files_in_dir2NetCDF for *ts*bpch* and *ctm*bpch* files)
+	
+	folder (str): directory address for folder contain files
+	ext_str (str): extra str to inc. in monthly filenames
+
+    Returns
+    -------
+    (None)
+	"""
+	# - Process *ctm*bpch* files
+	# Temporary variables
+	bpch_file_type = '*ctm.bpch.*'
+	filename = 'ctm.nc'
+	file_prefix ='ctm_'
+	# process *ctm*bpch* to NetCDF
+	AC.process_bpch_files_in_dir2NetCDF( folder=folder, filename=filename, 
+		ext_str=ext_str, file_prefix=file_prefix, bpch_file_type=bpch_file_type, \
+		split_by_month=True)
+
+	# - Process *ts*bpch* files
+	# Temporary variables
+	bpch_file_type = 'ts*bpch*'
+	filename = 'ts_ctm.nc'
+	file_prefix ='ts_ctm_'
+	# Process *ts*bpch* to netCDF4
+	AC.process_bpch_files_in_dir2NetCDF( folder=folder, filename=filename, 
+		ext_str=ext_str, file_prefix=file_prefix, bpch_file_type=bpch_file_type, \
+		split_by_month=True)
 
 
 # ------------------ Section X.X -------------------------------------------
