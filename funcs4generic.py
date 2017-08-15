@@ -2175,6 +2175,71 @@ def get_2D_df_of_lon_lats_and_time(res='4x5', df_lar_var='lat', df_lon_var='lon'
 
     return df
 
+# --------
+# X.XX - stack a 2D table (DataFrame) of lat/lon coords
+# --------
+def get_vars_from_line_printed_in_txt_file(filename=None, folder=None, 
+        prefix=' HOUR:', var_names=None, type4var_names=None):
+    """ 
+    Get variables from a line printed to non-binary file with a given prefix
+    
+    Parameters
+    ----------
+    filename (Str): name of non binary file (e.g. geos.log)
+    folder (str): name of directory where file ("filename") is located
+    prefix (str): the string that lines containing data begin with
+    var_names (list): optional. names for variables in line (must be # in line)
+    type4var_names (dict): dictionary of type to convert variables to 
+
+    Returns
+    -------
+    (pd.DataFrame)
+
+    Notes
+    ----------    
+     - Can be used for debugging or tabulating output. e.g. lines of 
+     grid index locations and values printed to GEOS-chem's geos.log file
+    """
+    import pandas as pd
+    import sys
+	# --- Local vars
+    lines_with_var = []
+	# --- Open file and loop vars
+    with open(folder+filename) as f:
+		
+        for line in f:
+#			if prefix in line:
+#            print line
+            if line.startswith(prefix):
+                var_ = line.split()[1:]
+                if not isinstance(var_names, type(None)):
+                    try:
+                        assert len(var_) == len(var_names)
+                    except AssertionError:
+                        print(  len(var_), var_ )
+                        sys.exit()
+                # Save data until later
+                lines_with_var.append(var_)
+    # If lines found, return as a DataFrame
+    if len(lines_with_var) > 0:
+        # Make DataFrame
+        df = pd.DataFrame(lines_with_var)
+        # Apply provided names to columns?
+        if not isinstance(var_names, type(None)):
+            df.columns=var_names
+        # Covert data type of variable?
+        if not isinstance(type4var_names, type(None)):
+            for key_ in type4var_names.keys():
+                try:
+                    df[key_] = df[key_].astype(type4var_names[key_])
+                except KeyError:     
+                    err_str = 'key_ ({}) not in df'.format(key_)
+                    logging.info(err_str )
+
+        return df
+    else:
+        err_str = 'No lines with prefix ({})'.format( prefix )
+        logging.info( err_str )
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
