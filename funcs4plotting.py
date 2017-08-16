@@ -1041,11 +1041,12 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
 # --------   
 # X.XX - Diurnal plot
 # --------
-def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, 
-        xlabel=True, ylabel=True, label=None, title=None, f_size=10, 
-        units='ppbv',lgnd_f_size=None, alpha=0.5, rotatexlabel=45, 
-        loc='upper right', time_resolution_str="%H:%M", stat2plot='mean', 
-        legend=False, ylim=None, lw=2.0, debug=False ):
+def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, \
+        xlabel=True, ylabel=True, label=None, title=None, f_size=10, \
+        units='ppbv',lgnd_f_size=None, alpha=0.5, rotatexlabel=45, \
+        loc='upper right', time_resolution_str="%H:%M", stat2plot='mean', \
+        legend=False, ylim=None, lw=2.0, add_quartiles2plot=True, \
+        debug=False ):
     """ 
     Creates a diurnal plot for given data and dates using pandas Dataframe
 
@@ -1110,17 +1111,18 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None,
         label=label)
 
     # Add quartiles
-    ax.plot(df.index, df['data']['75%'], color=color, alpha=alpha)
-    ax.plot(df.index, df['data']['25%'], color=color, alpha=alpha)    
+    if add_quartiles2plot:
+        ax.plot(df.index, df['data']['75%'], color=color, alpha=alpha)
+        ax.plot(df.index, df['data']['25%'], color=color, alpha=alpha)    
     
-    # And shading for quartiles 
-    try:
-        ax.fill_between(df.index, df['data'][stat2plot], df['data']['75%'], 
-            alpha=alpha, facecolor=color)
-        ax.fill_between(df.index, df['data'][stat2plot], df['data']['25%'], 
-            alpha=alpha, facecolor=color)    
-    except:
-        logging.info( 'Failed to add percentile shading' )
+        # And shading for quartiles 
+        try:
+            ax.fill_between(df.index, df['data'][stat2plot], df['data']['75%'], 
+                alpha=alpha, facecolor=color)
+            ax.fill_between(df.index, df['data'][stat2plot], df['data']['25%'], 
+                alpha=alpha, facecolor=color)    
+        except:
+            logging.info( 'Failed to add percentile shading' )
 
     # --- Beautify 
     # title?
