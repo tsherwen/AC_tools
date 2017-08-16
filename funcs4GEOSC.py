@@ -2138,9 +2138,7 @@ def species_v_v_to_Gg(arr, spec, a_m=None, Iodine=True, All =False, \
 # ----
 def get_volume_np(ctm_f=None, box_height=None, s_area=None, res='4x5', \
         wd=None, trop_limit=False, debug=False):
-    """ 
-    Get grid box volumes for CTM output in cm3 
-    """
+    """ Get grid box volumes for CTM output in cm3 """
     logging.info( 'get_volume_np called for res={}'.format(res) )
 
     if not isinstance(box_height, np.ndarray):
@@ -2149,8 +2147,8 @@ def get_volume_np(ctm_f=None, box_height=None, s_area=None, res='4x5', \
                 category="BXHGHT-$", debug=debug)  # ( m )
         else:
             try:
-                box_height = get_GC_output( wd=wd, vars=['BXHGHT_S__BXHEIGHT'], \
-                    debug=debug )
+                box_height = get_GC_output( wd=wd, vars=['BXHGHT_S__BXHEIGHT'],\
+                    trop_limit=trop_limit, debug=debug )
             except:
                 logging.info( 'WARNING: Using ref. file for BXHEIGHT' )
                 logging.info( 'WARNING: ref file use not implemented' )
