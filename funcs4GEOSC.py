@@ -4458,9 +4458,9 @@ def process_all_bpch_files_in_dir(folder=None, ext_str=None):
 	filename = 'ctm.nc'
 	file_prefix ='ctm_'
 	# process *ctm*bpch* to NetCDF
-	AC.process_bpch_files_in_dir2NetCDF( folder=folder, filename=filename, 
-		ext_str=ext_str, file_prefix=file_prefix, bpch_file_type=bpch_file_type, \
-		split_by_month=True)
+	process_bpch_files_in_dir2NetCDF( folder=folder, filename=filename, \
+		ext_str=ext_str, file_prefix=file_prefix, \
+		bpch_file_type=bpch_file_type, split_by_month=True)
 
 	# - Process *ts*bpch* files
 	# Temporary variables
@@ -4468,9 +4468,9 @@ def process_all_bpch_files_in_dir(folder=None, ext_str=None):
 	filename = 'ts_ctm.nc'
 	file_prefix ='ts_ctm_'
 	# Process *ts*bpch* to netCDF4
-	AC.process_bpch_files_in_dir2NetCDF( folder=folder, filename=filename, 
-		ext_str=ext_str, file_prefix=file_prefix, bpch_file_type=bpch_file_type, \
-		split_by_month=True)
+	process_bpch_files_in_dir2NetCDF( folder=folder, filename=filename, \
+		ext_str=ext_str, file_prefix=file_prefix, \
+		bpch_file_type=bpch_file_type, split_by_month=True)
 
 
 # ------------------ Section X.X -------------------------------------------
@@ -4505,7 +4505,7 @@ def prt_Prod_Loss_list4input_geos(spec_list=None, prefix_list=None, start_num=1)
     # Loop species (specs) provided 
     for n, spec in enumerate( spec_list ):
         index = start_num+n
-        print line_str.format( AC.get_suffix(index), prefix_list[n]+spec, spec)
+        print line_str.format( get_suffix(index), prefix_list[n]+spec, spec)
 
 
 def prt_Species_List_lines4globchem_dat(spec_list=None, activty_list=None):
