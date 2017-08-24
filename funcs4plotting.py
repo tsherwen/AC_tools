@@ -1364,15 +1364,15 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     df = DataFrame(data,index=dates )
 	# Force use of a standard year
     months = list(range(1, 13)) 
-	datetime_months = [ datetime.datetime(2009, int(i), 1) for i in months ] 
+    datetime_months = [ datetime.datetime(2009, int(i), 1) for i in months ] 
     labels = [i.strftime("%b") for i in datetime_months]
-	if debug:
-	    print(labels)
+    if debug:
+        print(labels)
 
     # Get Data by month
     monthly =[ df[df.index.month==i]  for i in months ]
-	if debug:
-	    print([i.shape for i in monthly ])
+    if debug:
+        print([i.shape for i in monthly ])
 
     if boxplot:    
         bp = ax.boxplot( monthly, months, showmeans=showmeans ) 
@@ -1405,18 +1405,18 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     if not isinstance( ylim, type(None) ):
         ax.set_ylim( ylim )
 
-	if debug:
-	    print('!'*50, alt_text, alt_text_x, alt_text_y)
+    if debug:
+        print('!'*50, alt_text, alt_text_x, alt_text_y)
     if not isinstance( alt_text, type(None) ):
-		if debug:
-	        print('!'*50, alt_text, alt_text_x, alt_text_y, f_size)
+        if debug:
+            print('!'*50, alt_text, alt_text_x, alt_text_y, f_size)
         plt.text(  alt_text_x, alt_text_y, \
             alt_text, ha='center', va='center', \
                     transform=ax.transAxes, fontsize=f_size*.5)
 
     if legend:
-		if debug:
-	        print('>'*500, 'Adding legend', '<'*50, loc)
+        if debug:
+            print('>'*500, 'Adding legend', '<'*50, loc)
         plt.legend( fontsize=f_size*.75, loc=loc )
     if not isinstance( title, type(None) ):
         plt.title( title )
