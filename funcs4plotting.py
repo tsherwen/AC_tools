@@ -1349,24 +1349,30 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     """ 
     Plot up timeseries of seasonal data. 
 
-    NOTES:
-    - Requires data, and dates in numpy array form. 
-    - Dates must be as datetime.datetime objects. 
-    """
+    Parameters
+    ----------
+	ax (axis object): axis to plot onto
+	dates (np.array): array of dates (as  datetime.datetime objects)
+	data (np.array): 1D array of data
+	plot_Q1_Q3 (boolean): plot up quartiles on timeseries plot
 
+    Returns
+    -------
+	(None)
+    """
     # Process data - reduce resolution to daily, and get std
     df = DataFrame(data,index=dates )
-#    resample = df.resample('M' )#, how='mean')
-#    labels = [i.strftime("%b") for i in resample]
+	# Force use of a standard year
     months = list(range(1, 13)) 
-    labels = [i.strftime("%b") for i in 
-    [ datetime.datetime(2009, int(i), 0o1) for i in months ]
-    ]
-    print(labels)
+	datetime_months = [ datetime.datetime(2009, int(i), 1) for i in months ] 
+    labels = [i.strftime("%b") for i in datetime_months]
+	if debug:
+	    print(labels)
 
     # Get Data by month
     monthly =[ df[df.index.month==i]  for i in months ]
-    print([i.shape for i in monthly ])
+	if debug:
+	    print([i.shape for i in monthly ])
 
     if boxplot:    
         bp = ax.boxplot( monthly, months, showmeans=showmeans ) 
@@ -1399,18 +1405,18 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     if not isinstance( ylim, type(None) ):
         ax.set_ylim( ylim )
 
-    print('!'*50, alt_text, alt_text_x, alt_text_y)
+	if debug:
+	    print('!'*50, alt_text, alt_text_x, alt_text_y)
     if not isinstance( alt_text, type(None) ):
-        print('!'*50, alt_text, alt_text_x, alt_text_y, f_size)
-#        alt_text_x=0.5; alt_text_y=0.5; f_size=20
-#        ax.annotate( alt_text , xy=(alt_text_x, alt_text_y), \
-#            textcoords='axes fraction', fontsize=f_size*1.5, color='k' )
+		if debug:
+	        print('!'*50, alt_text, alt_text_x, alt_text_y, f_size)
         plt.text(  alt_text_x, alt_text_y, \
             alt_text, ha='center', va='center', \
                     transform=ax.transAxes, fontsize=f_size*.5)
 
     if legend:
-        print('>'*500, 'Adding legend', '<'*50, loc)
+		if debug:
+	        print('>'*500, 'Adding legend', '<'*50, loc)
         plt.legend( fontsize=f_size*.75, loc=loc )
     if not isinstance( title, type(None) ):
         plt.title( title )

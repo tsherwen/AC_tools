@@ -170,6 +170,7 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
     '0.25x0.3125_WA' : (145,89,47), 
     '0.5x0.625'      : (145,133,47),
     '0.083x0.083'    : (4320, 2160), # 9km resolution?
+    '0.125x0.125':  (2880,1441),# nature run (~12km globally)
     }
     if debug:
         print(dims)
@@ -282,7 +283,9 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
         '0.25x0.3125_WA' :'LANDMAP_LWI_ctm_025x03125_WA',  \
         # Need to add a 0.5x0.625!
         # Temporary inclusion of local 0.083x0.083 file. 
-        '0.083x0.083' : 'LANDMAP_LWI_ctm_0083x0083'
+        '0.083x0.083' : 'LANDMAP_LWI_ctm_0083x0083', \
+		# Temporary inclusion of NASA nature run file 
+		'0.125x0.125':'TEMP_NASA_Nature_run', 
         }
         try:
             dir = dir_dict[res]

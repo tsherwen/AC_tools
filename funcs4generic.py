@@ -68,8 +68,7 @@ def myround(x, base=5, integer=True, round_up=False):
     NOTES:
      - credit: Alok Singhal
     """
-
-    round_up=True # Kludge - always set this to True
+#    round_up=True # Kludge - always set this to True
 
     # round to nearest base number
     rounded = base * round(float(x)/base) 
