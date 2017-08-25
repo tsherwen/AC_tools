@@ -702,9 +702,11 @@ def get_int_btwn(start, end, months=False, years=False ):
 # ----
 # X.XX - 
 # -----
-def solartime(observer, sun=ephem.Sun()):
+def solartime(observer, sun=None):
     """
     """
+    if isinstance(sun, type(None)):
+        ephem.Sun()
     # Astronomical math
     import ephem 
     # Credit: J.F. Sebastian

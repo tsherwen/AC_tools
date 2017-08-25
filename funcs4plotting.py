@@ -1097,7 +1097,7 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, \
 #    df.index = pd.to_datetime(df.index )#.astype(str))
 #    df.index = [ datetime.datetime( 2005, 1, 1, i ) for i in range(0, 24) ]
     
-    # --- Aesthetics
+        # --- Aesthetics
     if isinstance(color, type(None)):
         color=color_list(posn)[pos-1]
     # lengend font size
