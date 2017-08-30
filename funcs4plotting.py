@@ -1,19 +1,19 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-""" 
+"""
 Generic plotting functions for timeseries/multi-dimensional output.
 
-Use help(<name of function>) to get details on a particular function. 
+Use help(<name of function>) to get details on a particular function.
 
-NOTE(S):    
- - This module is underdevelopment vestigial/inefficient code is being removed/updated. 
- - Where external code is used credit is given. 
+NOTE(S):
+ - This module is underdevelopment vestigial/inefficient code is being removed/updated.
+ - Where external code is used credit is given.
 """
 
 # ------------------- Section 0 -------------------------------------------
 # -------------- Required modules:
 
-# -- Plotting                                                                                       
+# -- Plotting
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -22,13 +22,13 @@ import functools
 import matplotlib
 #import seaborn as sns
 
-# -- Time                                                                                           
+# -- Time
 import time
 import calendar
 import datetime as datetime
 from datetime import datetime as datetime_
 
-# -- I/O/Admin... 
+# -- I/O/Admin...
 import gc
 
 # ---  This needs to be updated, imports should be specific and in individual functions
@@ -73,16 +73,16 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
         sigfig_rounding_on_cb=2, fixcb_buffered=None, ylabel=True, \
         xlabel=True, wd=None, verbose=True, debug=False, tight_layout=False, \
         axis_titles=False, **Kwargs):
-    """ 
-    Plots Global/regional 2D (lon, lat) slices.  
+    """
+    Plots Global/regional 2D (lon, lat) slices.
 
     Parameters
     ----------
-    adjust_window (int): amount of array entries to remove the edges of array 
+    adjust_window (int): amount of array entries to remove the edges of array
     alhpa (float): transparency of plotter data
     arr (np.array): input (2D) array
     case (str or int): case for type of plot (vestigle: use log=True of False (default))
-    cmap (str): force colormap selection by providing name 
+    cmap (str): force colormap selection by providing name
     centre (boolean): use centre points of lon/lat grid points for mapping data surface
     drawcountries (boolean): add countries to basemap?
     debug (boolean): legacy debug option, replaced by python logging
@@ -91,7 +91,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     everyother (int): use "everyother" axis tick (e.g. 3=use every 3rd)
     f_size (float): fontsise
     fixcb (np.array): minimium and maximum to fix colourbar
-    fixcb_buffered (array): minimium and maximum to fix colourbar, with buffer space 
+    fixcb_buffered (array): minimium and maximum to fix colourbar, with buffer space
     format (str): format string for colorbar formating
     grid (boolean): apply a grid over surface plot?
     extend (str): colorbar format settings ( 'both', 'min', 'both' ... )
@@ -109,11 +109,11 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     set_window (boolean): set the limits of the plotted data (lon_0, lon_1, lat_0, lat_1)
     (for nested boundary conditions )
     sigfig_rounding_on_cb (int): significant figure rounding to use for colourbar
-    set_cb_ticks (boolean): mannually set colorbar ticks? (vestigle)     
+    set_cb_ticks (boolean): mannually set colorbar ticks? (vestigle)
     title (str): plot title (deafult is ==None, therefore no title)
     tight_layout (boolean): use use tight lyaout for figure
     ylabel, xlabel (boolean): label x/y axis?
-    units (str): units of given data for plot title 
+    units (str): units of given data for plot title
     verbose (boolean): legacy debug option, replaced by python logging
     wd (str): Specify the wd to get the results from a run.
     window (boolean): use window plot settings (fewer axis labels/resolution of map)
@@ -121,7 +121,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 
     Returns
     -------
-    optionally returns basemap (return_m==True) and colorbar (no_cb!=True) object 
+    optionally returns basemap (return_m==True) and colorbar (no_cb!=True) object
 
     Notes
     -----
@@ -136,8 +136,8 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     logging.info("map_plot called (array shape={}, res={})".format( \
         arr.shape, res) )
 
-    # Find out what resolution we are using if not specified   
-    if isinstance(res, type(None)):         
+    # Find out what resolution we are using if not specified
+    if isinstance(res, type(None)):
         try: # Attempt to extract resolution from wd
             logging.debug("No resolution specified, getting from wd")
             res = get_gc_res(wd)
@@ -158,7 +158,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
         logging.warning("Array was wrong shape and has been transposed!")
         if arr.shape==expected_shape:
             pass
-        else:        
+        else:
             err_msg = "Array is the wrong shape. Should be {}. Got {}"\
              .format( str(expected_shape), arr.shape)
             logging.error(err_msg)
@@ -171,7 +171,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 
     # --- Window plot settings
     if window:
-        interval = 2   # double interval size 
+        interval = 2   # double interval size
         degrade_resolution=True
     if  res == '0.5x0.666':
         interval,  adjust_window, resolution,shrink  =0.5, 3, 'f', 0.6
@@ -182,7 +182,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     if res in nested_res:
         centre=False
         adjust_window = 6
-            
+
     # Get lons and lats
     lon, lat, NIU = get_latlonalt4res( res, centre=centre, wd=wd )
 
@@ -196,7 +196,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
             gclon_0, gclon_1 = [ get_gc_lon(i, res=res) for i in (lon_0, lon_1) ]
             lon = lon[ gclon_0:gclon_1]
 
-    # ----------------  Basemap setup  ----------------  
+    # ----------------  Basemap setup  ----------------
     # Grid/Mesh values
     x, y = np.meshgrid(lon,lat)
     # Set existing axis to current if axis provided
@@ -205,11 +205,11 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
         # http://stackoverflow.com/questions/20562582/axes-instance-argument-was-not-found-in-a-figure
 #        plt.sca( ax )
         pass
-         
+
     # ---- Setup map ("m") using Basemap
     m = get_basemap( lat=lat, lon=lon, resolution=resolution, res=res, \
         everyother=everyother, interval=interval, f_size=f_size, ylabel=ylabel, \
-        axis_titles=axis_titles, 
+        axis_titles=axis_titles,
         xlabel=xlabel, drawcountries=drawcountries )
     # Process data to grid
     x, y = np.meshgrid( *m(lon, lat) )
@@ -221,23 +221,23 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
         plt.xlim( lon[0+adjust_window], lon[-1-adjust_window] )
         plt.ylim(lat[0+adjust_window], lat[-1-adjust_window])
 
-    # ----------------  Cases for arrays  ----------------  
+    # ----------------  Cases for arrays  ----------------
     # Keep the names for easier reading
-#################################################################################################### 
+####################################################################################################
 # Old
 #    if ( not isinstance( case, int ) ):
 #        case = {
-#    'linear':3, 'default':3, 'IO': 1,'limit_to_1_2': 2, 'log': 4,  
+#    'linear':3, 'default':3, 'IO': 1,'limit_to_1_2': 2, 'log': 4,
 #        }[case]
-#################################################################################################### 
+####################################################################################################
 
-# New        
+# New
     if ( isinstance( case, int ) ):
         case = {
                 1: 'IO',
                 2: 'limit_to_1_2',
-                3: 'default', 
-                4: 'log', 
+                3: 'default',
+                4: 'log',
                 }[case]
 
     if case=="IO":
@@ -284,10 +284,10 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 #                    nticks=nticks, cmap=cmap )
 #        else:
 #            cmap, norm = mk_discrete_cmap( vmin=fixcb[0], vmax=fixcb[1], \
-#                    nticks=nticks, cmap=cmap 
-    
+#                    nticks=nticks, cmap=cmap
+
     # --------------  Linear plots -------------------------------
-    # standard plot 
+    # standard plot
     linear_cases = ["default",9]
     if case in linear_cases:
         if debug:
@@ -313,7 +313,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
                 alpha=alpha, norm=norm, extend='min')
         logging.debug(np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), lvls)
 
-    # ----------------  Colorbars  ----------------  
+    # ----------------  Colorbars  ----------------
     if no_cb:
         pass
     else:
@@ -328,10 +328,10 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
             t.set_fontsize(f_size)
 
         if not isinstance(units, type(None)):
-            cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)  
+            cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)
 
         # Special treatment for log colorbars
-        if log:    
+        if log:
             round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
             tick_locs = [ float('{:.2g}'.format( t )) for t in lvls ]
             # for asectics, round colorbar labels to sig figs given
@@ -341,7 +341,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
                 except:
                     lvls[n] = lvl
         else:
-            tick_locs = np.array( lvls ).copy()  
+            tick_locs = np.array( lvls ).copy()
 
         #make sure the ticks are numbers
 #        temp_tick_locs = []
@@ -359,7 +359,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 
         #logging.info(tick_locs, lvls, [ type(i) for i in tick_locs, lvls ])
         #logging.info(cb.get_clim(), title, format)
-    
+
 # Set number of ticks
 # FIX NEEDED - this currently doesn't doesn't work for log plots
 #    if (case != 3) and (not no_cb) and ( case != 4):
@@ -388,7 +388,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 
         plt.title(title, fontsize=f_size*1.5)
     # Setup list of return variables
-    return_l = [ plt ] 
+    return_l = [ plt ]
     if not no_cb:
         return_l += [ cb ]
     if return_m:
@@ -397,7 +397,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 
 
 # ----
-# X.XX - UPDATED - Map plot for given array and resolution (lon, lat) 
+# X.XX - UPDATED - Map plot for given array and resolution (lon, lat)
 # -----
 def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=False, \
         cb=None, rotatecbunits='horizontal',fixcb=None, nticks=10, mask_invalids=False,\
@@ -410,19 +410,19 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
         sigfig_rounding_on_cb=2, fixcb_buffered=None, ylabel=True, \
         xlabel=True, wd=None, verbose=True, debug=False, tight_layout=False, \
         **Kwargs):
-    """ 
+    """
     Plots Global/regional 2D (lon, lat) slices.
-    
-    WARNING - This is an updated version of map_plot (incomplement/develop), 
+
+    WARNING - This is an updated version of map_plot (incomplement/develop),
        use map_plot instead!
-      
+
     Parameters
     ----------
-    adjust_window (int): amount of array entries to remove the edges of array 
+    adjust_window (int): amount of array entries to remove the edges of array
     alhpa (float): transparency of plotter data
     arr (np.array): input (2D) array
     case (str or int): case for type of plot (vestigle: use log=True of False (default))
-    cmap (str): force colormap selection by providing name 
+    cmap (str): force colormap selection by providing name
     centre (boolean): use centre points of lon/lat grid points for mapping data surface
     drawcountries (boolean): add countries to basemap?
     debug (boolean): legacy debug option, replaced by python logging
@@ -431,7 +431,7 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     everyother (int): use "everyother" axis tick (e.g. 3=use every 3rd)
     f_size (float): fontsise
     fixcb (np.array): minimium and maximum to fix colourbar
-    fixcb_buffered (array): minimium and maximum to fix colourbar, with buffer space 
+    fixcb_buffered (array): minimium and maximum to fix colourbar, with buffer space
     format (str): format string for colorbar formating
     grid (boolean): apply a grid over surface plot?
     extend (str): colorbar format settings ( 'both', 'min', 'both' ... )
@@ -449,17 +449,17 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     set_window (boolean): set the limits of the plotted data (lon_0, lon_1, lat_0, lat_1)
     (for nested boundary conditions )
     sigfig_rounding_on_cb (int): significant figure rounding to use for colourbar
-    set_cb_ticks (boolean): mannually set colorbar ticks? (vestigle)     
+    set_cb_ticks (boolean): mannually set colorbar ticks? (vestigle)
     title (str): plot title (deafult is ==None, therefore no title)
     tight_layout (boolean): use use tight lyaout for figure
     ylabel, xlabel (boolean): label x/y axis?
-    units (str): units of given data for plot title 
+    units (str): units of given data for plot title
     verbose (boolean): legacy debug option, replaced by python logging
     wd (str): Specify the wd to get the results from a run.
     window (boolean): use window plot settings (fewer axis labels/resolution of map)
     Returns
     -------
-    optionally returns basemap (return_m==True) and colorbar (no_cb!=True) object 
+    optionally returns basemap (return_m==True) and colorbar (no_cb!=True) object
     Notes
     -----
      - Takes a numpy array and the resolution of the output. The plot extent is then set by this output.
@@ -472,8 +472,8 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
             .format(shape=arr.shape))
     logging.info("map_plot called")
 
-    # Find out what resolution we are using if not specified   
-    if isinstance(res, type(None)):         
+    # Find out what resolution we are using if not specified
+    if isinstance(res, type(None)):
         try: # Attempt to extract resolution from wd
             logging.debug("No resolution specified, getting from wd")
             res = get_gc_res(wd)
@@ -486,17 +486,17 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 
 
 
-    # ----------------  Cases for arrays  ----------------  
+    # ----------------  Cases for arrays  ----------------
     # Keep the names for easier reading
-#################################################################################################### 
+####################################################################################################
 # Old
 #    if ( not isinstance( case, int ) ):
 #        case = {
-#    'linear':3, 'default':3, 'IO': 1,'limit_to_1_2': 2, 'log': 4,  
+#    'linear':3, 'default':3, 'IO': 1,'limit_to_1_2': 2, 'log': 4,
 #        }[case]
-#################################################################################################### 
+####################################################################################################
 
-# New        
+# New
     if ( isinstance( case, int ) ):
         case = {
                 1: 'IO',
@@ -515,7 +515,7 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
         log=True
     else:
         raise ValueError("Unknown case of {case}".format(case=case))
-#################################################################################################### 
+####################################################################################################
 
     # Make sure the input data is usable and try to fix it if not.
     (res_lat, res_lon) = get_dims4res(res, just2D=True)
@@ -538,7 +538,7 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 
     # --- Window plot settings
     if window:
-        interval = 30   # double interval size 
+        interval = 30   # double interval size
         degrade_resolution=True
     if  res == '0.5x0.666':
         interval,  adjust_window, resolution,shrink  =0.5, 3, 'f', 0.6
@@ -549,7 +549,7 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
     if res in nested_res:
         centre=False
         adjust_window = 6
-            
+
     # Get lons and lats
     lon, lat, NIU = get_latlonalt4res( res, centre=centre, wd=wd )
 
@@ -563,13 +563,13 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
             gclon_0, gclon_1 = [ get_gc_lon(i, res=res) for i in (lon_0, lon_1) ]
             lon = lon[ gclon_0:gclon_1]
 
-    # ----------------  Basemap setup  ----------------  
+    # ----------------  Basemap setup  ----------------
     # Grid/Mesh values
     x, y = np.meshgrid(lon,lat)
     # Set existing axis to current if axis provided
     if not isinstance(ax, type(None)):
         plt.sca( ax )
- 
+
     # ---- Setup map ("m") using Basemap
     m = get_basemap( lat=lat, lon=lon, resolution=resolution, res=res, \
         everyother=everyother, interval=interval, f_size=f_size, ylabel=ylabel, \
@@ -588,7 +588,7 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 
 
 
-#################################################################################################### 
+####################################################################################################
     # -------- colorbar variables...
     # Set cmap range I to limit poly, if not given cmap )
     fixcb_ = fixcb
@@ -630,7 +630,7 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
             # Old version is here
 ####################################################################################################
         # --------------  Linear plots -------------------------------
-        # standard plot 
+        # standard plot
         linear_cases = ["default",9]
         if case==9 or default:
             if debug:
@@ -658,7 +658,7 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
                     alpha=alpha, norm=norm, extend='min')
             logging.debug(np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), lvls)
 
-        # ----------------  Colorbars  ----------------  
+        # ----------------  Colorbars  ----------------
         if not no_cb:
             if isinstance(cb, type(None)):
                 # if linear plot without fixcb set, then define here
@@ -671,10 +671,10 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
                 t.set_fontsize(f_size)
 
             if not isinstance(units, type(None)):
-                cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)  
+                cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)
 
             # Special treatment for log colorbars
-            if log :    
+            if log :
                 round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
                 tick_locs = [ float('{:.2g}'.format( t )) for t in lvls ]
                 # for asectics, round colorbar labels to sig figs given
@@ -684,7 +684,7 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
                     except:
                         lvls[n] = lvl
             else:
-                tick_locs = np.array( lvls ).copy()  
+                tick_locs = np.array( lvls ).copy()
 
             # Turn tick locations into floats
             tick_locs = [float(_tick) for _tick in tick_locs]
@@ -721,7 +721,7 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
                 except:
                     lvls[n] = lvl
         else:
-            tick_locs = np.array( lvls ).copy()  
+            tick_locs = np.array( lvls ).copy()
 
         # Turn tick locations into floats.
         tick_locs = [float(_tick) for _tick in tick_locs]
@@ -753,13 +753,13 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 
 
 
-        
+
 
 
 
         #logging.info(tick_locs, lvls, [ type(i) for i in tick_locs, lvls ])
         #logging.info(cb.get_clim(), title, format)
-    
+
 # Set number of ticks
 # FIX NEEDED - this currently doesn't doesn't work for log plots
 #    if (not default) and (not no_cb) and ( not log ):
@@ -788,7 +788,7 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 
         plt.title(title, fontsize=f_size*1.5)
     # Setup list of return variables
-    return_l = [ plt ] 
+    return_l = [ plt ]
     if not no_cb:
         return_l += [ cb ]
     if return_m:
@@ -808,22 +808,22 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
         lat_0=None, lat_1=None, lat40_2_40=False, xlabel=True, mask_invalids=False, \
         trop_limit=True, verbose=True, debug=False, \
         # redundent?
-        lower_limited=False, nlvls=25,  
+        lower_limited=False, nlvls=25,
         ):
-    """ 
+    """
     Creates a zonal plot from provide 2D array of longditude and latitude.
-            
+
     Parameters
     ----------
     alhpa (float): transparency of plotter data
     arr (np.array): input (2D) array
     ax (axis instance): axis object to use
     c_off (int): integer cutoff for chemical troposphere
-    cmap (str): force colormap selection by providing name 
+    cmap (str): force colormap selection by providing name
     debug (boolean): legacy debug option, replaced by python logging
     f_size (float): font size
     fixcb (np.array): minimium and maximum to fix colourbar
-    fixcb_buffered (array): minimium and maximum to fix colourbar, with buffer space 
+    fixcb_buffered (array): minimium and maximum to fix colourbar, with buffer space
     fig (figure instance): matplotlib figure instance
     format (str): format string for colorbar formating
     extend (str): colorbar format settings ( 'both', 'min', 'both' ... )
@@ -842,25 +842,25 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
     sigfig_rounding_on_cb (int): significant figure rounding to use for colourbar
     title (str): plot title (deafult is ==None, therefore no title)
     ylabel, xlabel (boolean): label x/y axis?
-    units (str): units of given data for plot title 
+    units (str): units of given data for plot title
     verbose (boolean): legacy debug option, replaced by python logging
     wd (str): Specify the wd to get the results from a run.
     window (boolean): use window plot settings (fewer axis labels/resolution of map)
 
     Notes
     -----
-     - This function will also apply maskes if set in arguments 
-     - Input resolution must be provide for non-default (4x5) output 
+     - This function will also apply maskes if set in arguments
+     - Input resolution must be provide for non-default (4x5) output
     """
     logging.info( 'zonal plot called for arr of shape: {},{}, {}'.format(
         arr.shape, set_window, xlabel ) )
-    
-    # Kludge, for pcent arrays with invalid within them, mask for these. 
+
+    # Kludge, for pcent arrays with invalid within them, mask for these.
     if mask_invalids:
-        arr = np.ma.masked_invalid( arr )    
-    
+        arr = np.ma.masked_invalid( arr )
+
     # Create axis if not provided <= is this back compatible?
-    if isinstance( ax, type(None) ): 
+    if isinstance( ax, type(None) ):
         ax = fig.add_subplot(111)
 
     # Get overall vars
@@ -870,10 +870,10 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
     # === -  limit ars to a given mask, if stipulated
     if tropics:
         mask =  tropics_unmasked(res=res)
-        arr = arr * mask[0,:,:c_off+1] 
+        arr = arr * mask[0,:,:c_off+1]
     if lat40_2_40  :
         mask =  tropics_unmasked(res=res)
-        arr = arr * mask[0,:,:c_off+1]         
+        arr = arr * mask[0,:,:c_off+1]
 #    logging.debug( [lat] + [ np.array(i).shape for i in lat, alt, arr, arr.T ] )
 
     if set_window:
@@ -883,7 +883,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
             'lens={}, res={}, mean={}, min={}, max={}'.format(
             [ len(i) for i in (lon,lat,alt)], res,  \
             [(i.mean(), i.min(), i.max()) for i in [arr[: ,:c_off]] ]) )
-    min, max = [ (i.min(), i.max()) for i in [ arr[: ,:c_off]  ] ][0] 
+    min, max = [ (i.min(), i.max()) for i in [ arr[: ,:c_off]  ] ][0]
 
     # Limit cb to top of (GEOS-Chem chemical) troposphere
     alt = alt[:c_off+1]
@@ -908,7 +908,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
         fixcb_ = np.array( [ (i.min(), i.max()) for i in [arr ] ][0] )
 
     if isinstance( cmap, type(None) ):
-        # lvls provided, if not calculate these.        
+        # lvls provided, if not calculate these.
         if isinstance( lvls, type(None) ):
             lvls = get_human_readable_gradations( vmax=fixcb_[1], vmin=fixcb_[0], \
                 nticks=nticks, sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
@@ -930,12 +930,12 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
     # Create a Log Zonal plot of the given data,  ??? ( updated needed )
     # where fixcb is the min and max of a given array (aka not log )
     # TESTING NEEDED HERE !!! ( Update )
-    if log:    
+    if log:
         # Normalise to Log space
         if isinstance( norm, type(None) ):
             norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
         # Create poly collection
-        poly = ax.pcolor( lat, alt, arr.T, norm=norm, cmap=cmap, alpha=alpha)        
+        poly = ax.pcolor( lat, alt, arr.T, norm=norm, cmap=cmap, alpha=alpha)
 
         if no_cb:
             pass
@@ -951,7 +951,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
             np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), cb_lvls = lvls))
 
     # --------------  Linear plots -------------------------------
-    # standard plot 
+    # standard plot
     else:
         if verbose:
             print(fixcb, fixcb_,  \
@@ -960,7 +960,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
         poly = ax.pcolor( lat, alt, arr.T, cmap=cmap, vmin=fixcb_[0],  \
                                 vmax=fixcb_[1], norm=norm, alpha=alpha )
 
-    # ----------------  Colorbars  ----------------  
+    # ----------------  Colorbars  ----------------
     if no_cb:
         pass
     else:
@@ -973,7 +973,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
         for t in cb.ax.get_yticklabels():
             t.set_fontsize(f_size)
         if not isinstance( units, type(None) ):
-            cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)  
+            cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)
 
         if log:
             round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
@@ -998,7 +998,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
             [ type(i) for i in (tick_locs, lvls) ], cb.get_clim(), title, format )
 
 
-    # Setup Y axis    
+    # Setup Y axis
     if (not isinstance( units, type( None) )) and (not no_cb):
         cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)
     ax.set_ylim( alt[0], alt[-1])
@@ -1010,20 +1010,20 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
     if trop_limit:
         ax.set_ylim( 0, 18 )
     if interval != 1:
-        ax.set_yticks( ax.get_yticks()[::interval] ) 
+        ax.set_yticks( ax.get_yticks()[::interval] )
     # Setup X axis
-    ax.set_xticks( parallels ) 
+    ax.set_xticks( parallels )
     ax.tick_params( labelsize=f_size*.75 )
     if tropics:
-        ax.set_xlim( -26, 26 ) 
+        ax.set_xlim( -26, 26 )
     if lat40_2_40:
-        ax.set_xlim( -40, 40 )  
+        ax.set_xlim( -40, 40 )
     else:
-        ax.set_xlim( lat[0], lat[-1] ) 
+        ax.set_xlim( lat[0], lat[-1] )
     if not isinstance( xlimit, type(None) ):
         ax.set_xlim(xlimit[0], xlimit[1])
 
-    if xlabel: 
+    if xlabel:
         ax.set_xlabel('Latitude', fontsize=f_size*.75)
     else:
         ax.tick_params( axis='x', which='both', labelbottom='off')
@@ -1032,13 +1032,13 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
     for tick in ax.yaxis.get_major_ticks():
         tick.label.set_fontsize( fontsize=f_size*.75 )
 
-    # Add title if provided    
+    # Add title if provided
     if (title != None):
         print([ type( i ) for i in (ax, plt) ])
         print(title)
         ax.set_title(title, fontsize=f_size*1.5)
 
-# --------   
+# --------
 # X.XX - Diurnal plot
 # --------
 def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, \
@@ -1047,13 +1047,13 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, \
         loc='upper right', time_resolution_str="%H:%M", stat2plot='mean', \
         legend=False, ylim=None, lw=2.0, add_quartiles2plot=True, \
         debug=False ):
-    """ 
+    """
     Creates a diurnal plot for given data and dates using pandas Dataframe
 
     Parameters
     -------
-    data (array): numpy array of data 
-    dates (numpy array of datetime.datetime): dates to use for x axis 
+    data (array): numpy array of data
+    dates (numpy array of datetime.datetime): dates to use for x axis
     fig (fig instance)
     ax (ax instance)
     stat2plot (str): stat (e.g. mean or medium) to use for main line
@@ -1067,7 +1067,7 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, \
     f_size (float): fontsize
     lgnd_f_size (float): fontsize for legend
     loc (str): location for legend
-    rotatexlabel (numnber/str): rotation of x axis labels 
+    rotatexlabel (numnber/str): rotation of x axis labels
     pos, posn (int): vestigle(!) location indices for window plots
     ylim (list): min and max y axis limit
     lw (str): linewidth
@@ -1082,10 +1082,10 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, \
     """
     logging.info('diurnal_plot_df called with stat2plot={} '.format(stat2plot))
     # ---  process input data
-    # Form a dataFrame from input numpy arrays. 
+    # Form a dataFrame from input numpy arrays.
     df = pd.DataFrame( {'data':data}, index=dates )
 
-    # Add a time coluumn to group by (e.g. "%H:%M" for minutes) 
+    # Add a time coluumn to group by (e.g. "%H:%M" for minutes)
     df['Time'] = df.index.map(lambda x: x.strftime(time_resolution_str))
 
     # Group by time resolution column
@@ -1096,8 +1096,8 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, \
     df.index = pd.to_datetime(df.index.astype(str))
 #    df.index = pd.to_datetime(df.index )#.astype(str))
 #    df.index = [ datetime.datetime( 2005, 1, 1, i ) for i in range(0, 24) ]
-    
-        # --- Aesthetics
+
+    # --- Aesthetics
     if isinstance(color, type(None)):
         color=color_list(posn)[pos-1]
     # lengend font size
@@ -1113,25 +1113,25 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, \
     # Add quartiles
     if add_quartiles2plot:
         ax.plot(df.index, df['data']['75%'], color=color, alpha=alpha)
-        ax.plot(df.index, df['data']['25%'], color=color, alpha=alpha)    
-    
-        # And shading for quartiles 
+        ax.plot(df.index, df['data']['25%'], color=color, alpha=alpha)
+
+        # And shading for quartiles
         try:
-            ax.fill_between(df.index, df['data'][stat2plot], df['data']['75%'], 
+            ax.fill_between(df.index, df['data'][stat2plot], df['data']['75%'],
                 alpha=alpha, facecolor=color)
-            ax.fill_between(df.index, df['data'][stat2plot], df['data']['25%'], 
-                alpha=alpha, facecolor=color)    
+            ax.fill_between(df.index, df['data'][stat2plot], df['data']['25%'],
+                alpha=alpha, facecolor=color)
         except:
             logging.info( 'Failed to add percentile shading' )
 
-    # --- Beautify 
+    # --- Beautify
     # title?
     if not isinstance(title, type(None) ):
         plt.title( title )
     # axis labels?
     if xlabel:
         plt.xlabel('Hour of day', fontsize=f_size )#*.75)
-        # Add hourly ticks if labeling xaxis 
+        # Add hourly ticks if labeling xaxis
         plt.xticks( rotation=rotatexlabel, fontsize=f_size )#*.75 )
         ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H') )
     else:
@@ -1141,7 +1141,7 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, \
         plt.ylabel('{}'.format(units), fontsize=f_size)#*.75)
     else:
         ax_tmp = ax_tmp = plt.gca()
-        
+
     # Add legend?
     if legend:
         plt.legend( fontsize=lgnd_f_size, loc=loc )
@@ -1149,7 +1149,7 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, \
     if not isinstance(ylim, type(None)):
         plt.ylim(ylim)
 
-# --------   
+# --------
 # 1.11 - Plot up Sonde data
 # --------
 def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, \
@@ -1158,13 +1158,13 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, \
         c_l=[ 'k', 'red','green', 'blue' , 'purple'], xlimit=None, \
         loc='upper left', c_off=37, label=None, ancillary=True, \
         plt_txt_x=0.5, plt_txt_y=0.94, \
-        ylabel=True, xlabel=True, hPa_labels=True,         
-        debug=False, 
+        ylabel=True, xlabel=True, hPa_labels=True,
+        debug=False,
         # redundant arguments?
-        rasterized=True, tropics=False, 
+        rasterized=True, tropics=False,
         ):
-    """ 
-    Create plot of vertical data for sonde observations/model 
+    """
+    Create plot of vertical data for sonde observations/model
 
 
     Parameters
@@ -1172,7 +1172,7 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, \
     hPa_labels (boolean): include labels for hPa on axis?
     plt_txt_x, plt_txt_y (float): ordinal locations for alt text
     ancillary (boolean): add ancillary labels etc. to plot
-    label (str): label to use for line / legend. 
+    label (str): label to use for line / legend.
     c_off (int): index to plot model levels too (e.g. 37 for trop. )
     xlimit (float): value to limit x axis to (e.g. 100 ppbv)
     c_l (list):colors to use (index by n )
@@ -1181,7 +1181,7 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, \
     err_bar (boolean): apply bar to show quartile range of plots
     stddev (boolean): as above (see err_bar)
     color (str/color instance): color for plotted line
-    f_size (float): fontsise    
+    f_size (float): fontsise
     tropics (boolean): mask for tropics?
     title (str): title for plot
     subtitle (str): subtitle for plot (e.g. location)
@@ -1196,7 +1196,7 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, \
 
     Notes
     -----
-     -  should be re-written (age >3 years) to work with updated AC_tools    
+     -  should be re-written (age >3 years) to work with updated AC_tools
     """
 
     # Get overall vars
@@ -1204,33 +1204,33 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, \
 
     # Cut off at Tropopause?
     if obs:
-        arr = arr[:c_off,:] 
+        arr = arr[:c_off,:]
     else:
-        arr = arr[:c_off]         
+        arr = arr[:c_off]
     alt, press = [ i[:c_off] for i in (alt, press) ]
 
     # if color  not set, get color
     if isinstance( color, type(None) ):
         color=c_l[n]
-        
+
     if obs:
 #        print [len(i) for i in arr[:,0], alt ]
         ax.plot( arr[:,0] , alt , color=color, label=label )
         # limit cb to top of troposphere
-        min, max  =  [ (np.ma.min(i), np.ma.max(i)) for i in [ arr[:,0] ] ][0] 
+        min, max  =  [ (np.ma.min(i), np.ma.max(i)) for i in [ arr[:,0] ] ][0]
     else:
         ax.plot( arr , alt,  label=label, color=color )
         # limit cb to top of troposphere
-        min, max  =  [ (np.ma.min(i), np.ma.max(i)) for i in [ arr ] ][0] 
+        min, max  =  [ (np.ma.min(i), np.ma.max(i)) for i in [ arr ] ][0]
 
     # Add legend
     if legend:
         plt.legend( loc=loc, fontsize=f_size*.75)
 
     # Sonde data  = mean, 1st and 3rd Q
-    if err_bar:     
+    if err_bar:
         if stddev:
-            ax.errorbar(arr[:,0] , alt, xerr=arr[:,3], fmt='o', color=color, 
+            ax.errorbar(arr[:,0] , alt, xerr=arr[:,3], fmt='o', color=color,
                     elinewidth=0.75, markersize=2, alpha=0.75 )
         else:
             ax.errorbar(arr[:,0] , alt, xerr=[arr[:,1], arr[:,2]], fmt='o', \
@@ -1244,7 +1244,7 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, \
                 plt.text(  plt_txt_x, plt_txt_y, \
                     subtitle, ha='center', va='center', \
                     transform=ax.transAxes, fontsize=f_size*.65)
-        
+
         if ylabel:
             plt.ylabel('Altitude (km)', fontsize=f_size*.75)
         else:
@@ -1265,14 +1265,14 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, \
             ax2.set_yticks( press[::10] )
             ax2.set_yticklabels( press[::10] )
             majorFormatter = mpl.ticker.FormatStrFormatter('%d')
-            ax2.yaxis.set_minor_formatter( majorFormatter )                        
+            ax2.yaxis.set_minor_formatter( majorFormatter )
             ax2.set_ylabel( 'Press. (hPa)', fontsize = f_size*.75)
             ax2.invert_yaxis()
             if ylabel:
                 pass
             else:
                 ax.tick_params( axis='y', which='both', labelleft='off')
-                ax2.tick_params( axis='y', which='both', labelleft='off')      
+                ax2.tick_params( axis='y', which='both', labelleft='off')
 
 
 
@@ -1284,15 +1284,15 @@ def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
         window=False, label=None, ylabel=None, xlabel=True, \
         title_loc_y=1.09, plt_txt_x=0.5, plt_txt_y=1.05, \
         plot_Q1_Q3=False, low=None, high=None, loc='upper right' ):
-    """ 
-    Plot up seaonal (monthly ) data. 
+    """
+    Plot up seaonal (monthly ) data.
 
     NOTES:
-     - Requires data, and dates in numpy ararry form. 
-     - Dates must be as datetime.datetime objects. 
+     - Requires data, and dates in numpy ararry form.
+     - Dates must be as datetime.datetime objects.
     """
 
-    # setup color list if not provided            
+    # setup color list if not provided
     if isinstance(color, type(None)):
         color = color_list( posn )[ pos ]
 
@@ -1307,8 +1307,8 @@ def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
     # Also add 5th  and  95th %ile
     if plot_Q1_Q3: # Plot quartiles as shaded area?
             ax.fill_between( np.arange(1,len(data)+1), low, high, alpha=0.2, \
-                    color=color   )  
-                    
+                    color=color   )
+
     # Beautify
     ax.set_xticklabels( [i.strftime("%b") \
             for i in [datetime.datetime(2009, int(i), 0o1)  \
@@ -1316,13 +1316,13 @@ def monthly_plot( ax, data, f_size=20, pos=0, posn=1, lw=1,ls='-', color=None, \
     plt.xticks(list(range(1,13)),  fontsize=f_size )
     plt.xticks(rotation=xrotation)
     if not xlabel:
-        plt.tick_params( axis='x', which='both', bottom='on', top='off',        
+        plt.tick_params( axis='x', which='both', bottom='on', top='off',
                                     labelbottom='off')
 
     plt.xlim(0.5,12.5)
     if ylabel != None:
         plt.ylabel(  ylabel, fontsize=f_size  )
-    plt.yticks( fontsize=f_size )        
+    plt.yticks( fontsize=f_size )
     print(pos, posn-1)
     if not isinstance(title, type(None)):
         t = plt.title(title, fontsize = f_size)
@@ -1343,11 +1343,11 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         window=False, label=None, ylabel=None, loc='upper left',  \
         lw=1,ls='-', color=None, showmeans=False, boxplot=True, \
         plt_median=False, plot_Q1_Q3=False, pcent1=25, pcent2=75, \
-        ylim=None, xtickrotation=45, alt_text=None, alt_text_x=.5, 
+        ylim=None, xtickrotation=45, alt_text=None, alt_text_x=.5,
         alt_text_y=.5, xlabel=None, rm_yticks=False, log=False, \
         debug=False ):
-    """ 
-    Plot up timeseries of seasonal data. 
+    """
+    Plot up timeseries of seasonal data.
 
     Parameters
     ----------
@@ -1363,8 +1363,8 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     # Process data - reduce resolution to daily, and get std
     df = DataFrame(data,index=dates )
 	# Force use of a standard year
-    months = list(range(1, 13)) 
-    datetime_months = [ datetime.datetime(2009, int(i), 1) for i in months ] 
+    months = list(range(1, 13))
+    datetime_months = [ datetime.datetime(2009, int(i), 1) for i in months ]
     labels = [i.strftime("%b") for i in datetime_months]
     if debug:
         print(labels)
@@ -1374,8 +1374,8 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     if debug:
         print([i.shape for i in monthly ])
 
-    if boxplot:    
-        bp = ax.boxplot( monthly, months, showmeans=showmeans ) 
+    if boxplot:
+        bp = ax.boxplot( monthly, months, showmeans=showmeans )
     else:
         # remove nans to allow for percentile calc.
         data_nan = [ np.ma.array(i).filled( np.nan ) for i in monthly ]
@@ -1391,17 +1391,17 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
                 high = [ np.nanpercentile( i, pcent2, axis=0 ) \
                     for i in data_nan ]
                 ax.fill_between( months, low, high, alpha=0.2, \
-                    color=color   )            
+                    color=color   )
         else:
-            plt.plot( months, [i.mean() for i in monthly ], color=color, 
-            lw=lw, ls=ls, label=label ) 
-    
+            plt.plot( months, [i.mean() for i in monthly ], color=color,
+            lw=lw, ls=ls, label=label )
+
     # Beatify plot
     ax.set_xticks( months )
     if xlabel:
         ax.set_xticklabels( labels, rotation=xtickrotation )
     else:
-        ax.tick_params( axis='x', which='both', labelbottom='off')    
+        ax.tick_params( axis='x', which='both', labelbottom='off')
     if not isinstance( ylim, type(None) ):
         ax.set_ylim( ylim )
 
@@ -1424,36 +1424,36 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         plt.ylabel( ylabel, fontsize=f_size*0.75 ) # Why is this x0.75?
     else:
         if rm_yticks:
-            ax.tick_params( axis='y', which='both', labelleft='off')   
+            ax.tick_params( axis='y', which='both', labelleft='off')
     # Log scale?
     if log:
         ax.set_yscale('log')
     else:
         ax.set_yscale('linear')
-    
+
 # --------------
 # X.XX - plot up daily timeseries from ...
 # -------------
 def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,  \
         bin_size=1/24.,widths=0.01, rotatexlabel = 'vertical', \
         white_fill=True, alpha=0.1, linewidth=0.5,xlabel=True, \
-        title=None, alt_text=None, f_size=7.5, units='ppbv',     
-        showmeans=False, plt_median=False, boxplot=True, 
+        title=None, alt_text=None, f_size=7.5, units='ppbv',
+        showmeans=False, plt_median=False, boxplot=True,
         ylabel=True, color='blue', label=None, \
         plot_Q1_Q3=True, pcent1=25, pcent2=75,  debug=False ):
-    """ 
-    Plot up daily timeseries of values. Requires data, and dates in numpy 
-        array form. Dates must be as datetime.datetime objects. 
-    
+    """
+    Plot up daily timeseries of values. Requires data, and dates in numpy
+        array form. Dates must be as datetime.datetime objects.
+
     Notes:
-     - Boxplot is the default presentation of data    
+     - Boxplot is the default presentation of data
      - Otherwise a meidan is used
     """
 
-    # get_day_fraction(i) 
+    # get_day_fraction(i)
     dates = np.array( [ get_day_fraction(i) for i in dates ] )
 
-    # bin data    
+    # bin data
     b_all, bins_used = bin_data( data, dates, bin_size, debug=debug )
 
     # Plot
@@ -1481,7 +1481,7 @@ def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,  \
             high = [ np.nanpercentile( i, pcent2, axis=0 ) for i in data_nan ]
             ax.fill_between( bins_used, low, high, alpha=0.2, color=color   )
 
-    # Beautify 
+    # Beautify
     if not isinstance( title, type(None) ):
         plt.title(title, fontsize=f_size )
     if not isinstance( alt_text, type(None) ):
@@ -1496,15 +1496,15 @@ def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,  \
     if xlabel:
         ax.set_xlabel('Hour of day', labelpad=f_size)
     else:
-        ax.tick_params( axis='x', which='both', labelbottom='off')    
-    # Setup y axis 
+        ax.tick_params( axis='x', which='both', labelbottom='off')
+    # Setup y axis
     if ylabel:
         ax.set_ylabel('{}'.format(units), labelpad=f_size)
     else:
         ax.tick_params( axis='y', which='both', labelleft='off')
 
-    # --- Highlight bins        
-    bs = np.arange(0, 24, bin_size )#[ bs[0] - bin_size ] + bs 
+    # --- Highlight bins
+    bs = np.arange(0, 24, bin_size )#[ bs[0] - bin_size ] + bs
     [ plt.axvline( x=i, color='k', linewidth=linewidth, alpha=alpha,  \
                             linestyle='dashed' ) for i in bs ]
 
@@ -1512,7 +1512,7 @@ def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,  \
 
 
 # --------------
-# X.XX - plot up timeseries from between two given months 
+# X.XX - plot up timeseries from between two given months
 # -------------
 def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         title=None, legend=False, everyother=7*24,  x_nticks=12, \
@@ -1521,12 +1521,12 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         boxplot=True, showmeans=False, alt_text=None, r_plt=False, \
         unitrotation=45, color_by_z=False, fig=None,  xlabel=True, \
         second_title='', add_dates2title=True, positive=None, debug=False ):
-    """ 
-    Plot up month timeseries of values. Requires data, and dates in numpy 
-    array form. Dates must be as datetime.datetime objects. 
-    
+    """
+    Plot up month timeseries of values. Requires data, and dates in numpy
+    array form. Dates must be as datetime.datetime objects.
+
     NOTE(s):
-     - This just plot up timeseries, why is the name  "timeseries_*month*_plot"? 
+     - This just plot up timeseries, why is the name  "timeseries_*month*_plot"?
      - Update this!
     """
 
@@ -1536,13 +1536,13 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     # remove dates outside of range (start_month > t  < end_month )
     def get_month(x):
         return x.month
-    df[ 'month'] = df.index.map( get_month ) 
+    df[ 'month'] = df.index.map( get_month )
     df = df[ df['month']<=end_month ]
     df = df[ df['month']>=start_month ]
     # remove 'month' column
     df = df.drop('month', 1)
 
-    # label once per week 
+    # label once per week
     days = [i.to_datetime() for i in df.index ]
     labels = [i.strftime("%-d %b") for  i in days ][::everyother]
 
@@ -1556,7 +1556,7 @@ def timeseries_month_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         cmap = get_colormap( z.copy(), positive=positive )
         print([ ( i.min(), i.max() ) for i in (x, y, z) ])
         colorline(x, y, z, cmap=cmap, linewidth=lw, ax=ax, \
-            norm=plt.Normalize( 0, 360 ), fig=fig ) 
+            norm=plt.Normalize( 0, 360 ), fig=fig )
     else:
         plt.plot( days, df.values, label=label, color=color, ls=ls, lw=lw  )
 
@@ -1587,17 +1587,17 @@ def north_pole_surface_plot( arr, return_m=False, grid=True, centre=False, \
         cmap=None, format='%.2f', m=None, fixcb=False,  nbins=25, \
         res='4x5', ax=None, alpha=1, nticks=10, everyother=1,\
         drawcountries=True, set_cb_ticks=True, title=None, \
-#             rotatecbunits='horizontal', extend='neither', 
+#             rotatecbunits='horizontal', extend='neither',
              interval=1, resolution='l', shrink=0.4, window=False, \
         lon_0=0, boundinglat=40, degrade_resolution=False, \
         no_cb=False, cb=None, units=None, f_size=20, \
-        debug=False,  **Kwargs):    
-    """ 
+        debug=False,  **Kwargs):
+    """
     Plot up data at north pole as a  2D slice.
 
-    NOTES:    
-     - Requires data (arr) as numpy array. Arr should be full global size 
-    (lon, lat) for given resolution 
+    NOTES:
+     - Requires data (arr) as numpy array. Arr should be full global size
+    (lon, lat) for given resolution
     """
 
     # ---- Grid/Mesh values for Lat, lon, & alt + cb
@@ -1613,7 +1613,7 @@ def north_pole_surface_plot( arr, return_m=False, grid=True, centre=False, \
 
     lon, lat = np.meshgrid(lon, lat)
 
-    # ----------------  Basemap setup  ----------------  
+    # ----------------  Basemap setup  ----------------
     if isinstance( m, type(None) ):
         m = Basemap(projection='npstere', boundinglat=boundinglat,lon_0=lon_0,\
             resolution=resolution, round=True)
@@ -1629,14 +1629,14 @@ def north_pole_surface_plot( arr, return_m=False, grid=True, centre=False, \
         m.drawmeridians(meridians, labels=[True,False,True,True],\
             fontsize=f_size*.25 )
 
-    # set x and y 
+    # set x and y
     x,y = m( lon, lat )
     if debug:
         print(1, len(x), len(y))
 
     if debug:
         print(2, 'len:',  [ len(i) for i in (x,y,lat,lon) ])
-        print('>'*5, [ [ i.min(), i.mean(), i.max(), i.shape ] for i in (arr, 
+        print('>'*5, [ [ i.min(), i.mean(), i.max(), i.shape ] for i in (arr,
             arr[:,get_gc_lat(boundinglat,res=res):])  ])
 
     # -------- colorbar variables...
@@ -1664,16 +1664,16 @@ def north_pole_surface_plot( arr, return_m=False, grid=True, centre=False, \
     # --------------  Log plots ---------------------------------------------
 
 
-    # ----------------  Colorbars  ----------------  
+    # ----------------  Colorbars  ----------------
     if not no_cb:
         if isinstance( cb, type(None) ):
             cb = plt.colorbar( poly, ax = m.ax, shrink=shrink, alpha=alpha,  \
                         format=format, ticks= np.linspace(tickmin, tickmax, \
-                        nticks ) )        
+                        nticks ) )
         for t in cb.ax.get_yticklabels():
             t.set_fontsize(f_size)
         if units != None:
-            cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)                      
+            cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)
 
     # Set number of ticks
         if set_cb_ticks:
@@ -1684,7 +1684,7 @@ def north_pole_surface_plot( arr, return_m=False, grid=True, centre=False, \
     if not isinstance( title, type(None) ):
         plt.title(title, fontsize=f_size*1.5)
 
-    return_list = [ poly ] 
+    return_list = [ poly ]
     if not no_cb:
         return_list += [ cb ]
     if (return_m):
@@ -1695,19 +1695,19 @@ def north_pole_surface_plot( arr, return_m=False, grid=True, centre=False, \
 # --------
 # X.XX - South Pole surface plot
 # --------
-def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False, 
-        cmap=None, format='%.2f', res='4x5', ax=None, alpha=1,  title=None, 
+def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False,
+        cmap=None, format='%.2f', res='4x5', ax=None, alpha=1,  title=None,
         fixcb=False, nbins=25, nticks=10, drawcountries=True, set_cb_ticks=True,
-#             rotatecbunits='horizontal', extend='neither', 
-        interval=1, resolution='l', shrink=0.4, window=False, everyother=1, 
-        lon_0=0, boundinglat=-40, degrade_resolution=False, no_cb=False, cb=None, 
-        units=None, f_size=20, debug=False,  **Kwargs):    
-    """ 
+#             rotatecbunits='horizontal', extend='neither',
+        interval=1, resolution='l', shrink=0.4, window=False, everyother=1,
+        lon_0=0, boundinglat=-40, degrade_resolution=False, no_cb=False, cb=None,
+        units=None, f_size=20, debug=False,  **Kwargs):
+    """
     Plot up data at south pole 2D slice.
-    
+
     NOTES:
-     - Requires data (arr) as numpy array. Arr should be full global size 
-    (lon, lat) for given resolution 
+     - Requires data (arr) as numpy array. Arr should be full global size
+    (lon, lat) for given resolution
     """
 
     # ---- Grid/Mesh values for Lat, lon, & alt + cb
@@ -1723,11 +1723,11 @@ def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False,
 
     lon, lat = np.meshgrid(lon, lat)
 
-    # ----------------  Basemap setup  ----------------  
+    # ----------------  Basemap setup  ----------------
     m = Basemap(projection='spstere', boundinglat=boundinglat,lon_0=lon_0,
         resolution=resolution, round=True)
 
-    # set x and y 
+    # set x and y
     x,y = m( lon, lat )
     if debug:
         print(1, len(x), len(y))
@@ -1742,7 +1742,7 @@ def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False,
         fontsize=f_size*.25 )
     m.drawmeridians(meridians, labels=[True,False,True,True], \
         fontsize=f_size*.25 )
-                    
+
     if debug:
         print(2, 'len:',  [ len(i) for i in (x,y,lat,lon) ])
         print('>'*5, [ [ i.min(), i.mean(), i.max() ] for i in [arr ] ])
@@ -1760,7 +1760,7 @@ def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False,
 #    if fixcb:
     polar_arr = arr[:,:get_gc_lat(boundinglat, res=res)+2].T
     if debug:
-        print([ (i.min(), i.max(), i.mean()) for i in [polar_arr]  ])    
+        print([ (i.min(), i.max(), i.mean()) for i in [polar_arr]  ])
     if not isinstance( fixcb, type(None) ):
         poly = m.pcolor( x, y, polar_arr, cmap=cmap, alpha=alpha, \
             vmin=fixcb[0], vmax=fixcb[1] )
@@ -1770,16 +1770,16 @@ def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False,
     # -----------  Log plots ---------------------------------------------
 
 
-    # ----------------  Colorbars  ----------------  
+    # ----------------  Colorbars  ----------------
     if not no_cb:
         if isinstance( cb, type(None) ):
             cb = plt.colorbar( poly, ax = m.ax, shrink=shrink, alpha=alpha,  \
                         format=format, ticks= np.linspace(tickmin, tickmax, \
-                        nticks ) )        
+                        nticks ) )
         for t in cb.ax.get_yticklabels():
             t.set_fontsize(f_size)
         if units != None:
-            cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)                      
+            cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size)
     # Set number of ticks
     if  (not no_cb):
         if set_cb_ticks:
@@ -1794,9 +1794,9 @@ def south_pole_surface_plot( arr, return_m=False, grid=True, centre=False,
     if (return_m):
         return plt , cb, m
     elif no_cb:
-        return plt         
+        return plt
     else:
-        return plt , cb 
+        return plt , cb
 
 
 # --------
@@ -1806,20 +1806,20 @@ def plot_specs_surface_change_monthly2pdf( arr, res='4x5', dpi=160, \
         no_dstr=True, f_size=20, pcent=True, specs=None, dlist=None, \
         savetitle='', diff=False, extend='neither', column=False, \
         scale=1, units=None, set_window=False, lat_0=None, lat_1=None, \
-        mask_invalids=False, debug=False):   
-    """ 
-    Create multipage PDF with each page containing a 2D (lon,lat) slice     
-    plot for given species in list of "specs" 
-    Takes 5D array  ( species ,lon , lat, alt, time) 
+        mask_invalids=False, debug=False):
+    """
+    Create multipage PDF with each page containing a 2D (lon,lat) slice
+    plot for given species in list of "specs"
+    Takes 5D array  ( species ,lon , lat, alt, time)
     """
     logging.info(  'plot_specs_surface_change_monthly2pdf called' )
 
     # setup pdfs + titles
     if column:
-        savetitle = 'Column_by_spec'+savetitle 
+        savetitle = 'Column_by_spec'+savetitle
     else:
-        savetitle = 'Surface_by_spec'+savetitle 
-    pdff = plot2pdfmulti( title=savetitle, open=True, dpi=dpi, no_dstr=no_dstr )    
+        savetitle = 'Surface_by_spec'+savetitle
+    pdff = plot2pdfmulti( title=savetitle, open=True, dpi=dpi, no_dstr=no_dstr )
     left=0.05; right=0.9; bottom=0.05; top=0.875; hspace=0.315; wspace=0.1
 
     # Loop species
@@ -1827,16 +1827,16 @@ def plot_specs_surface_change_monthly2pdf( arr, res='4x5', dpi=160, \
         if debug:
             print(n, spec)
 
-        # Get units/scale for species + setup fig (allow of 
+        # Get units/scale for species + setup fig (allow of
         if isinstance( units, type( None) ):
             if column and (not pcent):
-                units, scale = 'DU', 1        
+                units, scale = 'DU', 1
             elif pcent:
                 units, scale = '%', 1
             else:
                 units, scale = tra_unit( spec, scale=True, global_unit=True )
-            
-        # setup masking... 
+
+        # setup masking...
         cbarr = arr[n,:,:,0,:].copy() * scale
 
         if pcent:
@@ -1846,7 +1846,7 @@ def plot_specs_surface_change_monthly2pdf( arr, res='4x5', dpi=160, \
             if len( cbarr[ cbarr>500 ]  ) > 0:
                 cbarr = np.ma.masked_where( cbarr>500, cbarr )
                 extend='max'
-                
+
             elif len( cbarr[cbarr<-500])>0:
                 cbarr = np.ma.masked_where( cbarr<-500, cbarr )
                 if  extend == 'max':
@@ -1861,7 +1861,7 @@ def plot_specs_surface_change_monthly2pdf( arr, res='4x5', dpi=160, \
             extend='neither'
             cbarr = cbarr
 
-        # Set the correct title        
+        # Set the correct title
         ptitle = '{}'.format( latex_spec_name(spec) )
         if column:
             ptitle += ' column'
@@ -1885,10 +1885,10 @@ def plot_specs_surface_change_monthly2pdf( arr, res='4x5', dpi=160, \
 #                extend = 'max'
         if (units == 'pmol mol$^{-1}$ m$^{-3}$') and ( spec == 'AERI' ):
             fixcb = [ fixcb[0], 500 ]
-            extend = 'max'                
+            extend = 'max'
 
         cmap = get_colormap( fixcb  )
-                
+
         # Loop thorugh months
         for m, month in enumerate(dlist):
             fig.add_subplot(4,3,m+1)
@@ -1902,7 +1902,7 @@ def plot_specs_surface_change_monthly2pdf( arr, res='4x5', dpi=160, \
 
         # Add single colorbar
         mk_cb(fig, units=units, left=0.9,  cmap=cmap,vmin=fixcb[0],
-            vmax=fixcb[1], f_size=f_size, extend=extend ) 
+            vmax=fixcb[1], f_size=f_size, extend=extend )
 
         # sort out ascetics -  adjust plots and add title
         fig.subplots_adjust( bottom=bottom, top=top, left=left, \
@@ -1917,10 +1917,10 @@ def plot_specs_surface_change_monthly2pdf( arr, res='4x5', dpi=160, \
         plt.close()
         del fig
 
-    #  save entire pdf  
+    #  save entire pdf
     plot2pdfmulti( pdff, savetitle, close=True, dpi=dpi, no_dstr=no_dstr )
 
-        
+
 # --------
 # X.XX - PDF of monthly zonal change plots for given species
 # --------
@@ -1929,24 +1929,24 @@ def plot_specs_zonal_change_monthly2pdf( Vars, res='4x5', dpi=160, \
         t_ps=None, savetitle='', diff=False, extend='neither',  \
         set_window=False, lat_0=None, lat_1=None, mask_invalids=False, \
         set_lon=None, units=None, debug=False):
-    """ 
-    Create multipage PDF with each page containing a zonalplot for given species in 
-    list of "specs" 
+    """
+    Create multipage PDF with each page containing a zonalplot for given species in
+    list of "specs"
     NOTES:
-     - Takes 5D array  ( species ,lon , lat, alt, time) 
+     - Takes 5D array  ( species ,lon , lat, alt, time)
      - Needs descriptions update.
     """
 
-    savetitle = 'Zonal_by_spec'+savetitle 
-    pdff = plot2pdfmulti( title=savetitle, open=True, dpi=dpi, no_dstr=no_dstr )    
+    savetitle = 'Zonal_by_spec'+savetitle
+    pdff = plot2pdfmulti( title=savetitle, open=True, dpi=dpi, no_dstr=no_dstr )
     left=0.05; right=0.9; bottom=0.05; top=0.875; hspace=0.315; wspace=0.2
-    
+
     # Loop species
     for n, spec in enumerate( specs ):
         if debug:
             print(n, spec, Vars.shape)
 
-        # Get units/scale for species + setup fig        
+        # Get units/scale for species + setup fig
         scale=1
         if isinstance( units, type(None) ):
             units, scale = tra_unit( spec, scale=True, global_unit=True )
@@ -1954,7 +1954,7 @@ def plot_specs_zonal_change_monthly2pdf( Vars, res='4x5', dpi=160, \
             units, scale = '%', 1
             mask_invalids=True
 
-        # Set the correct title        
+        # Set the correct title
         ptitle = '{}'.format( latex_spec_name(spec) )
         if diff:
             ptitle += ' zonal $\Delta$ concentration'
@@ -1985,7 +1985,7 @@ def plot_specs_zonal_change_monthly2pdf( Vars, res='4x5', dpi=160, \
 
         if set_lon:
             set_lon = get_gc_lon( set_lon, res=res )
-            fixcb  = [( i.min(), i.max() ) for i in [ cbVars[set_lon,...] ]][0]               
+            fixcb  = [( i.min(), i.max() ) for i in [ cbVars[set_lon,...] ]][0]
             print('SETTING LON to GC index: ', set_lon)
         else:
             cbVars = cbVars.mean( axis=0 )
@@ -2001,38 +2001,38 @@ def plot_specs_zonal_change_monthly2pdf( Vars, res='4x5', dpi=160, \
             extend = 'max'
 
         cmap = get_colormap( fixcb  )
-            
+
         # Loop thorugh months
         for m, month in enumerate(dlist):
             axn =[ 3,4,m+1 ]
-            ax = fig.add_subplot( *axn )  
+            ax = fig.add_subplot( *axn )
 
 #                if pcent:
 #                    print [ (np.min(i), np.max(i))  \
-#                        for i in [ Vars[n,:,:,:,m].mean(axis=0)*scale ] ] 
+#                        for i in [ Vars[n,:,:,:,m].mean(axis=0)*scale ] ]
 #                    print [ (np.min(i), np.max(i))  \
-#                        for i in [ Vars[n,:,:,:,m].median(axis=0)*scale ] ] 
+#                        for i in [ Vars[n,:,:,:,m].median(axis=0)*scale ] ]
             if set_lon:
-                arr = Vars[n,set_lon,:,:,m]*scale                
+                arr = Vars[n,set_lon,:,:,m]*scale
             else:
-                arr = Vars[n,:,:,:,m].mean(axis=0)*scale                
-            
+                arr = Vars[n,:,:,:,m].mean(axis=0)*scale
+
             if set_window:
                 arr = arr[...,get_gc_lat(lat_0, res=res): get_gc_lat(lat_1, res=res), :]
 
             # plot up spatial surface change
-            zonal_plot(fig, ax, arr, title=month.strftime("%b"), debug=debug, 
+            zonal_plot(fig, ax, arr, title=month.strftime("%b"), debug=debug,
                 tropics=False, units=units,f_size=f_size, c_off =37, no_cb=True, \
                 lat_0=lat_0, lat_1=lat_1, set_window=set_window, fixcb=fixcb, \
                 extend=extend, window=True, lower_limited=True, res=res, \
                 mask_invalids=mask_invalids, cmap=cmap )
-                
+
             # only show troposphere
             greyoutstrat( fig, t_ps.mean(axis=0)[:,:,m], axn=axn, res=res )
 
         # Add single colorbar
         mk_cb(fig, units=units, left=0.915,  cmap=cmap,vmin=fixcb[0],
-            vmax=fixcb[1], f_size=f_size, extend=extend ) 
+            vmax=fixcb[1], f_size=f_size, extend=extend )
 
         # sort out ascetics -  adjust plots and add title
         fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right, \
@@ -2047,7 +2047,7 @@ def plot_specs_zonal_change_monthly2pdf( Vars, res='4x5', dpi=160, \
         plt.close()
         del fig
 
-    #  save entire pdf 
+    #  save entire pdf
     plot2pdfmulti( pdff, savetitle, close=True, dpi=dpi, no_dstr=no_dstr )
 
 
@@ -2057,52 +2057,52 @@ def plot_specs_zonal_change_monthly2pdf( Vars, res='4x5', dpi=160, \
 def plot_specs_poles_change_monthly2pdf( specs=None, arr=None, res='4x5', \
         dpi=160, no_dstr=True, f_size=20, pcent=False, diff=False, \
         dlist=None, savetitle='', units=None, perspective='north', \
-        format=None, extend='neither', boundinglat=50, 
+        format=None, extend='neither', boundinglat=50,
         verbose=True, debug=False):
-    """ 
-    Takes a 5D np.array ( species, lon, lat, alt, time ) and plots up the 
+    """
+    Takes a 5D np.array ( species, lon, lat, alt, time ) and plots up the
     output by species by month, and saves this as a mulitpage pdf
 
     Parameters
     -------
-    arr (array): 5D np.array ( species, lon, lat, alt, time ) 
+    arr (array): 5D np.array ( species, lon, lat, alt, time )
     res (str): the resolution if wd not given (e.g. '4x5' )
-    dpi (int): dots per inch of saved output PDF... 
-    boundinglat (int): 
-    format (str): formayt of axis labels 
+    dpi (int): dots per inch of saved output PDF...
+    boundinglat (int):
+    format (str): formayt of axis labels
     dlist (list): list of dates (datetimes)
     no_dstr (boolean): date string in output filename ("no date string")
     f_size (float): fontsise
-    savetitle (str): string to add to filename of PDF 
+    savetitle (str): string to add to filename of PDF
     units (str): units label for colorbar
     pcent (boolean): setup the plot as if the input values were %
     diff (boolean): setup the plot as if the input values were a difference
-    boundinglat (int): latitude to show poles until. 
+    boundinglat (int): latitude to show poles until.
     perspective (str): looking at north or south pole?
     extend (str): colorbar format settings ( 'both', 'min', 'both' ... )
-    
+
     Returns
     -------
     (None)
-    
+
     Notes
     -----
-     - Takes 5D array  ( species ,lon , lat, alt, time) 
+     - Takes 5D array  ( species ,lon , lat, alt, time)
      - needs update to description/acsetics
     """
     if debug:
         print(arr, no_dstr, f_size, pcent, res, dpi, specs, dlist, savetitle)
 
-    # Setup PDF filename for saving file 
+    # Setup PDF filename for saving file
     if perspective == 'north':
-        savetitle = 'North_'+savetitle 
+        savetitle = 'North_'+savetitle
     if perspective == 'south':
-        savetitle = 'South_'+savetitle 
+        savetitle = 'South_'+savetitle
     # Initialise PDF
     pdff = plot2pdfmulti( title=savetitle, open=True, dpi=dpi, no_dstr=no_dstr)
     # Set ascetics
     left=0.01; right=0.925; bottom=0.025; top=0.95; hspace=0.15; wspace=-0.1
-    
+
     # Loop species
     for n, spec in enumerate( specs ):
         # Debug print statement?
@@ -2112,20 +2112,20 @@ def plot_specs_poles_change_monthly2pdf( specs=None, arr=None, res='4x5', \
         # Get units/scale for species + setup fig
         scale = 1
         if pcent :# and (not units == 'DU') :
-            units = '%' 
+            units = '%'
         if isinstance( units, type( None )):
             units, scale = tra_unit( spec, scale=True, global_unit=True )
         parr = arr[n,:,:,0,:]*scale
-            
+
         if debug:
             print(parr.shape)
             print(n, spec,  units, scale)
             print([ (i.min(), i.max(), i.mean() ) for i in [parr, arr] ])
 
-        # Set the correct title        
+        # Set the correct title
         ptitle = '{}'.format( latex_spec_name(spec) )
- 
-        # Create new figure            
+
+        # Create new figure
         fig = plt.figure(figsize=(22, 14),dpi=dpi,facecolor='w', edgecolor='w')
 
         # Select north or south polar areas specified to define cb
@@ -2151,11 +2151,11 @@ def plot_specs_poles_change_monthly2pdf( specs=None, arr=None, res='4x5', \
             extend = 'neither'
         # Setup colormap
         fixcb = np.array([ ( i.min(), i.max() ) for i in [cbarr] ][0])
-        if verbose:            
+        if verbose:
             print('fixcb testing ', fixcb, parr.shape)
         # Kludge, force max cap at .2
 #        if units == 'ratio':
-#            fixcb = [ fixcb[0], 0.2 ]       
+#            fixcb = [ fixcb[0], 0.2 ]
 #                extend = 'max'
         cmap = get_colormap( fixcb )
 
@@ -2167,18 +2167,18 @@ def plot_specs_poles_change_monthly2pdf( specs=None, arr=None, res='4x5', \
             if perspective == 'north':
                 north_pole_surface_plot( parr[:,:,m], no_cb=True, \
                     fixcb=fixcb, diff=diff, pcent=pcent, res=res, \
-                    f_size=f_size*2, cmap=cmap, boundinglat=boundinglat) 
+                    f_size=f_size*2, cmap=cmap, boundinglat=boundinglat)
             if perspective == 'south':
                 south_pole_surface_plot( parr[:,:,m], no_cb=True, \
                     fixcb=fixcb, diff=diff, pcent=pcent, res=res, \
-                    f_size=f_size*2, cmap=cmap, boundinglat=-boundinglat) 
+                    f_size=f_size*2, cmap=cmap, boundinglat=-boundinglat)
 
             plt.text( 1.1, -0.01, month.strftime("%b"), fontsize=f_size*2,\
                 transform=ax.transAxes, ha='right', va='bottom' )
 
         # Add single colorbar
         mk_cb(fig, units=units, left=0.915,  cmap=cmap,vmin=fixcb[0],\
-            vmax=fixcb[1], f_size=f_size*.75, extend=extend, format=format ) 
+            vmax=fixcb[1], f_size=f_size*.75, extend=extend, format=format )
 
         # Sort out ascetics -  adjust plots and add title
         fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right, \
@@ -2204,22 +2204,22 @@ def X_Y_scatter( x, y, z=None, fig=None, ax=None, vmin=None, vmax=None, \
         left= 0.1, width=0.60, bottom=0.1, height=0.60, widthII=0.2,  \
         lim2std=10,trendline=True, f_size=20, lw=10, title=None, \
         line121=True, X_title=None, Y_title=None ):
-    """ 
-    Plot up a X Y scatter plot of x vs. y 
     """
-#    rect_scatter = [left, bottom, width, height]    
-            
+    Plot up a X Y scatter plot of x vs. y
+    """
+#    rect_scatter = [left, bottom, width, height]
+
     if isinstance( fig, type(None) ):
         fig = plt.figure(1, figsize=(8,8))
 
     if isinstance( ax, type(None) ):
-        ax = plt.axes( )#rect_scatter) 
+        ax = plt.axes( )#rect_scatter)
 
     # Plot up - normalising colors against z  if given
     if isinstance( z, type(None) ):
         plt.scatter( x, y )
 
-    else:        
+    else:
         # Scale colors.
         if isinstance( vmin, type(None) ):
             vmin = float( np.ma.min(z)  )
@@ -2243,7 +2243,7 @@ def X_Y_scatter( x, y, z=None, fig=None, ax=None, vmin=None, vmax=None, \
         if len(ind)>0:
             for n in ind:
                 mins[n] = 0
-        
+
         plt.xlim( mins[0], maxs[0] )
         plt.ylim( mins[1], maxs[1] )
     else:
@@ -2258,8 +2258,8 @@ def X_Y_scatter( x, y, z=None, fig=None, ax=None, vmin=None, vmax=None, \
 
     # add trendline
     if trendline:
-        Trendline( ax, x, y, order =1, intervals= 700, f_size=f_size, lw=lw, 
-            color='green' ) 
+        Trendline( ax, x, y, order =1, intervals= 700, f_size=f_size, lw=lw,
+            color='green' )
 
     if not isinstance( X_title, type( None) ):
         plt.xlabel( X_title, fontsize=f_size )
@@ -2268,7 +2268,7 @@ def X_Y_scatter( x, y, z=None, fig=None, ax=None, vmin=None, vmax=None, \
     if not isinstance( title, type( None) ):
         plt.title( title, fontsize=f_size )
     plt.xticks( fontsize=f_size )
-    plt.yticks( fontsize=f_size )    
+    plt.yticks( fontsize=f_size )
 
 
 # --------
@@ -2285,32 +2285,32 @@ def scatter_3D_cube( data, dims=None, res='2x2.5', fig=None, everyother=1, inter
     from mpl_toolkits.mplot3d import Axes3D
 
     if isinstance( dims, type(None) ):
-        lon, lat, alt = get_latlonalt4res( res=res ) 
+        lon, lat, alt = get_latlonalt4res( res=res )
         (X,Y,Z) = np.mgrid[ \
-            lon[0]:lon[-1]:complex( len(lon) ), 
-            lat[0]:lat[-1]:complex( len(lat) ), 
+            lon[0]:lon[-1]:complex( len(lon) ),
+            lat[0]:lat[-1]:complex( len(lat) ),
             alt[0]:alt[-1]:complex( len(alt) ) ]
 
     # Setup Fig + Ax ( is not given )
     cmap = plt.cm.get_cmap(cm)
     if isinstance( fig, type(None) ):
         fig = plt.figure(1)
-    fig.clf()    
+    fig.clf()
     ax = Axes3D(fig)
     ax.scatter(X,Y,Z, c=data, cmap=cmap)
 
     # --- Beatify
     # draw meridian lines
     meridians = np.arange(-180,180,20*interval)
-    plt.xticks( meridians[::everyother], fontsize = f_size*.75 ) 
+    plt.xticks( meridians[::everyother], fontsize = f_size*.75 )
 
     # draw parrelel lines
     parallels = np.arange(-90,91,20*interval)
-    plt.yticks( parallels[::everyother], fontsize = f_size*.75 ) 
+    plt.yticks( parallels[::everyother], fontsize = f_size*.75 )
 
     # limit axis
     ax.set_xlim(  lon[0], lon[-1] )
-    ax.set_ylim(  lat[0], lat[-1] )    
+    ax.set_ylim(  lat[0], lat[-1] )
     ax.set_zlim(  alt[0], alt[-1] )
 
 
@@ -2321,27 +2321,27 @@ def get_seasonal_plot( arr, fixcb=None, fig=None, f_size=15, \
         case='linear', format=None, extend='neither', units=None, \
         right=0.9, left=0.05, bottom=0.05, top=0.85, hspace=0.1, \
         wspace=0.1, log=False, title=None, dpi=80, debug=False ):
-    """ 
+    """
     Takes any 4D array and plot a 4 subplot window plot by season
     """
 
     # Split by quater (DJF, MAM, JJA, SON)
     ars, seasons = split_4D_array_into_seasons( arr, annual_plus_seasons=False )
-    
+
     # create figure
     if isinstance( fig, type(None ) ):
         fig  = plt.figure(figsize=(22, 14), dpi=dpi, facecolor='w', \
-                edgecolor='w')     
+                edgecolor='w')
 
-    # fix color mapping 
+    # fix color mapping
     if isinstance( fixcb, type(None ) ):
         fixcb = [ ( i.min(), i.max() ) for i in [ arr ] ][0]
     cmap = get_colormap( fixcb  )
-    
+
     # loop seasons
     for n, arr in enumerate( ars ):
-    
-        # Plot up  on new axis 
+
+        # Plot up  on new axis
         ax = fig.add_subplot( 2, 2, n+1)
         map_plot( arr.T, title=seasons[n], units=None, window=True, \
                         case=case,  f_size=f_size, rotatecbunits='vertical',\
@@ -2349,14 +2349,14 @@ def get_seasonal_plot( arr, fixcb=None, fig=None, f_size=15, \
 
         # make color bar
         mk_cb(fig, units=units, left=0.925,  cmap=cmap, vmin=fixcb[0],
-            vmax=fixcb[1], log=log, f_size=f_size*.5, extend=extend, 
-            format=format, debug=debug )         
+            vmax=fixcb[1], log=log, f_size=f_size*.5, extend=extend,
+            format=format, debug=debug )
 
-        # add title if provided        
+        # add title if provided
         if not isinstance( title, type(None) ):
             fig.suptitle( title, fontsize=f_size*2, x=.55 , y=.95  )
-            
-            
+
+
     # Adjust figure
     fig.subplots_adjust( bottom=bottom, top=top, left=left,\
         right=right,hspace=hspace, wspace=wspace)
@@ -2369,20 +2369,20 @@ def plot_specs_surface_change_annual2pdf( arr, res='4x5', dpi=160, \
         no_dstr=True, f_size=20, pcent=True, specs=None, dlist=None, \
         savetitle='', diff=False, extend='neither', column=False, \
         scale=1, units=None, set_window=False, lat_0=None, lat_1=None, \
-        mask_invalids=False, debug=False):   
-    """ 
-    Create multipage PDF with each page containing a 2D (lon,lat) slice     
-    plot for given species in list of "specs" Takes 5D array  ( species ,lon , lat, alt, 
-    time) 
+        mask_invalids=False, debug=False):
+    """
+    Create multipage PDF with each page containing a 2D (lon,lat) slice
+    plot for given species in list of "specs" Takes 5D array  ( species ,lon , lat, alt,
+    time)
     """
     logging.info( 'plot_specs_surface_change_monthly2pdf called' )
 
     # setup pdfs + titles
     if column:
-        savetitle = 'Column_by_spec'+savetitle 
+        savetitle = 'Column_by_spec'+savetitle
     else:
-        savetitle = 'Surface_by_spec'+savetitle 
-    pdff = plot2pdfmulti( title=savetitle, open=True, dpi=dpi, no_dstr=no_dstr )    
+        savetitle = 'Surface_by_spec'+savetitle
+    pdff = plot2pdfmulti( title=savetitle, open=True, dpi=dpi, no_dstr=no_dstr )
     left=0.05; right=0.9; bottom=0.05; top=0.875; hspace=0.315; wspace=0.1
 
     # Loop species
@@ -2390,16 +2390,16 @@ def plot_specs_surface_change_annual2pdf( arr, res='4x5', dpi=160, \
 #            if debug:
         print(n, spec)
 
-        # Get units/scale for species + setup fig (allow of 
+        # Get units/scale for species + setup fig (allow of
         if isinstance( units, type( None) ):
             if column and (not pcent):
-                units, scale = 'DU', 1        
+                units, scale = 'DU', 1
             elif pcent:
                 units, scale = '%', 1
             else:
                 units, scale = tra_unit( spec, scale=True, global_unit=True )
-            
-        # setup masking... 
+
+        # setup masking...
         cbarr = arr[n,:,:,0,:].mean(axis=-1).copy() * scale
 
         if pcent:
@@ -2424,7 +2424,7 @@ def plot_specs_surface_change_annual2pdf( arr, res='4x5', dpi=160, \
             extend='neither'
             cbarr = cbarr
 
-        # Set the correct title        
+        # Set the correct title
         ptitle = 'Annual Avg. {}'.format( latex_spec_name(spec) )
         if column:
             ptitle += ' column'
@@ -2448,10 +2448,10 @@ def plot_specs_surface_change_annual2pdf( arr, res='4x5', dpi=160, \
 #                extend = 'max'
         if (units == 'pmol mol$^{-1}$ m$^{-3}$') and ( spec == 'AERI' ):
             fixcb = [ fixcb[0], 500 ]
-            extend = 'max'                
+            extend = 'max'
 
         cmap = get_colormap( fixcb )
-                
+
         # Loop thorugh months
 #            for m, month in enumerate(dlist):
         fig.add_subplot(111)
@@ -2464,7 +2464,7 @@ def plot_specs_surface_change_annual2pdf( arr, res='4x5', dpi=160, \
 
         # Add single colorbar
         mk_cb(fig, units=units, left=0.905,  cmap=cmap,vmin=fixcb[0],
-            vmax=fixcb[1], f_size=f_size, extend=extend ) 
+            vmax=fixcb[1], f_size=f_size, extend=extend )
 
         # sort out ascetics -  adjust plots and add title
         fig.suptitle( ptitle, fontsize=f_size*2, x=.55 , y=.95  )
@@ -2477,7 +2477,7 @@ def plot_specs_surface_change_annual2pdf( arr, res='4x5', dpi=160, \
         plt.close()
         del fig
 
-    #  save entire pdf  
+    #  save entire pdf
     plot2pdfmulti( pdff, savetitle, close=True, dpi=dpi, no_dstr=no_dstr )
 
 
@@ -2489,23 +2489,23 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
         t_ps=None, savetitle='', diff=False, extend='neither',  \
         set_window=False, lat_0=None, lat_1=None, mask_invalids=False, \
         set_lon=None, units=None, debug=False):
-    """ 
+    """
     Create multipage PDF with each page containing a zonal plot for given species in list
-     of "specs" 
+     of "specs"
 
     NOTES:
-     - Takes 5D array  ( species ,lon , lat, alt, time) 
+     - Takes 5D array  ( species ,lon , lat, alt, time)
     """
-    savetitle = 'Annual_Zonal_by_spec'+savetitle 
-    pdff = plot2pdfmulti( title=savetitle, open=True, dpi=dpi, no_dstr=no_dstr )    
+    savetitle = 'Annual_Zonal_by_spec'+savetitle
+    pdff = plot2pdfmulti( title=savetitle, open=True, dpi=dpi, no_dstr=no_dstr )
     left=0.05; right=0.9; bottom=0.05; top=0.875; hspace=0.315; wspace=0.2
-    
+
     # Loop species
     for n, spec in enumerate( specs ):
 #           if debug:
         print(n, spec, Vars.shape)
 
-        # Get units/scale for species + setup fig        
+        # Get units/scale for species + setup fig
 #           scale=1
         if isinstance( units, type(None) ):
             units, scale = tra_unit( spec, scale=True, global_unit=True )
@@ -2513,7 +2513,7 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
             units, scale = '%', 1
             mask_invalids=True
 
-        # Set the correct title        
+        # Set the correct title
         ptitle = 'Annual avg. {}'.format( latex_spec_name(spec) )
         if diff:
             ptitle += ' zonal $\Delta$ concentration'
@@ -2544,7 +2544,7 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
 
         if set_lon:
             set_lon = get_gc_lon( set_lon, res=res )
-            fixcb  = [( i.min(), i.max() ) for i in [ cbVars[set_lon,...] ]][0]               
+            fixcb  = [( i.min(), i.max() ) for i in [ cbVars[set_lon,...] ]][0]
             print('SETTING LON to GC index: ', set_lon)
         else:
             cbVars = cbVars.mean( axis=0 )
@@ -2560,20 +2560,20 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
             extend = 'max'
 
         cmap = get_colormap( fixcb  )
-            
+
         axn =[ 111 ]
-        ax = fig.add_subplot( *axn )  
+        ax = fig.add_subplot( *axn )
 
 #                if pcent:
 #                    print [ (np.min(i), np.max(i))  \
-#                        for i in [ Vars[n,:,:,:,m].mean(axis=0)*scale ] ] 
+#                        for i in [ Vars[n,:,:,:,m].mean(axis=0)*scale ] ]
 #                    print [ (np.min(i), np.max(i))  \
-#                        for i in [ Vars[n,:,:,:,m].median(axis=0)*scale ] ] 
+#                        for i in [ Vars[n,:,:,:,m].median(axis=0)*scale ] ]
         if set_lon:
-            arr = Vars[n,set_lon,...].mean(axis=-1)*scale                
+            arr = Vars[n,set_lon,...].mean(axis=-1)*scale
         else:
-            arr = Vars[n,...].mean(axis=0).mean(axis=-1)*scale                
-            
+            arr = Vars[n,...].mean(axis=0).mean(axis=-1)*scale
+
         if set_window:
             arr = arr[...,get_gc_lat(lat_0, res=res): get_gc_lat(lat_1, res=res), :]
 
@@ -2582,13 +2582,13 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
             units=units,f_size=f_size, c_off =37, no_cb=True, lat_0=lat_0, lat_1=lat_1, \
             set_window=set_window, fixcb=fixcb, extend=extend, window=True, \
             lower_limited=True, res=res, mask_invalids=mask_invalids, cmap=cmap )
-                
+
         # only show troposphere
         greyoutstrat( fig, t_ps.mean(axis=0).mean(axis=-1), axn=axn, res=res )
 
         # Add single colorbar
         mk_cb(fig, units=units, left=0.915,  cmap=cmap,vmin=fixcb[0],
-            vmax=fixcb[1], f_size=f_size, extend=extend ) 
+            vmax=fixcb[1], f_size=f_size, extend=extend )
 
         # sort out ascetics -  adjust plots and add title
 #            fig.subplots_adjust( bottom=bottom, top=top, left=left, \
@@ -2603,7 +2603,7 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
         plt.close()
         del fig
 
-        #  save entire pdf 
+        #  save entire pdf
         plot2pdfmulti( pdff, savetitle, close=True, dpi=dpi, no_dstr=no_dstr )
 
 
@@ -2621,18 +2621,18 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         resolution='c', lat_min = None, lat_max=None, lon_min=None, \
         lon_max=None, xlabel=True, limit_window=False, axis_titles=False,  \
         bottom_cb_pos=0.2,  figsize=(15, 10), verbose=False, debug=False ):
-    """ 
-    Wrapper for map_plot - Creates a "standard" spatial plot with acceptable 
-    ascethics. Customise with a range of arguements provide during the call 
-    to function. 
+    """
+    Wrapper for map_plot - Creates a "standard" spatial plot with acceptable
+    ascethics. Customise with a range of arguements provide during the call
+    to function.
 
     Parameters
     ----------
-    adjust_window (int): amount of array entries to remove the edges of array 
+    adjust_window (int): amount of array entries to remove the edges of array
     alhpa (float): transparency of plotter data
     arr (np.array): input (2D) array
     case (str or int): case for type of plot (vestigle: use log=True of False (default))
-    cmap (str): force colormap selection by providing name 
+    cmap (str): force colormap selection by providing name
     centre (boolean): use centre points of lon/lat grid points for mapping data surface
     drawcountries (boolean): add countries to basemap?
     debug (boolean): legacy debug option, replaced by python logging
@@ -2641,7 +2641,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     everyother (int): use "everyother" axis tick (e.g. 3=use every 3rd)
     f_size (float): fontsise
     fixcb (np.array): minimium and maximum to fix colourbar
-    fixcb_buffered (array): minimium and maximum to fix colourbar, with buffer space 
+    fixcb_buffered (array): minimium and maximum to fix colourbar, with buffer space
     format (str): format string for colorbar formating
     grid (boolean): apply a grid over surface plot?
     extend (str): colorbar format settings ( 'both', 'min', 'both' ... )
@@ -2659,23 +2659,23 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     set_window (boolean): set the limits of the plotted data (lon_0, lon_1, lat_0, lat_1)
     (for nested boundary conditions )
     sigfig_rounding_on_cb (int): significant figure rounding to use for colourbar
-    set_cb_ticks (boolean): mannually set colorbar ticks? (vestigle)     
+    set_cb_ticks (boolean): mannually set colorbar ticks? (vestigle)
     title (str): plot title (deafult is ==None, therefore no title)
     tight_layout (boolean): use use tight lyaout for figure
     ylabel, xlabel (boolean): label x/y axis?
-    units (str): units of given data for plot title 
+    units (str): units of given data for plot title
     verbose (boolean): legacy debug option, replaced by python logging
     wd (str): Specify the wd to get the results from a run.
     window (boolean): use window plot settings (fewer axis labels/resolution of map)
 
     Returns
     -------
-    optionally returns basemap (return_m==True) and colorbar (no_cb!=True) object 
+    optionally returns basemap (return_m==True) and colorbar (no_cb!=True) object
 
     NOTES:
         Provide an 3D array of lon, lat, and alt
     """
-    # If just lat and lon provided, add a dummy dimension. 
+    # If just lat and lon provided, add a dummy dimension.
     if len(arr.shape) == 2:
         arr = arr[...,None]
 
@@ -2686,7 +2686,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 
     # setup fig if not provided
     if isinstance( fig, type(None) ):
-        fig = plt.figure(figsize=figsize, dpi=dpi, facecolor='w',edgecolor='w') 
+        fig = plt.figure(figsize=figsize, dpi=dpi, facecolor='w',edgecolor='w')
     # setup fig if not provided
     if not isinstance( ax, type(None) ):
         # temporary remove as mpl widget has a bug
@@ -2694,13 +2694,13 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 #        plt.sca( ax )
         pass
 
-    # Set colourbar limits        
+    # Set colourbar limits
     if isinstance( fixcb, type(None) ):
         fixcb = np.array( [ (i.min(), i.max()) for i in [arr[...,0] ] ][0] )
 
-        # Set readable levels for cb, then use these to dictate cmap    
+        # Set readable levels for cb, then use these to dictate cmap
         lvls = get_human_readable_gradations( vmax=fixcb[1],  \
-            vmin=fixcb[0], nticks=nticks, 
+            vmin=fixcb[0], nticks=nticks,
             sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
 
     else:
@@ -2715,9 +2715,9 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
             if isinstance( norm, type(None) ):
                 norm=mpl.colors.LogNorm( vmin=fixcb[0], vmax=fixcb[1] )
 
-        else: 
-            # Assume numbers provided as fixcb +nticks will allow for creation 
-            # of human readable levels. 
+        else:
+            # Assume numbers provided as fixcb +nticks will allow for creation
+            # of human readable levels.
             lvls = np.linspace( fixcb[0], fixcb[1], nticks )
 
     # Setup Colormap
@@ -2729,10 +2729,10 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
                 vmin=fixcb[0], vmax=fixcb[1], cmap=cmap )
     logging.debug( 'array min, max, mean='.format(  \
         *[ str((i.min(), i.max(), i.mean())) for i in [arr[...,0]]]) )
-    
+
     # Plot up
     plt_vars = map_plot( arr[...,0].T, format=format, cmap=cmap, ax=ax, \
-        fixcb=fixcb, return_m=return_m, log=log, window=window, no_cb=True, 
+        fixcb=fixcb, return_m=return_m, log=log, window=window, no_cb=True,
         norm=norm, f_size=f_size*.75,  res=res, wd=wd, resolution=resolution,\
         fixcb_buffered=fixcb_buffered, interval=interval, xlabel=xlabel, \
         ylabel=ylabel, axis_titles=axis_titles, verbose=verbose, debug=debug )
@@ -2745,7 +2745,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         except:
             logging.info('WARNING! using plt, not axis, for title annotation')
             plt.title( title, fontsize=f_size, y=title_y )
-#            plt.text(0.5, title_y, title, fontsize=f_size )        
+#            plt.text(0.5, title_y, title, fontsize=f_size )
 
     # limit displayed extent of plot?
 #	limit_window=False
@@ -2769,16 +2769,16 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
                 extend=extend, lvls=lvls, log=log, orientation=orientation, \
                 sigfig_rounding_on_cb=sigfig_rounding_on_cb, nticks=nticks, \
-                norm=norm, discrete_cmap=discrete_cmap, debug=debug )    
+                norm=norm, discrete_cmap=discrete_cmap, debug=debug )
 
     # Adjust plot ascetics
-    fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right,     
+    fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right,
                                         hspace=hspace, wspace=wspace)
 
 
     # Show/Save as PDF?
     if pdf:
-        plot2pdf( title=pdftitle )    
+        plot2pdf( title=pdftitle )
     if show:
         plt.show()
     if return_m:
@@ -2800,11 +2800,11 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
         window=False, xlabel=True, ylabel=True, title=None, \
         interval=None, verbose=False, debug=False ):
     """
-    Creates zonal zonal plot as formated figure. 
-    
-    
+    Creates zonal zonal plot as formated figure.
+
+
     NOTES:
-     -  
+     -
     """
     all_str = 'plot_zonal_figure called ', region, arr.shape, log, units, pdf, \
             show, arr.min(), arr.max()
@@ -2816,12 +2816,12 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
     if any( [arr.shape[0] ==i for i in (72, 144, 121, 177)] ):
 #        arr = arr.mean(axis=0)
         arr = molec_weighted_avg( arr, weight_lon=True, res=res, \
-            trop_limit=trop_limit, rm_strat=False, wd=wd) 
+            trop_limit=trop_limit, rm_strat=False, wd=wd)
 
     # Create figure if not provided
     if isinstance( fig, type(None) ):
-        fig = plt.figure(figsize=(15, 10), dpi=dpi, 
-                    facecolor='w', edgecolor='w') 
+        fig = plt.figure(figsize=(15, 10), dpi=dpi,
+                    facecolor='w', edgecolor='w')
 
     # if just plotting over the ocean, remove white space
     if region == 'Oceanic':
@@ -2835,14 +2835,14 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
         fixcb = np.array([(i.min(), i.max()) for i in [arr] ][0])
 
         # Set readable levels for cb, then use these to dictate cmap
-        if not log:    
+        if not log:
             lvls = get_human_readable_gradations( vmax=fixcb[1],  \
                 vmin=fixcb[0], nticks=nticks,\
                 sigfig_rounding_on_cb=sigfig_rounding_on_cb, \
-                verbose=verbose, debug=debug  )        
+                verbose=verbose, debug=debug  )
     else:
-        # Assume numbers provided as fixcb +nticks will allow for creation 
-        # of human readable levels. 
+        # Assume numbers provided as fixcb +nticks will allow for creation
+        # of human readable levels.
         lvls = np.linspace( fixcb[0], fixcb[1], nticks )
 
     # If log plot - overwrite  lvls
@@ -2860,11 +2860,11 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
             nticks=nticks, fixcb=fixcb, buffer_cmap_upper=True, \
             verbose=verbose, debug=debug )
 
-    #  Plot 
+    #  Plot
     if isinstance( axn, type( None ) ):
         axn =[ 111 ]
     if isinstance( ax, type( None ) ):
-        ax = fig.add_subplot( *axn )  
+        ax = fig.add_subplot( *axn )
     zonal_plot( arr, fig,  ax=ax, set_window=set_window, log=log,\
             format=format, cmap=cmap, lat_0=lat_0, lat_1=lat_1, \
             fixcb=fixcb, f_size=f_size*.75, res=res, norm=norm, \
@@ -2882,7 +2882,7 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
 #        plt.text(0.5, y_title, title, fontsize=f_size*.75 )
 
     # Manually Add colorbar
-    if no_cb: 
+    if no_cb:
         if orientation == 'vertical':
             width = width/2
             height = 0.55
@@ -2894,15 +2894,15 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
                 extend=extend, lvls=lvls, cb_ax=cb_ax, \
                 sigfig_rounding_on_cb=sigfig_rounding_on_cb, nticks=nticks, \
-                norm=norm, discrete_cmap=discrete_cmap, 
-                verbose=verbose, debug=debug )    
+                norm=norm, discrete_cmap=discrete_cmap,
+                verbose=verbose, debug=debug )
 
     # Adjust plot ascetics
-    fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right,     
+    fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right,
                                         hspace=hspace, wspace=wspace)
     # Show/Save as PDF?
     if pdf:
-        plot2pdf( title=pdftitle )    
+        plot2pdf( title=pdftitle )
     if show:
         plt.show()
     if return_m or rtn_plt_vars:
@@ -2915,11 +2915,11 @@ def plot_zonal_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None, \
 def plot_arr_avg_Q1_Q3( X, Y, ax=None, color='blue', label=None, \
         plt_mean=True, plt_median=False, pcent1=25, pcent2=75, \
         verbose=False, debug=False ):
-    """ 
+    """
     Takes a X and Y to plot a mean, Q1 and Q3.
 
     Notes:
-     - Y = 2D array (e.g. lon, lat)  
+     - Y = 2D array (e.g. lon, lat)
      - X = 1D araray ( e.g. lat )
      - Default fill is Q1 to Q3, but others ranges can be specified
     """
@@ -2930,7 +2930,7 @@ def plot_arr_avg_Q1_Q3( X, Y, ax=None, color='blue', label=None, \
     if plt_mean:
         ax = plt.plot( X, Y.mean(axis=0), color=color, label=label )
 
-    # Show quartiles ( 25th 57th  )    
+    # Show quartiles ( 25th 57th  )
     Y_nan = Y.filled( np.nan )
     low = np.nanpercentile( Y_nan, pcent1, axis=0 )
     high = np.nanpercentile( Y_nan, pcent2, axis=0 )
@@ -2954,25 +2954,25 @@ def timeseries_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         unitrotation=45, color_by_z=False, fig=None,  xlabel=True, \
         positive=None, plt_median=False, add_Q1_Q3=False, pcent1=25, pcent2=75, \
         debug=False ):
-    """ 
-    Plot up timeseries of values. 
-    
+    """
+    Plot up timeseries of values.
+
     NOTES:
-     - Requires data, and dates in numpy array form. 
+     - Requires data, and dates in numpy array form.
      - Dates must be as datetime.datetime objects.
     """
 
     # Process data - reduce resolution to daily, and get std
     df = DataFrame( data, index=dates )
 
-    # Take start and end dates from "dates" if not set in arguments. 
+    # Take start and end dates from "dates" if not set in arguments.
     if isinstance( start_date, type(None) ):
         start_date = dates[0]
     if isinstance( end_date, type(None) ):
         end_date = dates[-1]
     df = df[ start_date:end_date]
 
-    # label once per week ( set by "everyother" ) 
+    # label once per week ( set by "everyother" )
     days = [i.to_datetime() for i in df.index ]
     labels = [i.strftime("%-d %b") for  i in days ][::everyother]
 
@@ -2992,7 +2992,7 @@ def timeseries_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     else:
         if plt_median: # Plot average
             pass
-#            ln = plt.plot( days, np.nanpercentile( df.values, 50, ), 
+#            ln = plt.plot( days, np.nanpercentile( df.values, 50, ),
 #                color=color, ls=ls, lw=lw, label=None   )
         else: # Plot all
             plt.plot( days, df.values, label=label, color=color, ls=ls, lw=lw  )
@@ -3003,8 +3003,8 @@ def timeseries_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
 #        low =np.nanpercentile( df.values, pcent1, )
 #        high = np.nanpercentile( df.values, pcent2, )
 #        ax.fill_between( bins_used, low, high, alpha=0.2, color=color   )
-            
-    # Setup X axis 
+
+    # Setup X axis
     if xlabel:
         plt.xticks( days[::everyother], labels, rotation=unitrotation, \
             fontsize=f_size )
@@ -3019,7 +3019,7 @@ def timeseries_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     # Alt text annotate as fig text?
     if not isinstance( alt_text, type(None) ):
         plt.figtext(x=0.05,y=0.85, s=alt_text, fontsize=f_size*.75 )
-    # Setup y axis 
+    # Setup y axis
     plt.yticks( fontsize=f_size )
     if not isinstance( ylabel, type(None) ):
         plt.ylabel( ylabel, fontsize=f_size )
@@ -3029,7 +3029,7 @@ def timeseries_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
 
 
 # --------
-# 1.36 - Get monthly surface plots for (4D) array 
+# 1.36 - Get monthly surface plots for (4D) array
 # --------
 def plt_4Darray_surface_by_month( arr, res='4x5', dpi=160, \
         no_dstr=True, f_size=10, dlist=None, fixcb=None, format=None, \
@@ -3038,8 +3038,8 @@ def plt_4Darray_surface_by_month( arr, res='4x5', dpi=160, \
         units=None, set_window=False, lat_0=None, lat_1=None, \
         return_m=False, log=False, window=True, interval=3, ylabel=True,\
         norm=None, fig_title=False, pdftitle='',
-        pdf=False, show=False, verbose=False, debug=False):   
-    """ 
+        pdf=False, show=False, verbose=False, debug=False):
+    """
     Create a window plot of surface amp plots from a 4D array
     """
     # Setup local variables + figure
@@ -3057,12 +3057,12 @@ def plt_4Darray_surface_by_month( arr, res='4x5', dpi=160, \
 
     # Create figure if not provided
     if isinstance( fig, type(None) ):
-        fig = plt.figure(figsize=(15, 10), dpi=dpi, 
-                    facecolor='w', edgecolor='w') 
+        fig = plt.figure(figsize=(15, 10), dpi=dpi,
+                    facecolor='w', edgecolor='w')
 
     # Set readable levels for cb, then use these to dictate cmap
     lvls = get_human_readable_gradations( vmax=fixcb[1],  \
-                    vmin=fixcb[0], nticks=nticks, 
+                    vmin=fixcb[0], nticks=nticks,
                     sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
 
     # Setup Colormap
@@ -3075,7 +3075,7 @@ def plt_4Darray_surface_by_month( arr, res='4x5', dpi=160, \
 
     if debug:
         print([ (i.min(), i.max(), i.mean()) for i in [ arr.mean(axis=0) ] ])
-                
+
     # Loop thorugh months
     for m, month in enumerate(dlist):
 
@@ -3085,7 +3085,7 @@ def plt_4Darray_surface_by_month( arr, res='4x5', dpi=160, \
 
         print(arr[...,m].mean(axis=0).shape, arr.shape)
 
-        # Only show x/y axis on edge plots 
+        # Only show x/y axis on edge plots
         ylabel=False
         xlabel=False
         num_cols=3
@@ -3108,14 +3108,14 @@ def plt_4Darray_surface_by_month( arr, res='4x5', dpi=160, \
     # Add single colorbar
 #    mk_cb(fig, units=units, left=0.9, cmap=cmap, vmin=fixcb[0], format=format,\
     mk_cb(fig, units=units, left=0.87, cmap=cmap, vmin=fixcb[0], format=format,\
-        vmax=fixcb[1], nticks=nticks, f_size=f_size, extend=extend ) 
+        vmax=fixcb[1], nticks=nticks, f_size=f_size, extend=extend )
 
     print(nticks, fixcb, lvls)
 
 
     # Sort out ascetics -  adjust plots and add title
     if fig_title:
-        fig.suptitle(  '{}'.format( latex_spec_name(spec) ), fontsize=f_size*2, 
+        fig.suptitle(  '{}'.format( latex_spec_name(spec) ), fontsize=f_size*2,
             x=.55 , y=.95  )
         top = 0.9  # allow space for figure title
     fig.subplots_adjust( bottom=bottom, top=top, left=left, \
@@ -3123,13 +3123,13 @@ def plt_4Darray_surface_by_month( arr, res='4x5', dpi=160, \
 
     #  save as pdf ?
     if pdf:
-        plot2pdf( title=pdftitle )    
+        plot2pdf( title=pdftitle )
     if show:
         plt.show()
 
 
 # --------
-# 1.37 - Get monthly surface plots for (4D) array 
+# 1.37 - Get monthly surface plots for (4D) array
 # --------
 def plt_4Darray_zonal_by_month( arr, res='4x5', dpi=160, \
         no_dstr=True, f_size=15, dlist=None, fixcb=None, \
@@ -3138,9 +3138,9 @@ def plt_4Darray_zonal_by_month( arr, res='4x5', dpi=160, \
         units=None, set_window=False, lat_0=None, lat_1=None, \
         return_m=False, log=False, window=True, interval=3, ylabel=True,\
         norm=None, fig_title=False, pdftitle='', t_ps=None, xlabel=True, \
-        format=None, orientation='vertical', trop_limit=True, region='All', 
-        pdf=False, show=False, verbose=False, debug=False):   
-    """ 
+        format=None, orientation='vertical', trop_limit=True, region='All',
+        pdf=False, show=False, verbose=False, debug=False):
+    """
     Create a window plot of surface amp plots from a 4D array
     """
 
@@ -3161,12 +3161,12 @@ def plt_4Darray_zonal_by_month( arr, res='4x5', dpi=160, \
 
     # Create figure if not provided
     if isinstance( fig, type(None) ):
-        fig = plt.figure(figsize=(15, 10), dpi=dpi, 
-                    facecolor='w', edgecolor='w') 
+        fig = plt.figure(figsize=(15, 10), dpi=dpi,
+                    facecolor='w', edgecolor='w')
 
     # Set readable levels for cb, then use these to dictate cmap
     lvls = get_human_readable_gradations( vmax=fixcb[1],  \
-                    vmin=fixcb[0], nticks=nticks, 
+                    vmin=fixcb[0], nticks=nticks,
                     sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
 
     # Setup Colormap
@@ -3183,13 +3183,13 @@ def plt_4Darray_zonal_by_month( arr, res='4x5', dpi=160, \
     # Get time in the troposphere diagnostic if not provide as agrument
     if isinstance( t_ps, type(None) ):
         t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], trop_limit=True )
-                
+
     # Loop thorugh months
     for m, month in enumerate(dlist):
 
         # add axis
         axn =[ 4, 3, m+1 ]
-        ax = fig.add_subplot( *axn )  
+        ax = fig.add_subplot( *axn )
 
         # set when to use y and x labels
         xlabel=False
@@ -3199,7 +3199,7 @@ def plt_4Darray_zonal_by_month( arr, res='4x5', dpi=160, \
         if m in range(12)[::3]:
             ylabel=True
 
-        # Plot zonally 
+        # Plot zonally
         zonal_plot( arr[...,m], fig,  ax=ax, set_window=set_window, log=log,\
             format=format, cmap=cmap, lat_0=lat_0, lat_1=lat_1, \
             fixcb=fixcb, f_size=f_size*.75, res=res, norm=norm, \
@@ -3209,14 +3209,14 @@ def plt_4Darray_zonal_by_month( arr, res='4x5', dpi=160, \
 
         # Only show troposphere
         greyoutstrat( fig, t_ps.mean(axis=0).mean(axis=-1), axn=axn, res=res )
-        
+
         # add month
         plt.title(month.strftime("%b"), fontsize=f_size*1.5)
 
     # Add single colorbar
     mk_cb(fig, units=units, left=0.895, cmap=cmap, vmin=fixcb[0], \
         vmax=fixcb[1], nticks=nticks, f_size=f_size*1.25, extend=extend,
-         width=0.015*1.5, height=.95, bottom=0.11 ) 
+         width=0.015*1.5, height=.95, bottom=0.11 )
     if debug:
         print(nticks, fixcb, lvls)
 
@@ -3224,12 +3224,12 @@ def plt_4Darray_zonal_by_month( arr, res='4x5', dpi=160, \
     fig.subplots_adjust( bottom=bottom, top=top, left=left, \
         right=right, hspace=hspace, wspace=wspace)
     if fig_title:
-        fig.suptitle(  '{}'.format( latex_spec_name(spec) ), fontsize=f_size*2, 
+        fig.suptitle(  '{}'.format( latex_spec_name(spec) ), fontsize=f_size*2,
             x=.55 , y=.95  )
 
     #  save as pdf ?
     if pdf:
-        plot2pdf( title=pdftitle )    
+        plot2pdf( title=pdftitle )
     if show:
         plt.show()
 
@@ -3243,30 +3243,30 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
         lw=8.0, ylabel=None, xlabel=False, log=False, rm_ticks=False, \
         alt_text_x=.15, alt_text_y=0.75, alt_text=None, ncol=1, pcent=False,  \
         stacked=False, verbose=False, debug=False):
-    """ 
-    Make a stacked plot (by X axis) for values in Y array. 
+    """
+    Make a stacked plot (by X axis) for values in Y array.
 
     Parameters
     -------
     X (list): list of numpy arrays to plot as X
     Y (array): must be a numpy array use use as Y
     labels (list): list of labels for stack data
-    baseline (str): if =='zero' then start filling from zero. 
+    baseline (str): if =='zero' then start filling from zero.
 
     Returns
     -------
     (None)
-    
+
     Notes
     -----
-     - MPL only contains a stackplot function for Y axis, this function is 
-    based on that code  
+     - MPL only contains a stackplot function for Y axis, this function is
+    based on that code
     (https://github.com/matplotlib/matplotlib/blob/3ae7c2a32ddd9809552315458da1dd70afec1b15/lib/matplotlib/stackplot.py )
     """
     logging.info('X_stackplot called, X[0] & Y[0] shape={}.{}'.format( \
         *[i.shape for i in (X[0], Y) ]) )
 
-    # --- Fig and ax provided? Otherwise create these... 
+    # --- Fig and ax provided? Otherwise create these...
     if isinstance( fig, type(None) ):
         fig = plt.figure( figsize=(8,8), dpi=dpi, facecolor='w', \
             edgecolor='w')
@@ -3277,7 +3277,7 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
         logging.info('Creating ax' )
     logging.debug( '{}'.format( list(zip( labels, [np.sum(i) for i in X] )) )  )
 
-    # --- Stack arrays if not stacked... 
+    # --- Stack arrays if not stacked...
     if isinstance( X, np.ndarray ):
         X = np.ma.atleast_2d( X )
         logging.debug('Array passed has been made at least 2D if nessesary')
@@ -3300,13 +3300,13 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
         xlim = [ 0, 100 ]
 
     if debug:
-        print(list(zip( labels, [np.sum(stack[:,n]) for n, i in enumerate(labels) ] )))    
-        print(list(zip( labels, [np.max(stack[:,n]) for n, i in enumerate(labels) ] )))    
+        print(list(zip( labels, [np.sum(stack[:,n]) for n, i in enumerate(labels) ] )))
+        print(list(zip( labels, [np.max(stack[:,n]) for n, i in enumerate(labels) ] )))
 
     # --- Setup baseline ( can expand to include other options... )
     if baseline == 'zero':
         first_line = np.zeros( stack[:,0].shape)
-    
+
     # --- Plot by label
     # Get list of colors
     if isinstance( colors, type(None) ):
@@ -3315,16 +3315,16 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
 
     # Color between x = 0 and the first array.
     logging.debug( '{}'.format(stack[:, 0]) )
-    logging.debug( 'len colors={}, labels={}, stack={}'.format( 
+    logging.debug( 'len colors={}, labels={}, stack={}'.format(
         *[len(i) for i in (colors, labels, stack[0, :]) ]) )
     r =[]
     r += [ ax.fill_betweenx( Y, first_line, stack[:, 0],
-                               color=colors[0], 
+                               color=colors[0],
                                 label=labels[0]) ]
     # Color between array i-1 and array i
     r +=  [ ax.fill_betweenx(Y, stack[:,i], stack[:,i+1],
-                                   color=colors[i+1], 
-                                   label=labels[i+1] ) 
+                                   color=colors[i+1],
+                                   label=labels[i+1] )
                                    for i in range( 0, len(stack[0,:])-1 ) ]
 
     # Plot transparent lines to get 2D line object to create legend
@@ -3352,7 +3352,7 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
         ax.annotate( alt_text , xy=(alt_text_x, alt_text_y), \
             textcoords='axes fraction', fontsize=f_size*1.5 )
     if legend:
-        # Add legend 
+        # Add legend
         if ncol == 0:
             leg = plt.legend( loc=loc, fontsize=f_size*.75,  )
         else:
@@ -3360,9 +3360,9 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
             def flip(items, ncol):
                 return itertools.chain(*[items[i::ncol] for i in range(ncol)])
             handles, labels = ax.get_legend_handles_labels()
-            leg = plt.legend( flip(handles, ncol), flip(labels, ncol), loc=loc, 
+            leg = plt.legend( flip(handles, ncol), flip(labels, ncol), loc=loc,
                 ncol=ncol, fontsize=f_size*0.75)
-        
+
         # ( + update line sizes)
         for legobj in leg.legendHandles:
                 legobj.set_linewidth( lw)
@@ -3376,7 +3376,7 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
         ax.tick_params( axis='y', which='both', labelleft='off', \
             labelsize= f_size*.75)
     # Remove tick labels on x axis?
-    if xlabel: 
+    if xlabel:
         ax.set_xlabel(xlabel, fontsize=f_size*.75)
         ax.tick_params(  axis='x', which='both', labelsize= f_size*.75 )
     else:
@@ -3384,13 +3384,13 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
             ax.tick_params( axis='x', which='both', labelbottom='off', \
                 labelsize= f_size*.75 )
         else:
-            ax.tick_params( axis='x', which='both', labelsize= f_size*.75 )            
+            ax.tick_params( axis='x', which='both', labelsize= f_size*.75 )
 
     if show:
         plt.show()
 
 # --------------------------- Section 4 ------------------------------------
-# -------------- Plotting Ancillaries 
+# -------------- Plotting Ancillaries
 #
 
 
@@ -3398,8 +3398,8 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
 # X.XX -  color list for rainbow plots
 # -------------
 def color_list(length, cb='gist_rainbow' ):
-    """ 
-    Create a list of colours to generate colors for plots contain multiple datasets 
+    """
+    Create a list of colours to generate colors for plots contain multiple datasets
     """
     cm = plt.get_cmap(cb)
     color = [cm(1.*i/length) for i in range(length)]
@@ -3409,15 +3409,15 @@ def color_list(length, cb='gist_rainbow' ):
 # -------------
 # X.XX - R squared - credit: Software carpentry
 # -------------
-def r_squared(x, y): 
-    """ 
+def r_squared(x, y):
+    """
     Return R^2 where x and y are array-like.
 
-    NOTES:  
+    NOTES:
      - actual_mean = np.mean(actual)
      - ideal_dev = np.sum([(val - actual_mean)**2 for val in ideal])
      - actual_dev = np.sum([(val - actual_mean)**2 for val in actual])
-     - return ideal_dev / actual_dev    
+     - return ideal_dev / actual_dev
 
     """
     slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
@@ -3429,8 +3429,8 @@ def r_squared(x, y):
 # -------------
 def set_bp( bp, num, c_list=['k', 'red'], white_fill=True, set_all=True,
         median_color='white', linewidth=2, debug=False ):
-    """ 
-    Manually set properties of boxplot ("bp") 
+    """
+    Manually set properties of boxplot ("bp")
     """
     if debug:
         print(num, c_list)
@@ -3444,15 +3444,15 @@ def set_bp( bp, num, c_list=['k', 'red'], white_fill=True, set_all=True,
         [ box.set( facecolor = 'white') for box in bp['boxes'] ]
     else:
         [ box.set( facecolor = c_list[num] ) for box in bp['boxes'] ]
-        setp(bp['medians'][:], color=median_color, linewidth=linewidth)                        
+        setp(bp['medians'][:], color=median_color, linewidth=linewidth)
 
 
 # -------------
 # X.XX - Get all marker types
 # -------------
 def markers_list( rm_plain_markers=False ):
-    """ 
-    Create a list of available markers for use in plots 
+    """
+    Create a list of available markers for use in plots
     """
     from matplotlib.lines import Line2D
     markers = []
@@ -3472,24 +3472,24 @@ def markers_list( rm_plain_markers=False ):
 # -------------
 # X.XX linear (polyfit) trendline calculator for X-Y plot (with histograms)
 # -------------
-def Trendline( ax, X, Y, order=1, intervals=700, f_size=20, color='blue', 
+def Trendline( ax, X, Y, order=1, intervals=700, f_size=20, color='blue',
         lw=1, debug=False ):
-    """ 
+    """
     Adds a trendline and legend instance to existing axis instance.
 
     Parameters
     -------
     ax (axis instance): (required) axis instance
     X, Y (array): arrays of X,Y values to perform regression on
-    order (int): order of line to fit 
+    order (int): order of line to fit
     intervals (int): number of intervals to use
     f_size (float): font size
     color (str): color of line
     lw (float): line width of plotted trendline
     debug (boolean): legacy debug option, replaced by python logging
-    
+
     Returns
-    -------    
+    -------
     (None)
     """
     # Poly fit data
@@ -3504,7 +3504,7 @@ def Trendline( ax, X, Y, order=1, intervals=700, f_size=20, color='blue',
     r_sq = [ r_squared(X, i ) for i in [Y] ]
 
     # Plot up
-    ax.plot( xp, yp, ls='--', lw=lw, color=color, 
+    ax.plot( xp, yp, ls='--', lw=lw, color=color,
         label=' (R$^{2}$'+'={0:<,.3f}, y={1:,.3f}x+{2:.3f})'.format(\
         r_sq[0], params[0], params[1] )   )
     # Add legend to plot
@@ -3513,10 +3513,10 @@ def Trendline( ax, X, Y, order=1, intervals=700, f_size=20, color='blue',
 
 # -------------
 # X.XX - plot_gc_bin_bands - plot up Fast-J  bins  ( 7 longest nm bins)
-# -------------   
+# -------------
 def plot_gc_bin_bands(facecolor='#B0C4DE'):
-    """ 
-    Plot highlighted lines of ("tropospheric") GEOS-Chem/Fast-J photolysis bins 
+    """
+    Plot highlighted lines of ("tropospheric") GEOS-Chem/Fast-J photolysis bins
     """
     vars = [ GC_var(i) for i in ('FastJ_lower' , 'FastJ_upper')]
     alphas = [ 0.3,0.1 ]*len(vars[0])
@@ -3525,27 +3525,27 @@ def plot_gc_bin_bands(facecolor='#B0C4DE'):
 
 
 # --------------
-# X.XX - line styles 
-# -------------       
+# X.XX - line styles
+# -------------
 def get_ls(num):
-    """ 
-    Get a list of available line styles 
+    """
+    Get a list of available line styles
     """
     ls =[   ':', '--', '-.', '-', ':', '--', '-.', '-', ':', ':', '--', '-.', '-', ':', '--', '-.', '-', ':'
     ]
     return ls[:num]
-                        
-# --------   
-# X.XX - takes time in troposphere diagnostic array (46, 47) overlayes 
+
+# --------
+# X.XX - takes time in troposphere diagnostic array (46, 47) overlayes
 # --------
 def greyoutstrat( fig,  arr, axn=[1,1,1], ax=None, cmap=plt.cm.bone_r, \
         res='4x5', rasterized=True, debug=False):
-    """ 
-    Grey out stratosphere in existing zonal plot. 
-    
+    """
+    Grey out stratosphere in existing zonal plot.
+
     NOTES:
-     - This is used to highlight tropospherically focused work. This function 
-     requires the array of "time in the troposphere" diagnostic (lon,lat, alt) 
+     - This is used to highlight tropospherically focused work. This function
+     requires the array of "time in the troposphere" diagnostic (lon,lat, alt)
     """
     # Get overall vars
     lon, lat, alt = get_latlonalt4res( res=res )
@@ -3556,47 +3556,47 @@ def greyoutstrat( fig,  arr, axn=[1,1,1], ax=None, cmap=plt.cm.bone_r, \
         ax = fig.add_subplot( *axn )
     arr = np.ma.around(arr)
     arr = np.ma.masked_where( arr >0, arr )
-    p = ax.pcolor( lat, alt, arr.T, cmap=cmap)        
+    p = ax.pcolor( lat, alt, arr.T, cmap=cmap)
     if rasterized:
-        plt.gcf().set_rasterized(True)    
+        plt.gcf().set_rasterized(True)
 
-# --------   
+# --------
 # X.XX - adjust subplots
 # --------
 def adjust_subplots( fig, left=None, bottom=None, right=None, top=None, \
         wspace=None, hspace=None ):
-    """ 
-    Set subplot adjust in provide figure 
+    """
+    Set subplot adjust in provide figure
     """
     # the left side of the subplots of the figure
     if isinstance( left, type(None)):
-        left  = 0.125  
+        left  = 0.125
     # the right side of the subplots of the figure
     if isinstance( right, type(None)):
-        right = 0.9    
+        right = 0.9
     # the bottom of the subplots of the figure
     if isinstance( bottom, type(None)):
-        bottom = 0.1   
+        bottom = 0.1
     # the top of the subplots of the figure
-    if isinstance( top, type(None)):    
-        top = 0.9  
+    if isinstance( top, type(None)):
+        top = 0.9
     # the amount of width reserved for blank space between subplots
     if isinstance( wspace, type(None)):
-        wspace = 0.2 
+        wspace = 0.2
     # the amount of height reserved for white space between subplots
     if isinstance( hspace, type(None)):
-        hspace = 0.5 
+        hspace = 0.5
     # Adjust subplots
     fig.subplots_adjust(left=left, bottom=bottom, right=right, top=top, \
         wspace=wspace, hspace=hspace)
-        
+
 
 # --------
 # X.XX - Iodine deposition mask (for sites... e.g Denmark, Germany, Norfolk )
 # --------
 def mask_not_obs( loc='Denmark', res='4x5', debug=False ):
-    """ 
-    provide a mask of all regions apart from the location given 
+    """
+    provide a mask of all regions apart from the location given
     """
 
     # Start with all zeros
@@ -3604,22 +3604,22 @@ def mask_not_obs( loc='Denmark', res='4x5', debug=False ):
 
     # Get lats and lons of locations to keep...
     lats, lons  = get_obs_loc( loc )
-        
+
     # Unmask locations
-    lats = [ get_gc_lat(i, res=res) for i in lats] 
+    lats = [ get_gc_lat(i, res=res) for i in lats]
     lons = [ get_gc_lon(i,res=res) for i in lons ]
     for n, lat in enumerate( lats ):
         arr[lons[n],lat,:] = 1
-    
+
     return np.ma.not_equal(  arr, 1)
-    
+
 # --------------
-# X.XX - Annotate grid 
+# X.XX - Annotate grid
 # -------------
 def annotate_gc_grid(ax, res='4x5', f_size=6.5, \
         loc_list=[ [-9999,-9999] ], everyother=1, label_gc_grid=True):
-    """ 
-    Annotate grid with GEOS-Chem indices 
+    """
+    Annotate grid with GEOS-Chem indices
     """
 
     # Get Vars
@@ -3631,18 +3631,18 @@ def annotate_gc_grid(ax, res='4x5', f_size=6.5, \
     glon = [get_gc_lon(i, res=res) for i in lon ]
 
     # set ticks to all
-    ax.xaxis.set_ticks(  lon[::everyother] )                                                                                                                                                                          
+    ax.xaxis.set_ticks(  lon[::everyother] )
     ax.yaxis.set_ticks( lat[::everyother] )
-    plt.xticks( fontsize=f_size*2.5  )          
+    plt.xticks( fontsize=f_size*2.5  )
     plt.yticks(  fontsize=f_size*2.5 )
     plt.grid(True)
 
-    # label grid boxes by number        
+    # label grid boxes by number
     if label_gc_grid:
         for n, la in enumerate( lat ):
-            for nn, lo in enumerate( lon ):  
+            for nn, lo in enumerate( lon ):
                 if any( [ [glat[n], glon[nn] ] == i for i in loc_list ] ):
-                    color = 'red'                 
+                    color = 'red'
                     fontweight='bold'
                 else:
                     color= 'blue'
@@ -3656,22 +3656,22 @@ def annotate_gc_grid(ax, res='4x5', f_size=6.5, \
 def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, upper=1, \
         start_center=0.5, stop=1.0, maintain_scaling=True, arr=None, \
         name='shiftedcmap', npoints=257, verbose=True, debug=False ):
-    """ 
-    ORGINAL DESCRIPTION: Function to offset the "center" of a colormap. Useful 
-    for data with a negative min and positive max and you want the middle of 
-    the colormap's dynamic range to be at zero. 
-    
+    """
+    ORGINAL DESCRIPTION: Function to offset the "center" of a colormap. Useful
+    for data with a negative min and positive max and you want the middle of
+    the colormap's dynamic range to be at zero.
+
     Parameters
     ----------
     cmap (colormap): The matplotlib colormap to be altered
     start (float): Offset from lowest point in the colormap's range.
         Defaults to 0.0 (no lower ofset). Should be between 0.0 and `midpoint`.
-    midpoint (float): The new center of the colormap. Defaults to 0.5 
+    midpoint (float): The new center of the colormap. Defaults to 0.5
     (no shift). Should be between 0.0 and 1.0. In general, this should be
     1 - vmax/(vmax + abs(vmin)). For example if your data range from -15.0 to
-    +5.0 and you want the center of the colormap at 0.0, `midpoint` should be 
+    +5.0 and you want the center of the colormap at 0.0, `midpoint` should be
     set to  1 - 5/(5 + 15)) or 0.75
-    stop (float): Offset from highets point in the colormap's range. Defaults 
+    stop (float): Offset from highets point in the colormap's range. Defaults
     to 1.0 (no upper ofset). Should be between `midpoint` and 1.0.
 
     Returns
@@ -3680,16 +3680,16 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, upper=1, \
 
     Notes
     -----
-     - adapted from stackoverflow to allow for maintaining scaling: 
+     - adapted from stackoverflow to allow for maintaining scaling:
     original: "http://stackoverflow.com/questions/7404116/defining-the-  \
     midpoint-of-a-colormap-in-matplotlib "
-    """ 
+    """
     if maintain_scaling:
-        # Cut off extra colorbar above point to shift maxoum too... 
+        # Cut off extra colorbar above point to shift maxoum too...
         vmin, vmax= arr.min(), arr.max()
 
         # Symetric range
-        eq_range = max(  abs(vmin), abs(vmax) ) *2 
+        eq_range = max(  abs(vmin), abs(vmax) ) *2
         # Actual range
         act_range = abs( vmin ) +abs( vmax  )
         cut_off = act_range/eq_range
@@ -3713,7 +3713,7 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, upper=1, \
     # Regular index to compute the colors
     reg_index = np.hstack([ np.linspace(start, start_center, 128, \
         endpoint=False), np.linspace(start_center, stop, 129, endpoint=True)  ])
-    
+
     # Shifted index to match the data
     shift_index = np.hstack([ np.linspace(0.0, midpoint, 128, endpoint=False), \
         np.linspace(midpoint, 1.0, 129, endpoint=True) ])
@@ -3740,7 +3740,7 @@ def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
         vmin=0, vmax=10, cb_ax=None, ticklocation='auto', extendfrac=None, \
         sigfig_rounding_on_cb=2, lvls=None, discrete_cmap=False, boundaries=None, \
         verbose=True, debug=False ):
-    """ 
+    """
     Create Colorbar based on recieved parameters.
 
     Parameters
@@ -3755,11 +3755,11 @@ def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     f_size (float): font size
     nticks (int): number of ticks on colorbar
     extend (str): colorbar format settings ( 'both', 'min', 'both' ... )
-    norm (norm object): normalisation to use for colourbar 
+    norm (norm object): normalisation to use for colourbar
     log (boolean): use log scale for colorbar
     format (str): format string for colorbar tick formating
-    cmap (str): colormap instance 
-    vmin, vmax (float): miminium and maximum of colorbar 
+    cmap (str): colormap instance
+    vmin, vmax (float): miminium and maximum of colorbar
     extendfrac (float): fraction by which to extend "pointers" on colorbar
     sigfig_rounding_on_cb (int): significant figure rounding to use for colourbar
     lvls (list): manually provide levels for colorbar
@@ -3773,8 +3773,8 @@ def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
 
     Notes
     -----
-     - This function allows for avoidance of basemap's issues with spacing 
-    definitions when conbining with colorbar objects within a plot 
+     - This function allows for avoidance of basemap's issues with spacing
+    definitions when conbining with colorbar objects within a plot
     """
     if debug:
         print('mk_cb called with: ', norm, vmin, vmax, log, lvls)
@@ -3808,13 +3808,13 @@ def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     if verbose:
         print(lvls, vmin, vmax, norm)
 
-    if isinstance( lvls, type(None) ):            
+    if isinstance( lvls, type(None) ):
         # make graduations in colourbar to be human readable
         lvls = get_human_readable_gradations( vmax=vmax,  \
             vmin=vmin, nticks=nticks, \
             sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
 
-    # add an extra decimal place for values under 50, 
+    # add an extra decimal place for values under 50,
     # and two for values under 1
     if isinstance( format, type(None) ):
         try:
@@ -3836,17 +3836,17 @@ def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
                 f_size = f_size *.75
 
         # warning this will need to be restored?! - plotting routines use this
-        # This exception is for highly masked arrays 
-        except:    
+        # This exception is for highly masked arrays
+        except:
             format='%.0E'
-            # Kludge, set to limits of -500-500 (%) if overly masked. 
+            # Kludge, set to limits of -500-500 (%) if overly masked.
             vmax, vmin = 500,-500
             extend = 'both'
 
     if debug:
         print(lvls, norm, extend, format, ticklocation)
 
-    # Make cb with given details 
+    # Make cb with given details
     if discrete_cmap:
         extendfrac=.075  # This was the previous default, still valid? <= update
 #        if debug:
@@ -3865,7 +3865,7 @@ def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
                     [extend_points+lvls.max()]
 
         # the following code isn't active, why is it here? <= update
-        # increase the space allowed for the colorbar 
+        # increase the space allowed for the colorbar
         # (the extension  is not summative )
 #        if orientation=='horizontal':
 #            width += width*extendfrac
@@ -3889,23 +3889,23 @@ def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
                 orientation=orientation, ticklocation=ticklocation)
 
 
-    if log:    
+    if log:
         round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
         cb.set_ticks( [ float('{:.2g}'.format( t )) for t in lvls ] )
         labels = [ round_to_n( i, sigfig_rounding_on_cb) for i in lvls ]
         cb.set_ticklabels( [ format % i for i in labels] )
-    
+
     # Set cb label sizes
     if not isinstance( units, type(None) ):
         for t in cb.ax.get_yticklabels():
             t.set_fontsize(f_size)
         if rotatecbunits == 'vertical':
             cb.ax.set_ylabel(units, rotation=rotatecbunits, labelpad=f_size, \
-                fontsize=f_size)                      
+                fontsize=f_size)
         else:
             cb.set_label( units, fontsize=f_size )
     # set tick sizes regardless whether units (labels) are provided
-    cb.ax.tick_params( labelsize=f_size ) #, size=f_size )  
+    cb.ax.tick_params( labelsize=f_size ) #, size=f_size )
 
     return cb_ax
 
@@ -3915,10 +3915,10 @@ def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
 def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
         everyother=1, f_size=10, interval=1, axis_titles=False, \
         show_grid=True, drawcountries=False, ylabel=True, xlabel=True ):
-    """ 
-    Creates a basemap object. 
+    """
+    Creates a basemap object.
 
-    This should be used for first slide in python animated videos to save computation 
+    This should be used for first slide in python animated videos to save computation
     """
 
     m = Basemap(projection=projection,llcrnrlat=lat[0],urcrnrlat=lat[-1],\
@@ -3932,19 +3932,19 @@ def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
     parallels = np.arange(-90,91,15*interval)
     meridians = np.arange(-180,181,30*interval)
     if (res == '0.25x0.3125') :
-        parallels = np.arange(-90,91,15*interval/1.5  ) 
-        meridians = np.arange(-180,181,30*interval/3) 
+        parallels = np.arange(-90,91,15*interval/1.5  )
+        meridians = np.arange(-180,181,30*interval/3)
 
     # use small font size for greater the runs with more axis labele
     f_size = f_size*.75
 
     # draw meridian lines
-    plt.xticks( meridians[::everyother], fontsize = f_size ) 
+    plt.xticks( meridians[::everyother], fontsize = f_size )
     # draw parrelel lines
-    plt.yticks( parallels[::everyother], fontsize = f_size ) 
+    plt.yticks( parallels[::everyother], fontsize = f_size )
     m.drawcoastlines()
     plt.grid( show_grid )
-    # remove tick labels on y axis 
+    # remove tick labels on y axis
     if not ylabel:
         ax_tmp = ax_tmp = plt.gca()
         ax_tmp.tick_params( axis='y', which='both', labelleft='off')
@@ -3953,7 +3953,7 @@ def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
         ax_tmp.tick_params( axis='x', which='both', labelbottom='off')
 
     return m
- 
+
 # --------
 # X.XX - Provide an appropriate colormap for given data
 # --------
@@ -3962,8 +3962,8 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         negative=False, positive=False, divergent=False, \
         sigfig_rounding_on_cb=2, buffer_cmap_upper=False, fixcb=None, nticks=10,  \
         verbose=True, debug=False ):
-    """ 
-    Create *correct* colormap by checking if it contains just +ve or -ve or 
+    """
+    Create *correct* colormap by checking if it contains just +ve or -ve or
     both then prescribing color map accordingly.
 
     Parameters
@@ -3982,23 +3982,23 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
     fixcb (array): lower and upper values to fix colourmap to.
     nticks (int): number of ticks to use for colorbar
     verbose (boolean): legacy debug option, replaced by python logging
-    debug (boolean): legacy debug option, replaced by python logging    
+    debug (boolean): legacy debug option, replaced by python logging
 
     Returns
     -------
     (colormap instance)
-    
+
     Notes
     -----
      - this function also will can adjust colormaps to fit a given set of ticks
     """
     # Mannual fix maintain scaling to False
 #    maintain_scaling=False
-    
+
     logging.info( 'get_colormap called with fixcb={}'.format(str(fixcb)) )
     # Manually override colourbar?
-#    cb='Blues' # Kludge. 
-#    cb='Reds' # Kludge. 
+#    cb='Blues' # Kludge.
+#    cb='Reds' # Kludge.
 
     # Make sure cmap includes range of all readable levels (lvls)
     # i.e head of colormap often rounded for ascetic/readability reasons
@@ -4007,23 +4007,23 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
             vmin=fixcb[0], nticks=nticks,  rtn_lvls_diff=True, \
             sigfig_rounding_on_cb=sigfig_rounding_on_cb   )
 
-        # increase maximum value in color by 5% of level diff 
-        # to allow space for max lvl 
+        # increase maximum value in color by 5% of level diff
+        # to allow space for max lvl
         fixcb_ = ( fixcb[0],  lvls[-1]+ ( lvls_diff*0.05 ))
         arr = np.array( fixcb_ )
 
-        # Gotcha - make sure max(lvls)  not increased > 0        
+        # Gotcha - make sure max(lvls)  not increased > 0
         if (max(lvls) <= 0) and ( not (arr.max() < 0 ) ):
             arr = np.array(  [ arr[0], 0 ] )
-        
+
     # make sure array has a mask
     logging.debug( "arr min and max vals: {}, {} - arr type: {}".format( \
         str(arr.min()), str(arr.max()), type(arr)) )
     if 'ask' not in str(type( arr ) ):
-        arr = np.ma.array(arr) 
-#        s_mask = arr.mask        
+        arr = np.ma.array(arr)
+#        s_mask = arr.mask
     logging.debug( 'arr type (post mask check) {}:'.format(type(arr)) )
-    
+
     # If postive/negative not given, check if +ve/-ve
     if (not positive) or (not negative):
         logging.debug( 'Testing if arr is +ve/-ve, for arr with min' +\
@@ -4041,7 +4041,7 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         arr.mask[arr>=0]=True
         if arr.mask.all():
             positive = True
-    
+
     # Reverse colourbar if negative
     if negative:
         if cb == 'CMRmap_r':
@@ -4056,13 +4056,13 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
     # load color map
     cmap = plt.get_cmap( cb )
 
-    # Chop off bottom for 'gnuplot2' 
+    # Chop off bottom for 'gnuplot2'
     if (negative and ( 'gnuplot2' in cb)) or (positive and ( 'CMRmap' in cb)):
         cmap = matplotlib.colors.LinearSegmentedColormap.from_list( \
             'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=0, \
             b=maxval-minval, ), cmap(np.linspace(0, maxval-minval, npoints)))
     if (positive and ( 'gnuplot2' in cb)) or (negative and ( 'CMRmap' in cb)):
-#    if positive and ( 'CMRmap' in cb ):    
+#    if positive and ( 'CMRmap' in cb ):
             cmap = matplotlib.colors.LinearSegmentedColormap.from_list( \
                 'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval,\
                 b=maxval), cmap(np.linspace(minval, maxval, npoints)))
@@ -4077,7 +4077,7 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
 #        cmap = plt.cm.Spectral
         # Centre color bar around zero
         if center_zero:
-            vmin, vmax = arr.min(), arr.max() 
+            vmin, vmax = arr.min(), arr.max()
             if buffer_cmap_upper:
                 pass
             logging.debug('vals. for mid point {}, min {}, max {}'.format(\
@@ -4088,7 +4088,7 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
 
     # Use updated jet replacements from mpl
     # : https://github.com/bids/colormap
-#    cmap  = cmc  # pink, orange, blue alterative... 
+#    cmap  = cmc  # pink, orange, blue alterative...
 #    cmap  = cmd  # green - blue alternative
 
 #    arr.mask = s_mask
@@ -4099,7 +4099,7 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
         return cmap, fixcb_
     else:
         return cmap
-  
+
 # --------
 # X.XX -Make segments for variable line color plot
 # --------
@@ -4119,7 +4119,7 @@ def make_segments(x, y):
 # --------
 def colorline( x, y, z=None, cmap=plt.get_cmap('copper'),  \
         norm=None, linewidth=3, alpha=1.0, ax=None, fig=None, \
-        cb_title='Modelled wind direction', convert_x_2datetime=True, 
+        cb_title='Modelled wind direction', convert_x_2datetime=True,
         debug=False ):
     """
     http://nbviewer.ipython.org/github/dpsanders/matplotlib-examples/blob/master/colorline.ipynb
@@ -4138,7 +4138,7 @@ def colorline( x, y, z=None, cmap=plt.get_cmap('copper'),  \
 
     # Special case if a single number:
     # to check for numerical input -- this is a hack
-    if not hasattr(z, "__iter__"):  
+    if not hasattr(z, "__iter__"):
         z = np.array([z])
 
     z = np.asarray(z)
@@ -4151,23 +4151,23 @@ def colorline( x, y, z=None, cmap=plt.get_cmap('copper'),  \
     if convert_x_2datetime:
         # --- make sure x axis is float ( not a datetime )
         # convert to dataframe
-        df = DataFrame( data=y, index=x) 
+        df = DataFrame( data=y, index=x)
         x = np.array(df.index.to_pydatetime(), dtype=datetime.datetime)
         if debug:
             print(type(x[0]), x[0])
 
         # convert in float form
-        x = matplotlib.dates.date2num(x) 
+        x = matplotlib.dates.date2num(x)
         if debug:
             print(type(x[0]), x[0])
 
-    # convert x and y into indices    
+    # convert x and y into indices
     segments = make_segments(x, y)
 
     lc = mpl.collections.LineCollection(segments, array=z, cmap=cmap, norm=norm,
                               linewidth=linewidth, alpha=alpha)
 
-    if isinstance( ax, type(None) ):                              
+    if isinstance( ax, type(None) ):
         ax = plt.gca()
     ax.add_collection(lc)
 
@@ -4185,8 +4185,8 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
         sigfig_rounding_on_cb_ticks=2, \
         sigfig_rounding_on_cb_lvls=2, rtn_lvls_diff=False, \
         verbose=True, debug=False ):
-    """ 
-    Get human readible gradations for ploting ( e.g. colorbars etc ). 
+    """
+    Get human readible gradations for ploting ( e.g. colorbars etc ).
     OUTPUT:
     lvls: list of values where the ticks should be
     ticks: list of strings to call the ticks in Sig figs.
@@ -4232,7 +4232,7 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
 #        sig_figs_needed = int(np.ceil(abs(np.log10( log_diff ))))
 #
 #    sigfig_rounding_on_cb_ticks = sig_figs_needed
-            
+
     # significant figure ( sig. fig. ) rounding func.
     round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
 #    round_to_n = lambda x, n: get_sigfig(x,n)
@@ -4243,32 +4243,32 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
 #                     sigfig_rounding_on_cb
     try:
         lvls_diff =[ round_to_n( abs( i-l[n+1] ), sigfig_rounding_on_cb_ticks) \
-            for n, i in enumerate( l[:-1] ) ] 
+            for n, i in enumerate( l[:-1] ) ]
         lvls_diff = list( set( lvls_diff ) )
         if len(lvls_diff) > 1:
             lvls_diff = max( lvls_diff )
 #        lvls_diff = round_to_n( abs(lvls[-3])-abs(lvls[-4]), \
 #                                sigfig_rounding_on_cb_ticks)
-    
+
     # handle if values (2,3) are both negative or abs. of both <0
     except:
         if debug:
             print(abs(lvls[-4])-abs(lvls[-3]), sigfig_rounding_on_cb_ticks)
         try:    # handle if values (2,3) are both negative
             lvls_diff = round_to_n( abs(lvls[-4])-abs(lvls[-3]), \
-                                sigfig_rounding_on_cb_ticks)                                
+                                sigfig_rounding_on_cb_ticks)
         except: # If both absolute of vmin and vmax  are <0 ( and +ve )
             if debug:
                 print(lvls, lvls[-3], lvls[-4], sigfig_rounding_on_cb_ticks)
             lvls_diff = round_to_n( lvls[-3]-lvls[-4], \
-                                sigfig_rounding_on_cb_ticks)                                
+                                sigfig_rounding_on_cb_ticks)
 
 
     # ---  Round top of colorbar lvls, then count down from this
     # first get top numer rounded up to nearest 'lvls_diff'
-    # caution, this may result in a number outside the cmap, 
+    # caution, this may result in a number outside the cmap,
     # solution: use get_colormap, with buffer_cmap_upper=True
-    #  if values are >0, 
+    #  if values are >0,
     if vmax > lvls_diff:
         if debug:
             print(vmax, lvls_diff)
@@ -4283,14 +4283,14 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
 #        print 1, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
 
     lvls = np.array([ vmax_rounded - lvls_diff*i \
-            for i in range( nticks ) ][::-1])   
+            for i in range( nticks ) ][::-1])
 
     logging.debug("colorbar levels are: {lvls}".format(lvls=lvls))
 #    if debug:
 #        print lvls, len( lvls )
 #        print 2, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
 
-    # ensure returned ticks are to a maximum of 2 sig figs  
+    # ensure returned ticks are to a maximum of 2 sig figs
     # ( this only works if all positive ) and are unique
 #    try:
 #        # Make sure the colorbar labels are not repeated
@@ -4333,29 +4333,29 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
         return lvls
 
 # --------
-# X.XX - mk colourmap discrete 
+# X.XX - mk colourmap discrete
 # --------
 def mk_discrete_cmap( lvls=None, cmap=None, arr=None,\
         vmin=0, vmax=10, nticks=10, debug=False ):
-    """ 
-    Make a discrete colormap from an existing cmap
-    NOTE: 
-     - the data will now need to normalised the range of lvls 
     """
-    
+    Make a discrete colormap from an existing cmap
+    NOTE:
+     - the data will now need to normalised the range of lvls
+    """
+
     # define bins
     if isinstance( lvls, type(None) ):
         bounds = np.linspace( vmin, vmax, nticks, endpoint=True )
     else:
         bounds = lvls
-    
+
     # get colormap if not provided
     if isinstance( cmap, type(None) ):
         cmap = get_colormap( np.array([vmin, vmax]) )
 
     if debug:
         print(lvls, vmin, vmax, nticks)
-    
+
     # extract colors
 #    cmaplist = [ cmap(i) for i in range( len(lvls ) ) ]
     cmaplist = [cmap(i) for i in range(cmap.N)]
@@ -4373,7 +4373,7 @@ def mk_discrete_cmap( lvls=None, cmap=None, arr=None,\
 
 
 # --------
-# X.XX - 
+# X.XX -
 # --------
 def show_plot():
     """
@@ -4383,7 +4383,7 @@ def show_plot():
     return
 
 # --------
-# X.XX - 
+# X.XX -
 # --------
 def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=True):
     """
@@ -4410,58 +4410,58 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=T
         logging.warning("Creating dir {folder}".format(folder=location))
 
     for extension in extensions:
-        filename = os.path.join(location, title+"."+extension) 
+        filename = os.path.join(location, title+"."+extension)
         plt.savefig( filename )
         logging.info("Plot saved to {location}".format(location=filename))
     return
 
 
 
- 
+
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 # ---------------- Section X -------------------------------------------
-# -------------- User specific functions. 
+# -------------- User specific functions.
 # --------------------------------------------------------------------------
-# 
-# NOTE(s): 
+#
+# NOTE(s):
 # (1) These functions should be removed following checks on compatibility
-#  
+#
 
 # -------------
 # X.XX -  print NCAS & York logos in the bottom corners
 # -------------
 def add_logos_NCAS_york_bottom(fig):
-    """ 
-    Add NCAS + York logo for external plots used externally 
+    """
+    Add NCAS + York logo for external plots used externally
 
     NOTE(s):
      - This function is not general enough and needs to be removed from AC_tools
     """
     from PIL import Image
-    
+
     wd1 = get_dir ('dwd') +'misc/logos/'
     logo_list= [
     'NCAS_national_centre_logo.gif', 'nerclogo1000.gif' , 'york_uni_shield.tif' ,   \
-    'york_uni_name.tif' 
+    'york_uni_name.tif'
     ]
 
     # Setup logo 1
     logo1 = Image.open( wd1 + logo_list[3])  # York name
     # [left, bottom, width, height]
-    ax2=fig.add_axes([0.01, 0.015, 0.55, 0.055], frameon=False)  
+    ax2=fig.add_axes([0.01, 0.015, 0.55, 0.055], frameon=False)
     ax2.imshow(logo1,interpolation="bilinear")
     ax2.axis('off')
 
     # Setup logo 2
     logo2 = Image.open( wd1 + logo_list[0]) # NCAS logo
     # [left, bottom, width, height]
-    ax3 = fig.add_axes([0.7, 0.01, 0.25, 0.1], frameon=False) 
+    ax3 = fig.add_axes([0.7, 0.01, 0.25, 0.1], frameon=False)
     ax3.imshow(logo2,interpolation="bilinear")
     ax3.axis('off')
-    return fig 
- 
+    return fig
+
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
@@ -4469,10 +4469,10 @@ def add_logos_NCAS_york_bottom(fig):
 # ---------------- Section X -------------------------------------------
 # -------------- Redundant Functions
 # --------------------------------------------------------------------------
-# 
-# NOTE(s): 
+#
+# NOTE(s):
 # (1) These are retained even though they are redundant for back compatibility
-# (2) It is not advised to use these. 
+# (2) It is not advised to use these.
 
 # --------------
 # 1.16 - plot up timeseries from May through Septmeber
@@ -4480,15 +4480,15 @@ def add_logos_NCAS_york_bottom(fig):
 def timeseries_by_day_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         title=None, legend=False, everyother=7,  x_nticks=12, \
         window=False, label=None, ylabel=None, loc='upper right',  \
-        lw=1,ls='-', color=None, start_month=5, end_month=9, 
+        lw=1,ls='-', color=None, start_month=5, end_month=9,
         boxplot=True, showmeans=False, debug=False ):
-    """ 
-    Timeseries plot. 
-    
-    ARGUEMENTS:
-     - Takes numpy arrays of datetimes and data as arguemnts. 
+    """
+    Timeseries plot.
 
-    NOTES:  
+    ARGUEMENTS:
+     - Takes numpy arrays of datetimes and data as arguemnts.
+
+    NOTES:
      - Description needs update.
     """
 
@@ -4498,20 +4498,20 @@ def timeseries_by_day_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     # remove dates outside of range (start_month > < end_month )
     def get_month(x):
          return x.month
-    df[ 'month'] = df.index.map( get_month ) 
+    df[ 'month'] = df.index.map( get_month )
     df = df[ df['month']<=end_month ]
     df = df[ df['month']>=start_month ]
 
     # split by day
     def get_day(x):
-         return datetime.datetime(*x.timetuple()[:3]) 
+         return datetime.datetime(*x.timetuple()[:3])
     df[ 'day'] = df.index.map( get_day )
     sel_days = sorted(set(df[ 'day']))
     df = DataFrame(data={'data':df.data, 'day':df.day},index=df.index )
     daily = [ df[df['day']== i].data for i in sel_days ]
     sel_days = [i.to_datetime() for i in sel_days ]
 
-    # label once per week 
+    # label once per week
     labels = [i.strftime("%-d %b") for  i in sel_days ][::everyother]
 
     if boxplot:
@@ -4521,10 +4521,10 @@ def timeseries_by_day_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
         # xticks are numbers, therefore set all to ''
         # except those you want to show dates
         fill_label = ['']*len(sel_days)
-        fill_points =list(range(len(sel_days)))[::everyother] 
+        fill_points =list(range(len(sel_days)))[::everyother]
         for n,i in enumerate( fill_points) :
             fill_label[i] = labels[n]
-    
+
         plt.xticks( list(range(len(sel_days))), fill_label, \
                         rotation='vertical')
     else:
@@ -4546,24 +4546,24 @@ def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
         left= 0.1, width=0.60, bottom=0.1, height=0.60, widthII=0.2, \
         fit = 0.02, binwidth=0.1, cmap=plt.cm.gnuplot2, \
         X_title='X title', Y_title='Y title', f_size=5 , line121=False ):
-    """ 
-    Plots a X vs. Y histogram 
+    """
+    Plots a X vs. Y histogram
     NOTES
-    --- 
+    ---
     Just use pandas for this or seaborn
      - http://seaborn.pydata.org/generated/seaborn.distplot.html
      - http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.hist.html
-    
+
     """
 
-    # Use hist code 
+    # Use hist code
     nullfmt = mpl.ticker.NullFormatter()         # no labels
 
     # start with a rectangular Figure
     if isinstance( fig, type(None) ):
         fig = plt.figure(1, figsize=(8,8))
-    
-    rect_scatter = [left, bottom, width, height]    
+
+    rect_scatter = [left, bottom, width, height]
     axScatter = plt.axes(rect_scatter)
 
     if z == None:
@@ -4575,7 +4575,7 @@ def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
 #        rect_histx = [left, bottom_h, width, widthII]
 #        rect_histy = [left_h, bottom, widthII, height]
 
-    else:        
+    else:
         vmin, vmax = [  ( float(np.ma.min(i)), float(np.ma.max(i)) ) \
             for  i in [ z] ][0]
         s_z = [ cmap(  (float(i) - vmin) / ( np.array([vmin,vmax]) ).ptp() ) \
@@ -4584,14 +4584,14 @@ def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
 
         # definitions for the hist axes & setup.
 #        widthII , height = [ i*.75 for i in widthII, height ]
-        widthII  = widthII*.75 
+        widthII  = widthII*.75
 
     # definitions for the hist axes & setup.
     bottom_h = left_h = left+width+fit
     rect_histx = [left, bottom_h, width, widthII]
     rect_histy = [left_h, bottom, widthII, height]
 
-    # now determine nice limits by hand or prescribe: 
+    # now determine nice limits by hand or prescribe:
     xymax = np.ma.max( [np.ma.max(np.fabs(x)), np.ma.max(np.fabs(y))] )
     lim = ( int(xymax/binwidth) + 1) * binwidth
 
@@ -4604,7 +4604,7 @@ def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
  #   axScatter.set_ylim( (-lim, lim) )
 
     # add trendline
-    Trendline( axScatter, x, y, order =1, intervals= 700 ) 
+    Trendline( axScatter, x, y, order =1, intervals= 700 )
 
     # plot up titles
     plt.xlabel(  X_title )
@@ -4613,22 +4613,22 @@ def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
         print(lim_min, lim_max)
         plt.plot( np.arange(lim_min, lim_max*1.5 )  , np.arange(lim_min, \
             lim_max*1.5  ), linestyle='--', color=(0.5, 0.5, 0.5))
-    
+
     # add color bar if using z - [left, bottom, width, height],
     if z != None:
-        cbaxes = plt.axes([0.9+fit*.5, bottom, fit*.5, height]) 
-        cb = plt.colorbar(pts, cax = cbaxes) 
+        cbaxes = plt.axes([0.9+fit*.5, bottom, fit*.5, height])
+        cb = plt.colorbar(pts, cax = cbaxes)
         if zlabel != None:
             cb.ax.set_ylabel(zlabel, rotation='vertical', labelpad=1 )
-    
-    # plot up histograms 
+
+    # plot up histograms
     axHistx = plt.axes(rect_histx)
     axHisty = plt.axes(rect_histy)
 
     # no labels
     axHistx.xaxis.set_major_formatter(nullfmt)
-    axHisty.yaxis.set_major_formatter(nullfmt)    
-    
+    axHisty.yaxis.set_major_formatter(nullfmt)
+
     # bin data
     bins = np.arange(-lim, lim + binwidth, binwidth)
     axHistx.hist(x, bins=bins)
@@ -4638,7 +4638,7 @@ def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
 
     axHistx.set_xlim( axScatter.get_xlim() )
     axHisty.set_ylim( axScatter.get_ylim() )
-    
+
     # make sure scales are linear
     [ i.set_yscale('linear') for i in (axHisty, axScatter) ]
     [ i.set_xscale('linear') for i in (axHistx, axScatter) ]
@@ -4650,7 +4650,7 @@ def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
 
 
 
-# --------   
+# --------
 # X.XX - Diurnal plot
 # --------
 def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
@@ -4659,14 +4659,14 @@ def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
         xlabel=True, r_avgs=False, marker=None, label=None, \
         markersize=1, title=None, f_size=10, units='ppbv', scale='linear', \
         lw=1,lgnd_f_size=None, alpha=1, debug=False ):
-    """ 
+    """
     REDUNDENT!  (use diurnal_plot_df instead)
-     Creates a diurnal plot for given data and dates. 
-    
+     Creates a diurnal plot for given data and dates.
+
 
     NOTES:
-     - Data and dates must be in numpy array form. 
-     - Dates must also be datetime.datetime objects 
+     - Data and dates must be in numpy array form.
+     - Dates must also be datetime.datetime objects
 
      """
 
@@ -4683,7 +4683,7 @@ def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
         color=color
     if isinstance( lgnd_f_size, type(None)):
         lgnd_f_size = f_size
-    
+
     # Bin data
     binned, bins_used = bin_data( data, dates, bin_size, debug=debug )
 
@@ -4695,33 +4695,33 @@ def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
     avg = np.ma.mean( avgs )
     max_ = np.ma.max( avgs )
 #    print avgs, avg, np.ma.max( avgs )
-    
+
     if fractional:
 #        y = ( avgs - np.ma.max( avgs )  )  / avgs *100
 #        y = ( avgs - np.ma.max( avgs )  )  / avg *100
         y = ( avgs - np.ma.max( avgs )  )  / max_*100
         print('test'*100, avg, max_, avgs)
 
-        ymin, ymax =  -0.15, 0.025 
+        ymin, ymax =  -0.15, 0.025
         ymin, ymax =  [i*100 for i in (ymin, ymax) ]
         units = '%'
-    elif diurnal:        
+    elif diurnal:
         y =  avgs - np.ma.max( avgs )
         ymin, ymax =  -3.5 , 0.5
     else:
         y = avgs
         ymin, ymax =  None, None#27, 37
-    
+
     # Plot
     plt.plot( bins_used, y, color=color , label=label, linestyle=ls[pos-1], \
         alpha=alpha, marker=marker, lw=lw, ms=markersize )
 
-    # Beautify 
+    # Beautify
     ax.set_xticklabels( np.arange(0,24,1 )[::2]  )
     plt.xticks( np.arange(0,1,1/24. )[::2], fontsize=f_size )
     plt.xlim(0., 23/24.)
 
-    if ymin != None:    
+    if ymin != None:
         plt.ylim( ymin, ymax )
     plt.yticks( fontsize=f_size*.75)
     plt.xticks( fontsize=f_size*.75)
@@ -4735,20 +4735,20 @@ def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
     if pos == posn:
         plt.legend( fontsize=lgnd_f_size )
 
-    # return max 
+    # return max
     if rmax :
         return np.ma.max( avgs )
 
     if r_avgs:
-        return avgs 
+        return avgs
 
-# --------   
+# --------
 # X.XX - Lat plot
 # --------
 def lat_plot(fig, ax, arr, title=None, f_size=10, units='ppbv', \
         scale='linear', debug=False ):
-    """ 
-    Creates a latitude plot on given figure and axis 
+    """
+    Creates a latitude plot on given figure and axis
     """
 
     NIU, lat, NIU = get_latlonalt4res( res=res )
@@ -4762,20 +4762,20 @@ def lat_plot(fig, ax, arr, title=None, f_size=10, units='ppbv', \
     parallels = np.arange(-90,91,15)
     plt.xticks( parallels, fontsize = f_size ) # draw parrelel lines
     plt.rcParams.update({'font.size': f_size})
-    
-    
-# --------   
+
+
+# --------
 # X.XX - Diurnal boxplot
 # --------
 def diurnal_boxplot(fig, ax,  dates, data, pos=1, posn =1,  bin_size=2/24.,\
         widths=0.01, white_fill=True, alpha=0.1, linewidth=0.5, \
         showmeans=False, title=None, f_size=10, units='ppbv', \
         scale='linear', debug=False ):
-    """ 
-    Creates a diurnal plot of boxplots (hourly) for given data and dates. 
+    """
+    Creates a diurnal plot of boxplots (hourly) for given data and dates.
     NOTES:
-     - Data and dates must be in numpy array form. 
-     - Dates must also be datetime.datetime objects 
+     - Data and dates must be in numpy array form.
+     - Dates must also be datetime.datetime objects
     """
 
     # Convert datetime to fractional day <= set this to map on array at once?
@@ -4794,7 +4794,7 @@ def diurnal_boxplot(fig, ax,  dates, data, pos=1, posn =1,  bin_size=2/24.,\
         showmeans=showmeans, patch_artist=True )
     set_bp( bp, pos, white_fill=white_fill, c_list=color_list(posn) )
 
-    # Beautify 
+    # Beautify
     ax.set_xticklabels( np.arange(0,24,bin_size*24 )[::2]  )
     plt.xticks( np.arange(0,1,bin_size )[::2] )
     plt.xlim(-0.05, 1.05)
@@ -4804,10 +4804,10 @@ def diurnal_boxplot(fig, ax,  dates, data, pos=1, posn =1,  bin_size=2/24.,\
     plt.xlabel('Hour of day')
     plt.ylabel('{}'.format(units))
     ax.xaxis.grid(True, which='major')
-    ax.xaxis.grid(True, which='minor') 
+    ax.xaxis.grid(True, which='minor')
 
-    # --- Highlight bins        
-    bs = np.arange(0, 24, bin_size )#[ bs[0] - bin_size ] + bs 
+    # --- Highlight bins
+    bs = np.arange(0, 24, bin_size )#[ bs[0] - bin_size ] + bs
     [ plt.axvline( x=i, color='k', linewidth=linewidth, alpha=alpha, \
          linestyle='dashed' ) for i in bs ]
 
@@ -4815,12 +4815,12 @@ def diurnal_boxplot(fig, ax,  dates, data, pos=1, posn =1,  bin_size=2/24.,\
 # X.XX - plot up monthly from data provided from DB netCDF
 # -------------
 def obs_month_plot(data, color=None, title=None, rtn_data=False, plt_day=True, debug=False):
-    """ 
-    Plot up seaonal (monthly ) data. Requires data, and dates in numpy 
-    array form. Dates must be as datetime.datetime objects. 
+    """
+    Plot up seaonal (monthly ) data. Requires data, and dates in numpy
+    array form. Dates must be as datetime.datetime objects.
 
     NOTES:
-     - REDUNDENT? (see 1.13) 
+     - REDUNDENT? (see 1.13)
     """
 
     # Setup decimal day list
@@ -4829,7 +4829,7 @@ def obs_month_plot(data, color=None, title=None, rtn_data=False, plt_day=True, d
         print(data.shape)
         print(day_time)
 
-    # Plot up all data <= this is inefficient. 
+    # Plot up all data <= this is inefficient.
 	if plt_day:
 	    for i in range( len( data[0,:] ) ) :
 	    	day_d = data[:,i]  # select day's data and convert to -1
@@ -4839,7 +4839,7 @@ def obs_month_plot(data, color=None, title=None, rtn_data=False, plt_day=True, d
 	if rtn_data:
 		if debug:
 			print('rtn_data')
-#		day_time, 
+#		day_time,
 		data_ = np.ma.mean(data[:,:],axis=1)
 		return day_time, data_
     # Plot up daily decimal days
@@ -4848,23 +4848,23 @@ def obs_month_plot(data, color=None, title=None, rtn_data=False, plt_day=True, d
 			print(' not - rtn_data')
 		plt.plot( day_time, np.ma.mean(data[:,:],axis=1) , lw=3 , color=color, \
 		     label=title)
-		return plt    
+		return plt
 
 
 # -------------
-# X.XX - Input for plotting  
+# X.XX - Input for plotting
 # -------------
 def get_input_vars(debug=False):
-    """ 
-    Get input from command line arguments 
-    
+    """
+    Get input from command line arguments
+
     Parameters
     ----------
     debug (boolean): legacy debug option, replaced by python logging
 
     Returns
     -------
-    (list): spec(str), filename(str), category(str), start date(tuple), 
+    (list): spec(str), filename(str), category(str), start date(tuple),
     end date  (tuple)
     """
     # If working directory (wd) provided, use command line arguments
@@ -4893,7 +4893,7 @@ def get_input_vars(debug=False):
         if (len(end) < 1):
             end = None
         else:
-            end = datetime.datetime( *tuple( map( int, end.split('-')) ) )            
+            end = datetime.datetime( *tuple( map( int, end.split('-')) ) )
         print(wd, fn, cat_, spec, start, end)
 
     # Has species file name been provided? ( e.g.  "O3" )
@@ -4924,7 +4924,7 @@ def get_input_vars(debug=False):
             cat_ = "IJ-AVG-$"
 
     # Has start date been provided? ( in form "YYYY, MM, DD" )
-    try:  
+    try:
         print(sys.argv[5].split('-'))
         start = datetime.datetime( *tuple( map( int, sys.argv[5].split('-')) ) )
     except:
@@ -4934,7 +4934,7 @@ def get_input_vars(debug=False):
             start = None
 
     # Has end date been provided? ( in form "YYYY, MM, DD" )
-    try:  
+    try:
         print(sys.argv[6].split('-'))
         end = datetime.datetime( *tuple( map( int, sys.argv[6].split('-')) ) )
     except:
@@ -4957,16 +4957,16 @@ def get_input_vars(debug=False):
 # X.XX - weighted average
 # -------------
 def weighted_average( data, interval , bins_used=False, debug=False):
-    """ 
-    Calculate a weighed average of data fro a given interval 
-    
-    NOTES just use pandas.cut! 
+    """
+    Calculate a weighed average of data fro a given interval
+
+    NOTES just use pandas.cut!
     docs: http://pandas-docs.github.io/pandas-docs-travis/generated/pandas.cut.html
 
 
     """
 
-    min_v, max_v = int( data.min() ), int( data.max() ) 
+    min_v, max_v = int( data.min() ), int( data.max() )
     bins = np.arange(min_v, max_v, interval)
     if debug:
         print([ (i, type(i) ) for i in [ min_v, max_v, bins ] ])
@@ -4974,10 +4974,10 @@ def weighted_average( data, interval , bins_used=False, debug=False):
     binned, bins_used  = [], []
     for bin_ in bins:
         b_mean = np.mean( data[np.where( int_d == bin_ )] )
-        if ( b_mean != 0 ):            
+        if ( b_mean != 0 ):
             binned.append( b_mean )
-            bins_used.append( bin_ ) 
-        else: 
+            bins_used.append( bin_ )
+        else:
             print('no data for bin {}'.format(bin_))
             pass
     if debug:
@@ -4988,18 +4988,18 @@ def weighted_average( data, interval , bins_used=False, debug=False):
         return binned
 
 
-# --------------                                                                                                                                             
+# --------------
 # X.XX - moving average
-# ------------- 
+# -------------
 def moving_average(x, n, type='simple'):
-    """   
+    """
     compute an n period moving average.
 
     NOTE:
-     - type is 'simple' | 'exponential' 
-     - Just use pandas for this? 
+     - type is 'simple' | 'exponential'
+     - Just use pandas for this?
     (http://pandas.pydata.org/pandas-docs/version/0.17.0/generated/pandas.rolling_mean.html)
-    """ 
+    """
     x = np.asarray(x)
     if type=='simple':
         weights = np.ones(n)
@@ -5012,9 +5012,9 @@ def moving_average(x, n, type='simple'):
     a[:n] = a[n]
     return a
 
-# --------------                                                                                                                                             
+# --------------
 # X.XX -  Get percentiles
-# ------------- 
+# -------------
 def percentile(N, percent, key=lambda x:x):
     """
     Find the percentile of a list of values.
@@ -5028,9 +5028,9 @@ def percentile(N, percent, key=lambda x:x):
      - Credit: {{{ http://code.activestate.com/recipes/511478/ (r1)
 
     NOTES
-    ---- 
+    ----
     Just use numpy percentile function or pandas .describe() function?
-    
+
     """
     if not N:
         return None
@@ -5042,30 +5042,30 @@ def percentile(N, percent, key=lambda x:x):
     d0 = key(N[int(f)]) * (c-k)
     d1 = key(N[int(c)]) * (k-f)
     return d0+d1
-    
+
 # --------
-# X.XX - Coupler to select plot type 
+# X.XX - Coupler to select plot type
 # --------
 def create_plot4case( fig, ax, dates, data, spec, f_size=20, lw=None, ls=None, \
         loc=True, legend=True, units='', boxplot=False, lname='Weyborne', \
         run_name='run', start_month=7, end_month=7, plot_type='daily', \
-        case=None, l_dict=None, label=None, alt_text=None, color=None): 
-    """ 
-    Coupler for timeseries data (dates as datetimes + data) to be 
-            converted multiple graph forms with just change of case    
+        case=None, l_dict=None, label=None, alt_text=None, color=None):
+    """
+    Coupler for timeseries data (dates as datetimes + data) to be
+            converted multiple graph forms with just change of case
     """
 
     # --- select frequency
     # select case
     if isinstance(case, type(None) ):
-        case ={  
+        case ={
         'diurnal': 1, 'daily': 1, 'monthly':2,'weekly': 3,  \
-        'May-Sept':4, 'July' : 5, 'Month': 5, 
+        'May-Sept':4, 'July' : 5, 'Month': 5,
         'PDF':6
         }[plot_type]
 
     # --- select labels
-    # 'Build' latex run name dictionary is not given. 
+    # 'Build' latex run name dictionary is not given.
     if isinstance( l_dict, type(None) ):
         l_dict= GC_var('latex_run_names')
 
@@ -5073,7 +5073,7 @@ def create_plot4case( fig, ax, dates, data, spec, f_size=20, lw=None, ls=None, \
     if isinstance( label, type(None) ):
         label= l_dict[ run_name ]
 
-    # --- select line plot details. 
+    # --- select line plot details.
     # set linewidth +linestyle default if not given
     if isinstance( lw, type(None) ):
         lw=1
@@ -5083,7 +5083,7 @@ def create_plot4case( fig, ax, dates, data, spec, f_size=20, lw=None, ls=None, \
     # --- plot requested timeseries
     if case == 1:
         timeseries_daily_plot( fig, ax, dates, data, f_size=f_size,
-            title=latex_spec_name(spec), color=color ) 
+            title=latex_spec_name(spec), color=color )
 
     if case == 2:
         timeseries_seasonal_plot( ax, dates, data,  \
@@ -5113,12 +5113,43 @@ def create_plot4case( fig, ax, dates, data, spec, f_size=20, lw=None, ls=None, \
 
 
 # --------
+# X.XX - Plot up locations (lons and lats) on a map
+# --------
+def plot_lons_lats_spatial_on_map(lons=None, lats=None, p_size=50, color='red',
+        title=None, f_size=10, dpi=320 ):
+    """
+    Plot a list of lons and lats spatially on a map
+
+    Parameters
+    -------
+    p_size (int): size of plot location point (lon, lat)
+    lons, lats (list): list of locations (in decimal londitude and latitude )
+    color (str): color of points on map for locations
+    title (str): title for plot
+    f_size (float): fontsize
+    dpi (int): resolution of figure (dots per sq inch)
+    """
+    import matplotlib.pyplot as plt
+    # --- Setup plot
+    fig = plt.figure(dpi=dpi, facecolor='w', edgecolor='k')
+    ax1 = fig.add_subplot(111)
+    # plot up white background  (on a blank basemap plot)
+    marker = 'o'
+    arr = np.zeros((72, 46))
+    plt, m = map_plot(arr.T, return_m=True, cmap=plt.cm.binary, f_size=f_size*2, \
+        fixcb=[ 0, 0 ], ax=ax1, no_cb=True, resolution='c', \
+        ylabel=True, xlabel=True, title=title, axis_titles=True )#
+    # Plot up all sites as a scatter plot of points on basmap
+    m.scatter( lons, lats, edgecolors=color, c=color, marker=marker, s=p_size, alpha=1,)
+
+
+# --------
 # X.XX - Probability distribution plotter
 # --------
 def PDF_obs_vs_mod( ax, dates, data, f_size=20, pos=0, posn=1,  \
         title=None, legend=False, everyother=7*24,  x_nticks=12, \
         window=False, label=None, ylabel=None, loc='upper left',  \
-        lw=1,ls='-', color=None, start_month=1, end_month=12, 
+        lw=1,ls='-', color=None, start_month=1, end_month=12,
         unitrotation=45, alpha=.5, bins=100, alt_text=None, debug=False ):
     """
     Constructs a PDF plot with given dates and data.
@@ -5134,13 +5165,13 @@ def PDF_obs_vs_mod( ax, dates, data, f_size=20, pos=0, posn=1,  \
     # remove dates outside of range (start_month > < end_month )
     def get_month(x):
          return x.month
-    df[ 'month'] = df.index.map( get_month ) 
+    df[ 'month'] = df.index.map( get_month )
     df = df[ df['month']<=end_month ]
     df = df[ df['month']>=start_month ]
     df = DataFrame(data={'data':df['data']}, index=df.index )
 
-    # plot up PDF 
-    plt.hist( df.values, label=label+' (n={})'.format( len(data) ), 
+    # plot up PDF
+    plt.hist( df.values, label=label+' (n={})'.format( len(data) ),
         histtype='stepfilled', color=color, alpha=alpha, bins=bins )
 
     # Beatify plot
@@ -5156,4 +5187,3 @@ def PDF_obs_vs_mod( ax, dates, data, f_size=20, pos=0, posn=1,  \
         plt.legend()
 
 
-		
