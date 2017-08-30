@@ -19,10 +19,17 @@ except  ImportError:
     print( 'WARNING iris and cartopy have stability issues')
 # retain back compatibility for PyGChem
 try:
-  from pygchem import datasets
-except:
-  import pygchem.datafields as datasets
-
+    if (sys.version_info.major <= 2):
+        import pygchem
+        if pygchem.__version__ == '0.2.0':
+            import pygchem.diagnostics as gdiag
+        else:
+            try:
+                from pygchem import datasets
+            except:
+                import pygchem.datafields as datasets
+except ImportError:
+    print 'pygchem not imported!'
 
 def convert_to_netCDF(folder=None,filename='ctm.nc', bpch_file_list=None, \
         remake=False, hemco_file_list=None, verbose=True, \
