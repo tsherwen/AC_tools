@@ -1362,7 +1362,7 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
     """
     # Process data - reduce resolution to daily, and get std
     df = DataFrame(data,index=dates )
-	# Force use of a standard year
+    # Force use of a standard year
     months = list(range(1, 13))
     datetime_months = [ datetime.datetime(2009, int(i), 1) for i in months ]
     labels = [i.strftime("%b") for i in datetime_months]
@@ -4830,25 +4830,25 @@ def obs_month_plot(data, color=None, title=None, rtn_data=False, plt_day=True, d
         print(day_time)
 
     # Plot up all data <= this is inefficient.
-	if plt_day:
-	    for i in range( len( data[0,:] ) ) :
-	    	day_d = data[:,i]  # select day's data and convert to -1
-        	plt.plot(day_time , day_d , alpha=0.1, color=color)
+    if plt_day:
+        for i in range( len( data[0,:] ) ) :
+            day_d = data[:,i]  # select day's data and convert to -1
+            plt.plot(day_time , day_d , alpha=0.1, color=color)
 
     # Return data?
-	if rtn_data:
-		if debug:
-			print('rtn_data')
+    if rtn_data:
+        if debug:
+            print('rtn_data')
 #		day_time,
-		data_ = np.ma.mean(data[:,:],axis=1)
-		return day_time, data_
+        data_ = np.ma.mean(data[:,:],axis=1)
+        return day_time, data_
     # Plot up daily decimal days
-	else :
-		if debug:
-			print(' not - rtn_data')
-		plt.plot( day_time, np.ma.mean(data[:,:],axis=1) , lw=3 , color=color, \
-		     label=title)
-		return plt
+    else :
+        if debug:
+            print(' not - rtn_data')
+        plt.plot( day_time, np.ma.mean(data[:,:],axis=1) , lw=3 , color=color, \
+             label=title)
+        return plt
 
 
 # -------------
