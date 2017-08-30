@@ -308,7 +308,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
             # Normalise to Log space
             norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
 
-	        # Create colourbar instance
+            # Create colourbar instance
             cb = plt.colorbar(poly, ax=m.ax, ticks=lvls, format=format, shrink=shrink, \
                 alpha=alpha, norm=norm, extend='min')
         logging.debug(np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), lvls)
@@ -1351,14 +1351,14 @@ def timeseries_seasonal_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
 
     Parameters
     ----------
-	ax (axis object): axis to plot onto
-	dates (np.array): array of dates (as  datetime.datetime objects)
-	data (np.array): 1D array of data
-	plot_Q1_Q3 (boolean): plot up quartiles on timeseries plot
+    ax (axis object): axis to plot onto
+    dates (np.array): array of dates (as  datetime.datetime objects)
+    data (np.array): 1D array of data
+    plot_Q1_Q3 (boolean): plot up quartiles on timeseries plot
 
     Returns
     -------
-	(None)
+    (None)
     """
     # Process data - reduce resolution to daily, and get std
     df = DataFrame(data,index=dates )

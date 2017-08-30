@@ -93,7 +93,7 @@ def get_surface_area(res=None, wd=None, debug=False):
 
     Notes
     -----
-	 - this function accesses previsouly run GEOS-Chem
+     - this function accesses previsouly run GEOS-Chem
         1day files with just DXYP / DXYP diagnostic ouptuted
      - back compatibility with PyGChem 0.2.0 is retained
     """
@@ -234,8 +234,8 @@ def get_land_map(res='4x5', time=None, wd=None,debug=False):
 
     Notes
     -----
-	 - This approach is inefficent and requires large files. Could this be improved with
-	 on-line extract on inclusion of generic output for various resoltions as txt files?
+     - This approach is inefficent and requires large files. Could this be improved with
+     on-line extract on inclusion of generic output for various resoltions as txt files?
     """
 
     logging.info( 'called get surface area, for {}'.format(res) )
@@ -539,7 +539,7 @@ def process_data4specs( specs=None, titles=None, wds=None, res='4x5', \
     Notes
     -----
 
-	 - This function is fairly inefficient, but is compbatible with pygchem 0.2.0 and 0.3.0
+     - This function is fairly inefficient, but is compbatible with pygchem 0.2.0 and 0.3.0
      ( Since the above comment, the function has been updated to tak a list of
       working directories (wds) and  )
 
@@ -1230,7 +1230,7 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
     Notes
     -----
      - update this to take any values for res...
-	 - Does this function need updating?
+     - Does this function need updating?
 
         Credit: Bob Yantosca
         Original docs from ( grid_mod ):
@@ -1358,8 +1358,8 @@ def get_chem_fam_v_v_X( wd=None, fam='Iy', res='4x5', ver='3.0' , specs=None, \
 
     Notes
     -----
-	 - Is this function just a double up of fam_data_extractor?
-	 (which is more up to date)
+     - Is this function just a double up of fam_data_extractor?
+     (which is more up to date)
     """
 
     # Get species time Tropopause diagnostic
@@ -1633,15 +1633,15 @@ def get_STRAT_TROP_exchange_from_geos_log( fn=None, ver='3.0', \
 def get_mod_WIND_dir(  sdate=datetime.datetime(2012, 8, 1, 0 ), \
             edate = datetime.datetime(2012, 8, 8, 0 ), loc='KEN', \
             scale=1, adjustby=0, period = 'summer', \
-			vars = ('GMAO_UWND', 'GMAO_VWND'), \
+            vars = ('GMAO_UWND', 'GMAO_VWND'), \
             verbose=False, debug=False):
     """
     Extract synoptic wind direction
 
     NOTES:
-	 - this function was written to work with GEOS-Chem planeflight output
-	(thus U/V vector variables are set to pf varaibles), but alternates are accepted
-	as arguements
+     - this function was written to work with GEOS-Chem planeflight output
+    (thus U/V vector variables are set to pf varaibles), but alternates are accepted
+    as arguements
     """
 
     # Extract U10, W10 ( use 10 m wind? )
@@ -2308,7 +2308,7 @@ def molec_cm2_s_2_Gg_Ox_np( arr, spec='O3', s_area=None, ctm_f=None, \
 
     Notes
     -----
-	 -  NEEDS UPDATE. The code is not clear.
+     -  NEEDS UPDATE. The code is not clear.
     """
     logging.info( 'molec_cm2_s_2_Gg_Ox_np  called' )
 
@@ -4392,20 +4392,20 @@ def concvert_df_VOC_C2v( df=None, verbose=True ):
 
 
 def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*", filename='ctm.nc', \
-		folder=None, ext_str='_TEST_', file_prefix='ctm_', split_by_month=False, \
-		verbose=True):
+        folder=None, ext_str='_TEST_', file_prefix='ctm_', split_by_month=False, \
+        verbose=True):
     """
-	Wrapper function to process ctm bpch files in folder to NetCDF file(s)
+    Wrapper function to process ctm bpch files in folder to NetCDF file(s)
 
     Parameters
     -------
-	bpch_file_type (str): str of standard file (wildcard) str with file naming structure
+    bpch_file_type (str): str of standard file (wildcard) str with file naming structure
     filename (str): name of NetCDF file to make
     verbose (boolean): print verbose output?
-	folder (str): directory address for folder contain files
-	ext_str (str): extra str to inc. in monthly filenames
-	file_prefix (str): prefox str to use for monthly split files
-	split_by_month (boolean): split new NetCDF file by month?
+    folder (str): directory address for folder contain files
+    ext_str (str): extra str to inc. in monthly filenames
+    file_prefix (str): prefox str to use for monthly split files
+    split_by_month (boolean): split new NetCDF file by month?
 
     Returns
     -------
@@ -4450,36 +4450,36 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*", filename='ctm.n
 
 
 def process_all_bpch_files_in_dir(folder=None, ext_str=None):
-	"""
-	Process all bpch files in a given directory
-	(Warpper of process_bpch_files_in_dir2NetCDF for *ts*bpch* and *ctm*bpch* files)
+    """
+    Process all bpch files in a given directory
+    (Warpper of process_bpch_files_in_dir2NetCDF for *ts*bpch* and *ctm*bpch* files)
 
-	folder (str): directory address for folder contain files
-	ext_str (str): extra str to inc. in monthly filenames
+    folder (str): directory address for folder contain files
+    ext_str (str): extra str to inc. in monthly filenames
 
     Returns
     -------
     (None)
-	"""
-	# - Process *ctm*bpch* files
-	# Temporary variables
-	bpch_file_type = '*ctm.bpch.*'
-	filename = 'ctm.nc'
-	file_prefix ='ctm_'
-	# process *ctm*bpch* to NetCDF
-	process_bpch_files_in_dir2NetCDF( folder=folder, filename=filename, \
-		ext_str=ext_str, file_prefix=file_prefix, \
-		bpch_file_type=bpch_file_type, split_by_month=True)
+    """
+    # - Process *ctm*bpch* files
+    # Temporary variables
+    bpch_file_type = '*ctm.bpch.*'
+    filename = 'ctm.nc'
+    file_prefix ='ctm_'
+    # process *ctm*bpch* to NetCDF
+    process_bpch_files_in_dir2NetCDF( folder=folder, filename=filename, \
+        ext_str=ext_str, file_prefix=file_prefix, \
+        bpch_file_type=bpch_file_type, split_by_month=True)
 
-	# - Process *ts*bpch* files
-	# Temporary variables
-	bpch_file_type = 'ts*bpch*'
-	filename = 'ts_ctm.nc'
-	file_prefix ='ts_ctm_'
-	# Process *ts*bpch* to netCDF4
-	process_bpch_files_in_dir2NetCDF( folder=folder, filename=filename, \
-		ext_str=ext_str, file_prefix=file_prefix, \
-		bpch_file_type=bpch_file_type, split_by_month=True)
+    # - Process *ts*bpch* files
+    # Temporary variables
+    bpch_file_type = 'ts*bpch*'
+    filename = 'ts_ctm.nc'
+    file_prefix ='ts_ctm_'
+    # Process *ts*bpch* to netCDF4
+    process_bpch_files_in_dir2NetCDF( folder=folder, filename=filename, \
+        ext_str=ext_str, file_prefix=file_prefix, \
+        bpch_file_type=bpch_file_type, split_by_month=True)
 
 
 # ------------------ Section X.X -------------------------------------------
@@ -5144,7 +5144,7 @@ def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
     total_atmos (boolean): return whole atmosphere or just troposphere?
     spec (str): species/tracer/variable name
     wd (str): Specify the wd to get the results from a run.
-	arr (np.array): array of v/v for species
+    arr (np.array): array of v/v for species
 
     Returns
     -------
@@ -5239,7 +5239,7 @@ def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None, \
     """
     Convert species/tag prod/loss from "molec/cm3/s" to "Gg (Ox) yr^-1".
 
-	!!! This is redundent. use convert_molec_cm3_s_2_g_X_s instead. !!!
+    !!! This is redundent. use convert_molec_cm3_s_2_g_X_s instead. !!!
 
     NOTES:
      - This function was originally used to process diagnostic outputs from PORL-L$

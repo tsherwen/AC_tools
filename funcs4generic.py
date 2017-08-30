@@ -1,25 +1,25 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-""" 
+"""
 Generic functions for use with GEOS-Chem/Data Analysis.
 
-Use help(<name of function>) to get details on a particular function. 
+Use help(<name of function>) to get details on a particular function.
 
-NOTE(S):    
- - This module is underdevelopment vestigial/inefficient code is being removed/updated. 
- - Where external code is used credit is given. 
+NOTE(S):
+ - This module is underdevelopment vestigial/inefficient code is being removed/updated.
+ - Where external code is used credit is given.
 """
 
 # ----------------------------- Section 0 -----------------------------------
 # -------------- Required modules:
 
-# -- I/O / Low level                                                                                
+# -- I/O / Low level
 import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 from pandas import DataFrame
 
-# -- time                                                                                           
+# -- time
 import time
 import datetime as datetime
 
@@ -43,19 +43,19 @@ else:
 # X.XX -  Split arrays into chunks (e.g. days)
 # -------------
 def chunks(l, n):
-    """ 
-    Split list in chunks - useful for controlling memory usage 
+    """
+    Split list in chunks - useful for controlling memory usage
     """
     if n < 1:
         n = 1
     return [l[i:i + n] for i in range(0, len(l), n)]
-    
+
 # -------------
 # X.XX - Get len of file
 # -------------
 def file_len(fname):
-    """ 
-    Get length of file 
+    """
+    Get length of file
     """
     return sum(1 for line in open(fname))
 
@@ -63,16 +63,16 @@ def file_len(fname):
 # X.XX - My round - credit: Alok Singhal
 # -------------
 def myround(x, base=5, integer=True, round_up=False):
-    """ 
-    Round up values - mappable function for pandas processing 
+    """
+    Round up values - mappable function for pandas processing
     NOTES:
      - credit: Alok Singhal
     """
 #    round_up=True # Kludge - always set this to True
 
     # round to nearest base number
-    rounded = base * round(float(x)/base) 
-        
+    rounded = base * round(float(x)/base)
+
     if round_up:
         # ensure rounded number is to nearest next base
         if rounded < x:
@@ -80,32 +80,32 @@ def myround(x, base=5, integer=True, round_up=False):
 
     if integer:
         return int( rounded )
-    else:        
+    else:
         return rounded
 
 # --------------
-# X.XX - Count number of files/the filenames that contain certain phrase/number conbinations (e.g. dates) - tms 
+# X.XX - Count number of files/the filenames that contain certain phrase/number conbinations (e.g. dates) - tms
 # -------------
 def counter_directory_contains_files(model_path,must_contain):
-    """ 
-    Count number of files in directory 
+    """
+    Count number of files in directory
     """
     model_ouput_file_counter = len(glob.glob1(model_path,must_contain))
     return model_ouput_file_counter
-            
+
 
 # ----
 # X.XX - Rename vars/strs in files
 # ----
 def replace_strs_in_files( wd, input_str, output_str, debug=False ):
-    """ 
+    """
     replace text in files
     """
     print(wd, input_str, output_str)
     for f in os.listdir(wd) :
         if not f.startswith('.'):
             print(f)
-            os.rename(wd+ f, wd+ f.replace(input_str, output_str)) 
+            os.rename(wd+ f, wd+ f.replace(input_str, output_str))
             print(f.replace(input_str, output_str))
 
 # ----
@@ -116,7 +116,7 @@ def get_xy(Lon,Lat, lon_edges, lat_edges, debug=False):
     Takes lon,lat values for a point (e.g. station) and arrays of longitude
     and latitudes indicating edges of gridboxes.
 
-    Returns the index of the gridbox corresponding to this point.  
+    Returns the index of the gridbox corresponding to this point.
     NOTES:
      - Credit: Eric Sofen
      - Could be easily extended to return data values corresponding to points.
@@ -130,24 +130,24 @@ def get_xy(Lon,Lat, lon_edges, lat_edges, debug=False):
     else:
         #print Lon, Lat, gridindx, gridindy
         return gridindx[0],gridindy[0]
-        
-# --------   
+
+# --------
 # X.XX - Save as pdf.
 # --------
 def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,\
         justHH=False, no_dstr=True, save2png=True, \
         save2eps=False, transparent=True, debug=False ):
-    """ 
-    Save figures (e.g. matplotlib) to pdf file 
+    """
+    Save figures (e.g. matplotlib) to pdf file
     """
 
     # set save directory ( using default directory dictionary )
-    from .funcs_vars import get_dir 
+    from .funcs_vars import get_dir
     wd = get_dir('ppwd')
 
     # Set pdf name
     if justHH:
-        date_str = time.strftime("%y_%m_%d_%H")        
+        date_str = time.strftime("%y_%m_%d_%H")
     else:
         date_str = time.strftime("%y_%m_%d_%H_%M")
     if no_dstr:
@@ -160,40 +160,40 @@ def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,\
 
     # Rasterise to save space?
     if rasterized:
-        plt.gcf().set_rasterized(True)    
+        plt.gcf().set_rasterized(True)
 
     # save and close
-    type = 'PDF' 
+    type = 'PDF'
     pdf.savefig( dpi=dpi, transparent=transparent )
     pdf.close()
 
     # Also export to png and eps?
     if save2png:
-        type += '/PDF' 
+        type += '/PDF'
         plt.savefig(npdf+'.png', format='png', dpi=dpi, \
             transparent=transparent )
     if save2eps:
-        type += '/EPS' 
+        type += '/EPS'
         plt.savefig(npdf+'.eps', format='eps', dpi=dpi, \
             transparent=transparent)
     print(type+' saved & Closed as/at: ', npdf)
 
-# --------   
+# --------
 # X.XX - Save as mulitple page pdf.
 # --------
 def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, \
         dpi=160, open=False, close=False, justHH=False, no_dstr=False ):
-    """ 
-    Save figures (e.g. matplotlib) to pdf file with multiple pages 
+    """
+    Save figures (e.g. matplotlib) to pdf file with multiple pages
     """
 
     # set save directory ( using default directory dictionary )
-    from .funcs4core import get_dir 
+    from .funcs4core import get_dir
     wd = get_dir('ppwd')
 
     # Set pdf name
     if justHH and (not no_dstr):
-        date_str = time.strftime("%y_%m_%d_%H")        
+        date_str = time.strftime("%y_%m_%d_%H")
     if not no_dstr:
         date_str = time.strftime("%y_%m_%d_%H_%M")
     if no_dstr:
@@ -202,14 +202,14 @@ def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, \
         npdf = wd+date_str+'_'+title+'.pdf'
 
     # If 1st call ( open ==True), setup pdf
-    if open:  
+    if open:
         pdf = PdfPages(npdf)
         print('pdf opened @: {}'.format( npdf ))
         return pdf
 
     # Rasterise to save space?
     if rasterized:
-        plt.gcf().set_rasterized(True)    
+        plt.gcf().set_rasterized(True)
 
     # save and close or keep open to allow additions of plots
     if close:
@@ -219,13 +219,13 @@ def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, \
         pdf.savefig(dpi=dpi)
         print('pdf is still open @: {}'.format( npdf ))
 
-        
+
 # --------------
-# X.XX -  Return mesh and indics for which obs are within 
+# X.XX -  Return mesh and indics for which obs are within
 # -------------
 def obs2grid(  glon=None, glat=None, galt=None, nest='high res global', \
         sites=None, debug=False ):
-    """ 
+    """
     values that have a given lat, lon and alt
     """
     if isinstance(glon, type(None)):
@@ -235,47 +235,47 @@ def obs2grid(  glon=None, glat=None, galt=None, nest='high res global', \
     # Assume use of known CAST sites... unless others given.
     if isinstance(sites, type(None)):
         loc_dict = get_loc( rtn_dict=True )
-        sites = list(loc_dict.keys())            
+        sites = list(loc_dict.keys())
 
     # pull out site location indicies
-    indices_list=[] 
+    indices_list=[]
     for site in sites :
         lon, lat, alt = loc_dict[site]
-        vars = get_xy(  lon,  lat , glon, glat ) 
+        vars = get_xy(  lon,  lat , glon, glat )
         indices_list += [ vars ]
     return indices_list
 
-# --------   
+# --------
 # X.XX - Sort (GAW) sites by Latitude and return
 # --------
-def sort_sites_by_lat(sites): 
-    """ 
-    Order given list of GAW sties by latitudes 
-    """ 
+def sort_sites_by_lat(sites):
+    """
+    Order given list of GAW sties by latitudes
+    """
 
     # Get info
     vars = [ gaw_2_loc( s ) for s in sites ] # lat, lon, alt, TZ
-    
+
     # Sort by lat, index orginal sites list and return
     lats = [ i[0] for i in vars ]
     slats = sorted( lats )[::-1]
-    return [ sites[i] for i in [ lats.index(ii) for ii in slats ] ] 
+    return [ sites[i] for i in [ lats.index(ii) for ii in slats ] ]
 
-# --------   
+# --------
 # X.XX - Find nearest
 # --------
 def find_nearest(array,value):
     """
-    Find nearest number in array to given value. 
-    
+    Find nearest number in array to given value.
+
 #    NOTES:
-#    - Adapted from (credit:) HappyLeapSecond's Stackoverflow answer. 
+#    - Adapted from (credit:) HappyLeapSecond's Stackoverflow answer.
 #    ( http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array )
 #    """
     idx = (np.abs(array-value)).argmin()
     return idx
 
-# --------   
+# --------
 # X.XX - Get suffix for number
 # --------
 def get_suffix(n):
@@ -283,14 +283,14 @@ def get_suffix(n):
     ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(n/10%10!=1)*(n%10<4)*n%10::4])
     return ordinal(n)
 
-# --------   
+# --------
 # X.XX - Get shortest distance on a sphere ( for finding closest point )
 # --------
 def get_shortest_in(needle, haystack, r_distance=False):
     """
     needle is a single (lat,long) tuple. haystack is a numpy array to find the point in
     that has the shortest distance to needle
-    
+
     NOTES:
      - adapted from stackoverflow (Credit: jterrace):
     (http://stackoverflow.com/questions/6656475/python-speeding-up-geographic-comparison)
@@ -316,13 +316,13 @@ def get_shortest_in(needle, haystack, r_distance=False):
     else:
         return list(d).index( np.min(d) )
 
-# --------   
+# --------
 # X.XX - Get logarithmically spaced integers
 # --------
 def gen_log_space(limit, n):
     """
     Get logarithmically spaced integers
-    
+
     NOTES:
     - credit: Avaris
     ( http://stackoverflow.com/questions/12418234/logarithmically-spaced-integers)
@@ -336,25 +336,25 @@ def gen_log_space(limit, n):
             # safe zone. next_value will be a different integer
             result.append(next_value)
         else:
-            # problem! same integer. we need to find next_value 
+            # problem! same integer. we need to find next_value
             # by artificially incrementing previous value
             result.append(result[-1]+1)
-            # recalculate the ratio so that the remaining 
+            # recalculate the ratio so that the remaining
             # values will scale correctly
             ratio = (float(limit)/result[-1]) ** (1.0/(n-len(result)))
     # round, re-adjust to 0 indexing (i.e. minus 1) and return np.uint64 array
     return np.array([round(x)-1 for x in result], dtype=np.uint64)
 
-# --------   
+# --------
 # X.XX - Get indices in array where change in value of x occurs
 # --------
 def get_arr_edge_indices( arr, res='4x5', extra_points_point_on_edge=None, \
             verbose=True, debug=False):
-    """ 
-    Find indices in a lon, lat (2D) grid, where value does not equal a given 
-    value ( e.g. the edge )    
     """
-    
+    Find indices in a lon, lat (2D) grid, where value does not equal a given
+    value ( e.g. the edge )
+    """
+
     if verbose:
         print('get_arr_edge_indices for arr of shape: ', arr.shape)
 
@@ -373,7 +373,7 @@ def get_arr_edge_indices( arr, res='4x5', extra_points_point_on_edge=None, \
 
     # ---- Loop X dimension ( lon )
     for nn, lon_ in enumerate( lon_c ):
-    
+
         # Loop Y dimension ( lat ) and store edges
         for n, lat_ in enumerate( lat_c ):
 
@@ -383,22 +383,22 @@ def get_arr_edge_indices( arr, res='4x5', extra_points_point_on_edge=None, \
 
             if arr[nn, n] != last_lat_box:
 
-                # If 1st lat, selct bottom of box        
+                # If 1st lat, selct bottom of box
                 point_lon = lon_e[nn]+lon_diff/2
                 if need_lat_outer_edge:
-                    point_lat = lat_e[n+1] 
+                    point_lat = lat_e[n+1]
                 else:
-                    point_lat = lat_e[n] 
+                    point_lat = lat_e[n]
                     need_lat_outer_edge = True
                 need_lat_outer_edge=False
 
                 # Add mid point to cordinates list
                 if isinstance( extra_points_point_on_edge, type(None) ):
-                    mid_point = [ point_lon, point_lat ] 
+                    mid_point = [ point_lon, point_lat ]
                     coords += [ mid_point ]
 
                 # Add given number of points along edge
-                else: 
+                else:
                     coords += [ [lon_e[nn]+(lon_diff*i), point_lat ] for i in \
                         np.linspace(0, 1, extra_points_point_on_edge, \
                         endpoint=True) ]
@@ -414,7 +414,7 @@ def get_arr_edge_indices( arr, res='4x5', extra_points_point_on_edge=None, \
                 arr[nn, n]==last_lat_box, arr[nn, n]==last_lon_box)
         # Loop X dimension ( lon ) and store edges
         for nn, lon_ in enumerate( lon_c ):
-        
+
             # If change in value at to list
             if arr[nn, n] != last_lon_box:
                 point_lat = lat_e[n]+lat_diff/2
@@ -429,7 +429,7 @@ def get_arr_edge_indices( arr, res='4x5', extra_points_point_on_edge=None, \
 
                 # Add mid point to coordinates list
                 if isinstance( extra_points_point_on_edge, type(None) ):
-                    mid_point = [ point_lon, point_lat ] 
+                    mid_point = [ point_lon, point_lat ]
                     coords += [ mid_point ]
 
                 # Add given number of points along edge
@@ -437,7 +437,7 @@ def get_arr_edge_indices( arr, res='4x5', extra_points_point_on_edge=None, \
                     coords += [ [point_lon, lat_e[n]+(lat_diff*i) ] for i in \
                         np.linspace(0, 1, extra_points_point_on_edge, \
                         endpoint=True) ]
-                
+
             # temporally save the previous box's value
             last_lon_box = arr[nn, n]
 
@@ -448,9 +448,9 @@ def get_arr_edge_indices( arr, res='4x5', extra_points_point_on_edge=None, \
 # --------
 def split_data_by_days( data=None, dates=None, day_list=None, \
             verbose=False, debug=False ):
-    """ 
+    """
     Takes a list of datetimes and data and returns a list of data and
-    the bins ( days )  
+    the bins ( days )
     """
     if verbose:
         print('split_data_by_days called')
@@ -465,10 +465,10 @@ def split_data_by_days( data=None, dates=None, day_list=None, \
     # Get list of unique days
     if isinstance( day_list, type(None) ):
         day_list = sorted( set( df['days'].values ) )
-    # Loop unique days and select data on these days 
+    # Loop unique days and select data on these days
     data4days = []
     for day in day_list:
-        print(day, df[df['days']==day]) 
+        print(day, df[df['days']==day])
         data4days += [ df['data'][ df['days']==day ] ]
     # Just return the values ( i.e. not pandas array )
     data4days = [i.values.astype(float) for i in data4days ]
@@ -476,7 +476,7 @@ def split_data_by_days( data=None, dates=None, day_list=None, \
 #    print data4days[0]
 #    sys.exit()
 
-    if debug:    
+    if debug:
         print('returning data for {} days, with lengths: '.format( \
             len( day_list) ), [len(i) for i in data4days ])
 
@@ -491,70 +491,70 @@ def split_data_by_days( data=None, dates=None, day_list=None, \
 # X.XX - Ocean mask
 # --------
 def ocean_unmasked(res='4x5', debug=False):
-    """ 
-    Get ocean mask from GEOS-Chem LWI ( at given resolution) 
-    
-    NOTES: 
-     - this currently returns mask with all except ocean masked 
-     - NEEDS UPDATE 
+    """
+    Get ocean mask from GEOS-Chem LWI ( at given resolution)
+
+    NOTES:
+     - this currently returns mask with all except ocean masked
+     - NEEDS UPDATE
     """
 
-    from .funcs4GEOSC import get_land_map 
+    from .funcs4GEOSC import get_land_map
     if debug:
         print('ocean_mask called for: ', res)
 
     # Create a mask from land/water/ice indices
     m = np.ma.masked_not_equal( get_land_map(res=res),0 )
     if debug:
-        print(mask, mask.shape) 
+        print(mask, mask.shape)
     return m.mask
- 
+
 # --------
 # X.XX - Land mask
 # --------
 def land_unmasked(res='4x5', debug=False):
-    """ 
-    Get land mask from GEOS-Chem LWI ( at given resolution) 
+    """
+    Get land mask from GEOS-Chem LWI ( at given resolution)
     """
     from .funcs4GEOSC import get_land_map # Kludge, use GEOS-Chem LWI
 
-    # Create a np.ma mask 
+    # Create a np.ma mask
     if debug:
         print('land_mask called for: ', res)
     m = np.ma.masked_not_equal( get_land_map(res=res),1 )
     if debug:
-        print(mask, mask.shape) 
+        print(mask, mask.shape)
     return m.mask
 
 # --------
 # X.XX - Ice mask
 # --------
 def ice_unmasked(res='4x5', debug=False):
-    """ 
+    """
     Get mask for all areas but ice surface. Ice mask is from GEOS-Chem
-    LWI ( at given resolution) 
+    LWI ( at given resolution)
 
     NOTES:
      - returns 3D array as default ( to return 2D set mask2D=True )
     """
-    # Create a np.ma mask 
+    # Create a np.ma mask
     m= np.logical_not( (land_unmasked(res)*ocean_unmasked(res)) )
     if debug:
-        print(mask, mask.shape) 
+        print(mask, mask.shape)
     return m
- 
+
 # --------
 # X.XX - Surface mask
 # --------
 def surface_unmasked( res='4x5', trop_limit=False, mask2D=False, \
             debug=False ):
-    """ 
+    """
     Get mask for all areas but surface
 
     NOTES:
      - returns 3D array as default ( to return 2D set mask2D=True )
     """
-    # Create a np.ma mask 
+    # Create a np.ma mask
     m=np.ma.array( np.zeros( get_dims4res(res) ), mask=False)
     m[...,0] = 1
     m = np.ma.masked_not_equal(m, 1)
@@ -568,13 +568,13 @@ def surface_unmasked( res='4x5', trop_limit=False, mask2D=False, \
     if mask2D:
         return m[...,0].mask
     else:
-        return m.mask 
+        return m.mask
 # --------
 # X.XX  - Tropical Mask
 # --------
 def tropics_unmasked(res='4x5', saizlopez=False, pradosroman=False, \
         mask2D=False ):
-    """ 
+    """
     Get mask for all areas but tropics
 
     NOTES:
@@ -593,7 +593,7 @@ def tropics_unmasked(res='4x5', saizlopez=False, pradosroman=False, \
 
     # Create a np.ma mask and return solely mask
     m = np.ma.masked_not_equal(m, 1)
-    
+
     # Return 2D or 3D?
     if mask2D:
         return m[...,0].mask
@@ -605,11 +605,11 @@ def tropics_unmasked(res='4x5', saizlopez=False, pradosroman=False, \
 # --------
 def mid_lats_unmasked( res='4x5', saizlopez=False, pradosroman=False, \
             mask2D=False ):
-    """ 
+    """
     Get mask for all areas but mid latitudes
 
     NOTES:
-     - returns 3D array as default ( to return 2D set mask2D=True )    
+     - returns 3D array as default ( to return 2D set mask2D=True )
     """
 
     # Create a mask of 1s for chosen area and or 0s elsewhere
@@ -639,12 +639,12 @@ def mid_lats_unmasked( res='4x5', saizlopez=False, pradosroman=False, \
 # X.XX - 40N to 40S Mask
 # --------
 def mask_lat40_2_40( res='4x5', mask2D=False ):
-    """ 
-    Get mask for all areas but 40S-40N latitudes (40 to 40 deg latitude) 
+    """
+    Get mask for all areas but 40S-40N latitudes (40 to 40 deg latitude)
 
     NOTES:
-     - returns 3D array as default ( to return 2D set mask2D=True )    
-    """    
+     - returns 3D array as default ( to return 2D set mask2D=True )
+    """
 
     # Create a mask of 1s for chosen area and or 0s elsewhere
     m=np.zeros(get_dims4res(res))
@@ -660,15 +660,15 @@ def mask_lat40_2_40( res='4x5', mask2D=False ):
     if mask2D:
         return m[...,0].mask
     else:
-        return m.mask    
+        return m.mask
 # --------
 # X.XX - Extra Tropics Mask
 # --------
 def extratropics_unmasked( res='4x5', mask2D=False):
     """ Get mask for all areas but extratropics
     NOTES:
-        - returns 3D array as default ( to return 2D set mask2D=True )    
-    """    
+        - returns 3D array as default ( to return 2D set mask2D=True )
+    """
 
     # Create a mask of 1s for chosen area and or 0s elsewhere
     m=np.zeros(get_dims4res(res))
@@ -676,7 +676,7 @@ def extratropics_unmasked( res='4x5', mask2D=False):
     lats = [ get_gc_lat(i, res=res) for i in lats ]
     for i in lats:
         m[:,i,:] =  1
-    # Create a np.ma mask 
+    # Create a np.ma mask
     m = np.ma.masked_not_equal(m, 1)
 
     # Return 2D or 3D?
@@ -688,9 +688,9 @@ def extratropics_unmasked( res='4x5', mask2D=False):
 # X.XX - Create unmask array ( for ease of dataprocessing )
 # --------
 def all_unmasked( res='4x5', mask2D=False ):
-    """ Get un-masked mask of size GEOS-Chem dimensions 
+    """ Get un-masked mask of size GEOS-Chem dimensions
     NOTES:
-     - returns 3D array as default ( to return 2D set mask2D=True )    
+     - returns 3D array as default ( to return 2D set mask2D=True )
     """
 
     m = np.ma.array( np.ones(get_dims4res(res) ), mask=False)
@@ -707,10 +707,10 @@ def all_unmasked( res='4x5', mask2D=False ):
 def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
     M_all=False, use_multiply_method=True, trop_limit=False, \
     verbose=True, debug=False ):
-    """ 
-    Creates Maskes by pressure array  (required shape: 72,46,47), 
+    """
+    Creates Maskes by pressure array  (required shape: 72,46,47),
     with conditions (lower and upper bounds) set by given cases for
-    MBL, UT, FT 
+    MBL, UT, FT
 
     Parameters
     -------
@@ -719,19 +719,19 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
     MBL (boolean): apply a mask for the marine boundary layer
     res (str): the resolution of required output/input arrays (e.g. '4x5' )
     use_multiply_method (boolean): Create arrays of ones and zeros
-    trop_limit (boolean): limit 3D arrays to troposphere     
+    trop_limit (boolean): limit 3D arrays to troposphere
     debug (boolean): legacy debug option, replaced by python logging
     verbose (boolean): legacy debug option, replaced by python logging
     extra_mask (str): name of additional region (e.g. ocean) to mask
-    M_all (boolean): apply oceanic masking to all regions 
-    
+    M_all (boolean): apply oceanic masking to all regions
+
     Returns
     -------
     (np.ma.mask)
 
     NOTES:
-     - originally written to generate masks for mulitplication 
-    (i.e. use_multiply_method = True ), but can also be use to make 
+     - originally written to generate masks for mulitplication
+    (i.e. use_multiply_method = True ), but can also be use to make
     more pythonic masks ( if use_multiply_method=False )
     """
     if verbose:
@@ -740,11 +740,11 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
             'with debug: {}, verbose:{}'.format( sect, debug, verbose ))
 
     # Get atmospheric region as case defining lower and upper bounds
-    cases = { 
+    cases = {
     'BL': [1200., 900.], 'MBL': [1200., 900.], 'FT': [ 900., 350. ],  \
     'UT': [ 350., 75.], 'All' : [ 1200., 75.]
     }
-    l, h = cases[ sect ] 
+    l, h = cases[ sect ]
 
     # --- Mask between upper and lower values
     m=np.ones( get_dims4res(res) )
@@ -759,32 +759,32 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
 
     # --- Remove above the "chemical tropopause" from GEOS-Chem (v9-2)
     if trop_limit:
-        m = m[...,:38] 
+        m = m[...,:38]
 
     if not isinstance(extra_mask, type(None) ):
         # only consider MBL
-        if ( MBL and sect == 'BL' ) or (sect == 'MBL') or M_all : 
+        if ( MBL and sect == 'BL' ) or (sect == 'MBL') or M_all :
             if use_multiply_method:
-                return m.mask * extra_mask  * land_unmasked( res )    
+                return m.mask * extra_mask  * land_unmasked( res )
             else:
                 print("WARNING: needs 3D arrays, use 'mask_all_but' instead")
                 sys.exit()
-        else:    
+        else:
             if use_multiply_method:
-                return m.mask * extra_mask            
+                return m.mask * extra_mask
             else:
                 print("WARNING: needs 3D arrays, use 'mask_all_but' instead")
                 sys.exit()
 
     # --- Only consider MBL (or MFT/MFT for Saiz-Lopez 2014 comparison)
-    if ( MBL and sect == 'BL' ) or (sect == 'MBL') or M_all: 
-        if use_multiply_method:    
+    if ( MBL and sect == 'BL' ) or (sect == 'MBL') or M_all:
+        if use_multiply_method:
             return m.mask * land_unmasked( res )
         else:
             land_unmasked_ = mask_all_but( 'Land', mask3D=True, res=res, \
                 use_multiply_method=False, trop_limit=trop_limit )
 
-            # MBL unmasked 
+            # MBL unmasked
             m = np.logical_or( np.logical_not( m.mask ), \
                 np.logical_not( land_unmasked_ )  )
 
@@ -801,8 +801,8 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
 # --------
 def lat2lat_2D_unmasked( lowerlat=None, higherlat=None, res='2x2.5', \
             debug=False ):
-    """ 
-    Takes a lower and higher latitude value and then creates mask of area boxes outside 
+    """
+    Takes a lower and higher latitude value and then creates mask of area boxes outside
     given laitidue limits.
     """
 
@@ -825,17 +825,17 @@ def lat2lat_2D_unmasked( lowerlat=None, higherlat=None, res='2x2.5', \
 # X.XX - South Pole mask
 # --------
 def southpole_unmasked(  res='4x5', mask2D=False ):
-    """ 
+    """
     Return global np.ma with southpole masked
 
     NOTES:
-     - returns 3D array as default ( to return 2D set mask2D=True )    
+     - returns 3D array as default ( to return 2D set mask2D=True )
     """
 
     # Create a mask of 1s for chosen area and or 0s elsewhere
     m = np.zeros(get_dims4res(res))
     # adjust for resolution at grid start points at 62
-    if res == '4x5': 
+    if res == '4x5':
         lats  = np.arange(-89, -62,1 ) # define S pole as > 60S
     else:
         lats  = np.arange(-89, -60,1 ) # define S pole as > 60S
@@ -844,7 +844,7 @@ def southpole_unmasked(  res='4x5', mask2D=False ):
     for i in lats:
         m[:,i,:] =  1
 
-    # Create a np.ma mask 
+    # Create a np.ma mask
     m = np.ma.masked_not_equal(m, 1)
 
     # Return 2D or 3D?
@@ -857,18 +857,18 @@ def southpole_unmasked(  res='4x5', mask2D=False ):
 # X.XX - North Pole mask
 # --------
 def northpole_unmasked(  res='4x5', mask2D=False ):
-    """ 
-    Return global np.ma with northpole masked 
+    """
+    Return global np.ma with northpole masked
 
     NOTES:
-     - returns 3D array as default ( to return 2D set mask2D=True )        
+     - returns 3D array as default ( to return 2D set mask2D=True )
     """
 
     # Create a mask of 1s for chosen area and or 0s elsewhere
     m = np.zeros(get_dims4res(res))
     # adjust for resolution at grid start points at 62
-    if res == '4x5': 
-        lats = np.arange(62, 90,1 )  # define N pole as > 60N 
+    if res == '4x5':
+        lats = np.arange(62, 90,1 )  # define N pole as > 60N
     else:
         lats = np.arange(60, 90,1 )  # define N pole as > 60N
 #    lats = np.arange(80, 90,1 )  # define N pole as > 80N
@@ -876,7 +876,7 @@ def northpole_unmasked(  res='4x5', mask2D=False ):
     for i in lats:
         m[:,i,:] =  1
 
-    # Create a np.ma mask 
+    # Create a np.ma mask
     m = np.ma.masked_not_equal(m, 1)
 
     # Return 2D or 3D?
@@ -889,11 +889,11 @@ def northpole_unmasked(  res='4x5', mask2D=False ):
 # X.XX - North Hemisphere mask
 # --------
 def NH_unmasked(  res='4x5', mask2D=False ):
-    """ 
-    Return global np.ma with north hemisphere masked 
+    """
+    Return global np.ma with north hemisphere masked
 
     NOTES:
-     - returns 3D array as default ( to return 2D set mask2D=True )    
+     - returns 3D array as default ( to return 2D set mask2D=True )
     """
     m=np.ma.array( np.ones( get_dims4res(res) ), mask=True)
     if res=='4x5':
@@ -916,15 +916,15 @@ def NH_unmasked(  res='4x5', mask2D=False ):
 # X.XX - South Hemisphere mask
 # --------
 def SH_unmasked(  res='4x5', mask2D=False ):
-    """ 
-    Return global np.ma with south hemisphere masked 
+    """
+    Return global np.ma with south hemisphere masked
 
     NOTES:
-     - returns 3D array as default ( to return 2D set mask2D=True )    
+     - returns 3D array as default ( to return 2D set mask2D=True )
     """
     m=np.ma.array( np.ones( get_dims4res(res) ), mask=True)
     if res=='4x5':
-        lats = np.arange(-89, 0,1 )        
+        lats = np.arange(-89, 0,1 )
     if res == '2x2.5':
         lats = np.arange(-90, 0,1 )
         print('CHECK (SH) mask for non 4x5 resolutions')
@@ -938,7 +938,7 @@ def SH_unmasked(  res='4x5', mask2D=False ):
         return m[...,0].mask
     else:
         return m.mask
-        
+
 # --------
 # X.XX  - Get Analysis maskes
 # --------
@@ -946,12 +946,12 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
         saizlopez=False, r_pstr=True, wd=None, trop_limit=True, mask4D=False, \
         use_multiply_method=True, debug=False ):
     """
-    Return list of mask arrays for analysis 
+    Return list of mask arrays for analysis
 
     NOTES:
-    - For comparisons with Saiz-Lopez et al. 2014, set M_all to True, this maskes the 
-    UT and FT as well as the BL  (therefore gives MBL, MFT, MUT) 
-    
+    - For comparisons with Saiz-Lopez et al. 2014, set M_all to True, this maskes the
+    UT and FT as well as the BL  (therefore gives MBL, MFT, MUT)
+
     """
     # --- Check hPa has been provided as arg.
     if isinstance( hPa, type(None) ):
@@ -959,27 +959,27 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
 
     if masks=='full':
         # ---- List of masks
-        mtitles = [ 
+        mtitles = [
         'All', 'Ocean', 'Land','Ice', 'All Sur.',  'Ocean Sur.', 'Land Sur.'
-        , 'Ice Sur.', 'NH', 'SH', 'Tropics', 'Ex. Tropics', 'Mid Lats', 
-        'Ocn. 50S-50N',  '50S-50N' 
+        , 'Ice Sur.', 'NH', 'SH', 'Tropics', 'Ex. Tropics', 'Mid Lats',
+        'Ocn. 50S-50N',  '50S-50N'
         ]
-        
+
         tsects3D= [  'MBL', 'BL','FT',  'UT']
 
         # get MBL, FT and UT maskes
-        sects3D = [ 
-            mask_3D(hPa, i, MBL=False, M_all=M_all, res=res, 
-            use_multiply_method=use_multiply_method ) for i in tsects3D   
+        sects3D = [
+            mask_3D(hPa, i, MBL=False, M_all=M_all, res=res,
+            use_multiply_method=use_multiply_method ) for i in tsects3D
         ]
-        
+
         # ---- Use non-pythonic mulitply method?
         if use_multiply_method:
 
             maskes = [ mask_all_but(i, trop_limit=trop_limit, mask3D=True, \
-                use_multiply_method=True, res=res ) for i in mtitles ]    
+                use_multiply_method=True, res=res ) for i in mtitles ]
 
-            # if comparison with saiz-lopez 2014, 
+            # if comparison with saiz-lopez 2014,
             if M_all:
                 ind = [n for n,i in enumerate( mtitles) if not ('MBL' in i) ]
                 for n in ind:
@@ -997,7 +997,7 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
         maskes = maskes + sects3D
         mtitles = mtitles + tsects3D
 
-        # Also create print strings...    
+        # Also create print strings...
         npstr ='{:<12}'*len(maskes)
         pstr ='{:<12,.2f}'*len(maskes)
 
@@ -1005,17 +1005,17 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
         tsects3D= [ 'All', 'MBL', 'BL','FT',  'UT']
         mtitles = [ i+' (All)' for i in tsects3D ]    + \
         [ i+' (Tropics)' for i in tsects3D ]  +   \
-        [i+' (Mid Lats)' for i in tsects3D ]     
+        [i+' (Mid Lats)' for i in tsects3D ]
 
         # standard maskes none, tropics, mid-lats (3)
-        maskes = [ 
+        maskes = [
             np.logical_not( i)  for i in (all_unmasked(res=res), \
             tropics_unmasked(res,saizlopez=saizlopez), \
             mid_lats_unmasked(res)) ]
 
         # additional masks - tsects3D (4+1) * standard maskes (3)
-        dmaskes = [ 
-        [ mask_3D(hPa, i, MBL=False, extra_mask=mask, M_all=M_all, res=res ) 
+        dmaskes = [
+        [ mask_3D(hPa, i, MBL=False, extra_mask=mask, M_all=M_all, res=res )
         for i in tsects3D ]  for mask in  maskes ]
 
         # unpack and set as maskes (12) to list (3)
@@ -1031,15 +1031,15 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
                 maskes[n] = maskes[n]*land_unmasked(res=res)
 
         print([ len(i) for i in (maskes, dmaskes, mtitles, tsects3D) ])
-        # Also create print strings...    
+        # Also create print strings...
         npstr ='{:<15}'*len(maskes)
         pstr ='{:<15,.2f}'*len(maskes)
 
     if masks=='trop_regions':
-        mtitles = [ 'BL','FT',  'UT'] 
+        mtitles = [ 'BL','FT',  'UT']
         maskes = [  mask_3D(hPa, i, M_all=M_all, MBL=False, res=res )[:,:,:38]  \
             for i in  mtitles ]
-        # Also create print strings...    
+        # Also create print strings...
         npstr ='{:<15}'*len(maskes)
         pstr ='{:<15,.2f}'*len(maskes)
 
@@ -1068,18 +1068,18 @@ def get_analysis_masks( masks='basic',  hPa=None, M_all=False, res='4x5',\
 def mask_all_but( region='All', M_all=False, saizlopez=False, \
         res='4x5', trop_limit=True, mask2D=False, mask3D=False, mask4D=False, \
         use_multiply_method=True, verbose=False, debug=False ):
-    """ 
-    Mask selector for analysis. global mask provided for with given region 
-        unmasked 
+    """
+    Mask selector for analysis. global mask provided for with given region
+        unmasked
 
     Parameters
     -------
     res (str): the resolution if wd not given (e.g. '4x5' )
     M_all (boolean): maask all marine areas?
-    saizlopez (boolean): use tropics definition from Saiz-Lopez er al 2014 
-    trop_limit (boolean): limit 4D arrays to troposphere     
+    saizlopez (boolean): use tropics definition from Saiz-Lopez er al 2014
+    trop_limit (boolean): limit 4D arrays to troposphere
     mask2D/mask3D/mask4D(booolean): ensure mask returned is 2D/3D/4D
-    use_multiply_method (boolean): return array of ones, that can be mulitpled 
+    use_multiply_method (boolean): return array of ones, that can be mulitpled
     through an array to set data to zero
     verbose (boolean): legacy debug option, replaced by python logging
     debug (boolean): legacy debug option, replaced by python logging
@@ -1091,69 +1091,69 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     Notes
     -----
     "unmask_all" yeilds completely unmasked array
-    function was oringialyl used to mulitple masks, however, this approch is 
-    unpythonic and therefore reccomended against. 
+    function was oringialyl used to mulitple masks, however, this approch is
+    unpythonic and therefore reccomended against.
     """
     logging.info( 'mask_all_but called for region {}'.format(region) )
-    # --- Setup cases...   
+    # --- Setup cases...
     # ( except None, unmask_all and global to retrive no mask )
     case = {
     'Tropics':0,
     'tropics' : 0,
     'mid_lats' : 1,
-    'Mid Lats': 1, 
-    'Mid lats':1, 
-    'south_pole' : 2, 
-    'south pole' : 2, 
-    'north_pole' : 3,     
-    'north pole' : 3,     
-    None : 4, 
-    'unmask_all': 4, 
+    'Mid Lats': 1,
+    'Mid lats':1,
+    'south_pole' : 2,
+    'south pole' : 2,
+    'north_pole' : 3,
+    'north pole' : 3,
+    None : 4,
+    'unmask_all': 4,
     'All' : 4,
     'global': 4,
     # NEED TESTING ...
-    'Extratropics':5, 
-    'Ex. Tropics':5, 
-    'Oceanic':6, 
+    'Extratropics':5,
+    'Ex. Tropics':5,
+    'Oceanic':6,
     'Ocean':6,
-    'NH': 7, 
+    'NH': 7,
     'SH':8,
     'Ice': 10,
-    'Land' : 11, 
-    'lat40_2_40':12, 
-    'Ocean Tropics': 13, 
-    'Oceanic Tropics': 13, 
-    'Ocn. Trop.': 13, 
+    'Land' : 11,
+    'lat40_2_40':12,
+    'Ocean Tropics': 13,
+    'Oceanic Tropics': 13,
+    'Ocn. Trop.': 13,
     'Land Tropics': 14,
     'All Sur.': 15,
     'surface': 15,
-    'Ocean Sur.': 16, 
-    'Land Sur.': 17 , 
-     'Ice Sur.' : 18, 
-    'lat50_2_50':19, 
-    '50S-50N':19, 
-#    'Oceanic lat50_2_50': 20, 
-    'Ocn. 50S-50N' : 20, 
+    'Ocean Sur.': 16,
+    'Land Sur.': 17 ,
+     'Ice Sur.' : 18,
+    'lat50_2_50':19,
+    '50S-50N':19,
+#    'Oceanic lat50_2_50': 20,
+    'Ocn. 50S-50N' : 20,
 #     'South >60': 2,
 #      'North >60': 3
-    'North Sea' : 21, 
-    'Med. Sea' : 22, 
-    'Mediterranean. Sea' : 22, 
-    'Black Sea' : 23, 
-    'Irish Sea' : 24, 
-    'Europe' : 25, 
-    'EU' : 25, 
-#    'Surface BL': 26, 
+    'North Sea' : 21,
+    'Med. Sea' : 22,
+    'Mediterranean. Sea' : 22,
+    'Black Sea' : 23,
+    'Irish Sea' : 24,
+    'Europe' : 25,
+    'EU' : 25,
+#    'Surface BL': 26,
     }[region]
 
 
     # --- This is a simple way of using masks ( as multiplers )
     # i.e. all (future) functions should have use_multiply_method=False
-    # and not use the code below 
+    # and not use the code below
     if use_multiply_method:  # Kludge
         print('!'*50, 'WARNING: using mulitply method for masking. ')
-    
-        # For case, pull mask from case list 
+
+        # For case, pull mask from case list
         if case == 0:
             mask = tropics_unmasked( res=res, saizlopez=saizlopez )
         if case == 1:
@@ -1164,7 +1164,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
             mask = northpole_unmasked(  res=res )
         if case == 4:
 #        mask = np.logical_not( all_unmasked( res=res ) )
-            mask = all_unmasked( res=res ) 
+            mask = all_unmasked( res=res )
         if case == 5:
             mask = extratropics_unmasked(res=res)
         if case == 6:
@@ -1186,21 +1186,21 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
             mask = np.ma.mask_or( land_unmasked( res=res ),  \
                     tropics_unmasked( res=res, saizlopez=saizlopez ) )
         if case == 15: # 'All Sur.'
-            mask = surface_unmasked(res=res) 
+            mask = surface_unmasked(res=res)
         if case == 16: # 'Ocean Sur.'
             mask = np.ma.mask_or(  surface_unmasked(res=res) , \
                      ocean_unmasked( res=res )  )
         if case == 17: # 'Land Sur.':
             mask = np.ma.mask_or( surface_unmasked(res=res) ,  \
                      land_unmasked( res=res )  )
-        if case == 18: # 'Ice Sur.' 
+        if case == 18: # 'Ice Sur.'
             mask = np.ma.mask_or( surface_unmasked(res=res) ,  \
                       ice_unmasked( res=res ) )
-        if case == 19:  # '50S-50N' 
+        if case == 19:  # '50S-50N'
             mask = lat2lat_2D_unmasked( lowerlat=-50, higherlat=50, \
                 res=res )
-        if case == 20: # 'Ocn. 50S-50N' 
-            mask = np.ma.mask_or( lat2lat_2D_unmasked( lowerlat=-50, 
+        if case == 20: # 'Ocn. 50S-50N'
+            mask = np.ma.mask_or( lat2lat_2D_unmasked( lowerlat=-50,
                 higherlat=50, res=res ), ocean_unmasked( res=res )[...,0]  )
         if case == 21:
             mask = get_north_sea_unmasked( res=res )
@@ -1215,7 +1215,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
 
     # --- This is a more pythonic way of using masks (Use as preference)
     else:
-        # For case, pull mask from case list 
+        # For case, pull mask from case list
         if case == 0:
             mask = tropics_unmasked( res=res, saizlopez=saizlopez )
         if case == 1:
@@ -1226,7 +1226,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
             mask = northpole_unmasked(  res=res )
         if case == 4:
 #        mask = np.logical_not( all_unmasked( res=res ) )
-            mask = all_unmasked( res=res ) 
+            mask = all_unmasked( res=res )
         if case == 5:
             mask = extratropics_unmasked(res=res)
         if case == 6:
@@ -1248,21 +1248,21 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
             mask = np.ma.mask_or( land_unmasked( res=res ),  \
                     tropics_unmasked( res=res, saizlopez=saizlopez ) )
         if case == 15: # 'All Sur.'
-            mask = surface_unmasked(res=res) 
+            mask = surface_unmasked(res=res)
         if case == 16: # 'Ocean Sur.'
             mask = np.ma.mask_or(  surface_unmasked(res=res) , \
                      ocean_unmasked( res=res )  )
         if case == 17: # 'Land Sur.':
             mask = np.ma.mask_or( surface_unmasked(res=res) ,  \
                      land_unmasked( res=res )  )
-        if case == 18: # 'Ice Sur.' 
+        if case == 18: # 'Ice Sur.'
             mask = np.ma.mask_or( surface_unmasked(res=res) ,  \
                       ice_unmasked( res=res ) )
         if case == 19:
             mask = lat2lat_2D_unmasked( lowerlat=-50, higherlat=50, \
                 res=res )
         if case == 20:
-            mask = np.ma.mask_or( lat2lat_2D_unmasked( lowerlat=-50, 
+            mask = np.ma.mask_or( lat2lat_2D_unmasked( lowerlat=-50,
                 higherlat=50, res=res ), ocean_unmasked( res=res )[...,0]  )
         if case == 21:
             mask = get_north_sea_unmasked( res=res )
@@ -1313,7 +1313,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
         if ( len( mask.shape ) == 2 ) or mask2D:
             pass
         else:
-            mask = mask[...,:38] 
+            mask = mask[...,:38]
 
     # Create 4D array by concatenating through time dimension
     # ( assuming year long array of 1 months )
@@ -1325,13 +1325,13 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     logging.debug('post to setting dimensions: {}'.format(mask.shape) )
     logging.info("returning a 'mask' of type:{}".format(type(mask)) )
     return mask
-    
+
 # --------
 # X.XX - Custom 2D (Lon) Mask
 # --------
 def lon2lon_2D_unmasked(lowerlon, higherlon, res='2x2.5', debug=False ):
     """
-    Takes a lower and higher latitude value and then creates 
+    Takes a lower and higher latitude value and then creates
     mask to given given limits.
     """
 
@@ -1351,15 +1351,15 @@ def lon2lon_2D_unmasked(lowerlon, higherlon, res='2x2.5', debug=False ):
         m[i,:] = 1
     m = np.ma.masked_not_equal(m, 1)
     return m.mask
-    
+
 # --------
 # X.XX - EU mask
 # --------
 def get_EU_unmasked( res='1x1'  ):
-    """ 
-    Mask 'EU' as defined by GEOS-Chem EU grid the grid of "'0.5x0.666" resolution is 
-    used by default, but any list of lat and lons could be provided and the extremities 
-    would be used as the mask edges  
+    """
+    Mask 'EU' as defined by GEOS-Chem EU grid the grid of "'0.5x0.666" resolution is
+    used by default, but any list of lat and lons could be provided and the extremities
+    would be used as the mask edges
     """
 
     EU_resolutions = [ '0.25x0.3125', '0.5x0.666' ]
@@ -1374,44 +1374,44 @@ def get_EU_unmasked( res='1x1'  ):
 
     # mask lats
     m1 = lat2lat_2D_unmasked( lowerlat=lat.min(), higherlat=lat.max(), res=res )
-    
+
     # mask lons
     m2 = lon2lon_2D_unmasked(lowerlon=lon.min(), higherlon=lon.max(), res=res )
 
-    #  combine maskes 
-    m = m1 + m2 
-    
+    #  combine maskes
+    m = m1 + m2
+
     return m
-    
+
 # --------
 # X.XX - Cruise track mask
 # --------
 def get_cruise_track_mask(  max_lon=None, min_lon=None, max_lat=None, \
         min_lat=None, unmask_water=True, res='4x5', trop_limit=True ):
-    """ 
+    """
     Mask whole area of ship based research campaigns for bulk comparison
     """
-    
+
     # only look at surface
     m = surface_unmasked( res=res, trop_limit=trop_limit )
-    
+
     # apply ocean mask
     if unmask_water:
         m = m + ocean_unmasked(res=res)
-    
+
     # Mask over given longitude range, if provided
     if not isinstance( max_lon, type(None) ):
         m = m  + lon2lon_2D_unmasked(lowerlon=min_lon, higherlon=max_lon, \
                         res=res )[:,:,None]
-    
+
     # Mask over given latitude range, if provided
     if not isinstance( max_lat, type(None) ):
         m = m + lat2lat_2D_unmasked( lowerlat=min_lat, higherlat=max_lat, \
                     res=res )[:,:,None]
 
-    # Invert 
+    # Invert
     m = np.logical_not( m )
-    
+
     return m
 
 # --------
@@ -1419,107 +1419,107 @@ def get_cruise_track_mask(  max_lon=None, min_lon=None, max_lat=None, \
 # --------
 # def get_north_sea_unmasked( res='0.25x0.3125' ):
 #     """
-#     A rough Mask of the North Sea for use with ~0.5/~0.25 mdodel output. 
+#     A rough Mask of the North Sea for use with ~0.5/~0.25 mdodel output.
 #     (inc. English channel. )
-# 
+#
 #     """
 #     mask latitudes of mediterranean
 #     Drawing a box that include all of North sea and English channel
 #     Near Brest in France 48.3669927,-4.7560745
 #     Lillehammer 61.1122408,10.4386779
-# 
+#
 #     mask lats
 #     m1 = lat2lat_2D_unmasked( lowerlat=48.3669927, higherlat=61.1122408, res=res )
-#     
+#
 #     mask lons
 #     m2 = lon2lon_2D_unmasked(lowerlon=-4.7560745, higherlon=10.4386779, res=res )
-# 
-#      combine maskes 
-#     m = m1 + m2     
-# 
-#     remove all water.     
+#
+#      combine maskes
+#     m = m1 + m2
+#
+#     remove all water.
 #    m = np.ma.mask_or( m, ocean_unmasked( res=res)[...,0] ) # old approach
-#     the below will work for muliple options. 
-#    m = m + 
-#    m = ocean_unmasked( res=res)[...,0] 
-#     
-#     
+#     the below will work for muliple options.
+#    m = m +
+#    m = ocean_unmasked( res=res)[...,0]
+#
+#
 #     remove irish sea
-# 
+#
 #     return m.mask
-#     
-#     
+#
+#
 # --------
 # X.XX - Get mask of mediterranean sea
-# --------    
+# --------
 # def get_mediterranean_sea_unmasked( res='0.25x0.3125' ):
 #     """
-#     A rough Mask of the Mediterranean Sea for use with ~0.5/~0.25 mdodel output. 
+#     A rough Mask of the Mediterranean Sea for use with ~0.5/~0.25 mdodel output.
 #     """
-#     
+#
 #     mask latitudes of mediterranean
 #     Drawing a box that include all of Med. Sea
 #     East South corner (south Jordan) = 43.4623268,33.3809392
 #     West North corner (south Jordan) = 44.17207,25.30604
-#     
+#
 #     add mask for Black Sea
-#     
-#     add mask for  
+#
+#     add mask for
 #     pass
-# 
-# 
+#
+#
 # --------
 # X.XX - Get mask of black sea
-# --------    
+# --------
 # def get_unmasked_black_sea( res='0.25x0.3125'):
 #     """
-#     A rough Mask of the Black Sea for use with ~0.5/~0.25 mdodel output. 
+#     A rough Mask of the Black Sea for use with ~0.5/~0.25 mdodel output.
 #     """
-#     
+#
 #     Drawing a box that include all of Black. Sea
 #     East South corner (south Jordan) = 43.4623268,33.3809392
 #     West North corner  = 44.17207,25.30604
 #     pass
-# 
+#
 # --------
 # X.XX - Get mask of irsh sea
-# --------    
+# --------
 # def get_unmasked_irish_sea( res='0.25x0.3125', unmasked_oceans=None):
 #     """
-#     A rough Mask of the Irish Sea for use with ~0.5/~0.25 mdodel output. 
+#     A rough Mask of the Irish Sea for use with ~0.5/~0.25 mdodel output.
 #     """
-#     
+#
 #     NE corner Glasgow - 55.8553803,-4.3725463
 #     SW corner Cork - 51.8959842,-8.5332609
 #     mask lats
 #     m1 = lat2lat_2D_unmasked( lowerlat=51.8959842, higherlat=55.855380, res=res )
-#     
+#
 #     mask lons
 #     m2 = lon2lon_2D_unmasked(lowerlon=8.5332609, higherlon=4.3725463, res=res )
-# 
-#      combine maskes 
-#     m = m1 + m2     
-# 
-#     only consider oceans     
-#     m = np.ma.mask_or( ocean_unmasked( res=res)[...,0], m )    
-#     
-#     
-#     return mask 
+#
+#      combine maskes
+#     m = m1 + m2
+#
+#     only consider oceans
+#     m = np.ma.mask_or( ocean_unmasked( res=res)[...,0], m )
+#
+#
+#     return mask
 
 # --------
 # X.XX - Get orthogonal distance regression (ODR) of two datasets
-# --------    
+# --------
 def get_ODR(x=None, y=None):
     """
     Wrapper to run ODR for arrays of x and y
 
     NOTES
-    ----- 
+    -----
     adapted from example in manual
     (https://docs.scipy.org/doc/scipy/reference/odr.html)
     """
     import scipy.odr
-    
+
     # Setup linear model to fit
     def f(B, x):
         '''Linear function y = m*x + b'''
@@ -1530,22 +1530,22 @@ def get_ODR(x=None, y=None):
         # Return an array in the same format as y passed to Data or RealData.
         return B[0]*x + B[1]
 
-    # create a model 
-    linear = scipy.odr.Model(f) 
+    # create a model
+    linear = scipy.odr.Model(f)
 
     # Create a Data or RealData instance.:
     mydata = scipy.odr.Data(x, y)
-    
+
     # Instantiate ODR with your data, model and initial parameter estimate.:
 #    myodr = scipy.odr.ODR(mydata, linear, beta0=[1., 2.])
     myodr = scipy.odr.ODR(mydata, linear, [0., 1.],  maxit = 10000 )
-    
+
     # Run the fit.:
     myoutput = myodr.run()
 
     # Examine output.:
     myoutput.pprint()
-    
+
     return myoutput
 
 # --------
@@ -1559,23 +1559,23 @@ def convert_ug_per_m3_2_ppbv( data=None,  spec='O3', rtn_units=False, \
     # --- Get constants
     RMM_air = constants('RMM_air') # g/mol
     # assume standard air density
-    # At sea level and at 15 °C air has a density of approximately 1.225 kg/m3 
-    #(0.001225 g/cm3, 0.0023769 slug/ft3, 0.0765 lbm/ft3) according to 
+    # At sea level and at 15 °C air has a density of approximately 1.225 kg/m3
+    #(0.001225 g/cm3, 0.0023769 slug/ft3, 0.0765 lbm/ft3) according to
     # ISA (International Standard Atmosphere).
     AIRDEN = 0.001225 # g/cm3
     # moles per cm3
     #  (1/(g/mol)) = (mol/g) ; (mol/g) * (g/cm3) = mol/cm3
-    MOLS = (1/RMM_air) * AIRDEN 
+    MOLS = (1/RMM_air) * AIRDEN
 
     # --- Convert
     # convert ug/m3 to ppbv
     # get g per cm3, ( instead of ug/m3)
     data = data /1E6 /1E6
     # get mol/cm3 (mass/ RMM ) = ( ug/m3  /  g/mol )
-    data = data/species_mass( spec ) 
+    data = data/species_mass( spec )
     # convert to ppb
     data = data/MOLS *1E9
-    # update unit string 
+    # update unit string
     units = 'ppbv'
     if rtn_units:
         return data, units
@@ -1590,36 +1590,36 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
     """
     Creates 2D (lon,lat) masked (1=Masked) for nighttime for a given list of
     dates
-    
+
     Parameters
     -------
     date (datetime): date to use (UTC)
     mask_daytime (boolean): mask daytime instead of nightime
-    ncfile (str): location to netCDF file - not implemented... 
+    ncfile (str): location to netCDF file - not implemented...
     res (str): resolution, if using resolutions listed in get_latlonalt4res
     buffer_hours (float/int): number of hours to buffer subrise/sunset with
-     (This will act to increase the size of the mask - e.g. if masking 
-      nightime, then an extra hour of nightime would be added to sunrise, and 
+     (This will act to increase the size of the mask - e.g. if masking
+      nightime, then an extra hour of nightime would be added to sunrise, and
       removed from sunset. )
 
     Returns
     -------
     (np.array) with conditional values masked (1=masked)
-    
+
     ncfile (NetCDF file): NetCDF file to extract lat and lon metadata from
 
     Notes
-    -----    
-     - if ncfile provide programme will work for that grid.     
+    -----
+     - if ncfile provide programme will work for that grid.
     """
     # Astronomical math
-    import ephem 
+    import ephem
     from ephem import AlwaysUpError, NeverUpError
     # And functions in other AC_tools modules
     from .funcs4time import add_days, add_hrs
     logging.info('get_2D_nighttime_mask4date_pd called for {}'.format(date))
 
-    # Profile function... 
+    # Profile function...
     if debug:
         start_time = time.time()
 
@@ -1629,16 +1629,16 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
 
     # --- Get LON and LAT variables
     if isinstance( ncfile, type(None) ):
-        # extract from refence files 
+        # extract from refence files
         lons, lats, alts = get_latlonalt4res(res=res)
     else:
         # TODO - allow any lat, lon grid to be used by taking input lats and
-        # lons from ncfile file/arguments. 
+        # lons from ncfile file/arguments.
         print('Not implemented')
         sys.exit()
     if debug:
         print(("--- (start-1) %s seconds ---" % (time.time() - start_time)))
-    
+
     # --- setup function to mask based on date, lat and lon
     def mask_nighttime(lon, lat, date=date, mask_daytime=mask_daytime, \
         ref_date=datetime.datetime(1899, 12, 31, 12 ), \
@@ -1647,22 +1647,22 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
         sub-function to mask if nightime for a given date at a specific lat/lon
         """
         # --- get lat and lon values from columns
-        if debug:   
+        if debug:
             print(("--- (s4-1) %s seconds ---" % (time.time() - start_time)))
         # --- get sunrise and sunset for location
-        o=ephem.Observer()  
+        o=ephem.Observer()
         # set lat (decimal?), lon (decimal?), and date (UTC)
         o.lat=str(lat)
         o.long=str(lon)
         o.date = date
         # planetary body
-        s=ephem.Sun()      
-        if debug:   
+        s=ephem.Sun()
+        if debug:
             print(("--- (s4-2) %s seconds ---" % (time.time() - start_time)))
 
         # Compute sun vs observer
-        s.compute()  
-        if debug:   
+        s.compute()
+        if debug:
             print(("--- (s4-3) %s seconds ---" % (time.time() - start_time)))
 
         # Work out if day or night based on sunrises and sunsets
@@ -1685,7 +1685,7 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
             # Add buffer to rising/setting if provided with buffer_hours
             if buffer_hours != 0:
 
-                # Calculate last rise 
+                # Calculate last rise
                 previous_rising = o.previous_rising(s)
                 # convert to datetime.datetime
                 previous_rising = add_days(ref_date, previous_rising)
@@ -1693,12 +1693,12 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
                 previous_setting = o.previous_setting(s)
                 # convert to datetime.datetime
                 previous_setting = add_days(ref_date, previous_setting)
- 
+
                  # Calculate absolute difference
                 time_from_rise = (date-previous_rising).total_seconds()
                 time_till_set = (date-next_setting).total_seconds()
                 time_from_set = (date-previous_setting).total_seconds()
-                time_till_rise = (date-next_rising).total_seconds() 
+                time_till_rise = (date-next_rising).total_seconds()
 
                 # If absolutely difference less than buffer
                 if abs(time_from_rise)/60./60.<= buffer_hours:
@@ -1710,7 +1710,7 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
                 elif abs(time_till_rise)/60./60.< buffer_hours:
                     mask_value=1
 
-            # --- Check if daytime or nighttime and mask if condition met. 
+            # --- Check if daytime or nighttime and mask if condition met.
             if sun_last_rose:
                 if mask_daytime:
                     # ... and has not set yet, it must be daytime
@@ -1719,12 +1719,12 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
 
             # if the sun last set... (mask nighttime is default)
             else:
-                # if mask nighttime (aka not mask_daytime)            
+                # if mask nighttime (aka not mask_daytime)
                 if not mask_daytime:
-                    # ... and has not risen yet, it must be nighttime                    
+                    # ... and has not risen yet, it must be nighttime
                     if (date < next_rising):
                         mask_value=1
-                         
+
         # Add gotcha for locations where sun is always up.
         except AlwaysUpError:
             if mask_daytime:
@@ -1738,7 +1738,7 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
         except:
             print('FAIL')
             sys.exit()
-              
+
         # Mask value in array
         return mask_value
 
@@ -1756,7 +1756,7 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
     if debug:
         print(("--- (4) %s seconds ---" % (time.time() - start_time)))
     # Apply function to calculate mask value
-#    df['mask'] = df.apply(mask_nighttime, axis=1)    
+#    df['mask'] = df.apply(mask_nighttime, axis=1)
     df['mask'] = df.apply(lambda x: mask_nighttime(x['lons'], x['lats']), axis=1)
     if debug:
         print(("--- (5) %s seconds ---" % (time.time() - start_time)))
@@ -1774,41 +1774,41 @@ def get_2D_nighttime_mask4date_pd( date=None, ncfile=None, res='4x5', \
 
 
 # --------
-# X.XX - Get 2D array of solar time.  
+# X.XX - Get 2D array of solar time.
 # --------
 def get_2D_solartime_array4_date( date=None, ncfile=None, res='4x5', \
         lons=None, lats=None, varname='SolarTime',  debug=False ):
     """
     Creates 2D (lon,lat) masked (1=Masked) for nighttime for a given list of
     dates
-    
+
     Parameters
     -------
     date (datetime): date to use (UTC)
     mask_daytime (boolean): mask daytime instead of nightime
-    ncfile (str): location to netCDF file - not implemented... 
+    ncfile (str): location to netCDF file - not implemented...
     res (str): resolution, if using resolutions listed in get_latlonalt4res
     lons (array): array of longditudes (optional)
-    lats (array): array of lattiudes (optional) 
+    lats (array): array of lattiudes (optional)
 
     Returns
     -------
-    (np.array) 
-    
+    (np.array)
+
     ncfile (NetCDF file): NetCDF file to extract lat and lon metadata from
 
     Notes
-    -----    
-     - if ncfile provide programme will work for that grid.     
+    -----
+     - if ncfile provide programme will work for that grid.
     """
     # Astronomical math
-    import ephem 
+    import ephem
     from ephem import AlwaysUpError, NeverUpError
     # And functions in other AC_tools modules
     from .funcs4time import add_days, add_hrs
     logging.info('get_2D_solartime_array4_dates called for {}'.format(date))
 
-    # Profile function... 
+    # Profile function...
     if debug:
         start_time = time.time()
 
@@ -1821,11 +1821,11 @@ def get_2D_solartime_array4_date( date=None, ncfile=None, res='4x5', \
         pass
     else:
         if isinstance( ncfile, type(None)):
-            # extract from refence files 
+            # extract from refence files
             lons, lats, NIU = get_latlonalt4res(res=res)
         else:
             # TODO - allow any lat, lon grid to be used by taking input lats and
-            # lons from ncfile file/arguments. 
+            # lons from ncfile file/arguments.
             print('Not implemented')
             sys.exit()
 
@@ -1835,25 +1835,25 @@ def get_2D_solartime_array4_date( date=None, ncfile=None, res='4x5', \
         Get solartime for location (lat, lon) and date
 
         Returns
-        --- 
-        (float) Epoch time    
+        ---
+        (float) Epoch time
         """
         # --- get sunrise and sunset for location
-        o=ephem.Observer()  
+        o=ephem.Observer()
         # set lat (decimal?), lon (decimal?), and date (UTC)
         o.lat=str(lat)
         o.long=str(lon)
         o.date = date
         # planetary body
-        s=ephem.Sun()  
+        s=ephem.Sun()
         # Compute sun vs observer
-        s.compute(o)                 
+        s.compute(o)
         # below code was adapted from stackoverflow (Credit: J.F. Sebastian)
         # http://stackoverflow.com/questions/13314626/local-solar-time-function-from-utc-and-longitude
         # sidereal time == ra (right ascension) is the highest point (noon)
         hour_angle = o.sidereal_time() - s.ra
         s_time = ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h
-        # ephem.hours is a float number that represents an angle in radians 
+        # ephem.hours is a float number that represents an angle in radians
         # and converts to/from a string as "hh:mm:ss.ff".
         s_time = "%s" % s_time
         if len(s_time) != 11:
@@ -1861,7 +1861,7 @@ def get_2D_solartime_array4_date( date=None, ncfile=None, res='4x5', \
         # return as datetime
         s_time = datetime.datetime.strptime(s_time[:8], '%H:%M:%S' )
         if rtn_as_epoch:
-            s_time = unix_time(s_time)            
+            s_time = unix_time(s_time)
         return s_time
 
     # --- Setup an unstack(ed) pandas dataframe to contain masked values
@@ -1892,12 +1892,12 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
 
     Parameters
     -------
-    ars (list of np.array): list of (lon, lat) arrays 
+    ars (list of np.array): list of (lon, lat) arrays
     dates (list of datetime.datetime)
     res (str): reoslution (opitional )
     lons (list): lons for use for NetCDF cooridinate variables
     lats (list): lats for use for NetCDF cooridinate variables
-    filename (str): name for output netCDF file 
+    filename (str): name for output netCDF file
     varname (str): name for variable in NetCDF
     var_type (str): variable type (e.g. 'f8' (64-bit floating point))
 
@@ -1907,7 +1907,7 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
 
     Notes
     -----
-     - needs updating to take non-standard reoslutions 
+     - needs updating to take non-standard reoslutions
      (e.g. those in funcs_vars)
 
     """
@@ -1915,9 +1915,9 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
     from .funcs4time import unix_time, dt64_2_dt
     print(locals())
 
-    # ---  Settings 
+    # ---  Settings
     ncfilename = '{}_{}.nc'.format( filename, res )
-    # Get lons and lats... 
+    # Get lons and lats...
     if any( [isinstance(i, type(None)) for i in (lats, lons)] ):
         lons, lats, NIU = get_latlonalt4res(res=res)
         logging.debug('Using offline lons/lats, as either lats/lons==None')
@@ -1928,7 +1928,7 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
     # --- Setup new file
     # write file
     logging.debug('setting up new NetCDF file: {}'.format(ncfilename))
-    ncfile = Dataset( ncfilename,'w', format='NETCDF4') 
+    ncfile = Dataset( ncfilename,'w', format='NETCDF4')
     ncfile.createDimension('lat', len(lats) )
     ncfile.createDimension('lon', len(lons) )
     ncfile.createDimension('time', None)
@@ -1946,7 +1946,7 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
     lat.units = 'degrees_north'
     lat.long_name = 'Latitude'
     lat.standard_name = 'Latitude'
-    lat.axis = "Y" 
+    lat.axis = "Y"
 
     lon.units = 'degrees_east'
     lon.long_name = 'Longitude'
@@ -1954,10 +1954,10 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
     lon.axis = "X"
 
     time.units='seconds since 1970-01-01 00:00:00'
-    time.calendar = "standard" 
+    time.calendar = "standard"
     time.standard_name = 'Time'
     time.axis = "T"
- 
+
     # --- Set global variables
     if not isinstance(Description, type(None)):
         ncfile.Description = Description
@@ -1971,7 +1971,7 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
     lat[:] = lats
 
     # ---  Setup time dimension/variables (as epoch)
-    # Convert to Epoch time    
+    # Convert to Epoch time
     format = lambda x: unix_time(x)
     df = pd.DataFrame({'Datetime':dates})
     df['Epoch'] = df['Datetime'].map( format ).astype('i8')
@@ -1982,7 +1982,7 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
     # Assign to time variable
     time[:] = dates
 
-    # --- Create new NetCDF variable (as f8) with common dimensions 
+    # --- Create new NetCDF variable (as f8) with common dimensions
     # (e.g. 'f8' = 64-bit floating point, 'i8'=(64-bit singed integer) )
     ncfile.createVariable( varname, var_type, ('time','lat','lon'), )
     # Close NetCDF
@@ -1994,12 +1994,12 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
         if debug:
             fmtstr="%Y%d%m %T"
             logging.debug('saving array date:{}'.format(date.strftime(fmtstr)))
-            pcent = (float(n)+1)/float(len(dt_dates))*100 
+            pcent = (float(n)+1)/float(len(dt_dates))*100
             logging.debug('array #: {} (% complete: {:.1f})'.format(n, pcent))
 
         # Open NetCDF in append mode
-        ncfile = Dataset( ncfilename,'a', format='NETCDF4')     
-    
+        ncfile = Dataset( ncfilename,'a', format='NETCDF4')
+
         # Add data to array
         try:
             ncfile.variables[ varname ][ n ] = ars[n]
@@ -2011,13 +2011,13 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
             sys.exit()
 
     # Close NetCDF
-    ncfile.close()        
+    ncfile.close()
     if debug:
         logging.debug('saved NetCDF file:{}'.format(ncfilename) )
 
 
 # --------
-# X.XX - Interpolate values from subset of 2D array 
+# X.XX - Interpolate values from subset of 2D array
 # --------
 def get_value_interpolated_from_nearby_values( Y_CORDS=None, X_CORDS=None, \
         X=None, Y=None, XYarray=None, buffer_CORDS=5, \
@@ -2032,21 +2032,21 @@ def get_value_interpolated_from_nearby_values( Y_CORDS=None, X_CORDS=None, \
     X (float): value of interest (in same terms at X_CORDS, e.g. lon)
     Y (float): value of interest (in same terms at Y_CORDS, e.g. lat)
     XY (array): array of values with shape (X_CORDS, Y_CORDS)
-    buffer_CORDS (int): number of units of X_CORDS and Y_CORDS to interpolate 
+    buffer_CORDS (int): number of units of X_CORDS and Y_CORDS to interpolate
         around (great this value, greater the cost.)
     verbose (boolean): print out extra infomation
     debug (boolean): print out debugging infomation
-    
+
     Returns
     -------
     (float)
     """
     # X_CORDS=file_lonc; Y_CORDS=file_latc; X=lon; Y=lat; XYarray=file_data; buffer_CORDS=10
     import scipy.interpolate as interpolate
-    # ---  Select a sub grid. 
-    # WARNING THIS APPRAOCH WILL NOT WORK NEAR ARRAY EDGES!!! 
+    # ---  Select a sub grid.
+    # WARNING THIS APPRAOCH WILL NOT WORK NEAR ARRAY EDGES!!!
     # (TODO: add functionality for this.)
-    # Get indices buffer sub-selection of grid. 
+    # Get indices buffer sub-selection of grid.
     s_low_X_ind = find_nearest_value( X_CORDS, X-buffer_CORDS )
     s_high_X_ind = find_nearest_value( X_CORDS, X+buffer_CORDS )
     s_low_Y_ind = find_nearest_value( Y_CORDS, Y-buffer_CORDS )
@@ -2056,39 +2056,39 @@ def get_value_interpolated_from_nearby_values( Y_CORDS=None, X_CORDS=None, \
         Y_CORDS[s_low_Y_ind], s_low_Y_ind, Y_CORDS[s_high_Y_ind], s_high_Y_ind))
         print('X={}, subrange=({}(ind={}),{}(ind={}))'.format( X, \
         X_CORDS[s_low_X_ind], s_low_X_ind, X_CORDS[s_high_X_ind], s_high_X_ind))
-    # Select sub array and get coordinate axis 
+    # Select sub array and get coordinate axis
     subXY = XYarray[s_low_X_ind:s_high_X_ind, s_low_Y_ind:s_high_Y_ind]
     subX = X_CORDS[s_low_X_ind:s_high_X_ind]
     subY = Y_CORDS[s_low_Y_ind:s_high_Y_ind]
     # Debug (?) by showing 2D grid prior to interpolation
-    if debug:    
+    if debug:
         print([ i.shape for i in (subX, subY, subXY) ], XYarray.shape)
         plt.pcolor(subX, subY, subXY.T)
-        plt.colorbar()    
+        plt.colorbar()
         plt.show()
-    
-    # ---  interpolate over subgrid. 
+
+    # ---  interpolate over subgrid.
     M = subXY
     rr, cc = np.meshgrid(subX, subY)
     # fill masked values with nans
     M = np.ma.filled(M, fill_value=np.nan)
     # only consider non nan values as values to interpolate with
     vals = ~np.isnan(M)
-    if debug:    
+    if debug:
         print(vals)
     # interpolate
     f = interpolate.Rbf(rr[vals], cc[vals], M[vals], function='linear')
-    # extract interpolation... 
+    # extract interpolation...
     interpolated = f(rr, cc)
-    
+
     # ---  Select value of interest
     # Debug (?) by showing 2D grid post to interpolation
-    if debug:    
+    if debug:
         print(interpolated.shape)
         plt.pcolor(subX, subY, interpolated.T)
         plt.colorbar()
         plt.show()
-    
+
     # indix value from subgrid?
     Y_ind = find_nearest_value( subY, Y )
     X_ind = find_nearest_value( subX, X )
@@ -2099,10 +2099,10 @@ def get_value_interpolated_from_nearby_values( Y_CORDS=None, X_CORDS=None, \
 # --------
 # X.XX - Split a NetCDF by month
 # --------
-def split_NetCDF_by_month(folder=None, filename=None, ext_str='', 
+def split_NetCDF_by_month(folder=None, filename=None, ext_str='',
         file_prefix='ts_ctm' ):
-    """ 
-    Split a NetCDF file by month into new NetCDF files using xarray 
+    """
+    Split a NetCDF file by month into new NetCDF files using xarray
 
     Parameters
     -------
@@ -2115,7 +2115,7 @@ def split_NetCDF_by_month(folder=None, filename=None, ext_str='',
     # --- Open data
     ds = xr.open_dataset(folder+filename)
     months = list( sorted( set( ds['time.month'].values ) ) )
-    
+
     # --- Loop months
     for month_ in months:
 
@@ -2125,7 +2125,7 @@ def split_NetCDF_by_month(folder=None, filename=None, ext_str='',
         # Make sure time is the dimension not module
         time = ds.time
         # Now select for month
-        ds_tmp = ds.sel(time=is_month(ds['time.month']))            
+        ds_tmp = ds.sel(time=is_month(ds['time.month']))
 
         # --- Save as NetCDF
         # Name of new NetCDF?
@@ -2133,7 +2133,7 @@ def split_NetCDF_by_month(folder=None, filename=None, ext_str='',
         file2save = '{}_{}_{}_{:0>2}.nc'.format(file_prefix, ext_str, year_, \
             str(month_))
         logging.info('saving month NetCDF as: {}'.format(file2save))
-        # Save the file... 
+        # Save the file...
         ds_tmp.to_netcdf(folder+file2save)
         # Delete temporary dataset
         del ds_tmp
@@ -2142,7 +2142,7 @@ def split_NetCDF_by_month(folder=None, filename=None, ext_str='',
 # --------
 # X.XX - stack a 2D table (DataFrame) of lat/lon coords
 # --------
-def get_2D_df_of_lon_lats_and_time(res='4x5', df_lar_var='lat', df_lon_var='lon', 
+def get_2D_df_of_lon_lats_and_time(res='4x5', df_lar_var='lat', df_lon_var='lon',
         df_time_var='month', add_all_months=False, lons=None, lats=None ):
     """ stack a 2D table (DataFrame) of lat/lon coords """
     # Get lon and lat resolution (Add other ways to get lat and lon here...
@@ -2152,60 +2152,60 @@ def get_2D_df_of_lon_lats_and_time(res='4x5', df_lar_var='lat', df_lon_var='lon'
         lons, lats, NIU = get_latlonalt4res(res=res)
     else:
         print('please provide lons/lats or a res in get_latlonalt4res')
-   
+
     # Make Table like array
     b = np.zeros( (len(lons), len(lats)) )
     df = pd.DataFrame( b )
     # Use lats and lons as labels for index and columns
     df.index = lons
-    df.columns = lats    
+    df.columns = lats
     # Stack, then reset index to obtain table structure
     df = df.stack()
     df = df.reset_index()
     # Set column headers
-    df.columns = df_lon_var, df_lar_var, df_time_var    
+    df.columns = df_lon_var, df_lar_var, df_time_var
 
-    # Add time dims... 
+    # Add time dims...
     if add_all_months:
         print( ' all month addition not setup yet' )
         sys.exit()
     else: # Just use September for now
-        df[df_time_var] = 9 
+        df[df_time_var] = 9
 
     return df
 
 # --------
 # X.XX - stack a 2D table (DataFrame) of lat/lon coords
 # --------
-def get_vars_from_line_printed_in_txt_file(filename=None, folder=None, 
+def get_vars_from_line_printed_in_txt_file(filename=None, folder=None,
         prefix=' HOUR:', var_names=None, type4var_names=None):
-    """ 
+    """
     Get variables from a line printed to non-binary file with a given prefix
-    
+
     Parameters
     ----------
     filename (Str): name of non binary file (e.g. geos.log)
     folder (str): name of directory where file ("filename") is located
     prefix (str): the string that lines containing data begin with
     var_names (list): optional. names for variables in line (must be # in line)
-    type4var_names (dict): dictionary of type to convert variables to 
+    type4var_names (dict): dictionary of type to convert variables to
 
     Returns
     -------
     (pd.DataFrame)
 
     Notes
-    ----------    
-     - Can be used for debugging or tabulating output. e.g. lines of 
+    ----------
+     - Can be used for debugging or tabulating output. e.g. lines of
      grid index locations and values printed to GEOS-chem's geos.log file
     """
     import pandas as pd
     import sys
-	# --- Local vars
+    # --- Local vars
     lines_with_var = []
-	# --- Open file and loop vars
+    # --- Open file and loop vars
     with open(folder+filename) as f:
-		
+
         for line in f:
 #			if prefix in line:
 #            print line
@@ -2231,7 +2231,7 @@ def get_vars_from_line_printed_in_txt_file(filename=None, folder=None,
             for key_ in type4var_names.keys():
                 try:
                     df[key_] = df[key_].astype(type4var_names[key_])
-                except KeyError:     
+                except KeyError:
                     err_str = 'key_ ({}) not in df'.format(key_)
                     logging.info(err_str )
 
@@ -2246,8 +2246,8 @@ def get_vars_from_line_printed_in_txt_file(filename=None, folder=None,
 # ---------------- Section X -------------------------------------------
 # -------------- Redundant Functions
 # --------------------------------------------------------------------------
-# 
-# NOTE(s): 
+#
+# NOTE(s):
 # (1) These are retained even though they are redundant for back compatibility
-# (2) It is not advised to use these. 
+# (2) It is not advised to use these.
 
