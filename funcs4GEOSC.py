@@ -29,7 +29,7 @@ try:
             except:
                 import pygchem.datafields as datasets
 except ImportError:
-    print 'pygchem not imported!'
+    print( 'pygchem not imported!')
 import pandas as pd
 import xarray as xr
 import re
@@ -3220,7 +3220,7 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
             arr= arr*scaleby
         except:
             err_str = 'No case for {} - PLEASE CHECK INPUT FAM OR ADD CASE'.format( fam )
-            print err_str
+            print( err_str )
             logging.info( err_str )
 
     if debug and (not rtn_list):
@@ -4514,7 +4514,7 @@ def prt_Prod_Loss_list4input_geos(spec_list=None, prefix_list=None, start_num=1)
     # Loop species (specs) provided
     for n, spec in enumerate( spec_list ):
         index = start_num+n
-        print line_str.format( get_suffix(index), prefix_list[n]+spec, spec)
+        print( line_str.format( get_suffix(index), prefix_list[n]+spec, spec) )
 
 
 def prt_Species_List_lines4globchem_dat(spec_list=None, activty_list=None):
