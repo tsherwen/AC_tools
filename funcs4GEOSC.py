@@ -5203,12 +5203,12 @@ def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None, \
         debug=False ):
     """ Wrapper of get_trop_burden for O3 """
     # ---  Local vars.
-    # (	all_data == annual_mean )
-    if annual_mean:
+    # (	all_data == ( annual_mean == False ) )
+    if not annual_mean:
         all_data = True
     # ( total_atmos == trop_limit )
     if trop_limit:
-        total_atmos =  True
+        total_atmos = True
 
     # --- just call existing function
     return get_trop_burden(wd=wd, total_atmos=False, all_data=all_data,

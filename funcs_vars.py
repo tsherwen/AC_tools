@@ -30,10 +30,10 @@ import numpy as np
 
 # --  This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
-if __package__ is None:
-    from .funcs4core import *
-else:
-    from funcs4core import *
+#if __package__ is None:
+from . funcs4core import *
+#else:
+#    from funcs4core import *
 
 # ----------------------------- Section 1 -----------------------------------
 # -------------- Planeflight variables
@@ -1881,7 +1881,7 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', rm_redundent_ClBrI_tags
                 [ [i[0] for i in details][ii] for ii in ind ][::-1])
         # If cases have been found, remove these
         if len( ind ) > 0:
-            [ l.pop(i) for i in ind[::-1] for l in details, Coes ]
+            [ l.pop(i) for i in ind[::-1] for l in (details, Coes) ]
         if debug:
             print([len(i) for i in (details, Coes) ])
 

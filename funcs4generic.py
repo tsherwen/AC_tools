@@ -28,12 +28,12 @@ from math import radians, sin, cos, asin, sqrt, pi, atan2
 
 # --  This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
-if __package__ is None:
-    from .funcs4core import *
-    from .funcs_vars import *
-else:
-    from funcs4core import *
-    from funcs_vars import *
+#if __package__ is None:
+from . funcs4core import *
+from . funcs_vars import *
+# else:
+#     from funcs4core import *
+#     from funcs_vars import *
 
 # -------------------------- Section 7 -------------------------------
 # -------------- Generic Processing

@@ -8,8 +8,8 @@ If you find missing documentation in any of this, please request a git push to g
 import logging
 FORMAT = "%(levelname)8s - %(message)s   @---> %(filename)s:%(lineno)s  %(funcName)s()"
 logging.basicConfig(filename='AC_tools.log', filemode='w',level=logging.DEBUG,
-                format=FORMAT)  
-logging.getLogger().setLevel(logging.DEBUG)                                     
+                format=FORMAT)
+logging.getLogger().setLevel(logging.DEBUG)
 
 
 
@@ -17,13 +17,13 @@ logging.getLogger().setLevel(logging.DEBUG)
 import numpy as np
 
 # We can use an import here so that submodules can be accessed easier.
-from funcs4GEOSC import *
-from funcs4core import *
-from funcs4generic import *
-from funcs4pf import *
-from funcs4time import *
-from funcs_vars import *
-from funcs4plotting import *
+from . funcs4GEOSC import *
+from . funcs4core import *
+from . funcs4generic import *
+from . funcs4pf import *
+from . funcs4time import *
+from . funcs_vars import *
+from . funcs4plotting import *
 
 
 
