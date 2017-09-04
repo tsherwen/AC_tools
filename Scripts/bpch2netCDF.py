@@ -1,11 +1,11 @@
 #!/usr/bin/python
-""" 
+"""
 This script analysis a folder containing bpch files and outputs the results
 in a single netCDF file in the folder.
 
-This allows for significantly faster and easier input of data, 
-and more common anaylsis techniques like pandas without extra 
-post processing. 
+This allows for significantly faster and easier input of data,
+and more common anaylsis techniques like pandas without extra
+post processing.
 """
 
 import logging
@@ -14,7 +14,7 @@ import glob
 import os
 import netCDF4
 try:
-    import iris 
+    import iris
 except  ImportError:
     print( 'WARNING iris and cartopy have stability issues')
 # retain back compatibility for PyGChem
@@ -29,7 +29,7 @@ try:
             except:
                 import pygchem.datafields as datasets
 except ImportError:
-    print 'pygchem not imported!'
+    print( 'pygchem not imported!')
 
 def convert_to_netCDF(folder=None,filename='ctm.nc', bpch_file_list=None, \
         remake=False, hemco_file_list=None, verbose=True, \
@@ -55,8 +55,8 @@ def convert_to_netCDF(folder=None,filename='ctm.nc', bpch_file_list=None, \
         " bpch_file_type={}/filename={}".format(bpch_file_type, filename) )
 
 #    try:
-    bpch_to_netCDF( folder=folder, filename=filename, 
-            bpch_file_list=bpch_file_list, remake=remake, 
+    bpch_to_netCDF( folder=folder, filename=filename,
+            bpch_file_list=bpch_file_list, remake=remake,
             file_type = bpch_file_type, verbose=verbose)
 #    except:
 #        logging.error("Could not convert bpch to netCDF in {_dir}"\
@@ -135,23 +135,23 @@ def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None, \
         remake=False, filetype="*ctm.bpch*", \
         check4_trac_avg_if_no_ctm_bpch=True, verbose=False, **kwargs):
 
-    """    
+    """
     Converts GEOS-Chem ctm.bpch output file(s) to NetCDF
 
     Parameters
     ----------
     folder (str): working directory for data files
     filename (str): name to give created NetCDF
-    bpch_file_list (list): list of files to convert 
+    bpch_file_list (list): list of files to convert
     remake (boolean): overwrite existing NetCDF file
-    filetype (str): string with wildcards to match filenames 
+    filetype (str): string with wildcards to match filenames
     ( e.g. *ctm.bpch*, trac_avg.*, or *ts*bpch* )
     verbose (boolean): print (minor) logging to screen
-   
+
     Returns
     -------
     (None) saves a NetCDF file to disk
-    """   
+    """
 
     # Check if file already exists and warn about remaking
     if __package__ is None:
@@ -166,7 +166,7 @@ def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None, \
         if os.path.exists(output_file):
             logging.warning(output_file + ' already exists. Not recreating.')
             return
-        
+
     # Look for files if file list is not provided.
     if isinstance( bpch_file_list, type(None) ):
         logging.debug("Searching for the following bpch filetype: {filetype}"\
@@ -179,7 +179,7 @@ def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None, \
              bpch_files = glob.glob( folder + '/' + filetype )
         # Raise error if no files matching filetype
         if len(bpch_files) == 0:
-            logging.error("No bpch files ({}) found in {}".format(filetype, 
+            logging.error("No bpch files ({}) found in {}".format(filetype,
             folder) )
             raise IOError("{} contains no bpch files.".format(folder))
 
@@ -207,13 +207,13 @@ def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None, \
 #    iris.fileformats.netcdf.save(data, output_file)
     datasets.save( bpch_data, output_file )
     logging.info( "A netCDF file has been created with the name {ctm}"\
-                .format(ctm=output_file)) 
+                .format(ctm=output_file))
     return
 
 
 def get_folder(folder):
     """
-    Get name of folder that contains ctm.bpch data from command line 
+    Get name of folder that contains ctm.bpch data from command line
     """
     if isinstance( folder, type(None) ):
        # getting the folder location from system argument
@@ -231,7 +231,7 @@ def get_folder(folder):
 
     return folder;
 
-   
+
 if __name__ == "__main__":
    convert_to_netCDF()
    print("Complete")
