@@ -28,12 +28,8 @@ from math import radians, sin, cos, asin, sqrt, pi, atan2
 
 # --  This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
-#if __package__ is None:
 from . funcs4core import *
 from . funcs_vars import *
-# else:
-#     from funcs4core import *
-#     from funcs_vars import *
 
 # -------------------------- Section 7 -------------------------------
 # -------------- Generic Processing
@@ -181,7 +177,7 @@ def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,\
 # --------
 # X.XX - Save as mulitple page pdf.
 # --------
-def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, \
+def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, wd=None, \
         dpi=160, open=False, close=False, justHH=False, no_dstr=False ):
     """
     Save figures (e.g. matplotlib) to pdf file with multiple pages
@@ -189,7 +185,9 @@ def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, \
 
     # set save directory ( using default directory dictionary )
     from .funcs4core import get_dir
-    wd = get_dir('ppwd')
+#    wd = get_dir('ppwd')
+    if isinstance(wd, type(None)):
+        wd='./'
 
     # Set pdf name
     if justHH and (not no_dstr):

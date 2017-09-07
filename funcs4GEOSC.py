@@ -54,20 +54,13 @@ from datetime import datetime as datetime_
 
 # --  This needs to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
-if __package__ is None:
-    from .funcs4core import *
-    from .funcs4generic import *
-    from .funcs4time import *
-    from .funcs4pf import *
-    from .funcs_vars import *
-    from .Scripts.bpch2netCDF import convert_to_netCDF
-else:
-    from .funcs4core import *
-    from .funcs4generic import *
-    from .funcs4time import *
-    from .funcs4pf import *
-    from .funcs_vars import *
-    from .Scripts.bpch2netCDF import convert_to_netCDF
+from .funcs4core import *
+from .funcs4generic import *
+from .funcs4time import *
+from .funcs4pf import *
+from .funcs_vars import *
+from .Scripts.bpch2netCDF import convert_to_netCDF
+
 
 
 # --------------------------------- Section 2 ----------------------------------

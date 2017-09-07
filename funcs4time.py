@@ -28,7 +28,7 @@ from datetime import datetime as datetime_
 # Attempt to import ephem if installed
 try:
     import ephem
-except:
+except ImportError:
     print( 'ephem package not installed')
 
 # ----------------------- Section X.X -------------------------------------------
