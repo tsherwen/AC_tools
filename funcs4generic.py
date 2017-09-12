@@ -1547,7 +1547,7 @@ def get_ODR(x=None, y=None):
     return myoutput
 
 # --------
-# X.XX - Get orthogonal distance regression (ODR) of two datasets
+# X.XX - Convert ug per m3 to 2 ppbv
 # --------
 def convert_ug_per_m3_2_ppbv( data=None,  spec='O3', rtn_units=False, \
         units='ug m$^{-3}$' ):
@@ -1579,6 +1579,42 @@ def convert_ug_per_m3_2_ppbv( data=None,  spec='O3', rtn_units=False, \
         return data, units
     else:
         return data
+
+
+# --------
+# X.XX - Convert mg per m3 to 2 ppbv
+# --------
+def convert_mg_per_m3_2_ppbv( data=None,  spec='O3', rtn_units=False, \
+        units='mg m$^{-3}$' ):
+    """
+    Converts units of ugm^-3 to ppbv for a given species assuming SATP
+    """
+    # --- Get constants
+    RMM_air = constants('RMM_air') # g/mol
+    # assume standard air density
+    # At sea level and at 15 °C air has a density of approximately 1.225 kg/m3
+    #(0.001225 g/cm3, 0.0023769 slug/ft3, 0.0765 lbm/ft3) according to
+    # ISA (International Standard Atmosphere).
+    AIRDEN = 0.001225 # g/cm3
+    # moles per cm3
+    #  (1/(g/mol)) = (mol/g) ; (mol/g) * (g/cm3) = mol/cm3
+    MOLS = (1/RMM_air) * AIRDEN
+
+    # --- Convert
+    # convert mg/m3 to ppbv
+    # get g per cm3, ( instead of mg/m3)
+    data = data /1E6 /1E3
+    # get mol/cm3 (mass/ RMM ) =  (mg/m3  /  g/mol )
+    data = data/species_mass( spec )
+    # convert to ppb
+    data = data/MOLS *1E9
+    # update unit string
+    units = 'ppbv'
+    if rtn_units:
+        return data, units
+    else:
+        return data
+
 
 # --------
 # X.XX - Get 2D (lat, lon) mask of night time for a given datetime
