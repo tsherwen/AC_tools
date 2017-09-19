@@ -543,7 +543,9 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
     elif C:
         d = {
     'ACET': 3.0, 'ALD2': 2.0, 'C2H6': 2.0, 'C3H8': 3.0, 'ISOP': 5.0, \
-    'PRPE': 3.0, 'ALK4': 4.0, 'MEK': 4.0
+    'PRPE': 3.0, 'ALK4': 4.0, 'MEK': 4.0, \
+    'APINE':10.0, 'BPINE':10.0, 'LIMON':10.0, 'SABIN':10.0, 'MYRCN':10.0, \
+    'CAREN':10.0, 'OCIMN':10.0, \
         }
     elif Br:
          d= {
