@@ -1142,6 +1142,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     'Europe' : 25,
     'EU' : 25,
 #    'Surface BL': 26,
+    'Land Tropics Sur.': 27,
     }[region]
 
 
@@ -1207,6 +1208,10 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
             mask = get_EU_unmasked( res=res )
 #        if case == 26:
 #            mask = get_2D_BL_unmasked( res=res )
+        if case == 27: # 'Land Tropics Sur.':
+            tmp = np.ma.mask_or( surface_unmasked(res=res) ,  \
+                     land_unmasked( res=res )  )
+            mask = np.ma.mask_or( tmp, tropics_unmasked( res=res) )
 
         # Invert mask to leave exception unmasked if used to multiply
         mask = np.logical_not(mask)
@@ -1274,7 +1279,10 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
             mask = get_EU_unmasked( res=res )
 #        if case == 26:
 #            mask = get_2D_BL_unmasked( res=res )
-
+        if case == 27: # 'Land Tropics Sur.':
+            tmp = np.ma.mask_or( surface_unmasked(res=res) ,  \
+                     land_unmasked( res=res )  )
+            mask = np.ma.mask_or( tmp, tropics_unmasked( res=res) )
 
     logging.debug( 'prior to setting dimensions: {}'.format(mask.shape) )
 
