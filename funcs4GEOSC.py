@@ -3513,7 +3513,7 @@ def convert_spec_v_v_2_ugm3( spec=None, data=None ):
 # ----
 def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None, \
         filename='ts_ctm.nc', LON=None, LAT=None, rtn_units=False, \
-        rtn_ctm_units=False ):
+        rtn_ctm_units=False, verbose=True ):
     """
     Extract *ts*bpch* (1D) data from file for a specific site
 
@@ -3557,11 +3557,12 @@ def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None, \
     # Extract data for location
     with Dataset( wd+'/'+filename, 'r') as rootgrp:
         data = rootgrp['IJ_AVG_S__'+spec]
-        print(('Extracted data:', data))
-        print(('data shape: ', data.shape))
-        # extract for location (array shape = TIME, LON, LAT)
+        if verbose:
+            print(('Extracted data:', data))
+            print(('data shape: ', data.shape))
+        # Extract for location (array shape = TIME, LON, LAT)
         data = data[:, LON_ind, LAT_ind]
-        # also extract NetCDF units
+        # Also extract NetCDF units
         units = rootgrp['IJ_AVG_S__'+spec].units
         ctm_units = rootgrp['IJ_AVG_S__'+spec].ctm_units
 
