@@ -4505,18 +4505,18 @@ def get_Lightning_NOx_source( Var_rc=None, Data_rc=None, debug=False ):
     # Get Lightning
     arr = d['NO_LI_S__NO'][:]
     if debug:
-        print arr.shape
+        print( arr.shape )
     # Average over time
     arr = arr.mean(axis=0)
 #    arr = arr[0,...]
 #    months= 7, 8
 #    arr = arr[[i-1 for i in months],...].mean(axis=0)
     if debug:
-        print arr.shape
+        print( arr.shape )
     # Sum over altitude
     arr_2D = arr.sum(axis=-1)
     if debug:
-        print arr_2D.shape
+        print( arr_2D.shape )
     # Remove space dim
     s_area = get_surface_area( res=Data_rc['res'], debug=debug ) * 10000
     s_area_2D = s_area[...,0]
