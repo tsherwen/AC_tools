@@ -4385,6 +4385,9 @@ def concvert_df_VOC_C2v( df=None, verbose=True ):
     return df
 
 
+# ----
+# X.XX -
+# ----
 def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*", filename='ctm.nc', \
         folder=None, ext_str='_TEST_', file_prefix='ctm_', split_by_month=False, \
         verbose=True):
@@ -4432,8 +4435,8 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*", filename='ctm.n
     filenames = [i.split('/')[-1] for i in files ]
 
     # Convert to NetCDF
-    convert_to_netCDF( folder=folder, filename=filename, bpch_file_list=filenames,\
-        bpch_file_type=bpch_file_type )
+    convert_to_netCDF( folder=folder, filename=filename, \
+        bpch_file_list=filenames, bpch_file_type=bpch_file_type )
 
     # If split by month
     if split_by_month:
@@ -4443,6 +4446,9 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*", filename='ctm.n
         print('Split NetCDF file by month - {}'.format(folder+filename))
 
 
+# ----
+# X.XX -
+# ----
 def process_all_bpch_files_in_dir(folder=None, ext_str=None):
     """
     Process all bpch files in a given directory
@@ -4474,6 +4480,51 @@ def process_all_bpch_files_in_dir(folder=None, ext_str=None):
     process_bpch_files_in_dir2NetCDF( folder=folder, filename=filename, \
         ext_str=ext_str, file_prefix=file_prefix, \
         bpch_file_type=bpch_file_type, split_by_month=True)
+
+
+
+# ----
+# X.XX -
+# ----
+def get_Lightning_NOx_source( Var_rc=None, Data_rc=None, debug=False ):
+    """
+    Extract Lightning NOx, convert units and return scaled to Tg(N) yr^-1
+
+    Parameters
+    -------
+    Var_rc (dict): dictionary of variables (inc. working dir and filenname)
+    Data_rc (dict): dictionary of variables (inc. res)
+    debug (boolean): legacy debug option, replaced by python logging
+
+    Returns
+    -------
+    (np.array)
+    """
+    # Get NetCDF file
+    d = Dataset( Var_rc['wd']+Var_rc['filename'], 'r')
+    # Get Lightning
+    arr = d['NO_LI_S__NO'][:]
+    if debug:
+        print arr.shape
+    # Average over time
+    arr = arr.mean(axis=0)
+#    arr = arr[0,...]
+#    months= 7, 8
+#    arr = arr[[i-1 for i in months],...].mean(axis=0)
+    if debug:
+        print arr.shape
+    # Sum over altitude
+    arr_2D = arr.sum(axis=-1)
+    if debug:
+        print arr_2D.shape
+    # Remove space dim
+    s_area = get_surface_area( res=Data_rc['res'], debug=debug ) * 10000
+    s_area_2D = s_area[...,0]
+    # Get moles per s
+    arr_mol_s = arr_2D * s_area_2D
+    # Convert to Tg (N)
+    a = ( arr_mol_s / constants('AVG') ) * species_mass( 'N' )  /1E12
+    return (a *60 *60 *24 *365 )
 
 
 # ------------------ Section X.X -------------------------------------------
