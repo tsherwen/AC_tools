@@ -55,8 +55,9 @@ import scipy
 # ----
 # 1.01 - Map plot for given array and resolution (lon, lat
 # -----
-def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=False, \
-        cb=None, rotatecbunits='horizontal',fixcb=None, nticks=10, mask_invalids=False,\
+def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, \
+        no_cb=False, cb=None, rotatecbunits='horizontal',fixcb=None, nticks=10,\
+        mask_invalids=False,\
         format='%.2f', adjust_window=0, f_size=20, alpha=1, log=False, \
         set_window=False, res=None, ax=None, case='default', units=None, \
         drawcountries=True,  set_cb_ticks=True, title=None, lvls=None,  \
@@ -5109,7 +5110,7 @@ def create_plot4case( fig, ax, dates, data, spec, f_size=20, lw=None, ls=None, \
 # X.XX - Plot up locations (lons and lats) on a map
 # --------
 def plot_lons_lats_spatial_on_map(lons=None, lats=None, p_size=50, color='red',
-        title=None, f_size=10, dpi=320 ):
+        title=None, f_size=15, dpi=320, fig=None, ax=None ):
     """
     Plot a list of lons and lats spatially on a map
 
@@ -5124,16 +5125,20 @@ def plot_lons_lats_spatial_on_map(lons=None, lats=None, p_size=50, color='red',
     """
     import matplotlib.pyplot as plt
     # --- Setup plot
-    fig = plt.figure(dpi=dpi, facecolor='w', edgecolor='k')
-    ax1 = fig.add_subplot(111)
+    if isinstance(fig, type(None)):
+        fig = plt.figure(dpi=dpi, facecolor='w', edgecolor='k')
+    if isinstance(ax, type(None)):
+        ax = fig.add_subplot(111)
     # plot up white background  (on a blank basemap plot)
     marker = 'o'
     arr = np.zeros((72, 46))
-    plt, m = map_plot(arr.T, return_m=True, cmap=plt.cm.binary, f_size=f_size*2, \
-        fixcb=[ 0, 0 ], ax=ax1, no_cb=True, resolution='c', \
+    plt, m = map_plot(arr.T, return_m=True, cmap=plt.cm.binary,
+        f_size=f_size, \
+        fixcb=[ 0, 0 ], ax=ax, no_cb=True, resolution='c', \
         ylabel=True, xlabel=True, title=title, axis_titles=True )#
     # Plot up all sites as a scatter plot of points on basmap
-    m.scatter( lons, lats, edgecolors=color, c=color, marker=marker, s=p_size, alpha=1,)
+    m.scatter( lons, lats, edgecolors=color, c=color, marker=marker, \
+        s=p_size, alpha=1)
 
 
 # --------
