@@ -1033,21 +1033,22 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
         ax.set_title(title, fontsize=f_size*1.5)
 
 # --------
-# X.XX - Diurnal plot
+# X.XX - Diurnal plot - (UPDATED)
 # --------
-def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, \
-        xlabel=True, ylabel=True, label=None, title=None, f_size=10, \
-        units='ppbv',lgnd_f_size=None, alpha=0.5, rotatexlabel=45, \
-        loc='upper right', time_resolution_str="%H:%M", stat2plot='mean', \
-        legend=False, ylim=None, lw=2.0, add_quartiles2plot=True, \
-        debug=False ):
+def BASIC_diurnal_plot( fig=None, ax=None, dates=None, data=None, color='red',\
+        title=None, label=None, plt_legend=None, plt_xlabel=True,\
+        plt_ylabel=True, show_plt=False, plot_pcent_change_from_max=False, \
+        units='ppbv', spec='O3', alt_text=None, loc='lower right', \
+        filename2save='diurnal_plot.png', save_plt=False, show_plot=False,\
+        stat2plot='50%', alpha = 0.5, time_resolution_str="%H",\
+        add_quartiles2plot=True, return_avgs=True ):
     """
-    Creates a diurnal plot for given data and dates using pandas Dataframe
+    Creates a diurnal plot for given data and dates
 
     Parameters
     -------
     data (array): numpy array of data
-    dates (numpy array of datetime.datetime): dates to use for x axis
+    dates (np.array of datetime.datetime): dates to use for x axis
     fig (fig instance)
     ax (ax instance)
     stat2plot (str): stat (e.g. mean or medium) to use for main line
@@ -1065,86 +1066,106 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, \
     pos, posn (int): vestigle(!) location indices for window plots
     ylim (list): min and max y axis limit
     lw (str): linewidth
+    return_avgs (boolean): return a list of the average values plotted
+    save_plt, show_plot (boolean): show or save plots?
 
     Returns
     -------
     (None)
-
-    Notes
-    -----
-     - Adapted from David Hagen's example - https://www.davidhagan.me/articles?id=7
     """
-    logging.info('diurnal_plot_df called with stat2plot={} '.format(stat2plot))
-    # ---  process input data
-    # Form a dataFrame from input numpy arrays.
-    df = pd.DataFrame( {'data':data}, index=dates )
-
+    import matplotlib
+    from matplotlib import dates as d
+    import datetime as dt
+    #
+    if isinstance(fig, type(None)):
+        fig = plt.figure()#dpi=Var_rc['dpi'])
+    if isinstance(ax, type(None)):
+        ax = fig.add_subplot(111)#2,2, n_season+1 )
+    print fig, ax
+    # --- Process
+    # Form a dataFrame from input numpy arrays. (and remove NaNs... )
+    raw_df = pd.DataFrame( {'data':data}, index=dates ).dropna()
     # Add a time coluumn to group by (e.g. "%H:%M" for minutes)
-    df['Time'] = df.index.map(lambda x: x.strftime(time_resolution_str))
-
-    # Group by time resolution column
-    df = df.groupby('Time').describe().unstack()
-
-    # Convert X axis to strings
-#    print df
-    df.index = pd.to_datetime(df.index.astype(str))
-#    df.index = pd.to_datetime(df.index )#.astype(str))
-#    df.index = [ datetime.datetime( 2005, 1, 1, i ) for i in range(0, 24) ]
-
-    # --- Aesthetics
-    if isinstance(color, type(None)):
-        color=color_list(posn)[pos-1]
-    # lengend font size
-    if isinstance( lgnd_f_size, type(None)):
-        lgnd_f_size = f_size
-
-    # --- Plot up average line (median or mean)
-    if stat2plot == 'median':
-        stat2plot='50%'
-    ax.plot(df.index, df['data'][stat2plot], color=color, linewidth=lw, \
-        label=label)
-
-    # Add quartiles
+    raw_df['Time'] = raw_df.index.map(lambda x: x.strftime(time_resolution_str))
+    df = raw_df.groupby('Time').describe().unstack()
+    # get the labels for time
+#    time_labels = df.index.get_level_values(level=1)[:24]
+    print df.head(), df.index
+    print fig, ax
+    time_labels = df['data'][stat2plot].index.values
+    # --- Plot
+    index = range(len(list(time_labels)))
+    print df['data'][stat2plot],
+    print '!'*20, index, time_labels
+    # Select data for the requested statistic
+    avgs = df['data'][stat2plot]
+    # Plot the % change from max ?
+    if plot_pcent_change_from_max:
+        print avgs, avgs.shape,
+        max_ = avgs.max()
+        avgs = ( avgs - max_ ) / max_ *100
+        print avgs.shape, max_
+        units='%'
+    # - Now plot up
+    ax.plot( index, avgs, color=color, linewidth=2.0, label=label )
+    # - Add quartiles
     if add_quartiles2plot:
-        ax.plot(df.index, df['data']['75%'], color=color, alpha=alpha)
-        ax.plot(df.index, df['data']['25%'], color=color, alpha=alpha)
-
-        # And shading for quartiles
+        Q3_data = df['data']['75%']
+        # Plot the % change from max ?
+        if plot_pcent_change_from_max:
+            max_ = Q3_data.max()
+            Q3_data = ( Q3_data - max_ ) / max_ *100
+        ax.fill_between(index, avgs, Q3_data, alpha=alpha, facecolor=color)
+        Q1_data = df['data']['25%']
+        # Plot the % change from max ?
+        if plot_pcent_change_from_max:
+            max_ = Q1_data.max()
+            Q1_data = ( Q1_data - max_ ) / max_ *100
+        ax.fill_between(index, avgs, Q1_data, alpha=alpha, facecolor=color)
+    # Label xticks on axis (if 24 plots, just label every 3rd)
+    if index < 6:
+        ax.set_xticks(index)
+        ax.set_xticklabels(time_labels)
+    else:
+        ax.set_xticks(index[1::3])
+        ax.set_xticklabels(time_labels[1::3])
+    xticks = ax.get_xticks()
+    if debug:
+        print xticks, ax.get_xticklabels()
+#    ax.set_xticks(np.linspace(3, 21, 7).astype(int))
+    # More cosmetic changes...
+    if not isinstance(title, type(None)):
+        plt.title(title)
+    if plt_legend:
+        plt.legend( loc=loc )
+    if plt_xlabel:
+        plt.xlabel('Hour of day (UTC)')
+    else:
+        ax.tick_params( axis='x', which='both', labelbottom='off')
+    if plt_ylabel:
         try:
-            ax.fill_between(df.index, df['data'][stat2plot], df['data']['75%'],
-                alpha=alpha, facecolor=color)
-            ax.fill_between(df.index, df['data'][stat2plot], df['data']['25%'],
-                alpha=alpha, facecolor=color)
+            spec_ = latex_spec_name(spec)
         except:
-            logging.info( 'Failed to add percentile shading' )
-
-    # --- Beautify
-    # title?
-    if not isinstance(title, type(None) ):
-        plt.title( title )
-    # axis labels?
-    if xlabel:
-        plt.xlabel('Hour of day', fontsize=f_size )#*.75)
-        # Add hourly ticks if labeling xaxis
-        plt.xticks( rotation=rotatexlabel, fontsize=f_size )#*.75 )
-        ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H') )
+            spec_ = spec
+        plt.ylabel('{} ({})'.format( spec_, units ) )
     else:
-        ax_tmp = ax_tmp = plt.gca()
-        ax_tmp.tick_params( axis='x', which='both', labelbottom='off')
-    if ylabel:
-        plt.ylabel('{}'.format(units), fontsize=f_size)#*.75)
-    else:
-        ax_tmp = ax_tmp = plt.gca()
+        ax.tick_params( axis='y', which='both', labelright='off')
+    # Add alt text if provided.
+    if not isinstance(alt_text, type(None)):
+        alt_text_y = 0.925
+        alt_text_x = 0.975
+        plt.text(  alt_text_x, alt_text_y, alt_text, ha='right', va='center', \
+                   transform=ax.transAxes )
+    # Print or show plot?
+    if save_plt: plt.savefig( filename2save  )
+    if show_plt: plt.show()
+    # Return the average values?
+    if return_avgs:
+        return np.ma.array(avgs)
 
-    # Add legend?
-    if legend:
-        plt.legend( fontsize=lgnd_f_size, loc=loc )
-
-    if not isinstance(ylim, type(None)):
-        plt.ylim(ylim)
 
 # --------
-# 1.11 - Plot up Sonde data
+# X.XX - Plot up Sonde data
 # --------
 def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None, \
         f_size=10, color=None,  err_bar=False, obs=True, \
@@ -4642,6 +4663,116 @@ def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
 #    [ i.xticks( fontsize=f_size ) for i in axHisty, axHistx, axScatter ]
 #    [ i.yticks( fontsize=f_size ) for i in axHisty, axHistx, axScatter ]
 
+# --------
+# X.XX - Diurnal plot
+# --------
+def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, \
+        xlabel=True, ylabel=True, label=None, title=None, f_size=10, \
+        units='ppbv',lgnd_f_size=None, alpha=0.5, rotatexlabel=45, \
+        loc='upper right', time_resolution_str="%H:%M", stat2plot='mean', \
+        legend=False, ylim=None, lw=2.0, add_quartiles2plot=True, \
+        debug=False ):
+    """
+    Creates a diurnal plot for given data and dates using pandas Dataframe
+
+    Parameters
+    -------
+    data (array): numpy array of data
+    dates (numpy array of datetime.datetime): dates to use for x axis
+    fig (fig instance)
+    ax (ax instance)
+    stat2plot (str): stat (e.g. mean or medium) to use for main line
+    xlabel, ylabel (str): label for axis?
+    label (str): label for input data
+    units (str): unites to label
+    time_resolution_str (str): time string to reduce dataframe by
+    legend (boolean): add a legend?
+    title (str): title for plot
+    color (str/hex etc): color for line
+    f_size (float): fontsize
+    lgnd_f_size (float): fontsize for legend
+    loc (str): location for legend
+    rotatexlabel (numnber/str): rotation of x axis labels
+    pos, posn (int): vestigle(!) location indices for window plots
+    ylim (list): min and max y axis limit
+    lw (str): linewidth
+
+    Returns
+    -------
+    (None)
+
+    Notes
+    -----
+     - Adapted from David Hagen's example - https://www.davidhagan.me/articles?id=7
+    """
+    logging.info('diurnal_plot_df called with stat2plot={} '.format(stat2plot))
+    # ---  process input data
+    # Form a dataFrame from input numpy arrays.
+    df = pd.DataFrame( {'data':data}, index=dates )
+
+    # Add a time coluumn to group by (e.g. "%H:%M" for minutes)
+    df['Time'] = df.index.map(lambda x: x.strftime(time_resolution_str))
+
+    # Group by time resolution column
+    df = df.groupby('Time').describe().unstack()
+
+    # Convert X axis to strings
+#    print df
+    df.index = pd.to_datetime(df.index.astype(str))
+#    df.index = pd.to_datetime(df.index )#.astype(str))
+#    df.index = [ datetime.datetime( 2005, 1, 1, i ) for i in range(0, 24) ]
+
+    # --- Aesthetics
+    if isinstance(color, type(None)):
+        color=color_list(posn)[pos-1]
+    # lengend font size
+    if isinstance( lgnd_f_size, type(None)):
+        lgnd_f_size = f_size
+
+    # --- Plot up average line (median or mean)
+    if stat2plot == 'median':
+        stat2plot='50%'
+    ax.plot(df.index, df['data'][stat2plot], color=color, linewidth=lw, \
+        label=label)
+
+    # Add quartiles
+    if add_quartiles2plot:
+        ax.plot(df.index, df['data']['75%'], color=color, alpha=alpha)
+        ax.plot(df.index, df['data']['25%'], color=color, alpha=alpha)
+
+        # And shading for quartiles
+        try:
+            ax.fill_between(df.index, df['data'][stat2plot], df['data']['75%'],
+                alpha=alpha, facecolor=color)
+            ax.fill_between(df.index, df['data'][stat2plot], df['data']['25%'],
+                alpha=alpha, facecolor=color)
+        except:
+            logging.info( 'Failed to add percentile shading' )
+
+    # --- Beautify
+    # title?
+    if not isinstance(title, type(None) ):
+        plt.title( title )
+    # axis labels?
+    if xlabel:
+        plt.xlabel('Hour of day', fontsize=f_size )#*.75)
+        # Add hourly ticks if labeling xaxis
+        plt.xticks( rotation=rotatexlabel, fontsize=f_size )#*.75 )
+        ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H') )
+    else:
+        ax_tmp = ax_tmp = plt.gca()
+        ax_tmp.tick_params( axis='x', which='both', labelbottom='off')
+    if ylabel:
+        plt.ylabel('{}'.format(units), fontsize=f_size)#*.75)
+    else:
+        ax_tmp = ax_tmp = plt.gca()
+
+    # Add legend?
+    if legend:
+        plt.legend( fontsize=lgnd_f_size, loc=loc )
+
+    if not isinstance(ylim, type(None)):
+        plt.ylim(ylim)
 
 
 # --------
