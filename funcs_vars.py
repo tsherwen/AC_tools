@@ -711,7 +711,10 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,\
     'TSKIN':'K', 'GMAO_TEMP': 'K', 'GMAO_VWND' :'m/s',\
     'GMAO_UWND': 'm/s', 'RO2': 'pptv', 'U10M':'m/s','V10M': 'm/s' ,\
     'PRESS': 'hPa', 'CH2OO':'pptv', 'Bry':'ppbv', 'NOx': 'ppbv', 'HOx':'HOx',
-    'VOC': 'ppbC','TNO3': 'ppbv',
+    'VOC': 'ppbC','TNO3': 'ppbv','GLYX': 'pptv',
+    'GMAO_SURF': 'surface area',  # cm2/cm3?
+    'GMAO_ABSH': 'frac.',
+    'GMAO_PSFC' : 'hPa',
     # Extra ClearFlo compounds
     'acetylene': 'pptv', 'propene': 'pptv', 'Napthalene': 'pptv', \
     'Styrene': 'pptv', '1,3-butadiene': 'pptv', '1,2-butadiene': 'pptv', \
