@@ -1041,7 +1041,7 @@ def BASIC_diurnal_plot( fig=None, ax=None, dates=None, data=None, color='red',\
         units='ppbv', spec='O3', alt_text=None, loc='lower right', \
         filename2save='diurnal_plot.png', save_plt=False, show_plot=False,\
         stat2plot='50%', alpha = 0.5, time_resolution_str="%H",\
-        add_quartiles2plot=True, return_avgs=True ):
+        add_quartiles2plot=True, return_avgs=True, debug=False ):
     """
     Creates a diurnal plot for given data and dates
 
@@ -1073,6 +1073,10 @@ def BASIC_diurnal_plot( fig=None, ax=None, dates=None, data=None, color='red',\
     -------
     (None)
     """
+    debug=True
+    if debug:
+        prt_str = 'BASIC_diurnal_plot called for {} (data.shape={})'
+        print( prt_str.format( spec, data.shape ) )
     import matplotlib
     from matplotlib import dates as d
     import datetime as dt
@@ -1081,30 +1085,33 @@ def BASIC_diurnal_plot( fig=None, ax=None, dates=None, data=None, color='red',\
         fig = plt.figure()#dpi=Var_rc['dpi'])
     if isinstance(ax, type(None)):
         ax = fig.add_subplot(111)#2,2, n_season+1 )
-    print fig, ax
+    if debug:
+        print( fig, ax)
     # --- Process
     # Form a dataFrame from input numpy arrays. (and remove NaNs... )
     raw_df = pd.DataFrame( {'data':data}, index=dates ).dropna()
     # Add a time coluumn to group by (e.g. "%H:%M" for minutes)
     raw_df['Time'] = raw_df.index.map(lambda x: x.strftime(time_resolution_str))
     df = raw_df.groupby('Time').describe().unstack()
-    # get the labels for time
-#    time_labels = df.index.get_level_values(level=1)[:24]
-    print df.head(), df.index
-    print fig, ax
+    # Get the labels for time
+    if debug:
+        print( df.head(), df.index[:5], df.shape)
     time_labels = df['data'][stat2plot].index.values
     # --- Plot
     index = range(len(list(time_labels)))
-    print df['data'][stat2plot],
-    print '!'*20, index, time_labels
+    if debug:
+        print( df['data'][stat2plot])
+        print( '!'*20, index, time_labels)
     # Select data for the requested statistic
     avgs = df['data'][stat2plot]
     # Plot the % change from max ?
     if plot_pcent_change_from_max:
-        print avgs, avgs.shape,
+        if debug:
+            print( avgs, avgs.shape)
         max_ = avgs.max()
         avgs = ( avgs - max_ ) / max_ *100
-        print avgs.shape, max_
+        if debug:
+            print( avgs.shape, max_)
         units='%'
     # - Now plot up
     ax.plot( index, avgs, color=color, linewidth=2.0, label=label )
@@ -1131,7 +1138,7 @@ def BASIC_diurnal_plot( fig=None, ax=None, dates=None, data=None, color='red',\
         ax.set_xticklabels(time_labels[1::3])
     xticks = ax.get_xticks()
     if debug:
-        print xticks, ax.get_xticklabels()
+        print( xticks, ax.get_xticklabels() )
 #    ax.set_xticks(np.linspace(3, 21, 7).astype(int))
     # More cosmetic changes...
     if not isinstance(title, type(None)):

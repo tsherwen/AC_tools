@@ -3513,7 +3513,7 @@ def convert_spec_v_v_2_ugm3( spec=None, data=None ):
 # ----
 def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None, \
         filename='ts_ctm.nc', LON=None, LAT=None, rtn_units=False, \
-        rtn_ctm_units=False, verbose=True ):
+        LON_ind=None, LAT_ind=None, rtn_ctm_units=False, verbose=True ):
     """
     Extract *ts*bpch* (1D) data from file for a specific site
 
@@ -3551,8 +3551,9 @@ def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None, \
             logging.info(err_msg)
             sys.exit()
     # Find index for grid box.
-    LON_ind = get_gc_lon( LON, res=res, wd=wd, filename=filename )
-    LAT_ind = get_gc_lat( LAT, res=res, wd=wd, filename=filename)
+    if not all( [ isinstance(i, type(None)) for i in (LON_ind, LAT_ind) ] ):
+        LON_ind = get_gc_lon( LON, res=res, wd=wd, filename=filename )
+        LAT_ind = get_gc_lat( LAT, res=res, wd=wd, filename=filename)
 
     # Extract data for location
     with Dataset( wd+'/'+filename, 'r') as rootgrp:
@@ -4120,7 +4121,8 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
     """
     # Use default variable dictionary if non given
     if isinstance(Var_rc, type(None)):
-        Var_rc = get_default_variable_dict(full_vertical_grid=full_vertical_grid)
+        Var_rc = get_default_variable_dict(
+            full_vertical_grid=full_vertical_grid )
 
     # --- Extract basic variables by default
     # Resolution?
@@ -4224,7 +4226,7 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
     # Tracer names? (aka those included in IJ_AVG_S__ diagnostic )
     if 'tracers' in var_list:
         with Dataset( Var_rc['wd']+Var_rc['filename'], 'r' ) as d:
-            tracers = [i for i in d.variables if ('IJ_AVG_S__' in i)]
+            tracers = [i for i in d.variables if ('BASIC_diurnal_plot' in i)]
             tracers = [i.split('IJ_AVG_S__')[-1] for i in tracers ]
             Data_rc['tracers'] = tracers
 

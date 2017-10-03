@@ -178,7 +178,7 @@ def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,\
 # X.XX - Save as mulitple page pdf.
 # --------
 def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, wd=None, \
-        dpi=160, open=False, close=False, justHH=False, no_dstr=False ):
+        dpi=160, open=False, close=False, justHH=False, no_dstr=True ):
     """
     Save figures (e.g. matplotlib) to pdf file with multiple pages
     """
