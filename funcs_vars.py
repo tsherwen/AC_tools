@@ -2326,6 +2326,12 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'WEY' : (1.1380, 52.9420,  0 ),  # Weyboure ID
     'Cape Verde': ( -24.871, 16.848, 0 ),
     'CVO': (-24.871,16.848,  0 ),  # Cape Verde ID
+    'CVO (N)': (-24.871,16.848+4,  0 ),  # Cape Verde (N)
+    'CVO (NNW)': (-24.871,16.848+8.,  0 ),  # Cape Verde (N)
+    'CVO (NW)': (-24.871-4,16.848+4.,  0 ),  # Cape Verde (N)
+    'CVO (W)': (-24.871-4,16.848,  0 ),  # Cape Verde (N)
+    'CVO (S)': (-24.871,16.848-4,  0 ),  # Cape Verde (N)
+    'CVO (SW)': (-24.871-4,16.848-4,  0 ),  # Cape Verde (N)
     # --- ClearFlo
     'North Ken' :  (-0.214174, 51.520718, 0),
     'KEN' :  (-0.214174, 51.520718, 0),
