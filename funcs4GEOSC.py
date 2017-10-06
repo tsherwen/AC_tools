@@ -3529,12 +3529,20 @@ def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None, \
     rtn_ctm_units (boolean): return "ctm_units" (e.g. ppbC, instead of ppb)
     LON (float): londitude in units of degrees East
     LAT (float): londitude in units of degrees North
+    LON_int (int): (Optional) londitude index of degrees East
+    LAT_int (int): (Optional) londitude index of degrees North
     site (Str): name of a location (must be present in "get_loc" dictionary)
 
     Returns
     -------
     (pd.DataFrame object)
     """
+    debug=True
+    if debug:
+        err_str = 'get_LOC_df_from_NetCDF called for {} ({},{}) ({},{})'
+        err_str = err_str.format( site, LON, LAT, LON_ind, LAT_ind )
+        print( err_str )
+
     # Get LAT and LON for site, if values not given.
     if any( [ isinstance(i, type(None)) for i in (LON, LAT) ] ):
         # Get LON and LAT for site if provided (from "get_loc" dictionary)
@@ -3551,7 +3559,7 @@ def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None, \
             logging.info(err_msg)
             sys.exit()
     # Find index for grid box.
-    if not all( [ isinstance(i, type(None)) for i in (LON_ind, LAT_ind) ] ):
+    if any( [ isinstance(i, type(None)) for i in (LON_ind, LAT_ind) ] ):
         LON_ind = get_gc_lon( LON, res=res, wd=wd, filename=filename )
         LAT_ind = get_gc_lat( LAT, res=res, wd=wd, filename=filename)
 
