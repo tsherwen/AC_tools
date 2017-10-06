@@ -2282,6 +2282,17 @@ def get_vars_from_line_printed_in_txt_file(filename=None, folder=None,
         err_str = 'No lines with prefix ({})'.format( prefix )
         logging.info( err_str )
 
+# --------
+# X.XX - remove the spaces and extra vars from strings
+# --------
+def rm_spaces_and_chars_from_str(input_str, replace_brackets=True):
+    """ remove the spaces and extra vars from strings"""
+    input_str = input_str.replace(' ', '_')
+    if replace_brackets:
+        input_str = input_str.replace('(', '_')
+        input_str = input_str.replace(')', '_')
+    return input_str
+
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
