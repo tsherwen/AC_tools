@@ -1040,8 +1040,9 @@ def BASIC_diurnal_plot( fig=None, ax=None, dates=None, data=None, color='red',\
         plt_ylabel=True, show_plt=False, plot_pcent_change_from_max=False, \
         units='ppbv', spec='O3', alt_text=None, loc='lower right', \
         filename2save='diurnal_plot.png', save_plt=False, show_plot=False,\
-        stat2plot='50%', alpha = 0.5, time_resolution_str="%H",\
-        add_quartiles2plot=True, return_avgs=True, debug=False ):
+        stat2plot='50%', alpha = 0.3, time_resolution_str="%H",\
+        add_quartiles2plot=True, return_avgs=True, \
+        xlabel='Hour of day (UTC)', debug=False ):
     """
     Creates a diurnal plot for given data and dates
 
@@ -1068,6 +1069,7 @@ def BASIC_diurnal_plot( fig=None, ax=None, dates=None, data=None, color='red',\
     lw (str): linewidth
     return_avgs (boolean): return a list of the average values plotted
     save_plt, show_plot (boolean): show or save plots?
+    xlabel (str): label for x axis
 
     Returns
     -------
@@ -1146,7 +1148,7 @@ def BASIC_diurnal_plot( fig=None, ax=None, dates=None, data=None, color='red',\
     if plt_legend:
         plt.legend( loc=loc )
     if plt_xlabel:
-        plt.xlabel('Hour of day (UTC)')
+        plt.xlabel(xlabel)
     else:
         ax.tick_params( axis='x', which='both', labelbottom='off')
     if plt_ylabel:
@@ -1169,6 +1171,80 @@ def BASIC_diurnal_plot( fig=None, ax=None, dates=None, data=None, color='red',\
     # Return the average values?
     if return_avgs:
         return np.ma.array(avgs)
+
+# --------
+# X.XX - BASIC_seasonal_plot
+# --------
+def BASIC_seasonal_plot( dates=None, data=None, ax=None,
+        title=None, legend=False,  ylabel=None, loc='upper left',  \
+        showmeans=False, boxplot=True, return_avgs=False, \
+        plt_median=False, plot_Q1_Q3=False,
+        ylim=None, xtickrotation=45, alt_text=None, alt_text_x=.925,
+        alt_text_y=.925, xlabel=True, rm_yticks=False, log=False, \
+        pcent1=25, pcent2=75, color='red' , lw=1, ls='-', label=None,
+        debug=False ):
+    """ Plot up a basic seasonal plot - adapted from AC_tools """
+    if debug:
+        print( locals().keys(), ax )
+    # get months
+    df = pd.DataFrame(data,index=dates )
+    # Force use of a standard year
+    df['months'] = [i.month for i in dt64_2_dt( df.index.values ) ]
+    df.sort_values(by='months', ascending=True, inplace=True)
+#    months = list(range(1, 13))
+    months = df['months'].values
+    df = df.drop('months', axis=1)
+    datetime_months = [ datetime.datetime(2009, int(i), 1) for i in set(months)]
+    labels = [i.strftime("%b") for i in datetime_months]
+    # Get Data by month
+    monthly = df.groupby(df.index.month)
+    months = list( sorted( monthly.groups.keys() ) )
+    monthly = [monthly.get_group(i) for i in months ]
+#    [ df[df.index.month==i]  for i in months ]
+    # remove nans to allow for percentile calc.
+    monthly = [ i.dropna().values  for i in monthly ]
+    data_nan = [ i.flatten() for i in monthly ]
+    # Plot up median
+    medians =  [ np.nanpercentile( i, 50, axis=0 ) for i in data_nan ]
+    plt.plot( months, medians, color=color, lw=lw, ls=ls, label=label  )
+    # Plot quartiles as shaded area?
+    low = [ np.nanpercentile( i, pcent1, axis=0 ) for i in data_nan ]
+    high = [ np.nanpercentile( i, pcent2, axis=0 ) for i in data_nan ]
+    if isinstance(ax, type(None)):
+        ax = plt.gca()
+    ax.fill_between( months, low, high, alpha=0.2, color=color   )
+    # Beatify plot
+    ax.set_xticks( months )
+    if xlabel:
+        ax.set_xticklabels( labels, rotation=xtickrotation )
+    else:
+        ax.tick_params( axis='x', which='both', labelbottom='off')
+    if debug:
+        print('!'*50, alt_text, alt_text_x, alt_text_y)
+    if not isinstance( alt_text, type(None) ):
+        if debug:
+            print('!'*50, alt_text, alt_text_x, alt_text_y)
+        plt.text( alt_text_x, alt_text_y, alt_text, ha='right', va='center', \
+            transform=ax.transAxes )
+    if legend:
+        if debug:
+            print('>'*500, 'Adding legend', '<'*50, loc)
+        plt.legend( loc=loc)#fontsize=f_size*.75, loc=loc )
+    if not isinstance( title, type(None) ):
+        plt.title( title )
+    if not isinstance( ylabel, type(None) ):
+        plt.ylabel( ylabel )
+#        , fontsize=f_size*0.75 ) # Why is this x0.75?
+    else:
+        if rm_yticks:
+            ax.tick_params( axis='y', which='both', labelleft='off')
+    # Log scale?
+    if log:
+        ax.set_yscale('log')
+    else:
+        ax.set_yscale('linear')
+    if return_avgs:
+        return np.ma.array(medians)
 
 
 # --------
