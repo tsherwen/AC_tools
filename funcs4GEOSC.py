@@ -944,7 +944,7 @@ def get_GC_output( wd, vars=None, species=None, category=None, r_cubes=False, \
                 logging.warning("Will attempt renaming")
                 try:
                     abrv_var = get_ctm_nc_var( var )
-                    var_data = netCDF_data.variables[var]
+                    var_data = netCDF_data.variables[abrv_var]
                 except KeyError:
                     logging.error("Renamed variable {var} not found in netCDF"\
                         .format(var=var) )
