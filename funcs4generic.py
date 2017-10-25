@@ -1143,6 +1143,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     'EU' : 25,
 #    'Surface BL': 26,
     'Land Tropics Sur.': 27,
+    'Boreal Land': 28,
     }[region]
 
 
@@ -1212,6 +1213,10 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
             tmp = np.ma.mask_or( surface_unmasked(res=res) ,  \
                      land_unmasked( res=res )  )
             mask = np.ma.mask_or( tmp, tropics_unmasked( res=res) )
+
+        if case == 28:
+            print 'WARNING - Mask not setup'
+            sys.exit()
 
         # Invert mask to leave exception unmasked if used to multiply
         mask = np.logical_not(mask)
@@ -1283,6 +1288,10 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
             tmp = np.ma.mask_or( surface_unmasked(res=res) ,  \
                      land_unmasked( res=res )  )
             mask = np.ma.mask_or( tmp, tropics_unmasked( res=res) )
+        if case == 28:
+            mask = np.ma.mask_or( lat2lat_2D_unmasked( lowerlat=50,
+                higherlat=80, res=res ), land_unmasked( res=res )[...,0]  )
+
 
     logging.debug( 'prior to setting dimensions: {}'.format(mask.shape) )
 
