@@ -2326,12 +2326,19 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'WEY' : (1.1380, 52.9420,  0 ),  # Weyboure ID
     'Cape Verde': ( -24.871, 16.848, 0 ),
     'CVO': (-24.871,16.848,  0 ),  # Cape Verde ID
+    'CVO1': (-24.871,16.848,  0 ),  # Cape Verde ID
     'CVO (N)': (-24.871,16.848+4,  0 ),  # Cape Verde (N)
-    'CVO (NNW)': (-24.871,16.848+8.,  0 ),  # Cape Verde (N)
-    'CVO (NW)': (-24.871-4,16.848+4.,  0 ),  # Cape Verde (N)
-    'CVO (W)': (-24.871-4,16.848,  0 ),  # Cape Verde (N)
-    'CVO (S)': (-24.871,16.848-4,  0 ),  # Cape Verde (N)
-    'CVO (SW)': (-24.871-4,16.848-4,  0 ),  # Cape Verde (N)
+    'CVO2': (-24.871,16.848+4,  0 ),  # Cape Verde (N)
+    'CVO (NNW)': (-24.871,16.848+8.,  0 ),  # Cape Verde (NNW)
+    'CVO3': (-24.871,16.848+8.,  0 ),  # Cape Verde (NNW)
+    'CVO (NW)': (-24.871-4,16.848+4.,  0 ),  # Cape Verde (NW)
+    'CVO4': (-24.871-4,16.848+4.,  0 ),  # Cape Verde (NW)
+    'CVO (W)': (-24.871-4,16.848,  0 ),  # Cape Verde (W)
+    'CVO5': (-24.871-4,16.848,  0 ),  # Cape Verde (W)
+    'CVO (S)': (-24.871,16.848-4,  0 ),  # Cape Verde (S)
+    'CVO6': (-24.871,16.848-4,  0 ),  # Cape Verde (S)
+    'CVO (SW)': (-24.871-4,16.848-4,  0 ),  # Cape Verde (SW)
+    'CVO7': (-24.871-4,16.848-4,  0 ),  # Cape Verde (SW)
     # --- ClearFlo
     'North Ken' :  (-0.214174, 51.520718, 0),
     'KEN' :  (-0.214174, 51.520718, 0),
@@ -2394,8 +2401,15 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'Lilia' : (-4.55, 48.62, 0 ),
     'Heraklion' : (25.1, 35.3, 0 ),  # Heraklion, Crete
     'Sylt': (8.1033406, 54.8988164, 0),
-    'Sicily': (14.2371407,  38.5519809, 0 ) # Sicily
+    'Sicily': (14.2371407,  38.5519809, 0 ), # Sicily
 #    'Frankfurt' : ( 8.45,50.22, )
+    # --- Global GAW sites (from gawsis
+    'Barrow': (-156.6114654541, 71.3230133057,  11 ),
+    'Ascension Island': (-14.3999996185, -7.9699997902, 91 ),
+    'Neumayer' : (-8.265999794, -70.6660003662, 42 ),
+    'Hilo' : (-155.0700073242,19.5799999237,  11 ),
+    'Samoa':( -170.5645141602, -14.2474746704, 77 ),
+    'Assekrem': (5.6333332062, 23.2666664124,  2710),
     }
     if rtn_dict:
         return loc_dict
@@ -2591,7 +2605,7 @@ def gaw_2_loc( site, f='GLOBAL_SURFACE_O3_2006_2012.nc' ):
     ( 'GAW_SURFACE_O3_2006_2012.nc' )
     """
 #    from ..funcs4generic import hPa_to_Km
-    from .funcs4generic import hPa_to_Km
+    from .funcs4core import hPa_to_Km
 
     # Use simple dictionary if site listed
     try:
