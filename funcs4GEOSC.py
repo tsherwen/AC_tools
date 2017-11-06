@@ -4234,7 +4234,7 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
     # Tracer names? (aka those included in IJ_AVG_S__ diagnostic )
     if 'tracers' in var_list:
         with Dataset( Var_rc['wd']+Var_rc['filename'], 'r' ) as d:
-            tracers = [i for i in d.variables if ('BASIC_diurnal_plot' in i)]
+            tracers = [i for i in d.variables if ('IJ_AVG_S__' in i)]
             tracers = [i.split('IJ_AVG_S__')[-1] for i in tracers ]
             Data_rc['tracers'] = tracers
 
@@ -4759,7 +4759,8 @@ def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90',
     if isinstance( wd, type(None)):
 #        wd = sys.agrv[1]
         # Hardwire for testing
-        wd = '/work/home/ts551/data/all_model_simulations/iodine_runs/iGEOSChem_5.0/code_TMS_new/'
+        wd = '/work/home/ts551/data/all_model_simulations/iodine_runs/'
+        wd += 'iGEOSChem_5.0/code_TMS_new/'
         wd += '/KPP/{}/'.format(Mechanism)
 
     MECH_start_str = 'INTEGER, DIMENSION(1) :: MONITOR'
@@ -4873,6 +4874,11 @@ def prt_families4rxns_to_input_to_PROD_LOSS_globchem_spec(fam='LOx', \
     Returns
     -------
     (None)
+
+    Notes
+    -------
+     - From v11-2d the KPP mechanism is in a single *.eqn file (globchem.spc was
+        retired).
     """
     # get list of tagged reactions for family
     if isinstance(rxns, type(None)):
@@ -4887,6 +4893,7 @@ def prt_families4rxns_to_input_to_PROD_LOSS_globchem_spec(fam='LOx', \
     for rxn in rxns:
         print((pstr.format(rxn, rxn )))
 
+
 # ----
 # X.XX - Get dictionary of all reactions strings for tagged reactions
 # ----
@@ -4895,6 +4902,11 @@ def get_dictionary_of_tagged_reactions(filename='globchem.eqn',
     """
     Construct a dictionary of reaction strings for tagged reactions in
     globchem.eqn
+
+    Notes
+    -------
+     - From v11-2d the KPP mechanism is in a single *.eqn file (globchem.eqn was
+        retired and replaced with <mechanism name>.eqn).
     """
     # Get base working code directory
     if isinstance( wd, type(None)):
@@ -4958,6 +4970,7 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
     -------
     (None)
     """
+    # --- Local variables
     # Get dictionary of reactions in Mechanism
     if isinstance(RR_dict, type(None)):
         RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, \
@@ -4965,8 +4978,7 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
     if isinstance(RR_hv_dict, type(None)):
         RR_hv_dict = get_dictionary_of_tagged_reactions(filename='globchem.eqn',
             Mechanism=Mechanism, wd=wd)
-
-    # Get tags for reaction unless provide.
+    # Get tags for reaction unless already provided
     if isinstance(tags, type(None)):
         tags = get_tags4_family( wd=wd, fam=fam, filename=filename, \
             Mechanism=Mechanism, tag_prefix=tag_prefix, RR_dict=RR_dict )
