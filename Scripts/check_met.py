@@ -15,16 +15,18 @@ import matplotlib.pyplot as plt
 # ---- Setup 
 #
 # For what years and months? ("*" for all )
-years='*'#'2014'
-months='*'
+years='2013'
+months='11'
 # on what grid?
-grid = 'GEOS_0.25x0.3125_ch' # GEOS_0.25x0.3125_eu
+#grid = 'GEOS_0.25x0.3125_ch' # GEOS_0.25x0.3125_eu
+grid = 'GEOS_2x2.5'
 # where is the data?
-data_root = '/work/data/GEOS'
+#data_root = '/work/data/GEOS'
+data_root = '/shared/earthfs/GEOS'
 # meterology
 met='GEOS_FP'
 # add extension?
-ext = '*.I3*' # '*.nc*'  # I3 files or all?
+ext = '*'#'*.I3*' # '*.nc*'  # I3 files or all?
 # directory to check?
 dir='/'.join( (data_root, grid, met, years, months, ext) )
 # get files
