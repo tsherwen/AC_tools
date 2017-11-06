@@ -2709,8 +2709,9 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
 # X.XX - Spatial Figure maker ( just provide lon, lat, time,  np array )
 # --------
 def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
-        norm=None, nticks=10, format=None, units=None, extend='neither', ax=None, \
-        discrete_cmap=False, f_size=15, fig=None, left_cb_pos=0.86, cb_ax=None, \
+        norm=None, nticks=10, format=None, units=None, extend='neither',
+        ax=None, cb_height=0.6, \
+        discrete_cmap=False, f_size=15, fig=None, left_cb_pos=0.86, cb_ax=None,\
         bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
         dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, title=None, \
         window=False, interval=1, ylabel=True, cb='CMRmap_r', width=0.015,\
@@ -2863,6 +2864,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 
         cb_ax = mk_cb(fig, units=units, left=left_cb_pos,  cmap=cmap, \
                 vmin=fixcb_buffered[0], cb_ax=cb_ax, width=width, \
+                height=cb_height,\
                 rotatecbunits=rotatecbunits, bottom=bottom_cb_pos, \
                 vmax=fixcb_buffered[1], format=format, f_size=f_size*.75, \
                 extend=extend, lvls=lvls, log=log, orientation=orientation, \
