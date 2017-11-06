@@ -88,6 +88,25 @@ def get_dir( input, loc='earth0' ):
         else:
             d = home
 
+    # YARCC setup
+    YARCC_login_nodes = ['login{}.york.ac.uk'.format(i) for i in range(1,4) ]
+    if host in YARCC_login_nodes:
+        home =  '/shared/earth_home/{}/'.format( user ) # just use mounted drive
+        if user in tms_users:
+            d = {
+        'rwd'  : home +'data/all_model_simulations/iodine_runs/',
+        'dwd'  : home +'data/',
+        'fwd'  : home +'labbook/Python_progs/d_fast-J_JX/data/',
+        'lwd'  : home +'labbook/',
+        'npwd' : home +'data/np_arrs/',
+        'tpwd' : home +'labbook/Python_progs/' ,
+        'ppwd' : home +'labbook/plots_images/'
+            }
+            d = d[input]
+        else:
+            d = home
+
+
     return d
 
 # ----
