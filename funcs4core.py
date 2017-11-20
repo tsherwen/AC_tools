@@ -42,7 +42,7 @@ def get_dir( input, loc='earth0' ):
     tms_users = [ 'Tomas', 'tomassherwen', 'ts551' ]
 
     # Mac setup
-    if (host == 'tomasmbp13.york.ac.uk') or ('Tomas-13-MBP') :
+    if (host == 'tomasmbp13.york.ac.uk') or ('Tomas-13-MBP'):
         home = '/Users/{}/'.format( user )
         if user in tms_users:
             d = {
@@ -325,44 +325,64 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
         logging.error("Could not find {fn}".format(fn=data_fname))
         raise IOError("Could not find {fn}".format(fn=data_fname))
 
+    # error message
+    LM_file_msg = "ERROR: are the refernces files in 'AC_tools/data/LM' ?"
+    LM_file_msg +="\n (To download just run AC_tools/Scripts/get_data_files.py)"
     if centre:
         try:
             # Extract lat and lon from model output data file
             with Dataset( data_fname, 'r' ) as d:
-                lat = np.array( d[lat_var] )
-                lon = np.array( d[lon_var] )
-        except IOError:
-            error = "Could not get {lat}, {lon} from {fn}"\
-                    .format(fn=data_fname,lat=lat_bounds,
-                            lon=lon_bounds)
-            logging.error(error)
-            if verbose:
-                print("ERROR: are the refernces files in 'AC_tools/data/LM' ?")
-                print("(To download just run AC_tools/Scripts/get_data_files.py)")
-            raise IOError(error)
+                lat = d[lat_var][:]
+                lon = d[lon_var][:]
+        except :
+            try:
+                print( 'WARNING: coord vars not found! -using abrvs.')
+                print( 'Was using: ', lon_var, lat_var )
+                lon_var=u'lon'
+                lat_var=u'lat'
+                print( 'Now using: ', lon_var, lat_var )
+                # Extract lat and lon from model output data file
+                with Dataset( data_fname, 'r' ) as d:
+                    lat = d[lat_var][:]
+                    lon = d[lon_var][:]
+            except IOError:
+                error = "Could not get {lat}, {lon} from {fn}"\
+                    .format(fn=data_fname,lat=lat_var, lon=lon_var)
+                logging.error(error)
+                if verbose: print(LM_file_msg)
+                raise IOError(error)
 
     # Get edge values
-    exception_res = ('1x1', '0.5x0.5', '0.083x0.083')
+    exception_res = ('1x1', '0.5x0.5', '0.083x0.083')#, '0.125x0.125')
     if (not centre) and (res not in exception_res):
         # Extract lat and lon from model output data file
         try:
             with Dataset( data_fname, 'r' ) as d:
-                lat = np.array( d[lat_bounds] )
-                lon = np.array( d[lon_bounds] )
+                lat = d[lat_bounds][:]
+                lon = d[lon_bounds][:]
 
                 # select lower edge of each bound, and final upper edge
                 lat = [i[0] for i in lat ]+[ lat[-1][1] ]
                 lon = [i[0] for i in lon ]+[ lon[-1][1] ]
                 lat, lon = [np.array(i) for i in (lat, lon) ]
         except:
-            error = "Could not get {lat}, {lon} from {fn}"\
-                    .format(fn=data_fname,lat=lat_bounds,
-                            lon=lon_bounds)
-            if verbose:
-                print("ERROR: are the refernces files in 'AC_tools/data/LM' ?")
-                print("(To download just run AC_tools/Scripts/get_data_files.py)")
-            logging.error(error)
-            raise IOError(error)
+            try:
+                print( 'WARNING: coord vars not found! -using abrvs.')
+                print( 'Was using: ', lon_var, lat_var )
+                lon_var=u'lon'
+                lat_var=u'lat'
+                print( 'Now using: ', lon_var, lat_var )
+                # Extract lat and lon from model output data file
+                with Dataset( data_fname, 'r' ) as d:
+                    lat = d[lat_var][:]
+                    lon = d[lon_var][:]
+            except IOError:
+                error = "Could not get {lat}, {lon} from {fn}"\
+                        .format(fn=data_fname,lat=lat_bounds,
+                                lon=lon_bounds)
+                if verbose: print(LM_file_msg)
+                logging.error(error)
+                raise IOError(error)
 
     # Manually set values for 0.25x0.3125_CH
 #    if res=='0.25x0.3125_CH':
@@ -372,6 +392,10 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
 #        else:
 #            lat = np.array( [-90]+list(np.arange(-89-0.5, 90+.5, 1))+[90] )
 #            lon = np.arange(-180-0.5, 180+.5, 1)
+
+    # Manually set values for 0.125x0.125
+#    if res=='0.125x0.125':
+
 
     # Manually set values for 1.0x1.0
     if res=='1x1':
@@ -404,7 +428,6 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
             # adjust to center point
             lat = [i+step_size/2 for i in lat[:-1] ]
             lon = [i+step_size/2 for i in lon[:-1] ]
-
         else:
             lat = np.arange( -89.95833588, 89.95833588+step_size, step_size)
             lon = np.arange(-179.95832825, 179.95835876, step_size)
