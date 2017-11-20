@@ -5326,7 +5326,8 @@ def create_plot4case( fig, ax, dates, data, spec, f_size=20, lw=None, ls=None, \
 # X.XX - Plot up locations (lons and lats) on a map
 # --------
 def plot_lons_lats_spatial_on_map(lons=None, lats=None, p_size=50, color='red',
-        title=None, f_size=15, dpi=320, fig=None, ax=None ):
+        title=None, f_size=15, dpi=320, fig=None, ax=None, label=None,
+        return_axis=False, marker='o' ):
     """
     Plot a list of lons and lats spatially on a map
 
@@ -5338,6 +5339,8 @@ def plot_lons_lats_spatial_on_map(lons=None, lats=None, p_size=50, color='red',
     title (str): title for plot
     f_size (float): fontsize
     dpi (int): resolution of figure (dots per sq inch)
+    return_axis (boaol): return the basemap axis instance
+    marker (str): marker style
     """
     import matplotlib.pyplot as plt
     # --- Setup plot
@@ -5345,8 +5348,7 @@ def plot_lons_lats_spatial_on_map(lons=None, lats=None, p_size=50, color='red',
         fig = plt.figure(dpi=dpi, facecolor='w', edgecolor='k')
     if isinstance(ax, type(None)):
         ax = fig.add_subplot(111)
-    # plot up white background  (on a blank basemap plot)
-    marker = 'o'
+    # Plot up white background  (on a blank basemap plot)
     arr = np.zeros((72, 46))
     plt, m = map_plot(arr.T, return_m=True, cmap=plt.cm.binary,
         f_size=f_size, \
@@ -5354,7 +5356,9 @@ def plot_lons_lats_spatial_on_map(lons=None, lats=None, p_size=50, color='red',
         ylabel=True, xlabel=True, title=title, axis_titles=True )#
     # Plot up all sites as a scatter plot of points on basmap
     m.scatter( lons, lats, edgecolors=color, c=color, marker=marker, \
-        s=p_size, alpha=1)
+        s=p_size, alpha=1, label=label)
+    # Return axis?
+    if return_axis: return m
 
 
 # --------
