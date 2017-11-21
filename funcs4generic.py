@@ -1215,7 +1215,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
             mask = np.ma.mask_or( tmp, tropics_unmasked( res=res) )
 
         if case == 28:
-            print 'WARNING - Mask not setup'
+            print( 'WARNING - Mask not setup')
             sys.exit()
 
         # Invert mask to leave exception unmasked if used to multiply
