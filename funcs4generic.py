@@ -2193,16 +2193,21 @@ def split_NetCDF_by_month(folder=None, filename=None, ext_str='',
 # --------
 # X.XX - stack a 2D table (DataFrame) of lat/lon coords
 # --------
-def get_2D_df_of_lon_lats_and_time(res='4x5', df_lar_var='lat', df_lon_var='lon',
-        df_time_var='month', add_all_months=False, lons=None, lats=None ):
+def get_2D_df_of_lon_lats_and_time(res='4x5', df_lar_var='lat',
+        df_lon_var='lon', df_time_var='month', add_all_months=False,
+        lons=None, lats=None, verbose=True, month=9 ):
     """ stack a 2D table (DataFrame) of lat/lon coords """
     # Get lon and lat resolution (Add other ways to get lat and lon here...
-    if (not isinstance(lons, type(None))) and (not isinstance(lats, type(None))):
-        pass
-    elif isinstance( res, str ):
-        lons, lats, NIU = get_latlonalt4res(res=res)
-    else:
-        print('please provide lons/lats or a res in get_latlonalt4res')
+#     lons_not_provided = isinstance(lons, type(None))
+#     lats_not_provided = isinstance(lats, type(None))
+#     if (lons_not_provided) or (lats_not_provided):
+#         pass
+#     else:
+#    try:
+#        assert( type(res) == str ), 'Resolution must be a string!'
+    lons, lats, NIU = get_latlonalt4res(res=res)
+#    except:
+#        print('please provide lons/lats or a res in get_latlonalt4res')
 
     # Make Table like array
     b = np.zeros( (len(lons), len(lats)) )
@@ -2218,11 +2223,15 @@ def get_2D_df_of_lon_lats_and_time(res='4x5', df_lar_var='lat', df_lon_var='lon'
 
     # Add time dims...
     if add_all_months:
-        print( ' all month addition not setup yet' )
-        sys.exit()
-    else: # Just use September for now
-        df[df_time_var] = 9
-
+        dfs = []
+        for month in np.arange(1, 13 ):
+            df_tmp = df.copy()
+            df_tmp[df_time_var] = month
+            dfs.append( df_tmp )
+        df = pd.concat( dfs )
+    else: # Just select a single month (September is default )
+        print( 'WARNING: Only September considered' )
+        df[df_time_var] = month
     return df
 
 # --------
