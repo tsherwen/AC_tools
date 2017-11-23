@@ -214,13 +214,15 @@ def list_variables(wd=None):
 # ----
 # X.XX - Get Land map.
 # ----
-def get_land_map(res='4x5', time=None, wd=None,debug=False):
+def get_land_map(res='4x5', date=None, wd=None, debug=False):
     """
     Return land, water, and ice indices (LWI ) from GEOS-Chem with integers
     for Land (1) and Water (0). Ice fraction is given as fractional values.
 
     Parameters
     -------
+    res (str): resolution of model to get land map for
+    wd (str): directory contain file with LWI
 
     Returns
     -------
@@ -230,7 +232,6 @@ def get_land_map(res='4x5', time=None, wd=None,debug=False):
      - This approach is inefficent and requires large files. Could this be improved with
      on-line extract on inclusion of generic output for various resoltions as txt files?
     """
-
     logging.info( 'called get surface area, for {}'.format(res) )
     # Get AC_tools location, then set example data folder location
     import os
@@ -244,12 +245,12 @@ def get_land_map(res='4x5', time=None, wd=None,debug=False):
     '2x2.5': 'LANDMAP_LWI_ctm_2x25',  \
     '0.5x0.666' :'LANDMAP_LWI_ctm_05x0666',  \
     '0.25x0.3125' :'LANDMAP_LWI_ctm_025x03125',  \
+    '0.125x0.125' : 'TEMP_NASA_Nature_run', \
         }[res]
     land_dir = dwd +dir
-    if debug:
-        logging.info( land_file )
+    if debug: logging.info( land_file )
 
-    # retain backwards compatibility
+    # retain backwards compatibility - This is redundant: remove!
     if pygchem.__version__ == '0.2.0':
         ctm_f = gdiag.CTMFile.fromfile( land_dir + '/ctm.bpch' )
         diags = ctm_f.filter(name="LWI",category="LANDMAP")
@@ -260,14 +261,34 @@ def get_land_map(res='4x5', time=None, wd=None,debug=False):
             for diag in diags:
                 scalar = diag.values[:,:,:]
                 first_time=False
-                logging.info( diag.name ,'len(scalar)',len(scalar), 'type(scalar)',\
-                    type(scalar), 'diag.scale', diag.scale, 'scalar.shape',\
-                    scalar.shape,'diag.unit',diag.unit )
+                logging.info( locals().keys() )
                 landmap=scalar
 
     # use new pygchem (>0.3.0) approach
     else:
-        landmap = get_GC_output( land_dir, species="LWI", category="LANDMAP")
+        if res == '0.125x0.125':
+            import xr
+            #
+            ds = xr.open_dataset(land_dir+'ctm.nc')
+            # No date? Just use annual average
+            if isinstance( date, type(None) ):
+                landmap = ds['LWI'].mean(dim='time').values
+            else:
+                import glob
+                # find nearest datetime
+#                landmap = ds['LWI']
+#                landmap = landmap.sel(time=date, method='nearest').values
+                # Kludge, just find nearest month for now.
+                months = ds['time.month'].values
+                ind = find_nearest( date, months )
+                landmap = ds['LWI'][ind,...].values
+                # transpose (as PyGChem read was re-ordergin COARDS NetCDF)
+                landmap = landmap.T
+
+        else:
+            landmap = get_GC_output( wd=land_dir, vars=[u'LANDMAP__LWI'] )
+            # Just use NetCDF4 instead of AC_tools function
+#            landmap = Dataset(land_dir+'ctm.nc', 'r')['LANDMAP__LWI'][:]
 
     return landmap
 
@@ -2065,11 +2086,11 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
 # ----
 # X.XX - get Land / Water /Ice fraction
 # ----
-def get_LWI(lon, lat, res='4x5',debug=False):
+def get_LWI(lon, lat, res='4x5', date=None, debug=False):
     """ Return LWI for a given lon and lat """
-    lat=get_gc_lat(lat, res=res)
-    lon=get_gc_lon(lon, res=res)
-    LWI=get_land_map(res=res)
+    lat = get_gc_lat(lat, res=res)
+    lon = get_gc_lon(lon, res=res)
+    LWI = get_land_map(res=res, date=date)
     return LWI[lon,lat,0]
 
 
