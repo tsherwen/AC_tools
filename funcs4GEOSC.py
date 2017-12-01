@@ -4715,7 +4715,8 @@ def get_stioch_for_family_reactions( fam='LOx', filename='gckpp_Monitor.F90',
 
 
 def get_tags4_family( fam='LOx', filename='gckpp_Monitor.F90',
-        Mechanism='Halogens', tag_prefix='PT', RR_dict=None, wd=None ):
+        Mechanism='Halogens', tag_prefix='PT', RR_dict=None, wd=None,
+        debug=False ):
     """
     For a P/L family tag (e.g. LOx), if there are induvidual tags then these
     are extracted
@@ -4744,6 +4745,7 @@ def get_tags4_family( fam='LOx', filename='gckpp_Monitor.F90',
         rxn_str = RR_dict[key_]
         # collection reactions with tag
         if fam in rxn_str:
+#            if debug: print( key_, fam, rxn_str )
             tagged_rxns += [key_]
             # split reaction str by '+' (excluding reactants part)
             rxn_str = rxn_str[18:].split('+')
@@ -4753,6 +4755,8 @@ def get_tags4_family( fam='LOx', filename='gckpp_Monitor.F90',
                 tagged_rxn_tags += tags
             else:
                 tagged_rxn_tags+=['WARNING: RXN. NOT TAGGED! ({})'.format(key_)]
+                if debug: print( key_, fam, 'ERROR!', tags, rxn_str )
+
 
     return dict(list(zip(tagged_rxns, tagged_rxn_tags)))
 
@@ -4996,9 +5000,9 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
     if isinstance(RR_dict, type(None)):
         RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, \
             filename=filename, wd=wd)
-    if isinstance(RR_hv_dict, type(None)):
-        RR_hv_dict = get_dictionary_of_tagged_reactions(filename='globchem.eqn',
-            Mechanism=Mechanism, wd=wd)
+#    if isinstance(RR_hv_dict, type(None)):
+#        RR_hv_dict = get_dictionary_of_tagged_reactions(filename='globchem.eqn',
+#            Mechanism=Mechanism, wd=wd)
     # Get tags for reaction unless already provided
     if isinstance(tags, type(None)):
         tags = get_tags4_family( wd=wd, fam=fam, filename=filename, \
@@ -5010,10 +5014,15 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
     HOx+=['O1D', 'O','O3','NO3']
     ClOx =['CFC', 'Cl', 'ClO' ]
     non_I_specs_with_I_char = [ \
-    'INO2', 'ISN1', 'ISNOOA', 'ISNOHOO', 'ISOPNB', 'ISOPND', 'ISOP', 'ISNP' ]
+    'INO2', 'ISN1', 'ISNOOA', 'ISNOHOO', 'ISOPNB', 'ISOPND', 'ISOP', 'ISNP'
+    # add species in v11-2d
+    'IONITA'
+    ]
     # Get list of tagged hv reactions
-    all_rxns = sorted(RR_hv_dict.keys())
-    hv_rxns_tags = [ i for i in all_rxns if ( 'hv' in RR_hv_dict[i])]
+#    all_rxns = sorted(RR_hv_dict.keys())
+#    hv_rxns_tags = [ i for i in all_rxns if ( 'hv' in RR_hv_dict[i])]
+    all_rxns = sorted(RR_dict.keys())
+    hv_rxns_tags = [ i for i in all_rxns if ( 'hv' in RR_dict[i])]
 
     # Loop tagged reactions and assign family
     tagged_rxns = sorted(tags.keys())
@@ -5027,6 +5036,7 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
         NOx_is_reactant = False
         HOx_is_reactant = False
         hv_is_reactant = False
+        IONITA_is_formed =False
 
         # --- Get reaction string  and check within
         rxn_str = RR_dict[rxn_]
@@ -5041,7 +5051,8 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
         if any([(i in reactant_str) for i in ClOx]):
             Cl_is_reactant=True
         # add gotcha for heterogenous N2O5 breakdown by Cl-
-        if tags[rxn_] == 'T172':
+#        if (tags[rxn_] == 'T172') and (ver='v11-01')::
+        if (tags[rxn_] == 'T164'):
             Cl_is_reactant=True
         if 'NO' in reactant_str:
             NOx_is_reactant=True
@@ -5051,6 +5062,10 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
             hv_is_reactant=True
         if any([(i in reactant_str) for i in HOx]):
             HOx_is_reactant=True
+        # gotcha for
+        IONITA_rxns = ['T040', 'T039', 'T037']
+        if any( [(tags[rxn_] == i) for i in IONITA_rxns] ):
+            IONITA_is_formed = True
         # --- Assign familes
         # 1st check if halogen crossover reaction...
         if Cl_is_reactant and Br_is_reactant:
@@ -5075,7 +5090,9 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
         # HOx?
         elif HOx_is_reactant:
             fam_l += ['HOx']
-
+        # if IONITA reaction
+        elif IONITA_is_formed:
+            fam_l += ['NOx']
         # Not assigned?!
         else:
             fam_l += ['NOT ASSIGNED!!!']
@@ -5101,7 +5118,9 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
     name_dict = {
     'ClOx-BrOx': 'Cl+Br', 'BrOx-IOx': 'Br+I', 'BrOx': 'Bromine',
     'ClOx-IOx': 'Cl+I', 'IOx': 'Iodine', 'ClOx': 'Chlorine', 'HOx': 'HO$_{\\rm x}$',
-    'hv':'Photolysis', 'NOx': 'NO$_{\\rm x}$'
+    'hv':'Photolysis', 'NOx': 'NO$_{\\rm x}$',
+    # Allow unassigned reactions to pass (to be caught later)
+    'NOT ASSIGNED!!!':'NOT ASSIGNED!!!'
     }
     fam_l = [ name_dict[i] for i in fam_l ]
     tag_l = [ tags[i] for i in tagged_rxns ]
