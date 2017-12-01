@@ -2303,12 +2303,23 @@ def get_vars_from_line_printed_in_txt_file(filename=None, folder=None,
 # --------
 # X.XX - remove the spaces and extra vars from strings
 # --------
-def rm_spaces_and_chars_from_str(input_str, replace_brackets=True):
+def rm_spaces_and_chars_from_str(input_str, remove_slashes=True,
+        replace_brackets=True, replace_quotes=True, replace_dots=True,
+        remove_plus=True):
     """ remove the spaces and extra vars from strings"""
     input_str = input_str.replace(' ', '_')
     if replace_brackets:
         input_str = input_str.replace('(', '_')
         input_str = input_str.replace(')', '_')
+    if replace_quotes:
+        input_str = input_str.replace("'", '_')
+    if replace_dots:
+        input_str = input_str.replace(".", '_')
+    if remove_slashes:
+        input_str = input_str.replace("\\", '_')
+        input_str = input_str.replace("/", '_')
+    if remove_plus:
+        input_str = input_str.replace("+", '_plus_')
     return input_str
 
 # --------------------------------------------------------------------------
