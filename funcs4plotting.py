@@ -5328,7 +5328,7 @@ def create_plot4case( fig, ax, dates, data, spec, f_size=20, lw=None, ls=None, \
 def plot_lons_lats_spatial_on_map(lons=None, lats=None, p_size=50, color='red',
         title=None, f_size=15, dpi=320, fig=None, ax=None, label=None,
         return_axis=False, marker='o', alpha=1,  ylabel=True, xlabel=True,
-        window=False, axis_titles=True):
+        window=False, axis_titles=True, resolution='c'):
     """
     Plot a list of lons and lats spatially on a map
 
@@ -5353,7 +5353,7 @@ def plot_lons_lats_spatial_on_map(lons=None, lats=None, p_size=50, color='red',
     arr = np.zeros((72, 46))
     plt, m = map_plot(arr.T, return_m=True, cmap=plt.cm.binary,
         f_size=f_size, window=window, \
-        fixcb=[ 0, 0 ], ax=ax, no_cb=True, resolution='c', \
+        fixcb=[ 0, 0 ], ax=ax, no_cb=True, resolution=resolution, \
         ylabel=ylabel, xlabel=xlabel, title=title, axis_titles=axis_titles )
     # Plot up all sites as a scatter plot of points on basmap
     m.scatter( lons, lats, edgecolors=color, c=color, marker=marker, \
