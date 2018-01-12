@@ -1033,6 +1033,102 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
         ax.set_title(title, fontsize=f_size*1.5)
 
 # --------
+# X.XX - Diurnal plot by season
+# --------
+def plot_up_diurnal_by_season( spec='O3', sub_str='UK+EIRE', fig=None, \
+        dfs=None, color_dict={'Obs.':'k', 'Model':'r'}, stat2plot='50%',
+        dpi=320, plt_legend=True,
+        show_plot=False, save_plot=True, verbose=False, debug=False):
+    """
+    Plot up mulitplot of diurnal cycle by "season" for given dict of DataFrames
+
+    Parameters
+    -------
+    spec (str): column name in DataFrame for spec to plot up
+    dfs (dictionary): of data and dates
+        data (array): numpy array of data
+        dates (np.array of datetime.datetime): dates to use for x axis
+    fig (fig instance)
+    sub_str (str): for plotting
+    stat2plot (str): stat (e.g. mean or medium) to use for main line
+    color_dict (dictionary): with colors assign
+    show_plot (boolean)
+    save_plot (boolean)
+
+    """
+    import seaborn as sns; sns.set(color_codes=True)
+    sns.set_context("paper", font_scale=0.75)
+    # ---Local variables
+    seasons = ('DJF', 'MAM', 'JJA',  'SON' )
+
+    # --- Split data by season
+    for key_ in dfs.keys():
+        # Now assign "Seasons"
+        month_to_season_lu = np.array([
+        None,
+        'DJF', 'DJF',
+        'MAM', 'MAM', 'MAM',
+        'JJA', 'JJA', 'JJA',
+        'SON', 'SON', 'SON',
+        'DJF'
+        ])
+        dfs[key_]['Season'] = month_to_season_lu[ dfs[key_].index.month ]
+
+    # --- Loop seasons & Plot
+    # Setup figure and PDF
+    if isinstance( fig, type(None) ):
+        fig = plt.figure(dpi=dpi)
+    # Now loop seasons...
+    for n_season, season_ in enumerate( seasons ):
+        if verbose: print( (n_season, season_, spec, sub_str) )
+        # Add subplot and set axis labelling
+        ax = fig.add_subplot(2,2, n_season+1 )
+        title = season_
+        plt_legend=False
+        if (n_season+1) == len( seasons ):
+            plt_legend=True
+        plt_xlabel=True
+        do_not_plt_xlabel_on_subplot = [1, 2]
+        if (n_season+1) in do_not_plt_xlabel_on_subplot:
+            plt_xlabel=False
+        plt_ylabel=True
+        do_not_plt_ylabel_on_subplot = [2,4]
+        if (n_season+1) in do_not_plt_ylabel_on_subplot:
+            plt_ylabel=False
+
+        # --- Loop and plot dfs
+        for n_key, key_ in enumerate( dfs.keys() ):
+            # Date and dates? ( only select for season )
+            tmp_df =  dfs[key_]
+            tmp_df = tmp_df[ tmp_df['Season'] == season_ ]
+            data_ = tmp_df[spec]
+            dates_  = tmp_df.index.to_datetime().values
+            # See if color is set in color_dict
+            try:
+                color=color_dict[key_]
+            except KeyError:
+                color=None
+            #
+            legend=False
+            if plt_legend and ( n_key == len(dfs.keys())-1 ):
+                legend=True
+            # Plot up
+            BASIC_diurnal_plot(fig=fig, ax=ax, data=data_,
+                dates=dates_, label=key_, title='{}'.format( season_),
+                plt_xlabel=plt_xlabel, plt_ylabel=plt_ylabel,
+                color=color, spec=spec, plt_legend=legend )
+            # remove tmp data dictionary from memory...
+            del tmp_df
+
+    # --- Now show / save  if requested
+    suptitle= "Diurnal of {} in '{}'"
+    fig.suptitle( suptitle.format( AC.latex_spec_name(spec), sub_str ) )
+    png_filename = 'Seasonal_diurnal_{}_{}.png'.format(sub_str, sub_str)
+    if save_plot: plt.savefig( png_filename, dpi=dpi )
+    if show_plot: plt.show()
+
+
+# --------
 # X.XX - Diurnal plot - (UPDATED)
 # --------
 def BASIC_diurnal_plot( fig=None, ax=None, dates=None, data=None, color='red',\
