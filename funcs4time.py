@@ -13,7 +13,7 @@ NOTE(S):
 # -------------- Required modules:
 
 # --- compatibility with both python 2 and 3
-from __future__ import print_function
+
 
 import logging
 
@@ -108,9 +108,9 @@ def nonISOdate2ISO( ds ):
             if len(d) != 19:
                 d= d[:8]+'0'+d[8:]
         if len(d) != 19:
-            print(1.3, d, len(d[0]))
+            print((1.3, d, len(d[0])))
         d = [d]
-        print(2, d, len(d[0]))
+        print((2, d, len(d[0])))
     return ds
 
 
@@ -161,7 +161,7 @@ def YYYYMMDD_HHMM_2_datetime( str1=None, str2=None, conbined=False,  \
         # make pandas dataframe
         data = np.array( [str1,str2] )
         if debug:
-            print(data.shape, data[:5,:], [ type(i) for i in (str1,str2) ])
+            print((data.shape, data[:5,:], [ type(i) for i in (str1,str2) ]))
         df = pd.DataFrame( data=data.T, columns=['YYYYMMDD', 'HHMM'] )
 
         # convert to datetime
@@ -205,7 +205,7 @@ def add_hrs(sourcedate,hrs_, debug=False):
     Incremental increase of datetime by given hours
     """
     if debug:
-        print(sourcedate, hrs_)
+        print((sourcedate, hrs_))
     sourcedate += datetime.timedelta(hours=hrs_)
     return  sourcedate
 
@@ -296,11 +296,11 @@ def dt_hrs_a2b( a, b, period=1, debug=False ) :
     """
     dates = [a]
     if debug:
-        print(dates, a, b, period)
+        print((dates, a, b, period))
     while dates[-1] < b:
         dates += [ add_hrs(dates[-1], period) ]
     if debug:
-        print(dates[0], dates[-1])
+        print((dates[0], dates[-1]))
     return dates
 
 
@@ -458,11 +458,11 @@ def dt_days_a2b( a, b, period=1, debug=False ) :
     """
     dates = [a]
     if debug:
-        print(dates, a, b, period)
+        print((dates, a, b, period))
     while dates[-1] < b:
         dates += [ add_days(dates[-1], period) ]
     if debug:
-        print(dates[0], dates[-1])
+        print((dates[0], dates[-1]))
     return dates
 
 # --------------
@@ -531,7 +531,7 @@ def get_daily_maximum( dates=None, data=None ):
     data = np.array(data)
     for day in sorted(set( df['days']) ):
 
-        print(day, df['days'][:5])
+        print((day, df['days'][:5]))
         # select data for day
         a_day_ind = df[ df['days'] == day ]
         # select data for day
@@ -627,7 +627,7 @@ def gaw_lc_2_UT(time_s, site, half_hour=None, debug=False):
     debug = True
     if debug:
         for i,ii in enumerate(time_s):
-            print(i, ii, time_s_adjust[i])
+            print((i, ii, time_s_adjust[i]))
     return time_s_adjust
 
 
@@ -646,7 +646,7 @@ def adjust_UT_2_lt( time, date, data, site='CVO', dUTC=None, debug=False ):
     if (dUTC ==  None ):
         dUTC   = gaw_2_loc(site)[-1]
     if debug:
-        print('adjust_UT_2_lt called and dUTC = {}'.format(dUTC))
+        print(('adjust_UT_2_lt called and dUTC = {}'.format(dUTC)))
 
     # np.roll works in reverse to UTC change (reversed date also)
     time = np.array([np.roll( i, -1*dUTC ) for i in chunks(time,24) ]).flatten()

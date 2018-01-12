@@ -15,7 +15,7 @@ NOTE(S):
 #
 
 # --- compatibility with both python 2 and 3
-from __future__ import print_function
+
 
 # -- I/O / Low level
 import os
@@ -265,7 +265,7 @@ def get_land_map(res='4x5', date=None, wd=None, debug=False):
             for diag in diags:
                 scalar = diag.values[:,:,:]
                 first_time=False
-                logging.info( locals().keys() )
+                logging.info( list(locals().keys()) )
                 landmap=scalar
 
     # use new pygchem (>0.3.0) approach
@@ -290,7 +290,7 @@ def get_land_map(res='4x5', date=None, wd=None, debug=False):
                 landmap = landmap.T
 
         else:
-            landmap = get_GC_output( wd=land_dir, vars=[u'LANDMAP__LWI'] )
+            landmap = get_GC_output( wd=land_dir, vars=['LANDMAP__LWI'] )
             # Just use NetCDF4 instead of AC_tools function
 #            landmap = Dataset(land_dir+'ctm.nc', 'r')['LANDMAP__LWI'][:]
 
@@ -4460,10 +4460,10 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*", filename='ctm.n
     nfiles = len(files)
     if nfiles >0:
         if verbose:
-            print('Found {} files'.format(nfiles))
+            print(('Found {} files'.format(nfiles)))
     else:
         if verbose:
-            print('No files found in wd:{}'.format( folder ))
+            print(('No files found in wd:{}'.format( folder )))
         sys.exit()
 
     # split off file names
@@ -4475,10 +4475,10 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*", filename='ctm.n
 
     # If split by month
     if split_by_month:
-        print('Splitting NetCDF file by month - {}'.format(folder+filename))
+        print(('Splitting NetCDF file by month - {}'.format(folder+filename)))
         split_NetCDF_by_month(folder=folder, filename=filename,
             ext_str=ext_str, file_prefix=file_prefix)
-        print('Split NetCDF file by month - {}'.format(folder+filename))
+        print(('Split NetCDF file by month - {}'.format(folder+filename)))
 
 
 # ----
@@ -4540,18 +4540,18 @@ def get_Lightning_NOx_source( Var_rc=None, Data_rc=None, debug=False ):
     # Get Lightning
     arr = d['NO_LI_S__NO'][:]
     if debug:
-        print( arr.shape )
+        print(( arr.shape ))
     # Average over time
     arr = arr.mean(axis=0)
 #    arr = arr[0,...]
 #    months= 7, 8
 #    arr = arr[[i-1 for i in months],...].mean(axis=0)
     if debug:
-        print( arr.shape )
+        print(( arr.shape ))
     # Sum over altitude
     arr_2D = arr.sum(axis=-1)
     if debug:
-        print( arr_2D.shape )
+        print(( arr_2D.shape ))
     # Remove space dim
     s_area = get_surface_area( res=Data_rc['res'], debug=debug ) * 10000
     s_area_2D = s_area[...,0]
@@ -4594,7 +4594,7 @@ def prt_Prod_Loss_list4input_geos(spec_list=None, prefix_list=None, start_num=1)
     # Loop species (specs) provided
     for n, spec in enumerate( spec_list ):
         index = start_num+n
-        print( line_str.format( get_suffix(index), prefix_list[n]+spec, spec) )
+        print(( line_str.format( get_suffix(index), prefix_list[n]+spec, spec) ))
 
 
 def prt_Species_List_lines4globchem_dat(spec_list=None, activty_list=None):
@@ -4620,7 +4620,7 @@ def prt_Species_List_lines4globchem_dat(spec_list=None, activty_list=None):
 
     # Print lines to insert into globchem.dat
     for n, spec in enumerate( spec_list ):
-        print( line1_str.format( acvtivty_list[n], spec ) )
+        print(( line1_str.format( acvtivty_list[n], spec ) ))
         print( line2_str )
 
 
@@ -4759,7 +4759,7 @@ def get_tags4_family( fam='LOx', filename='gckpp_Monitor.F90',
                 tagged_rxn_tags += tags
             else:
                 tagged_rxn_tags+=['WARNING: RXN. NOT TAGGED! ({})'.format(key_)]
-                if debug: print( key_, fam, 'ERROR!', tags, rxn_str )
+                if debug: print(( key_, fam, 'ERROR!', tags, rxn_str ))
 
 
     return dict(list(zip(tagged_rxns, tagged_rxn_tags)))

@@ -12,7 +12,7 @@ NOTES:
 # -------------- Required modules:
 
 # --- compatibility with both python 2 and 3
-from __future__ import print_function
+
 
 import numpy as np
 from netCDF4 import Dataset
@@ -340,10 +340,10 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
         except :
             try:
                 print( 'WARNING: coord vars not found! -using abrvs.')
-                print( 'Was using: ', lon_var, lat_var )
-                lon_var=u'lon'
-                lat_var=u'lat'
-                print( 'Now using: ', lon_var, lat_var )
+                print(( 'Was using: ', lon_var, lat_var ))
+                lon_var='lon'
+                lat_var='lat'
+                print(( 'Now using: ', lon_var, lat_var ))
                 # Extract lat and lon from model output data file
                 with Dataset( data_fname, 'r' ) as d:
                     lat = d[lat_var][:]
@@ -371,10 +371,10 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
         except:
             try:
                 print( 'WARNING: coord vars not found! -using abrvs.')
-                print( 'Was using: ', lon_var, lat_var )
-                lon_var=u'lon'
-                lat_var=u'lat'
-                print( 'Now using: ', lon_var, lat_var )
+                print(( 'Was using: ', lon_var, lat_var ))
+                lon_var='lon'
+                lat_var='lat'
+                print(( 'Now using: ', lon_var, lat_var ))
                 # Extract lat and lon from model output data file
                 with Dataset( data_fname, 'r' ) as d:
                     lat = d[lat_var][:]
@@ -453,7 +453,7 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
         return lon, lat, alt
 
     if debug:
-        print(lon, lat, alt)
+        print((lon, lat, alt))
     rtn_list = lon, lat, alt
     if not isinstance( dtype, type( None ) ):
         return [ i.astype( dtype ) for i in rtn_list ]
@@ -519,7 +519,7 @@ def iGEOSChem_ver(wd, also_return_GC_version=False, verbose=True, debug=False):
     ]
     df = pd.DataFrame( versions, columns=['Versions'] )
     if debug:
-        print(wd, versions, df)
+        print((wd, versions, df))
 
     # Which versions are in name?
     def element_in_str( element ):
@@ -531,7 +531,7 @@ def iGEOSChem_ver(wd, also_return_GC_version=False, verbose=True, debug=False):
         iGC_ver = df['Versions'][ df['Run Version'] ][-1:].values[0]
     except IndexError:
         err_msq='WARNING (i) GEOS-Chem ver. number not found in working dir. path'
-        print('!'*15, err_msq, '!'*15)
+        print(('!'*15, err_msq, '!'*15))
         logging.debug(err_msq)
         iGC_ver='NOT FOUND'
 #        sys.exit()
@@ -549,7 +549,7 @@ def iGEOSChem_ver(wd, also_return_GC_version=False, verbose=True, debug=False):
         ]
         df = pd.DataFrame( versions, columns=['Versions'] )
         if debug:
-            print(wd, versions, df)
+            print((wd, versions, df))
         #
         df['Run Version'] = df['Versions'].apply( element_in_str )
         # selection
@@ -821,7 +821,7 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
     #
     Temp_arrays = ['c_km_geos5', 'c_hPa_geos5']
     if input in Temp_arrays:
-        print('WARNING array ({}) is temporary! - Please check it!'.format(input))
+        print(('WARNING array ({}) is temporary! - Please check it!'.format(input)))
 
     if rtn_dict:
         return d

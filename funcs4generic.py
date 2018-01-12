@@ -14,7 +14,7 @@ NOTE(S):
 # -------------- Required modules:
 
 # --- compatibility with both python 2 and 3
-from __future__ import print_function
+
 
 # -- I/O / Low level
 import numpy as np
@@ -100,12 +100,12 @@ def replace_strs_in_files( wd, input_str, output_str, debug=False ):
     """
     replace text in files
     """
-    print(wd, input_str, output_str)
+    print((wd, input_str, output_str))
     for f in os.listdir(wd) :
         if not f.startswith('.'):
             print(f)
             os.rename(wd+ f, wd+ f.replace(input_str, output_str))
-            print(f.replace(input_str, output_str))
+            print((f.replace(input_str, output_str)))
 
 # ----
 # X.XX - Get X and Y coordinates for a given grid - Credit: Eric Sofen
@@ -124,7 +124,7 @@ def get_xy(Lon,Lat, lon_edges, lat_edges, debug=False):
     gridindx,gridindy=np.where(hasobs>=1)
     if not gridindx:
         if debug:
-            print('Lat, lon outside of x,y range.  Assigning -1 for', Lon, Lat)
+            print(('Lat, lon outside of x,y range.  Assigning -1 for', Lon, Lat))
         return -1, -1
     else:
         #print Lon, Lat, gridindx, gridindy
@@ -175,7 +175,7 @@ def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,\
         type += '/EPS'
         plt.savefig(npdf+'.eps', format='eps', dpi=dpi, \
             transparent=transparent)
-    print(type+' saved & Closed as/at: ', npdf)
+    print((type+' saved & Closed as/at: ', npdf))
 
 # --------
 # X.XX - Save as mulitple page pdf.
@@ -205,7 +205,7 @@ def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, wd=None, \
     # If 1st call ( open ==True), setup pdf
     if open:
         pdf = PdfPages(npdf)
-        print('pdf opened @: {}'.format( npdf ))
+        print(('pdf opened @: {}'.format( npdf )))
         return pdf
 
     # Rasterise to save space?
@@ -215,10 +215,10 @@ def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, wd=None, \
     # save and close or keep open to allow additions of plots
     if close:
         pdf.close()
-        print('PDF saved & Closed as/at: ', npdf)
+        print(('PDF saved & Closed as/at: ', npdf))
     else:
         pdf.savefig(dpi=dpi)
-        print('pdf is still open @: {}'.format( npdf ))
+        print(('pdf is still open @: {}'.format( npdf )))
 
 
 # --------------
@@ -357,7 +357,7 @@ def get_arr_edge_indices( arr, res='4x5', extra_points_point_on_edge=None, \
     """
 
     if verbose:
-        print('get_arr_edge_indices for arr of shape: ', arr.shape)
+        print(('get_arr_edge_indices for arr of shape: ', arr.shape))
 
     # initialise variables
     lon_c, lat_c, NIU = get_latlonalt4res( res=res, centre=True )
@@ -370,7 +370,7 @@ def get_arr_edge_indices( arr, res='4x5', extra_points_point_on_edge=None, \
     last_lon_box = arr[nn, n]
     need_lon_outer_edge, need_lat_outer_edge =  False, False
     if debug:
-        print(lon_e, lat_e)
+        print((lon_e, lat_e))
 
     # ---- Loop X dimension ( lon )
     for nn, lon_ in enumerate( lon_c ):
@@ -379,8 +379,8 @@ def get_arr_edge_indices( arr, res='4x5', extra_points_point_on_edge=None, \
         for n, lat_ in enumerate( lat_c ):
 
             if debug:
-                print(arr[nn, n], last_lat_box, last_lon_box,  \
-                    arr[nn, n]==last_lat_box, arr[nn, n]==last_lon_box)
+                print((arr[nn, n], last_lat_box, last_lon_box,  \
+                    arr[nn, n]==last_lat_box, arr[nn, n]==last_lon_box))
 
             if arr[nn, n] != last_lat_box:
 
@@ -411,8 +411,8 @@ def get_arr_edge_indices( arr, res='4x5', extra_points_point_on_edge=None, \
     for n, lat_ in enumerate( lat_c ):
 
         if debug:
-            print(arr[nn, n], last_lat_box, last_lon_box,  \
-                arr[nn, n]==last_lat_box, arr[nn, n]==last_lon_box)
+            print((arr[nn, n], last_lat_box, last_lon_box,  \
+                arr[nn, n]==last_lat_box, arr[nn, n]==last_lon_box))
         # Loop X dimension ( lon ) and store edges
         for nn, lon_ in enumerate( lon_c ):
 
@@ -469,7 +469,7 @@ def split_data_by_days( data=None, dates=None, day_list=None, \
     # Loop unique days and select data on these days
     data4days = []
     for day in day_list:
-        print(day, df[df['days']==day])
+        print((day, df[df['days']==day]))
         data4days += [ df['data'][ df['days']==day ] ]
     # Just return the values ( i.e. not pandas array )
     data4days = [i.values.astype(float) for i in data4days ]
@@ -478,8 +478,8 @@ def split_data_by_days( data=None, dates=None, day_list=None, \
 #    sys.exit()
 
     if debug:
-        print('returning data for {} days, with lengths: '.format( \
-            len( day_list) ), [len(i) for i in data4days ])
+        print(('returning data for {} days, with lengths: '.format( \
+            len( day_list) ), [len(i) for i in data4days ]))
 
     # Return as list of days (datetimes) + list of data for each day
     return data4days, day_list
@@ -502,12 +502,12 @@ def ocean_unmasked(res='4x5', debug=False):
 
     from .funcs4GEOSC import get_land_map
     if debug:
-        print('ocean_mask called for: ', res)
+        print(('ocean_mask called for: ', res))
 
     # Create a mask from land/water/ice indices
     m = np.ma.masked_not_equal( get_land_map(res=res),0 )
     if debug:
-        print(mask, mask.shape)
+        print((mask, mask.shape))
     return m.mask
 
 # --------
@@ -521,10 +521,10 @@ def land_unmasked(res='4x5', debug=False):
 
     # Create a np.ma mask
     if debug:
-        print('land_mask called for: ', res)
+        print(('land_mask called for: ', res))
     m = np.ma.masked_not_equal( get_land_map(res=res),1 )
     if debug:
-        print(mask, mask.shape)
+        print((mask, mask.shape))
     return m.mask
 
 # --------
@@ -541,7 +541,7 @@ def ice_unmasked(res='4x5', debug=False):
     # Create a np.ma mask
     m= np.logical_not( (land_unmasked(res)*ocean_unmasked(res)) )
     if debug:
-        print(mask, mask.shape)
+        print((mask, mask.shape))
     return m
 
 # --------
@@ -563,7 +563,7 @@ def surface_unmasked( res='4x5', trop_limit=False, mask2D=False, \
     if trop_limit:
         m = m[...,:38]
     if debug:
-        print(mask, mask.shape)
+        print((mask, mask.shape))
 
     # Return 2D or 3D?
     if mask2D:
@@ -736,9 +736,9 @@ def mask_3D( hPa, sect, MBL=True, res='4x5', extra_mask=None,    \
     more pythonic masks ( if use_multiply_method=False )
     """
     if verbose:
-        print('mask_3D called for sect={}, use_multiply_method={}'.format( \
+        print(('mask_3D called for sect={}, use_multiply_method={}'.format( \
             sect, use_multiply_method ) + ', M_all={}, and '.format( M_all )+ \
-            'with debug: {}, verbose:{}'.format( sect, debug, verbose ))
+            'with debug: {}, verbose:{}'.format( sect, debug, verbose )))
 
     # Get atmospheric region as case defining lower and upper bounds
     cases = {
@@ -816,7 +816,7 @@ def lat2lat_2D_unmasked( lowerlat=None, higherlat=None, res='2x2.5', \
 
     # fill all lat and lon True or False
     m=np.zeros(get_dims4res(res))[:,:,0]
-    print(m.shape, np.sum(m))
+    print((m.shape, np.sum(m)))
     for i in lats:
         m[:,i] = 1
     m = np.ma.masked_not_equal(m, 1)
@@ -1154,7 +1154,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     # i.e. all (future) functions should have use_multiply_method=False
     # and not use the code below
     if use_multiply_method:  # Kludge
-        print('!'*50, 'WARNING: using mulitply method for masking. ')
+        print(('!'*50, 'WARNING: using mulitply method for masking. '))
 
         # For case, pull mask from case list
         if case == 0:
@@ -1356,7 +1356,7 @@ def lon2lon_2D_unmasked(lowerlon, higherlon, res='2x2.5', debug=False ):
     # Get vars
     lon_c, lat_c, NIU = get_latlonalt4res( res=res, centre=True )
     if debug:
-        print(lon_c, lowerlon, higherlon)
+        print((lon_c, lowerlon, higherlon))
 
     # Mask between upper and lower values
     lons =  [ i for i in lon_c if ( (i>=lowerlon) and (i<higherlon) )]
@@ -1364,7 +1364,7 @@ def lon2lon_2D_unmasked(lowerlon, higherlon, res='2x2.5', debug=False ):
 
     # Fill all lat and lon True or False
     m=np.zeros(get_dims4res(res))[:,:,0]
-    print(m.shape, np.sum(m))
+    print((m.shape, np.sum(m)))
     for i in lons:
         m[i,:] = 1
     m = np.ma.masked_not_equal(m, 1)
@@ -1967,7 +1967,7 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
     """
     logging.info('save_2D_arrays_to_3DNetCDF called')
     from .funcs4time import unix_time, dt64_2_dt
-    print(locals())
+    print((locals()))
 
     # ---  Settings
     ncfilename = '{}_{}.nc'.format( filename, res )
@@ -2106,17 +2106,17 @@ def get_value_interpolated_from_nearby_values( Y_CORDS=None, X_CORDS=None, \
     s_low_Y_ind = find_nearest_value( Y_CORDS, Y-buffer_CORDS )
     s_high_Y_ind = find_nearest_value( Y_CORDS, Y+buffer_CORDS )
     if verbose:
-        print('Y={}, subrange=({}(ind={}),{}(ind={}))'.format( Y, \
-        Y_CORDS[s_low_Y_ind], s_low_Y_ind, Y_CORDS[s_high_Y_ind], s_high_Y_ind))
-        print('X={}, subrange=({}(ind={}),{}(ind={}))'.format( X, \
-        X_CORDS[s_low_X_ind], s_low_X_ind, X_CORDS[s_high_X_ind], s_high_X_ind))
+        print(('Y={}, subrange=({}(ind={}),{}(ind={}))'.format( Y, \
+        Y_CORDS[s_low_Y_ind], s_low_Y_ind, Y_CORDS[s_high_Y_ind], s_high_Y_ind)))
+        print(('X={}, subrange=({}(ind={}),{}(ind={}))'.format( X, \
+        X_CORDS[s_low_X_ind], s_low_X_ind, X_CORDS[s_high_X_ind], s_high_X_ind)))
     # Select sub array and get coordinate axis
     subXY = XYarray[s_low_X_ind:s_high_X_ind, s_low_Y_ind:s_high_Y_ind]
     subX = X_CORDS[s_low_X_ind:s_high_X_ind]
     subY = Y_CORDS[s_low_Y_ind:s_high_Y_ind]
     # Debug (?) by showing 2D grid prior to interpolation
     if debug:
-        print([ i.shape for i in (subX, subY, subXY) ], XYarray.shape)
+        print(([ i.shape for i in (subX, subY, subXY) ], XYarray.shape))
         plt.pcolor(subX, subY, subXY.T)
         plt.colorbar()
         plt.show()
@@ -2138,7 +2138,7 @@ def get_value_interpolated_from_nearby_values( Y_CORDS=None, X_CORDS=None, \
     # ---  Select value of interest
     # Debug (?) by showing 2D grid post to interpolation
     if debug:
-        print(interpolated.shape)
+        print((interpolated.shape))
         plt.pcolor(subX, subY, interpolated.T)
         plt.colorbar()
         plt.show()
@@ -2278,7 +2278,7 @@ def get_vars_from_line_printed_in_txt_file(filename=None, folder=None,
                     try:
                         assert len(var_) == len(var_names)
                     except AssertionError:
-                        print(  len(var_), var_ )
+                        print((  len(var_), var_ ))
                         sys.exit()
                 # Save data until later
                 lines_with_var.append(var_)
@@ -2291,7 +2291,7 @@ def get_vars_from_line_printed_in_txt_file(filename=None, folder=None,
             df.columns=var_names
         # Covert data type of variable?
         if not isinstance(type4var_names, type(None)):
-            for key_ in type4var_names.keys():
+            for key_ in list(type4var_names.keys()):
                 try:
                     df[key_] = df[key_].astype(type4var_names[key_])
                 except KeyError:

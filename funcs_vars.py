@@ -16,7 +16,7 @@ NOTE(S):
 # -------------- Required modules:
 
 # --- compatibility with both python 2 and 3
-from __future__ import print_function
+
 
 # -- I/O / Low level
 import re
@@ -135,7 +135,7 @@ def pf_var( input, ver='3.0', ntracers=85, fill_var_with_zeroes=False ):
 #        PHOT_1st, PHOT_last = 554, 644 # With IX split rxns
         PHOT_1st, PHOT_last = 548, 638 # With 0.25 IBr split rxns
     else:
-        print('pf_var not setup for ver: ', ver)
+        print(('pf_var not setup for ver: ', ver))
 
     JREAs = ['REA_'+ str(i) for i in range(PHOT_1st, PHOT_last) ]
     REAs_all = ['REA_'+ str(i) for i in range(0, 533) ]
@@ -296,7 +296,7 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, ver='1.7', \
     d =  GC_var( var )
 
     if debug:
-        print(d, special_case)
+        print((d, special_case))
 
     if invert:
         d = {v: k for k, v in list(d.items())}
@@ -498,7 +498,7 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
     if debug:
         vars = ref_spec, IO, I, NO, OH, N, C, Br, Cl
         varsn = 'ref_spec', 'IO', 'I', 'N', 'OH', 'N', 'C', 'Br', 'Cl'
-        print("'spec_stoich'  called for: ", list(zip( varsn, vars )))
+        print(("'spec_stoich'  called for: ", list(zip( varsn, vars ))))
 
     # Select dictionary ( I=True is the default... )
     if IO:
@@ -642,13 +642,13 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
     # Kludge for testing. Allow values to equal 1.0 if not defined.
     try:
         if debug:
-            print('{} (ref_spec: {}) stoichiometry : {}'.format( spec, \
-                ref_spec,  d[spec] ))
+            print(('{} (ref_spec: {}) stoichiometry : {}'.format( spec, \
+                ref_spec,  d[spec] )))
         return d[spec]
 
     except:
-        print('!'*20, 'WARNING - Kludge assumming stoichiometry = 1.0, for'+ \
-            ' {} (ref_spec given as: {})'.format( spec, ref_spec ))
+        print(('!'*20, 'WARNING - Kludge assumming stoichiometry = 1.0, for'+ \
+            ' {} (ref_spec given as: {})'.format( spec, ref_spec )))
         return 1.0
 
 
@@ -752,11 +752,11 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,\
         spec_2_pptC = GC_var('spec_2_pptC')
         if ( x in spec_2_pptv ):
             if debug:
-                print('adjusting {} ({}) to {}'.format(x, units, 'pptv'   ))
+                print(('adjusting {} ({}) to {}'.format(x, units, 'pptv'   )))
             units = 'pptv'
         if ( x in spec_2_pptC ):
             if debug:
-                print('adjusting {} ({}) to {}'.format(x, units, 'pptC' ))
+                print(('adjusting {} ({}) to {}'.format(x, units, 'pptC' )))
             units = 'pptC'
 
     # Over ride adjustments for globally appro. units
@@ -765,11 +765,11 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,\
         spec_2_ppbC = GC_var('spec_2_ppbC')
         if ( x in spec_2_ppbv ):
             if debug:
-                print('adjusting {} ({}) to {}'.format(x, units, 'ppbv'   ))
+                print(('adjusting {} ({}) to {}'.format(x, units, 'ppbv'   )))
             units = 'ppbv'
         if ( x in spec_2_ppbC ):
             if debug:
-                print('adjusting {} ({}) to {}'.format(x, units, 'ppbC'   ))
+                print(('adjusting {} ({}) to {}'.format(x, units, 'ppbC'   )))
             units = 'ppbC'
 
     if ClearFlo_unit:
@@ -1000,7 +1000,7 @@ def rm_ClBrI_het_loss( spec_l=None, r_=None, fam=None, debug=False):
 
     # Print argument variables
     if debug:
-        print('before ind removal', spec_l, fam)
+        print(('before ind removal', spec_l, fam))
         print([ len(i) for i in (spec_l, fam) ]) \
 
 
@@ -1021,7 +1021,7 @@ def rm_ClBrI_het_loss( spec_l=None, r_=None, fam=None, debug=False):
     # remove ind from "r_" list
     if not isinstance( r_, type(None) ):
         if debug:
-            print(len( [item for sublist in r_ for item in sublist] ), len(r_))
+            print((len( [item for sublist in r_ for item in sublist] ), len(r_)))
         count = len( spec_l )
         for list_ in r_[::-1]:
             for element in list_[::-1]:
@@ -1030,11 +1030,11 @@ def rm_ClBrI_het_loss( spec_l=None, r_=None, fam=None, debug=False):
                 # reduce count
                 count = count - 1
         if debug:
-            print(len( [item for sublist in r_ for item in sublist] ))
+            print((len( [item for sublist in r_ for item in sublist] )))
         rtn_list += [ r_ ]
 
     if debug:
-        print('after ind removal', spec_l, fam, ind, sorted( ind )[::-1])
+        print(('after ind removal', spec_l, fam, ind, sorted( ind )[::-1]))
         print([ len(i) for i in (spec_l, fam) ]) \
 
     return rtn_list
@@ -1088,7 +1088,7 @@ def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
 
     fn =  'smv2.log'
     if debug:
-        print(wd+'/'+fn)
+        print((wd+'/'+fn))
     file_ =  open( wd+'/'+fn, 'rb' )
     readrxn  = False
     for row in file_:
@@ -1137,7 +1137,7 @@ def rxn_dict_from_smvlog( wd, PHOTOPROCESS=None, ver='1.7', \
                     rxn_strs = [ rxn_str ]
                     rxns = [ rxn ]
             except:
-                print('!'*100, 'ERROR HERE: >{}<  >{}<'.format(  rxn, rxn_str ))
+                print(('!'*100, 'ERROR HERE: >{}<  >{}<'.format(  rxn, rxn_str )))
         rdict = dict( list(zip(rxns, rxn_strs )) )
     return rdict
 
@@ -1174,7 +1174,7 @@ def rxns_in_pl( wd, spec='LOX', debug=False ):
     for row in file_:
         row = row.split()
         if debug:
-            print(row, spec, all( [ i in row for i in conditions ] ))
+            print((row, spec, all( [ i in row for i in conditions ] )))
         if all( [ i in row for i in conditions ] ):
             readrxn=True
         if (len(row) < 1) or ( 'REACTANTS:' in row ):
@@ -1187,13 +1187,13 @@ def rxns_in_pl( wd, spec='LOX', debug=False ):
 
     # -- Check that rxns ahave been found?
     if len( rxns ) < 1:
-        print('ERROR: No rxns. found for >{}<, correct family?'.format( spec ))
+        print(('ERROR: No rxns. found for >{}<, correct family?'.format( spec )))
         sys.exit(0)
 
     # -- remove 'Family'
     rxns = [ i for i in rxns if (  'Family' not in i ) ]
     if debug:
-        print('number (len of list) of reacitons: ', len( rxns ))
+        print(('number (len of list) of reacitons: ', len( rxns )))
     n = [int(rxn[1]) for rxn in rxns ]
     rxns = [rxn[2:] for rxn in rxns ]
 
@@ -1236,7 +1236,7 @@ def rxn4pl( pls, wd='example/example', rdict=None, reduce_size=True, \
     if debug:
         for i in list(rdict.keys()):
             if any( [ (s_ in ''.join( rdict[i] ) ) for s_ in pls ] ):
-                print(i, 'yes')
+                print((i, 'yes'))
 
     # --- Indices for
     # reduce dict size
@@ -1399,11 +1399,11 @@ def p_l_species_input_geos( wd, ver='1.7', rm_multiple_tagged_rxs=False, debug=F
     # find and open input.geos file
     fn = glob.glob(wd+'/*input.geos*')[0]
     if  any( [ (i in fn) for i in ('~', '#') ] ):
-        print('Trying next "input.geos" file - as FAIL for :', fn)
+        print(('Trying next "input.geos" file - as FAIL for :', fn))
         fn = glob.glob(wd+'/*input.geos*')[1]
 
     if debug:
-        print('p_l_species_input_geos called using : ', wd, fn)
+        print(('p_l_species_input_geos called using : ', wd, fn))
     file_ =  open( fn, 'rb' )
 
     # Read in just the prod loss section
@@ -1440,7 +1440,7 @@ def p_l_species_input_geos( wd, ver='1.7', rm_multiple_tagged_rxs=False, debug=F
     PD = [rxn[4] for rxn in rxns ]
     vars =  [rxn[5:] for rxn in rxns ]
     if debug:
-        print(rxns, PD, vars, ver)
+        print((rxns, PD, vars, ver))
 
     # remove p/l with muliple values ( start from 12th input) - Kludge?
     if rm_multiple_tagged_rxs:
@@ -1613,7 +1613,7 @@ def get_tag_details( wd, tag=None, PDs=None,  rdict=None, PHOTOPROCESS=None, ver
             print(rxn_str)
         dets = [ tag, trxns[0][0], rxn_str   ]
     except:
-        print('!'*100, 'ERROR HERE: >{}< >{}<'.format(  tag, trxns  ))
+        print(('!'*100, 'ERROR HERE: >{}< >{}<'.format(  tag, trxns  )))
     if print_details:
         print(dets)
     # --- return a dictionary of all active tagged reactions details by tag : PD, number, rxn str, coeeffiecn
@@ -1641,7 +1641,7 @@ def get_rxn_Coe(wd, num, tag, nums=None, rxns=None, tags=None, Coe=None, spec='L
         nums, rxns, tags, Coe = prod_loss_4_spec( wd,  spec, all_clean=True, \
                 ver=ver )
     if debug:
-        print(nums, Coe)
+        print((nums, Coe))
 
     # Pull reaction coefficient  from dictionary
     Coe_dict = dict( list(zip(nums, Coe)) )
@@ -1711,16 +1711,16 @@ def get_pldict_reactants( pl_dict=None, only_rtn_tracers=True, rm_OH=True, rm_Cl
         tags = list(pl_dict.keys())
     strs = [pl_dict[i][1] for i in tags ]
     if debug:
-        print('rxn strs: ',  strs, len(strs))
+        print(('rxn strs: ',  strs, len(strs)))
     # remove arrows from reactions
     strs = [ i.replace('+M=','+=').replace('+O2=','+=').replace('+N2=','+=') \
         for i in strs ]
     if debug:
-        print(strs, len(strs))
+        print((strs, len(strs)))
     # select reactants
     strs = [ i.split('+=')[0] for i in strs ]
     if debug:
-        print(strs, len(strs))
+        print((strs, len(strs)))
     if rm_OH:     # remove OH from reaction strings
         strs = [ i.replace('+OH','+') for i in strs ]
         for n, str in enumerate( strs ):
@@ -1735,7 +1735,7 @@ def get_pldict_reactants( pl_dict=None, only_rtn_tracers=True, rm_OH=True, rm_Cl
     # remove "+" punctuation
     strs = [ i.replace('+','').strip() for i in strs ]
     if debug:
-        print(strs, len(strs))
+        print((strs, len(strs)))
 
     return strs
 
@@ -1758,7 +1758,7 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5', verbose=False, debug=
     """
 
     if verbose:
-        print('PLO3_to_PD called for wd = ', wd)
+        print(('PLO3_to_PD called for wd = ', wd))
 
     versions = [ \
     '1.3' ,'1.4' ,'1.5' , '1.6', '1.6.1','1.6.2', '1.6.3', '1.7', '2.0', '3.0', '4.0' ]
@@ -1782,7 +1782,7 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5', verbose=False, debug=
         PDs += non_PDs
 
         if debug:
-            print(vars, PDs)
+            print((vars, PDs))
 
         return dict( list(zip(vars, PDs)))[PL ]
     else:
@@ -1802,7 +1802,7 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', rm_redundent_ClBrI_tags
      - UPDATED NEEDED: MORE DETAILED DESCRIPT.
     """
     if debug:
-        print('get_pl_dict called for ', ver, spec, wd)
+        print(('get_pl_dict called for ', ver, spec, wd))
 
     # Extract details on reactio in p/l family
     nums, rxns, tags, Coe = prod_loss_4_spec( wd,  spec, all_clean=True, \
@@ -1883,8 +1883,8 @@ def get_pl_dict( wd, spec='LOX' , rmx2=False, ver='1.7', rm_redundent_ClBrI_tags
         ind = list( sorted( set( ind ) ) )
 
         if debug:
-            print(d, ind, [len(i) for i in (details, Coes) ],  \
-                [ [i[0] for i in details][ii] for ii in ind ][::-1])
+            print((d, ind, [len(i) for i in (details, Coes) ],  \
+                [ [i[0] for i in details][ii] for ii in ind ][::-1]))
         # If cases have been found, remove these
         if len( ind ) > 0:
             [ l.pop(i) for i in ind[::-1] for l in (details, Coes) ]
@@ -1985,26 +1985,26 @@ def prod_loss_4_spec( wd, fam, all_clean=True, ver='1.7', debug=False ):
                 # Extract vars for a given index
                 vars =  [ i[ind] for i in (nums, rxns, tags, Coe)]
                 if debug:
-                    print(3, [ i[-1] for i in (nums, rxns, tags, Coe)], vars,  \
-                            [ len(i) for i in (nums, rxns, tags, Coe)])
+                    print((3, [ i[-1] for i in (nums, rxns, tags, Coe)], vars,  \
+                            [ len(i) for i in (nums, rxns, tags, Coe)]))
                 # remove index ( "ind" ) value from nums, rxns, tags, and Coe
                 [ i.pop(ind) for i in (nums, rxns, tags, Coe) ]
 
                 # Add the cerrs values on the end
                 if debug:
-                    print(4, [ i[-1] for i in (nums, rxns, tags, Coe)],  \
-                            [ len(i) for i in (nums, rxns, tags, Coe)])
+                    print((4, [ i[-1] for i in (nums, rxns, tags, Coe)],  \
+                            [ len(i) for i in (nums, rxns, tags, Coe)]))
                 nums +=  [ vars[0] ]
                 rxns +=  [ vars[1] ]
                 tags += [ cerrs[n] ]
                 Coe  +=  [ vars[-1] ]
 
                 if debug:
-                    print(6, [ i[-1] for i in (nums, rxns, tags, Coe)], \
-                         [ len(i) for i in (nums, rxns, tags, Coe)])
-                    print('->'*30,  'SUCCESS >{}<  >{}<'.format( n, e ))
+                    print((6, [ i[-1] for i in (nums, rxns, tags, Coe)], \
+                         [ len(i) for i in (nums, rxns, tags, Coe)]))
+                    print(('->'*30,  'SUCCESS >{}<  >{}<'.format( n, e )))
             except:
-                print('>'*50, 'FAIL (NOT REPLACED) >{}< >{}<'.format( n, e ))
+                print(('>'*50, 'FAIL (NOT REPLACED) >{}< >{}<'.format( n, e )))
 
     # KLUDGE! - rm empty list values of ones that contain errs
 #    ind = [ n for n,i in enumerate(tags) if ( (len(i)==0) or (i[0] in errs) ) ]
@@ -2139,7 +2139,7 @@ class GEO_Site:
 
         # Check file exists
         if not os.path.exists( wd + filename ):
-            print("ERROR. Is this file correct?: ",  wd + filename)
+            print(("ERROR. Is this file correct?: ",  wd + filename))
         # Open File and extract info on site
         df = pd.read_csv( wd+'/'+filename, skipinitialspace=True )
 
@@ -2153,7 +2153,7 @@ class GEO_Site:
             self.ALT = float( df['PRESS'].values ) # hPa
             self.UTC = float( df['UTC'].values ) # Time zone (UTC diff )
         else:
-            print('ERROR whilst reading site details', name)
+            print(('ERROR whilst reading site details', name))
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
@@ -2211,15 +2211,15 @@ def get_adjustment4tags( tags, PDs=None, pl_dict=None, ver='1.6', \
         # times by tag Coefficient (if not ==1) all -Coes start from unity
         try:
             if debug:
-                print('Accounting for (non unity) Coe in globchem.dat for:' + \
+                print(('Accounting for (non unity) Coe in globchem.dat for:' + \
                     '{}, PD:{}, to Coe:{} (from {})'.format(  tag, PDs[n],  \
-                    Coes[n]*p_l_unity(tag), Coes[n]  ))
+                    Coes[n]*p_l_unity(tag), Coes[n]  )))
             Coes[n] = Coes[n]*p_l_unity(tag)
 
         except:
             if debug:
-                print('Just using Coe from smv.log @:'+ \
-                    '{} for {}, PD:{}, Coe:{}'.format( wd, tag, PDs[n], Coes[n]))
+                print(('Just using Coe from smv.log @:'+ \
+                    '{} for {}, PD:{}, Coe:{}'.format( wd, tag, PDs[n], Coes[n])))
 
     # Reduce route by half if considered twice (e.g. for two families )
     for n, tag in enumerate( tags ):
@@ -2227,19 +2227,19 @@ def get_adjustment4tags( tags, PDs=None, pl_dict=None, ver='1.6', \
         # If Br + I
         if ( tag == 'LO3_24' ) and IO_BrOx2:
             if debug:
-                print('before: ', tag, Coe[n])
+                print(('before: ', tag, Coe[n]))
             Coes[n] = Coes[n] * adjust2half4crossover( tag )
             if debug:
-                print('after: ', tag, Coe[n])
+                print(('after: ', tag, Coe[n]))
 
         # If  Cl+Br+I ("Include_Chlorine")
         if any( [ (tag == i ) for i in ('LO3_87' , 'LO3_82') ] ) and \
              Include_Chlorine:
             if debug:
-                print('before: ', tag, Coes[n])
+                print(('before: ', tag, Coes[n]))
             Coes[n] = Coes[n] * adjust2half4crossover( tag )
             if debug:
-                print('after: ', tag, Coes[n])
+                print(('after: ', tag, Coes[n]))
 
     return Coes
 
@@ -2658,7 +2658,7 @@ def get_NO2_phot_REA_XXX( ver='1.6', debug=False ):
         print('PLEASE ADD NO2 photolysis reaction for iGC version')
         sys.exit()
     if debug:
-        print(ver, num)
+        print((ver, num))
 
     return 'REA_' +str(num)
 
