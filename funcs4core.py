@@ -11,6 +11,9 @@ NOTES:
 # ----------------------------- Section 0 -----------------------------------
 # -------------- Required modules:
 
+# --- compatibility with both python 2 and 3
+from __future__ import print_function
+
 import numpy as np
 from netCDF4 import Dataset
 import pandas as pd

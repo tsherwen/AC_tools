@@ -15,6 +15,9 @@ NOTE(S):
 # ----------------------------- Section 0 -----------------------------------
 # -------------- Required modules:
 
+# --- compatibility with both python 2 and 3
+from __future__ import print_function
+
 # -- I/O / Low level
 import re
 import os

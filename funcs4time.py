@@ -12,6 +12,9 @@ NOTE(S):
 # ----------------------------- Section X.X -----------------------------------
 # -------------- Required modules:
 
+# --- compatibility with both python 2 and 3
+from __future__ import print_function
+
 import logging
 
 # -- Math/Analysis

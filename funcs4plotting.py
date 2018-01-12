@@ -13,6 +13,9 @@ NOTE(S):
 # ------------------- Section 0 -------------------------------------------
 # -------------- Required modules:
 
+# --- compatibility with both python 2 and 3
+from __future__ import print_function
+
 # -- Plotting
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
