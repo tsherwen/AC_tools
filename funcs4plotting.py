@@ -1126,7 +1126,7 @@ def plot_up_diurnal_by_season( spec='O3', sub_str='UK+EIRE', fig=None, \
     # --- Now show / save  if requested
     suptitle= "Diurnal of {} in '{}'"
     fig.suptitle( suptitle.format( AC.latex_spec_name(spec), sub_str ) )
-    png_filename = 'Seasonal_diurnal_{}_{}.png'.format(sub_str, sub_str)
+    png_filename = 'Seasonal_diurnal_{}_{}.png'.format( sub_str, spec)
     if save_plot: plt.savefig( png_filename, dpi=dpi )
     if show_plot: plt.show()
 
@@ -3527,8 +3527,9 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
                                    for i in range( 0, len(stack[0,:])-1 ) ]
 
     # Plot transparent lines to get 2D line object to create legend
-    [ plt.plot( Y, stack[:,n], alpha=0, color=colors[n], label=i) \
-        for n,i in enumerate(labels) ]
+    # Not needed. just use the labels from the fill_between calls.
+#     [ plt.plot( Y, stack[:,n], alpha=0, color=colors[n], label=i) \
+#         for n,i in enumerate(labels) ]
 
     # Log scale?
     if log:
@@ -3568,12 +3569,13 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
                 legobj.set_alpha( 1 )
 
     # Remove tick labels on y axis?
-    if ylabel:
-        plt.ylabel( ylabel, fontsize=f_size*.75  )
-        ax.tick_params( labelsize= f_size*.75 )
-    else:
+    if isinstance( ylabel, type(None) ):
         ax.tick_params( axis='y', which='both', labelleft='off', \
             labelsize= f_size*.75)
+    else:
+        plt.ylabel( ylabel, fontsize=f_size*.75  )
+        ax.tick_params( labelsize= f_size*.75 )
+
     # Remove tick labels on x axis?
     if xlabel:
         ax.set_xlabel(xlabel, fontsize=f_size*.75)
