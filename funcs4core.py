@@ -194,8 +194,7 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
     '0.083x0.083'    : (4320, 2160), # 9km resolution?
     '0.125x0.125':  (2880,1441),# nature run (~12km globally)
     }
-    if debug:
-        print(dims)
+    if debug: print(dims)
 
     # If full using full vertical
     if full_vertical_grid:
@@ -203,8 +202,7 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
         for i in list(dims.values()):
             vals += [ ( i[0],i[1],72) ]
         dims = dict( list(zip( list(dims.keys()), vals )) )
-        if debug:
-            print(dims)
+        if debug: print(dims)
 
     # Only consider the GEOS-Chem chemical troposphere
     if trop_limit:
@@ -212,8 +210,7 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
         for i in list(dims.values()):
             vals += [ ( i[0],i[1],38) ]
         dims = dict( list(zip( list(dims.keys()), vals )) )
-        if debug:
-            print(dims)
+        if debug: print(dims)
 
     # Add a time dimension of length n (if add_n_time is an integer)
     if not isinstance( add_n_time_dims, type(None) ):
@@ -228,16 +225,6 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False, \
         for i in list(dims.values()):
             vals += [ ( i[0],i[1]) ]
         dims = dict( list(zip( list(dims.keys()), vals )) )
-#        if debug:
-#            print dims
-
-#    if just2D:
-#        _2Ddims = {}
-#        for res in dims.keys():
-#            _2Ddims[res] = dims[res][0,1]
-#        dims = _2Ddims
-
-
 
     if r_dims:
         if invert==True:
@@ -452,8 +439,7 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
         lon, lat = np.arange(-180, 180, 0.25), np.arange(-90, 90, 0.25)
         return lon, lat, alt
 
-    if debug:
-        print((lon, lat, alt))
+    if debug: print((lon, lat, alt))
     rtn_list = lon, lat, alt
     if not isinstance( dtype, type( None ) ):
         return [ i.astype( dtype ) for i in rtn_list ]
@@ -513,13 +499,12 @@ def iGEOSChem_ver(wd, also_return_GC_version=False, verbose=True, debug=False):
     # List iGEOSChem versions+ then DataFrame
     versions = [
     '1.1','1.2', '1.3', '1.4', '1.5', '1.6', '1.6.1', '1.6.2', \
-     '1.6.3', '1.7', '2.0', '3.0', '4.0', '5.0', '6.0', '7.0', \
+     '1.6.3', '1.7', '2.0', '3.0', '4.0', '5.0', '6.0', '6.1', '7.0', \
     # Also hold a 'NOT FOUND' value to for ease of processing non-halogen code
      'NOT FOUND'
     ]
     df = pd.DataFrame( versions, columns=['Versions'] )
-    if debug:
-        print((wd, versions, df))
+    if debug: print((wd, versions, df))
 
     # Which versions are in name?
     def element_in_str( element ):
@@ -548,8 +533,7 @@ def iGEOSChem_ver(wd, also_return_GC_version=False, verbose=True, debug=False):
         'v8_01_01', 'v7-04-13', 'v7_04_13', 'v7-04-12', 'v7_04_12'
         ]
         df = pd.DataFrame( versions, columns=['Versions'] )
-        if debug:
-            print((wd, versions, df))
+        if debug: print((wd, versions, df))
         #
         df['Run Version'] = df['Versions'].apply( element_in_str )
         # selection
@@ -558,21 +542,22 @@ def iGEOSChem_ver(wd, also_return_GC_version=False, verbose=True, debug=False):
         except IndexError:
             # map iGEOS-Chem versions to GEOS-Chem versions
             dict_iGC_GC = {
-        '1.4':'v9-2',
-        '1.5':'v9-2',
-        '1.6':'v9-2',
-        '1.7':'v9-2',
         '1.1':'v9-2',
         '1.2':'v9-2',
         '1.3':'v9-2',
-        '3.0':'v10-01',
-        '6.0':'v11-01',
-        '7.0':'v11-02',
-        '5.0':'v11-01',
-        '4.0':'v10-01',
+        '1.4':'v9-2',
+        '1.5':'v9-2',
+        '1.6':'v9-2',
+        '1.6.1':'v9-2',
         '1.6.2':'v9-2',
         '1.6.3':'v9-2',
-        '1.6.1':'v9-2',
+        '1.7':'v9-2',
+        '3.0':'v10-01',
+        '4.0':'v10-01',
+        '5.0':'v11-01',
+        '6.0':'v11-02',
+        '6.1':'v11-02',
+#        '7.0':'v11-02',
         'NOT FOUND':'NOT FOUND',
             }
             #
