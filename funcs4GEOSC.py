@@ -4769,7 +4769,7 @@ def get_tags4_family( fam='LOx', filename='gckpp_Monitor.F90',
 # X.XX - Get dict of KPP Mech.
 # ----
 def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90',
-        Mechanism='Halogens', GC_version='v11-02', wd=None):
+        Mechanism='Halogens', GC_version='v11-01', wd=None):
     """
     Get a dictionary of KPP mechansim from compile mechanism
 
@@ -4784,6 +4784,8 @@ def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90',
     -------
     (dict)
     """
+    log_str = 'get_dict_of_KPP_mech called for Mech:{} (ver={}, wd={})'
+    logging.info( log_str.format( Mechanism, GC_version, wd) )
     # Get base working code directory
     if isinstance( wd, type(None)):
 #        wd = sys.agrv[1]
@@ -4983,7 +4985,8 @@ def get_dictionary_of_tagged_reactions(filename='globchem.eqn',
 # ----
 def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
         Mechanism='Halogens', wd=None,  fam='LOx', tag_prefix='PT', \
-        tags=None, RR_hv_dict=None, RR_dict=None, debug=False  ):
+        tags=None, RR_hv_dict=None, RR_dict=None, GC_version='v11-01',
+        debug=False  ):
     """
     Get Ox famiy of reaction tag using KPP reaction string.
 
@@ -5020,7 +5023,10 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
     non_I_specs_with_I_char = [ \
     'INO2', 'ISN1', 'ISNOOA', 'ISNOHOO', 'ISOPNB', 'ISOPND', 'ISOP', 'ISNP'
     # add species in v11-2d
-    'IONITA'
+    'IONITA',
+    # add species in v11-2d (benchmarks)
+    'IMAO3', 'IPMN', 'MONITS', 'MONITU', 'ISNP', 'LIMO', 'ISNOOB', 'PIO2',
+    'LIMO2'
     ]
     # Get list of tagged hv reactions
 #    all_rxns = sorted(RR_hv_dict.keys())
@@ -5056,7 +5062,7 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
             Cl_is_reactant=True
         # add gotcha for heterogenous N2O5 breakdown by Cl-
 #        if (tags[rxn_] == 'T172') and (ver='v11-01')::
-        if (tags[rxn_] == 'T164'):
+        if (tags[rxn_] == 'T164') and (GC_version=='v11-01'):
             Cl_is_reactant=True
         if 'NO' in reactant_str:
             NOx_is_reactant=True
@@ -5068,7 +5074,8 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
             HOx_is_reactant=True
         # gotcha for
         IONITA_rxns = ['T040', 'T039', 'T037']
-        if any( [(tags[rxn_] == i) for i in IONITA_rxns] ):
+        if any( [(tags[rxn_] == i) for i in IONITA_rxns] ) and \
+            (GC_version=='v11-01'):
             IONITA_is_formed = True
         # --- Assign familes
         # 1st check if halogen crossover reaction...
