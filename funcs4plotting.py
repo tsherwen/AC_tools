@@ -1138,11 +1138,12 @@ def plot_up_diurnal_by_season( spec='O3', sub_str='UK+EIRE', fig=None, \
 def BASIC_diurnal_plot( fig=None, ax=None, dates=None, data=None, color='red',\
         title=None, label=None, plt_legend=None, plt_xlabel=True,\
         plt_ylabel=True, show_plt=False, plot_pcent_change_from_max=False, \
-        units='ppbv', spec='O3', alt_text=None, loc='lower right', \
+        units='ppbv', spec='O3', alt_text=None, loc='best', \
         filename2save='diurnal_plot.png', save_plt=False, show_plot=False,\
         stat2plot='50%', alpha = 0.3, time_resolution_str="%H",\
-        add_quartiles2plot=True, return_avgs=True, \
-        xlabel='Hour of day (UTC)', debug=False ):
+        add_quartiles2plot=True, return_avgs=True, ls='-', ncol=1, \
+        xlabel='Hour of day (UTC)', debug=False, lw=2,
+        force_repeat_of_first_hour_as_last_hour=False, update_xticks=True ):
     """
     Creates a diurnal plot for given data and dates
 
@@ -1191,12 +1192,18 @@ def BASIC_diurnal_plot( fig=None, ax=None, dates=None, data=None, color='red',\
     raw_df = pd.DataFrame( {'data':data}, index=dates ).dropna()
     # Add a time coluumn to group by (e.g. "%H:%M" for minutes)
     raw_df['Time'] = raw_df.index.map(lambda x: x.strftime(time_resolution_str))
+    # repeat hour zero as hour 24 (to aesthetically loop on plot)
+    if force_repeat_of_first_hour_as_last_hour:
+        first_hour = raw_df[ raw_df['Time'] ==  '00' ]
+        first_hour.loc[:,'Time'] = '24'
+        raw_df = pd.concat( [raw_df, first_hour] )
+    # Now group
     df = raw_df.groupby('Time').describe().unstack()
     # Get the labels for time
     if debug: print(( df.head(), df.index[:5], df.shape))
     time_labels = df['data'][stat2plot].index.values
-    # --- Plot
-    index = list(range(len(list(time_labels))))
+    # make sure the values with leading zeros drop these
+    index = [float(i) for i in time_labels ]
     if debug: print(( df['data'][stat2plot]))
     if debug: print(( '!'*20, index, time_labels))
     # Select data for the requested statistic
@@ -1209,7 +1216,7 @@ def BASIC_diurnal_plot( fig=None, ax=None, dates=None, data=None, color='red',\
         if debug: print(( avgs.shape, max_))
         units='%'
     # - Now plot up
-    ax.plot( index, avgs, color=color, linewidth=2.0, label=label )
+    ax.plot( index, avgs, color=color, linewidth=lw, label=label, ls=ls )
     # - Add quartiles
     if add_quartiles2plot:
         Q3_data = df['data']['75%']
@@ -1225,20 +1232,21 @@ def BASIC_diurnal_plot( fig=None, ax=None, dates=None, data=None, color='red',\
             Q1_data = ( Q1_data - max_ ) / max_ *100
         ax.fill_between(index, avgs, Q1_data, alpha=alpha, facecolor=color)
     # Label xticks on axis (if 24 plots, just label every 3rd)
-    if index < 6:
-        ax.set_xticks(index)
-        ax.set_xticklabels(time_labels)
-    else:
-        ax.set_xticks(index[1::3])
-        ax.set_xticklabels(time_labels[1::3])
-    xticks = ax.get_xticks()
-    if debug: print(( xticks, ax.get_xticklabels() ))
+    if update_xticks:
+        if index < 6:
+            ax.set_xticks(index)
+            ax.set_xticklabels(time_labels)
+        else:
+            ax.set_xticks(index[2::3])
+            ax.set_xticklabels(time_labels[2::3])
+        xticks = ax.get_xticks()
+        if debug: print(( xticks, ax.get_xticklabels() ))
 #    ax.set_xticks(np.linspace(3, 21, 7).astype(int))
     # More cosmetic changes...
     if not isinstance(title, type(None)):
         plt.title(title)
     if plt_legend:
-        plt.legend( loc=loc )
+        plt.legend( loc=loc, ncol=ncol )
     if plt_xlabel:
         plt.xlabel(xlabel)
     else:
@@ -1250,7 +1258,7 @@ def BASIC_diurnal_plot( fig=None, ax=None, dates=None, data=None, color='red',\
             spec_ = spec
         plt.ylabel('{} ({})'.format( spec_, units ) )
     else:
-        ax.tick_params( axis='y', which='both', labelright='off')
+        ax.tick_params( axis='y', which='both', labelleft='off')
     # Add alt text if provided.
     if not isinstance(alt_text, type(None)):
         alt_text_y = 0.925
@@ -1264,11 +1272,12 @@ def BASIC_diurnal_plot( fig=None, ax=None, dates=None, data=None, color='red',\
     if return_avgs:
         return np.ma.array(avgs)
 
+
 # --------
 # X.XX - BASIC_seasonal_plot
 # --------
 def BASIC_seasonal_plot( dates=None, data=None, ax=None,
-        title=None, legend=False,  ylabel=None, loc='upper left',  \
+        title=None, legend=False,  ylabel=None, loc='best', ncols=1,  \
         showmeans=False, boxplot=True, return_avgs=False, \
         plt_median=False, plot_Q1_Q3=False,
         ylim=None, xtickrotation=45, alt_text=None, alt_text_x=.925,
