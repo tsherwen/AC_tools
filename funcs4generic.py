@@ -133,7 +133,7 @@ def get_xy(Lon,Lat, lon_edges, lat_edges, debug=False):
 # --------
 # X.XX - Save as pdf.
 # --------
-def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,\
+def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=320,\
         justHH=False, no_dstr=True, save2png=True, \
         save2eps=False, transparent=True, debug=False ):
     """
@@ -181,7 +181,7 @@ def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=160,\
 # X.XX - Save as mulitple page pdf.
 # --------
 def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, wd=None, \
-        dpi=160, open=False, close=False, justHH=False, no_dstr=True ):
+        dpi=320, open=False, close=False, justHH=False, no_dstr=True ):
     """
     Save figures (e.g. matplotlib) to pdf file with multiple pages
     """
