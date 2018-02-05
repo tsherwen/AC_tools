@@ -24,6 +24,8 @@ from pylab import setp
 import functools
 import matplotlib
 #import seaborn as sns
+import cartopy.crs as ccrs
+
 
 # -- Time
 import time
@@ -1343,6 +1345,106 @@ def BASIC_seasonal_plot( dates=None, data=None, ax=None,
         ax.set_yscale('linear')
     if return_avgs:
         return np.ma.array(medians)
+
+# --------
+# X.XX - BASIC_seasonal_plot
+# --------
+def binned_boxplots_by_altitude( df=None, fig=None, ax=None,
+        num_of_datasets=1, dataset_num=0, label='Obs.', showfliers=False,
+        bins=np.arange(8), binned_variable='O3', variable_to_bin_by='ALT',
+        color=None, dpi=320, xlabel=None, ylabel='Altitude (km)', title=None,
+        show_plot=False, widths=0.3, verbose=False, debug=False):
+    """
+    Plot up dataset (1 or more) as boxplots binned by altitude
+
+    Parameters
+    -------
+    df (pd.DataFrame): dataframe of alts and variable
+    variable_to_bin_by (str): variable to bin by (e.g. altitude)
+    num_of_datasets (int): number of dataset for which boxplots will be plotted
+    dataset_num (int): number of dataset in order to be order to be plotted
+    fig (figure instance): fig. to use
+    ax (axis instance): axis to use
+    label (str): label for legend
+    variable_to_bin_by (str): variable (in df) to bin by
+    bins (np.array): bins to split dataset into
+    color (str): color for boxplot
+    title (str): title for plot?
+    widths (float): width of boxplots
+    ylabel, xlabel (boolean): include axis labels for plot?
+
+    Returns
+    -------
+    (None)
+    """
+    # ----  Local variarbles
+    # Setup figure and axis if not provided
+    if isinstance( fig, type(None) ):
+        fig = plt.figure(dpi=dpi)
+    if isinstance( ax, type(None) ):
+        ax = fig.add_subplot( 111 )
+    # color provided?
+    if isinstance( color, type(None) ):
+        if 'obs' in dataset_name.lower():
+            color ='k'
+        elif 'model' in dataset_name.lower():
+            color ='red'
+        else:
+            color = 'blue'
+
+    # ---- Process data
+    gdf = df.groupby( pd.cut(df[variable_to_bin_by].values, bins ) )
+    data = [ i[1][binned_variable].values  for i in gdf]
+
+    # ----- Now plots
+    # - settings for boxplots
+    bin_sizes = np.diff(bins)
+    mid_points = [ (i/2.)+bins[n] for n, i in enumerate(bin_sizes) ]
+    set_of_bin_sizes = list( set(bin_sizes) )
+    if len(set_of_bin_sizes) == 1:
+        if num_of_datasets >1:
+            # what size are the boxplots  (based on number of datasets)
+            space4boxplot = set_of_bin_sizes[0]*0.80/num_of_datasets
+            # where should the boxplots go?
+            positions = mid_points -((space4boxplot*(num_of_datasets))*0.5 )
+            positions = positions+(space4boxplot*dataset_num)+(space4boxplot*.5)
+            #
+            if num_of_datasets >2:
+                widths = widths /num_of_datasets *1.75
+        else:
+            positions = mid_points
+
+    else:
+        print('Not yet setup to take different bin sizes')
+        sys.exit()
+
+    # - Add plots
+    bp = ax.boxplot( x=data, positions=positions, patch_artist=True,
+        widths=widths, notch=False, vert=False, showfliers=showfliers )
+    # add an (invisible) plot to carry the label
+    ax.plot([], [], label=label, color=color)
+
+    # - Beautify
+    # set the boxplot format?
+    set_bp_style( bp, color=color )#, linewidth=lw )
+    # title and y axis label?
+    if not isinstance( ylabel, type(None) ):
+        ax.set_ylabel( ylabel )
+    if not isinstance( xlabel, type(None) ):
+        ax.set_xlabel( xlabel )
+    if not isinstance( title, type(None) ):
+        plt.title( title )
+    # Set y axis range
+    if debug: print( (bins, bins[0], bins[-1]) )
+    ax.set_ylim( bins[0]-(bin_sizes[0]*0.5), bins[-1]+(bin_sizes[-1]*0.5) )
+    # Set y axis tick labels to be the bins
+    ax.set_yticks( mid_points )
+    ax.set_yticklabels( mid_points )
+    if debug: print( ( ax.get_yticks() ) )
+    if debug: print( (ax.get_yticks(), bins) )
+
+    # - Save or show?
+    if show_plot: plt.show()
 
 
 # --------
@@ -4578,6 +4680,20 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=T
     return
 
 
+# --------
+# X.XX -
+# --------
+def set_bp_style( bp, color='k', linewidth=1.5, facecolor='none', \
+        debug=False ):
+    """ Manually set properties of boxplot ("bp") """
+    from pylab import setp
+    setp(bp['boxes'][:], color=color, linewidth=linewidth)
+    setp(bp['caps'][:], color=color, linewidth=linewidth)
+    setp(bp['whiskers'][:], color=color, linewidth=linewidth)
+    setp(bp['fliers'][:], color=color, linewidth=linewidth)
+    setp(bp['medians'][:], color=color, linewidth=linewidth)
+    [ box.set( facecolor=facecolor) for box in bp['boxes'] ]
+    setp(bp['medians'][:], color=color, linewidth=linewidth)
 
 
 # --------------------------------------------------------------------------
@@ -4925,94 +5041,94 @@ def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, \
 # --------
 # X.XX - Diurnal plot
 # --------
-def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
-        bin_size=2/24.,widths=0.01, rmax=False, \
-        ls='-', color=None, fractional=False, diurnal=False, mean=True, \
-        xlabel=True, r_avgs=False, marker=None, label=None, \
-        markersize=1, title=None, f_size=10, units='ppbv', scale='linear', \
-        lw=1,lgnd_f_size=None, alpha=1, debug=False ):
-    """
-    REDUNDENT!  (use diurnal_plot_df instead)
-     Creates a diurnal plot for given data and dates.
-
-
-    NOTES:
-     - Data and dates must be in numpy array form.
-     - Dates must also be datetime.datetime objects
-
-     """
-
-    # Convert datetime to fractional day <= set this to map on array at once?
-    dates = np.array( [ get_day_fraction(i) for i in dates ] )
-
-    # asectics
-    ls =[ls]*5
-    if posn> 4:
-        ls=get_ls( posn )
-    if color == None:
-        color=color_list(posn)[pos-1]
-    else:
-        color=color
-    if isinstance( lgnd_f_size, type(None)):
-        lgnd_f_size = f_size
-
-    # Bin data
-    binned, bins_used = bin_data( data, dates, bin_size, debug=debug )
-
-    # Take average of hourly binned data.
-    if mean:
-        avgs = np.ma.array([np.ma.mean(i) for i in binned]  )
-    else:
-        avgs = np.ma.array([np.ma.median(i) for i in binned]  )
-    avg = np.ma.mean( avgs )
-    max_ = np.ma.max( avgs )
-#    print avgs, avg, np.ma.max( avgs )
-
-    if fractional:
-#        y = ( avgs - np.ma.max( avgs )  )  / avgs *100
-#        y = ( avgs - np.ma.max( avgs )  )  / avg *100
-        y = ( avgs - np.ma.max( avgs )  )  / max_*100
-        print(('test'*100, avg, max_, avgs))
-
-        ymin, ymax =  -0.15, 0.025
-        ymin, ymax =  [i*100 for i in (ymin, ymax) ]
-        units = '%'
-    elif diurnal:
-        y =  avgs - np.ma.max( avgs )
-        ymin, ymax =  -3.5 , 0.5
-    else:
-        y = avgs
-        ymin, ymax =  None, None#27, 37
-
-    # Plot
-    plt.plot( bins_used, y, color=color , label=label, linestyle=ls[pos-1], \
-        alpha=alpha, marker=marker, lw=lw, ms=markersize )
-
-    # Beautify
-    ax.set_xticklabels( np.arange(0,24,1 )[::2]  )
-    plt.xticks( np.arange(0,1,1/24. )[::2], fontsize=f_size )
-    plt.xlim(0., 23/24.)
-
-    if ymin != None:
-        plt.ylim( ymin, ymax )
-    plt.yticks( fontsize=f_size*.75)
-    plt.xticks( fontsize=f_size*.75)
-    if (title != None):
-        plt.title( title )
-    if xlabel:
-        plt.xlabel('Hour of day', fontsize=f_size*.75)
-    plt.ylabel('{}'.format(units), fontsize=f_size*.75)
-
-    # Apply legend to last plot
-    if pos == posn:
-        plt.legend( fontsize=lgnd_f_size )
-
-    # return max
-    if rmax :
-        return np.ma.max( avgs )
-
-    if r_avgs:
-        return avgs
+# def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
+#         bin_size=2/24.,widths=0.01, rmax=False, \
+#         ls='-', color=None, fractional=False, diurnal=False, mean=True, \
+#         xlabel=True, r_avgs=False, marker=None, label=None, \
+#         markersize=1, title=None, f_size=10, units='ppbv', scale='linear', \
+#         lw=1,lgnd_f_size=None, alpha=1, debug=False ):
+#     """
+#     REDUNDENT!  (use diurnal_plot_df instead)
+#      Creates a diurnal plot for given data and dates.
+#
+#
+#     NOTES:
+#      - Data and dates must be in numpy array form.
+#      - Dates must also be datetime.datetime objects
+#
+#      """
+#
+#     # Convert datetime to fractional day <= set this to map on array at once?
+#     dates = np.array( [ get_day_fraction(i) for i in dates ] )
+#
+#     # asectics
+#     ls =[ls]*5
+#     if posn> 4:
+#         ls=get_ls( posn )
+#     if color == None:
+#         color=color_list(posn)[pos-1]
+#     else:
+#         color=color
+#     if isinstance( lgnd_f_size, type(None)):
+#         lgnd_f_size = f_size
+#
+#     # Bin data
+#     binned, bins_used = bin_data( data, dates, bin_size, debug=debug )
+#
+#     # Take average of hourly binned data.
+#     if mean:
+#         avgs = np.ma.array([np.ma.mean(i) for i in binned]  )
+#     else:
+#         avgs = np.ma.array([np.ma.median(i) for i in binned]  )
+#     avg = np.ma.mean( avgs )
+#     max_ = np.ma.max( avgs )
+# #    print avgs, avg, np.ma.max( avgs )
+#
+#     if fractional:
+# #        y = ( avgs - np.ma.max( avgs )  )  / avgs *100
+# #        y = ( avgs - np.ma.max( avgs )  )  / avg *100
+#         y = ( avgs - np.ma.max( avgs )  )  / max_*100
+#         print(('test'*100, avg, max_, avgs))
+#
+#         ymin, ymax =  -0.15, 0.025
+#         ymin, ymax =  [i*100 for i in (ymin, ymax) ]
+#         units = '%'
+#     elif diurnal:
+#         y =  avgs - np.ma.max( avgs )
+#         ymin, ymax =  -3.5 , 0.5
+#     else:
+#         y = avgs
+#         ymin, ymax =  None, None#27, 37
+#
+#     # Plot
+#     plt.plot( bins_used, y, color=color , label=label, linestyle=ls[pos-1], \
+#         alpha=alpha, marker=marker, lw=lw, ms=markersize )
+#
+#     # Beautify
+#     ax.set_xticklabels( np.arange(0,24,1 )[::2]  )
+#     plt.xticks( np.arange(0,1,1/24. )[::2], fontsize=f_size )
+#     plt.xlim(0., 23/24.)
+#
+#     if ymin != None:
+#         plt.ylim( ymin, ymax )
+#     plt.yticks( fontsize=f_size*.75)
+#     plt.xticks( fontsize=f_size*.75)
+#     if (title != None):
+#         plt.title( title )
+#     if xlabel:
+#         plt.xlabel('Hour of day', fontsize=f_size*.75)
+#     plt.ylabel('{}'.format(units), fontsize=f_size*.75)
+#
+#     # Apply legend to last plot
+#     if pos == posn:
+#         plt.legend( fontsize=lgnd_f_size )
+#
+#     # return max
+#     if rmax :
+#         return np.ma.max( avgs )
+#
+#     if r_avgs:
+#         return avgs
 
 # --------
 # X.XX - Lat plot
@@ -5039,83 +5155,84 @@ def lat_plot(fig, ax, arr, title=None, f_size=10, units='ppbv', \
 # --------
 # X.XX - Diurnal boxplot
 # --------
-def diurnal_boxplot(fig, ax,  dates, data, pos=1, posn =1,  bin_size=2/24.,\
-        widths=0.01, white_fill=True, alpha=0.1, linewidth=0.5, \
-        showmeans=False, title=None, f_size=10, units='ppbv', \
-        scale='linear', debug=False ):
-    """
-    Creates a diurnal plot of boxplots (hourly) for given data and dates.
-    NOTES:
-     - Data and dates must be in numpy array form.
-     - Dates must also be datetime.datetime objects
-    """
+# def diurnal_boxplot(fig, ax,  dates, data, pos=1, posn =1,  bin_size=2/24.,\
+#         widths=0.01, white_fill=True, alpha=0.1, linewidth=0.5, \
+#         showmeans=False, title=None, f_size=10, units='ppbv', \
+#         scale='linear', debug=False ):
+#     """
+#     Creates a diurnal plot of boxplots (hourly) for given data and dates.
+#     NOTES:
+#      - Data and dates must be in numpy array form.
+#      - Dates must also be datetime.datetime objects
+#     """
+#
+#     # Convert datetime to fractional day <= set this to map on array at once?
+#     dates = np.array( [ get_day_fraction(i) for i in dates ] )
+#
+#     # bin data
+#     binned, bins_used, b_all = avg_n_bin_y_by_x(data, dates, bin_size, \
+#         binned_data=True, debug=debug)
+#
+#     # Generate positions
+#     positions=[ i+(bin_size*.75/posn)+( (bin_size*.75/posn)*float(pos)) \
+#         for i in bins_used ]
+#
+#     # Plot
+#     bp = ax.boxplot( b_all,  positions=positions, widths=widths, \
+#         showmeans=showmeans, patch_artist=True )
+#     set_bp( bp, pos, white_fill=white_fill, c_list=color_list(posn) )
+#
+#     # Beautify
+#     ax.set_xticklabels( np.arange(0,24,bin_size*24 )[::2]  )
+#     plt.xticks( np.arange(0,1,bin_size )[::2] )
+#     plt.xlim(-0.05, 1.05)
+#     plt.ylabel(units)
+#     if (title != None):
+#         plt.title(title)
+#     plt.xlabel('Hour of day')
+#     plt.ylabel('{}'.format(units))
+#     ax.xaxis.grid(True, which='major')
+#     ax.xaxis.grid(True, which='minor')
+#
+#     # --- Highlight bins
+#     bs = np.arange(0, 24, bin_size )#[ bs[0] - bin_size ] + bs
+#     [ plt.axvline( x=i, color='k', linewidth=linewidth, alpha=alpha, \
+#          linestyle='dashed' ) for i in bs ]
 
-    # Convert datetime to fractional day <= set this to map on array at once?
-    dates = np.array( [ get_day_fraction(i) for i in dates ] )
-
-    # bin data
-    binned, bins_used, b_all = avg_n_bin_y_by_x(data, dates, bin_size, \
-        binned_data=True, debug=debug)
-
-    # Generate positions
-    positions=[ i+(bin_size*.75/posn)+( (bin_size*.75/posn)*float(pos)) \
-        for i in bins_used ]
-
-    # Plot
-    bp = ax.boxplot( b_all,  positions=positions, widths=widths, \
-        showmeans=showmeans, patch_artist=True )
-    set_bp( bp, pos, white_fill=white_fill, c_list=color_list(posn) )
-
-    # Beautify
-    ax.set_xticklabels( np.arange(0,24,bin_size*24 )[::2]  )
-    plt.xticks( np.arange(0,1,bin_size )[::2] )
-    plt.xlim(-0.05, 1.05)
-    plt.ylabel(units)
-    if (title != None):
-        plt.title(title)
-    plt.xlabel('Hour of day')
-    plt.ylabel('{}'.format(units))
-    ax.xaxis.grid(True, which='major')
-    ax.xaxis.grid(True, which='minor')
-
-    # --- Highlight bins
-    bs = np.arange(0, 24, bin_size )#[ bs[0] - bin_size ] + bs
-    [ plt.axvline( x=i, color='k', linewidth=linewidth, alpha=alpha, \
-         linestyle='dashed' ) for i in bs ]
 
 # --------------
 # X.XX - plot up monthly from data provided from DB netCDF
 # -------------
-def obs_month_plot(data, color=None, title=None, rtn_data=False, plt_day=True, debug=False):
-    """
-    Plot up seaonal (monthly ) data. Requires data, and dates in numpy
-    array form. Dates must be as datetime.datetime objects.
-
-    NOTES:
-     - REDUNDENT? (see 1.13)
-    """
-
-    # Setup decimal day list
-    day_time= [i+float(1/23) for i in range(23) ]
-    if debug: print( (data.shape, day_time) )
-
-    # Plot up all data <= this is inefficient.
-    if plt_day:
-        for i in range( len( data[0,:] ) ) :
-            day_d = data[:,i]  # select day's data and convert to -1
-            plt.plot(day_time , day_d , alpha=0.1, color=color)
-
-    # Return data?
-    if rtn_data:
-        if debug: print('rtn_data')
-        data_ = np.ma.mean(data[:,:],axis=1)
-        return day_time, data_
-    # Plot up daily decimal days
-    else :
-        if debug: print(' not - rtn_data')
-        plt.plot( day_time, np.ma.mean(data[:,:],axis=1) , lw=3 , color=color, \
-             label=title)
-        return plt
+# def obs_month_plot(data, color=None, title=None, rtn_data=False, plt_day=True, debug=False):
+#     """
+#     Plot up seaonal (monthly ) data. Requires data, and dates in numpy
+#     array form. Dates must be as datetime.datetime objects.
+#
+#     NOTES:
+#      - REDUNDENT? (see 1.13)
+#     """
+#
+#     # Setup decimal day list
+#     day_time= [i+float(1/23) for i in range(23) ]
+#     if debug: print( (data.shape, day_time) )
+#
+#     # Plot up all data <= this is inefficient.
+#     if plt_day:
+#         for i in range( len( data[0,:] ) ) :
+#             day_d = data[:,i]  # select day's data and convert to -1
+#             plt.plot(day_time , day_d , alpha=0.1, color=color)
+#
+#     # Return data?
+#     if rtn_data:
+#         if debug: print('rtn_data')
+#         data_ = np.ma.mean(data[:,:],axis=1)
+#         return day_time, data_
+#     # Plot up daily decimal days
+#     else :
+#         if debug: print(' not - rtn_data')
+#         plt.plot( day_time, np.ma.mean(data[:,:],axis=1) , lw=3 , color=color, \
+#              label=title)
+#         return plt
 
 
 # -------------
@@ -5222,34 +5339,34 @@ def get_input_vars(debug=False):
 # -------------
 # X.XX - weighted average
 # -------------
-def weighted_average( data, interval , bins_used=False, debug=False):
-    """
-    Calculate a weighed average of data fro a given interval
-
-    NOTES just use pandas.cut!
-    docs: http://pandas-docs.github.io/pandas-docs-travis/generated/pandas.cut.html
-
-
-    """
-
-    min_v, max_v = int( data.min() ), int( data.max() )
-    bins = np.arange(min_v, max_v, interval)
-    if debug: print([ (i, type(i) ) for i in [ min_v, max_v, bins ] ])
-    int_d = np.int_(data)
-    binned, bins_used  = [], []
-    for bin_ in bins:
-        b_mean = np.mean( data[np.where( int_d == bin_ )] )
-        if ( b_mean != 0 ):
-            binned.append( b_mean )
-            bins_used.append( bin_ )
-        else:
-            print(('no data for bin {}'.format(bin_)))
-            pass
-    if debug: print([ ( i, len(i) ) for i in [binned , bins] ])
-    if (bins_used):
-        return binned, bins_used
-    else:
-        return binned
+# def weighted_average( data, interval , bins_used=False, debug=False):
+#     """
+#     Calculate a weighed average of data fro a given interval
+#
+#     NOTES just use pandas.cut!
+#     docs: http://pandas-docs.github.io/pandas-docs-travis/generated/pandas.cut.html
+#
+#
+#     """
+#
+#     min_v, max_v = int( data.min() ), int( data.max() )
+#     bins = np.arange(min_v, max_v, interval)
+#     if debug: print([ (i, type(i) ) for i in [ min_v, max_v, bins ] ])
+#     int_d = np.int_(data)
+#     binned, bins_used  = [], []
+#     for bin_ in bins:
+#         b_mean = np.mean( data[np.where( int_d == bin_ )] )
+#         if ( b_mean != 0 ):
+#             binned.append( b_mean )
+#             bins_used.append( bin_ )
+#         else:
+#             print(('no data for bin {}'.format(bin_)))
+#             pass
+#     if debug: print([ ( i, len(i) ) for i in [binned , bins] ])
+#     if (bins_used):
+#         return binned, bins_used
+#     else:
+#         return binned
 
 
 # --------------
@@ -5415,6 +5532,57 @@ def plot_lons_lats_spatial_on_map(lons=None, lats=None, p_size=50, color='red',
     # Return axis?
     if return_axis: return m
 
+
+def plot_lons_lats_spatial_on_map_CARTOPY( central_longitude=0,
+        lats=None, lons=None, add_background_image=True,
+        projection=ccrs.PlateCarree, fig=None, ax=None,
+        marker='o', s=50, color='red', show_plot=False, dpi=320 ):
+    """
+    Plot a list of lons and lats spatially on a map (using cartopy)
+
+    projection (cartopy.crs obj.):  projection to use
+    s (int): size of plot location point (lon, lat)
+    lons, lats (list): list of locations (in decimal londitude and latitude )
+    color (str): color of points on map for locations
+    dpi (int): resolution of figure (dots per sq inch)
+    return_axis (boaol): return the basemap axis instance
+    marker (str): marker style
+
+    Returns
+    -------
+    (axis instance)
+
+    Notes
+    -----
+     - Basemap is redundent. Cartopy should be used instead.
+    """
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+    import cartopy.feature as cfeataure
+    # --- Setup plot
+    if isinstance(fig, type(None)):
+        fig = plt.figure(dpi=dpi, facecolor='w', edgecolor='k')
+    if isinstance(ax, type(None)):
+        ax = fig.add_subplot(111)
+
+    # --- Plot
+    # setup a cartopy projection for plotting
+    ax = plt.axes(projection=projection(central_longitude=central_longitude) )
+    # Now scatter points on plot
+    plt.scatter(lons, lats, color=color, s=s, marker=marker,
+         transform=projection() )
+
+    # Put a background image on for nice sea rendering.
+    if add_background_image:
+        ax.stock_img()
+    else:
+        ax.coastlines(resolution='110m')
+#        ax.drawcountries() # not in cartopy
+    ax.gridlines()
+
+    # return  ax (and show plot?)
+    if show_plot: plt.show()
+    return ax
 
 # --------
 # X.XX - Probability distribution plotter

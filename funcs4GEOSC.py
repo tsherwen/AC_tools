@@ -4073,6 +4073,33 @@ def get_2D_arr_weighted_by_X( arr, spec=None, res='4x5', print_values=False, \
 
 
 # ----
+# X.XX -
+# ----
+def get_avg_surface_conc_of_X( spec='O3', wd=None, s_area=None, res='4x5' ):
+    """
+    Get area weighted concentration of Y (mean over time)
+
+    Parameters
+    ----------
+    s_area (array): array of areas of grid boxes (could be any variable)
+    spec (str): species/tracer/variable name
+
+    Returns
+    -------
+    (float)
+    """
+    # Get species concentration in v/v
+    arr = get_GC_output( vars=['IJ_AVG_S__'+spec], wd=wd)[:,:,0]
+    # Average over time
+    arr = arr.mean( axis=-1 )
+    # Get surface area if not provided
+    if isinstance( s_area, type(None) ):
+        s_area = get_surface_area( res )[...,0]  # m2 land map
+    # Area weight and return
+    return get_2D_arr_weighted_by_X( arr, s_area=s_area )
+
+
+# ----
 # X.XX - Get shared variables as a dictionary object.
 # ----
 def get_default_variable_dict( wd=None,
