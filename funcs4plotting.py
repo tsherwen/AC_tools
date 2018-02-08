@@ -5536,13 +5536,14 @@ def plot_lons_lats_spatial_on_map(lons=None, lats=None, p_size=50, color='red',
 def plot_lons_lats_spatial_on_map_CARTOPY( central_longitude=0,
         lats=None, lons=None, add_background_image=True,
         projection=ccrs.PlateCarree, fig=None, ax=None,
-        marker='o', s=50, color='red', show_plot=False, dpi=320 ):
+        marker='o', s=50, color='red', show_plot=False, dpi=320,
+        buffer_degrees=20 ):
     """
     Plot a list of lons and lats spatially on a map (using cartopy)
 
     projection (cartopy.crs obj.):  projection to use
     s (int): size of plot location point (lon, lat)
-    lons, lats (list): list of locations (in decimal londitude and latitude )
+    lons, lats (np.array): list of locations (in decimal londitude and latitude)
     color (str): color of points on map for locations
     dpi (int): resolution of figure (dots per sq inch)
     return_axis (boaol): return the basemap axis instance
@@ -5567,10 +5568,26 @@ def plot_lons_lats_spatial_on_map_CARTOPY( central_longitude=0,
 
     # --- Plot
     # setup a cartopy projection for plotting
-    ax = plt.axes(projection=projection(central_longitude=central_longitude) )
+    ax = plt.axes( projection=projection(central_longitude=central_longitude) )
     # Now scatter points on plot
     plt.scatter(lons, lats, color=color, s=s, marker=marker,
          transform=projection() )
+
+    # Add buffer region around plot
+#    ax.get_extent()
+#     plt.ylim( myround(lats.min()-buffer_degrees, 10, ),
+#         myround(lats.max()+buffer_degrees, 10, round_up=True))
+#     plt.xlim( myround(lons.min()-buffer_degrees, 10, ),
+#         myround(lons.max()+buffer_degrees, 10, round_up=True))
+    x0, x1, y0, y1 = ax.get_extent()
+    try:
+        x0 = myround(lons.min()-buffer_degrees, 10, )
+        x1 = myround(lons.max()+buffer_degrees, 10, round_up=True)
+        y0 = myround(lats.min()-buffer_degrees, 10, )
+        y1 = myround(lats.max()+buffer_degrees, 10, round_up=True)
+        ax.set_extent( (x0, x1, y0, y1), projection() )
+    except ValueError:
+        print('lon and lat buffer not set extent as out of range' )
 
     # Put a background image on for nice sea rendering.
     if add_background_image:
