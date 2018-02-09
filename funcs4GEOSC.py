@@ -3597,8 +3597,19 @@ def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None, \
         # Extract for location (array shape = TIME, LON, LAT)
         data = data[:, LON_ind, LAT_ind]
         # Also extract NetCDF units
-        units = rootgrp['IJ_AVG_S__'+spec].units
-        ctm_units = rootgrp['IJ_AVG_S__'+spec].ctm_units
+        # NOTE: iris.unit is deprecated in Iris v1.9. (using cf_units instead)
+        try:
+#            units = rootgrp['IJ_AVG_S__'+spec].units
+#        except AttributeError:
+            units = rootgrp['IJ_AVG_S__'+spec].cf_units
+        except:
+            units ='UNITS NOT IN FILE'
+        try:
+#             ctm_units = rootgrp['IJ_AVG_S__'+spec].ctm_units
+#         except AttributeError:
+            units = rootgrp['IJ_AVG_S__'+spec].cf_units
+        except:
+            units ='UNITS NOT IN FILE'
 
     # Extract dates in NetCDF
     dates = get_gc_datetime( filename=filename, wd=wd )
@@ -4450,8 +4461,11 @@ def concvert_df_VOC_C2v( df=None, verbose=True ):
 # ----
 # X.XX -
 # ----
-def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*", filename='ctm.nc', \
-        folder=None, ext_str='_TEST_', file_prefix='ctm_', split_by_month=False, \
+def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
+        filename='ctm.nc', \
+        folder=None, ext_str='_TEST_', file_prefix='ctm_',
+        split_by_month=False, \
+        mk_monthly_NetCDF_files=False, mk_weekly_NetCDF_files=False,
         verbose=True):
     """
     Wrapper function to process ctm bpch files in folder to NetCDF file(s)
@@ -4464,7 +4478,10 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*", filename='ctm.n
     folder (str): directory address for folder contain files
     ext_str (str): extra str to inc. in monthly filenames
     file_prefix (str): prefox str to use for monthly split files
-    split_by_month (boolean): split new NetCDF file by month?
+    split_by_month (boolean): split new NetCDF file by month? (post making file)
+    mk_monthly_NetCDF_files (boolean): make a NetCDF per month of files
+    mk_weekly_NetCDF_files (boolean): make a NetCDF per week of files
+
 
     Returns
     -------
@@ -4475,6 +4492,9 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*", filename='ctm.n
     """
     logging.info('process_bpch_files_in_dir2NetCDF called for:', locals())
     from .bpch2netCDF import convert_to_netCDF
+    import os
+    import sys
+    import time
 
     # Get folder from command line.
     if isinstance( folder, type(None)):
@@ -4484,21 +4504,80 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*", filename='ctm.n
 
     # Get list of files
     files = glob.glob(folder+bpch_file_type)
+    df = pd.DataFrame( files, columns=['folder+file'] )
     nfiles = len(files)
     if nfiles >0:
-        if verbose:
-            print(('Found {} files'.format(nfiles)))
+        if verbose: print(('Found {} files'.format(nfiles)))
     else:
-        if verbose:
-            print(('No files found in wd:{}'.format( folder )))
+        if verbose: print(('No files found in wd:{}'.format( folder )))
         sys.exit()
-
     # split off file names
     filenames = [i.split('/')[-1] for i in files ]
+    df['filenames'] = filenames
 
-    # Convert to NetCDF
-    convert_to_netCDF( folder=folder, filename=filename, \
-        bpch_file_list=filenames, bpch_file_type=bpch_file_type )
+    # convert files on bulk or make files by month/week?
+    if mk_monthly_NetCDF_files or mk_weekly_NetCDF_files:
+        # get times of model out in file
+        if bpch_file_type == "*ts*bpch*":
+            filename_format = 'ts%Y%m%d.bpch'
+        elif bpch_file_type == "*tra*avg*":
+            # trac_rst.geosfp_2x25_tropchem.201308010000
+            print('NOT SETUP!')
+            sys.exit()
+        elif bpch_file_type == "*ctm*bpch*":
+            filename_format = 'ctm.bpch.%Y%m%d%m%s'
+        else:
+            print('NO CASE FOR {}'.format(bpch_file_type))
+            sys.exit()
+        # now extract start times of files
+        intial_ts = [ time.strptime(i, filename_format) for i in filenames]
+        df.index = time2datetime(intial_ts)
+        df['month'] = df.index.month
+        df['woy'] = df.index.weekofyear
+        # Make files by month?
+        if mk_monthly_NetCDF_files:
+            for year in list( sorted( set( df.index.year ) ) ):
+                # select files for given year
+                df_year = df[ df.index.year == year ]
+                for month in list( sorted( set( df_year.index.month ) ) ):
+                    # select files for given month (within year)
+                    df_month_tmp = df_year[ df_year.index.month == month ]
+                    bpch_file_list= df_month_tmp['filenames'].values.tolist()
+                    # add the month to the filename
+                    filename4month = filename.split('.nc')[0]
+                    filename4month +='_{}{:0>2}'.format(year, month)
+                    if verbose: print((filename4month, df_month_tmp.shape))
+                    # Convert to NetCDF all files to a single NetCDF
+                    convert_to_netCDF( folder=folder, filename=filename4month, \
+                        bpch_file_list=bpch_file_list,\
+                        bpch_file_type=bpch_file_type )
+        # Make files by week of year?
+        elif mk_weekly_NetCDF_files:
+            for year in list( sorted( set( df.index.year ) ) ):
+                # select files for given year
+                df_year = df[ df.index.year == year ]
+                for week in list( sorted( set( df_year.weekofyear ) ) ):
+                    # select files for given month (within year)
+                    df_week_tmp = df_year[ df_year.index.month == week ]
+                    bpch_file_list= df_week_tmp['filenames'].values.tolist()
+                    # add the month to the filename
+                    filename4month = filename.split('.nc')[0]
+                    filename4month +='_{}{:0>2}'.format(year, week)
+                    if verbose: print((filename4month, df_week_tmp.shape))
+                    # Convert to NetCDF all files to a single NetCDF
+                    convert_to_netCDF( folder=folder, filename=filename4month, \
+                        bpch_file_list=bpch_file_list,\
+                        bpch_file_type=bpch_file_type )
+
+
+            for week in weeks:
+                pass
+
+    else:
+        print('WARNING - all files being convert to single NetCDF in one go!')
+        # Convert to NetCDF all files to a single NetCDF
+        convert_to_netCDF( folder=folder, filename=filename, \
+            bpch_file_list=filenames, bpch_file_type=bpch_file_type )
 
     # If split by month
     if split_by_month:
