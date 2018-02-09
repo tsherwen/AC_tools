@@ -4562,7 +4562,7 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
                     bpch_file_list= df_week_tmp['filenames'].values.tolist()
                     # add the month to the filename
                     filename4month = filename.split('.nc')[0]
-                    filename4month +='_{}{:0>2}'.format(year, week)
+                    filename4month +='_{}{:0>2}.nc'.format(year, week)
                     if verbose: print((filename4month, df_week_tmp.shape))
                     # Convert to NetCDF all files to a single NetCDF
                     convert_to_netCDF( folder=folder, filename=filename4month, \
