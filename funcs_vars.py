@@ -2413,6 +2413,8 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'Hilo' : (-155.0700073242,19.5799999237,  11 ),
     'Samoa':( -170.5645141602, -14.2474746704, 77 ),
     'Assekrem': (5.6333332062, 23.2666664124,  2710),
+    # --- Misc
+    'UoM_Chem': (-2.2302418, 53.4659844, 38 ),
     }
     if rtn_dict:
         return loc_dict
