@@ -4515,7 +4515,7 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
     filenames = [i.split('/')[-1] for i in files ]
     df['filenames'] = filenames
 
-    # convert files on bulk or make files by month/week?
+    # Convert files on bulk or make files by month/week?
     if mk_monthly_NetCDF_files or mk_weekly_NetCDF_files:
         # get times of model out in file
         if bpch_file_type == "*ts*bpch*":
@@ -4568,16 +4568,25 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
                     convert_to_netCDF( folder=folder, filename=filename4month, \
                         bpch_file_list=bpch_file_list,\
                         bpch_file_type=bpch_file_type )
+        # Re-combine the split files into one file
+        if mk_single_NetCDF_file:
+            ncfiles = glob.glob( folder+'ts_ctm_*.nc' )
+            # open files with xarray
+            ds_l = [ xr.open_dataset(i) for i in ncfiles ]
+            # make sure the time dimension is unlimitetd
+            ds = xr.concat( ds_l, dim='time' )
+            # now save the combined file
+            ds.to_netcdf(folder+filename, unlimited_dims={'time_counter':True})
+            # TODO: Now delete monthly files?
 
-
-            for week in weeks:
-                pass
-
-    else:
+    # Convert files on bulk
+    elif mk_single_NetCDF_file:
         print('WARNING - all files being convert to single NetCDF in one go!')
         # Convert to NetCDF all files to a single NetCDF
         convert_to_netCDF( folder=folder, filename=filename, \
             bpch_file_list=filenames, bpch_file_type=bpch_file_type )
+    else: print('Please specify whether to make a sinlge or multiple .nc files')
+
 
     # If split by month
     if split_by_month:
