@@ -1114,7 +1114,7 @@ def plot_up_diurnal_by_season( spec='O3', sub_str='UK+EIRE', fig=None, \
                 color=color_dict[key_]
             except KeyError:
                 color=None
-            #
+            # Add legend?
             legend=False
             if plt_legend and ( n_key == len(list(dfs.keys()))-1 ):
                 legend=True
@@ -1128,7 +1128,7 @@ def plot_up_diurnal_by_season( spec='O3', sub_str='UK+EIRE', fig=None, \
 
     # --- Now show / save  if requested
     suptitle= "Diurnal of {} in '{}'"
-    fig.suptitle( suptitle.format( AC.latex_spec_name(spec), sub_str ) )
+    fig.suptitle( suptitle.format( latex_spec_name(spec), sub_str ) )
     png_filename = 'Seasonal_diurnal_{}_{}.png'.format( sub_str, spec)
     if save_plot: plt.savefig( png_filename, dpi=dpi )
     if show_plot: plt.show()
