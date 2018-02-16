@@ -1,17 +1,17 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-Script to automatically tag of KPP family
+Automatically tag reactions in a GEOS-Chem (KPP) mechansim for a given family
 
 
 Notes
 -------
- - This script using AC_tools with contains functions to extract data from KPP mechanism files. This utilizes:
+ - This script using AC_tools with contains functions to extract data from KPP mechanism files. This utilizes the fact that:
      - KPP mechanisms are contructed and information can be extracted from both the produced files (e.g. gckpp_Monitor.F90) and those the mechanism is constructed from (e.g. *.eqn)
-     - When using P/L tagging, the output P/L infomation (e.g. rxns in family and their stiochmetry in gckpp_Monitor.F90) can be used to add more specific tags
+     - When using P/L tagging, the output P/L infomation (e.g. rxns in family and their stiochmetry in gckpp_Monitor.F90) can be used to add more specific tags/for post-processing
 
 """
-# compatibility with both python 2 and 3
+# Compatibility with both python 2 and 3
 from __future__ import print_function
 # Import modules used within the script
 import numpy as np
@@ -35,24 +35,27 @@ def main( folder=None, print_formatted_KPP_file=True, GC_version=None,
     print_formatted_KPP_file (boolean): Save the uniformly formated .eqn file
     folder (str): folder of GEOS-Chem code directory
     mechanism (str): mechanism to create tag files for ?
+    GC_version (str): version of GEOS-Chem (e.g. v11-2)
+    debug (boolean): print out extra infomation for debugging
+    verbose (boolean): print out extra information during processing
 
     Returns
     -------
     (None)
 
-
     Notes
     -----
-    This
-     (1) First output the formatting of the KPP to be uniform in the .eqn file
-     (2) over written the .eqn in the mechanism directory with the new .eqn file
-     (3) compile the (kpp gckpp.kpp) and rename the files
-     ( or use the build_mechanism.sh script in GC folder)
-     (4) if the formating compile OK, then tag the mechansim (see scripts below)
-     (5) remember to update the gckpp.kpp file to include the names of the new
-     P/L tags to track
-     (6) then realclean the model code and compile.
-     (7) P/L ouput can then be analysed by standard approaches
+    The script below assumes this workflow:
+     (1a) Make sure formatting is uniforming .eqn file (if not do step 1b)
+     ( check this by seeing if diff between EXISTING_MECH_???.eqn current .eqn)
+     (1b) Over write the .eqn in the mechanism directory with the new .eqn file
+     (2) Compile the via build_mechanism.sh script (or "kpp gckpp.kpp")
+     (3) If no compile issues, then tag the mechansim
+     (4) Update the gckpp.kpp file to include the names of the new P/L tags
+     ( lines outputted in 'gckpp.kpp_extra_lines_for_tagged_mech_?' file )
+     (5) Run "make realclean" in the code directory and compile
+     (7) Run the model with the compilie executable inc. P/L tags
+     (6) P/L ouput can then be analysed by standard approaches
      ( AC_tools contains some functions that can automate this too )
     """
     # ---- Local settings
@@ -68,7 +71,7 @@ def main( folder=None, print_formatted_KPP_file=True, GC_version=None,
     # ---- Process input files
     # Create a dictionary to store various (e.g. gas-phase, Heterogeneous)
     KPP_dicts = {}
-    # get the mechanism KPP file
+    # Get the mechanism KPP file
     filename = glob.glob( folder+'/*.eqn')[0].split('/')[-1]
     # Get header lines from *.eqn file
     headers = AC.KPP_eqn_file_headers(folder=folder, filename=filename)
@@ -77,20 +80,22 @@ def main( folder=None, print_formatted_KPP_file=True, GC_version=None,
     # Get dictionaries of all reactions
     rxn_dicts = AC.get_dicts_of_KPP_eqn_file_reactions(folder=folder, \
         filename=filename )
-    # process rxns to be dictionaries (with extra diagnostic columns)
+    # Process rxns to be in dictionaries of DataFrames
+    # (with extra diagnostic columns, inc. reactants, products, metadata,...)
     rxn_dicts = AC.process_KPP_rxn_dicts2DataFrames(rxn_dicts=rxn_dicts)
 
-    # just update the numbering of indexes...
-    tmp_dict1 = rxn_dicts['Gas-phase']
-    tmp_dict2 = rxn_dicts['Heterogeneous']
-    tmp_dict3 = rxn_dicts['Photolysis']
+    # Update the numbering of indexes...
+    Gas_dict = rxn_dicts['Gas-phase']
+    Het_dict = rxn_dicts['Heterogeneous']
+    Hv_dict = rxn_dicts['Photolysis']
     # Update index start points
-    tmp_dict2.index = tmp_dict2.index + tmp_dict1.shape[0]
-    tmp_dict3.index = tmp_dict3.index + tmp_dict1.shape[0] + tmp_dict2.shape[0]
-    rxn_dicts['Heterogeneous'] = tmp_dict2
-    rxn_dicts['Photolysis'] =  tmp_dict3
+    Het_dict.index = Het_dict.index + Gas_dict.shape[0]
+    Hv_dict.index = Hv_dict.index + Gas_dict.shape[0] + Het_dict.shape[0]
+    rxn_dicts['Heterogeneous'] = Het_dict
+    rxn_dicts['Photolysis'] =  Hv_dict
 
-    # --- Print out input KPP files with updated formatting
+    # --- Print out input KPP files with updated formatting (prior to tagging)
+    # (Uniform formatting required for parsing - this step may not be required)
     if print_formatted_KPP_file:
         AC.print_out_dfs2KPP_eqn_file( headers=headers, species_df=species_df, \
             rxn_dicts=rxn_dicts, extr_str='EXISTING_MECH_{}'.format(mechanism) )
@@ -98,10 +103,9 @@ def main( folder=None, print_formatted_KPP_file=True, GC_version=None,
     # ---- Get outputted KPP files and process these...
     # Get outputted KPP mechanism
     KPP_output_mech = AC.get_dict_of_KPP_mech( wd=folder, GC_version=GC_version)
-    # Convert this into a DataFrame format and add diagnostics (TODO)
 
     # ---------------------- Tagging of Mechanism
-    # Initialise dictionary to store tags used for
+    # Initialise dictionary to store tags used for reactions
     dict_of_tags = {}
     current_tag = 'T000'
     tag_prefix ='T'
@@ -124,14 +128,14 @@ def main( folder=None, print_formatted_KPP_file=True, GC_version=None,
             current_tag = AC.get_KPP_PL_tag(current_tag, tag_prefix=tag_prefix)
             rxn_str += ' + '+ current_tag
             df_tmp.loc[ix, 'rxn_str'] = rxn_str
-            # save the tag for later processing
+            # Save the tag for later processing
             dict_of_tags[current_tag] = {'rxn_str':rxn_str, 'fam': fam}
         # Now update the DataFrame in the rxn_dicts dictionary
         rxn_dicts[key_] = df_tmp
-        #
 
     # --- Add tags for Other families too?
-#     fams = 'TEST'
+    # ( Or just all reactions that contain a species of interest )
+#     fams = 'ClNO2', 'POx'
 #     for fam in fams:
 #         for key_ in rxn_dicts.keys():
 #             df_tmp = rxn_dicts[key_]
@@ -157,19 +161,21 @@ def main( folder=None, print_formatted_KPP_file=True, GC_version=None,
     # Add to existing DataFrame
     species_df = pd.concat( [species_df, df_spec_tmp] )
 
-    # --- Print out KPP
+    # --- Print out updated KPP .eqn file (with tags)
     AC.print_out_dfs2KPP_eqn_file( headers=headers, species_df=species_df, \
         rxn_dicts=rxn_dicts, extr_str='TAGGED_MECH_{}'.format(mechanism) )
 
     # --- Save out the tags and the reactions tagged
+    # (to use for post-processing of tagged output)
     df = pd.DataFrame( dict_of_tags )
     savetitle = 'Tagged_reactions_in_{}'.format( mechanism )
     df.to_csv( savetitle )
 
-    # --- Save out the tags and the reactions tagged
+    # --- Save out lines that need to be added to the gckpp.kpp file
     AC.print_out_lines_for_gckpp_file( dict_of_tags=dict_of_tags,
         extr_str=mechanism)
 
 
 if __name__ == "__main__":
     main()
+
