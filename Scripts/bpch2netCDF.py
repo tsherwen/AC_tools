@@ -133,7 +133,8 @@ def hemco_to_netCDF( folder, hemco_file_list=None, remake=False ):
 
 def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None, \
         remake=False, filetype="*ctm.bpch*", \
-        check4_trac_avg_if_no_ctm_bpch=True, verbose=False, **kwargs):
+        check4_trac_avg_if_no_ctm_bpch=True, backend='PyGChem',
+        verbose=False, **kwargs):
 
     """
     Converts GEOS-Chem ctm.bpch output file(s) to NetCDF
@@ -152,7 +153,7 @@ def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None, \
     -------
     (None) saves a NetCDF file to disk
     """
-
+    import os
     # Check if file already exists and warn about remaking
     if __package__ is None:
         from .bpch2netCDF import get_folder
@@ -201,14 +202,64 @@ def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None, \
     if verbose:
         print(("Creating a netCDF from {} file(s).".format(len(bpch_files))+\
             " This can take some time..."))
-    bpch_data = datasets.load(bpch_files)
+    if backend == 'PyGChem':
+        # Load all the files into memory
+        bpch_data = datasets.load(bpch_files)
+        # Save the netCDF file
+        datasets.save( bpch_data, output_file )
+    elif backend == 'iris':
+    #    iris.fileformats.netcdf.save(data, output_file)
+        print('WARNING NetCDF made by iris is non CF-compliant')
+    elif backend == 'PNC':
+        import PseudoNetCDF as pnc
+        import xarray as xr
+        if len(bpch_files) == 1:
+            bpch_to_netCDF_via_PNC( filename=filename,
+                output_file=output_file, bpch_file=bpch_files[0] )
+        # Individually convert bpch files if more than one file
+        if len(bpch_files) > 1:
+            for n_bpch_file, bpch_file in enumerate( bpch_files ):
+                bpch_to_netCDF_via_PNC( filename=filename,
+                    output_file='TEMP_{}_'.format( n_bpch_file )+filename,
+                    bpch_file=bpch_file )
+            # - Combine the NetCDF files with xarray
+            TEMP_ncfiles = glob.glob( folder+'TEMP_*_'+filename )
+            # Open files with xarray
+            ds_l = [ xr.open_dataset(i) for i in TEMP_ncfiles ]
+            # Make sure the time dimension is unlimitetd
+            ds = xr.concat( ds_l, dim='time' )
+            # Now save the combined file
+            ds.to_netcdf(folder+filename, unlimited_dims={'time_counter':True})
+            # Remove the temporary files
+            for TEMP_ncfile in TEMP_ncfiles:
+                os.remove( TEMP_ncfile )
 
-    # Save the netCDF file
-#    iris.fileformats.netcdf.save(data, output_file)
-    datasets.save( bpch_data, output_file )
+
+
     logging.info( "A netCDF file has been created with the name {ctm}"\
                 .format(ctm=output_file))
     return
+
+
+def bpch_to_netCDF_via_PNC( format='bpch2', filename='ctm.nc',
+        output_file=None, bpch_file=None, folder=None ):
+    """ Convert bpch to NetCDF using PNC as backend """
+    import PseudoNetCDF as pnc
+    # Load the file into memory
+    infile = pnc.pncopen( bpch_file, format=format)
+    # Kludge - reduce DXYP_DXYP dims online
+    dxyp = infile.variables['DXYP_DXYP']
+    # Surface area should have time dim, if fit does remove it.
+    if len(dxyp.shape) == 4:
+        dxyp.dimensions = dxyp.dimensions[1:]
+        infile.variables['DXYP_DXYP'] = dxyp
+    # Now write file to disc
+#    pnc.pncwrite(infile, folder+filename)
+    pnc.pncwrite( infile, output_file )
+
+
+def combine_NetCDF_files_on_time_axis(files=None, folder=None):
+    """ """
 
 
 def get_folder(folder):
