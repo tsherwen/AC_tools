@@ -258,10 +258,6 @@ def bpch_to_netCDF_via_PNC( format='bpch2', filename='ctm.nc',
     pnc.pncwrite( infile, output_file )
 
 
-def combine_NetCDF_files_on_time_axis(files=None, folder=None):
-    """ """
-
-
 def get_folder(folder):
     """
     Get name of folder that contains ctm.bpch data from command line
