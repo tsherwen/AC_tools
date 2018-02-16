@@ -735,10 +735,12 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,\
     'ClNO2': 'pptv', 'ClNO3': 'pptv', 'HCl': 'pptv', 'ClOO': 'pptv', \
     'Cl2O2': 'pptv', 'CH2Cl2': 'pptv', 'CHCl3': 'pptv', 'CH3Cl': 'pptv', \
     'BrSALA': 'pptv', 'BrSALC':'pptv', 'Cly':'pptv', \
-    # extra tag "species" for  easy of processing
+    # extra tag "species" for easy of processing
     'PD421' : 'molec cm$^{-3}$ s$^{-1}$',
-    # add planeflight variabels  for ease of processing
+    # add planeflight variabels for ease of processing
     'LON': '$^{\circ}$E', 'LAT': '$^{\circ}$N', 'PRESS':'hPa',
+    # add combined species for easy of processing
+    'HOCl+Cl2': 'pptv', 'HOBr+Br2' :'pptv',
     }
     try:
         units = tra_unit[x]
@@ -2121,6 +2123,8 @@ def latex_spec_name(input_x, debug=False):
     'BrSALC': 'Br- on SALC', 'BrSALA': 'Br- on SALA',
     # add planeflight variabels  for ease of processing
     'LON': 'Lon.', 'LAT':'Lat.', 'PRESS':'Press.',
+    # add combined species for easy of processing
+    'HOCl+Cl2': 'HOCl+Cl$_2$', 'HOBr+Br2' :'HOBr+Br$_2$',
     }
     return spec_dict[input_x]
 

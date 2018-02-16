@@ -5371,9 +5371,10 @@ def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90',
     if isinstance( wd, type(None)):
 #        wd = sys.agrv[1]
         # Hardwire for testing
-        wd = '/work/home/ts551/data/all_model_simulations/iodine_runs/'
-        wd += 'iGEOSChem_5.0/code_TMS_new/'
-        wd += '/KPP/{}/'.format(Mechanism)
+#         wd = '/work/home/ts551/data/all_model_simulations/iodine_runs/'
+#         wd += 'iGEOSChem_5.0/code_TMS_new/'
+#         wd += '/KPP/{}/'.format(Mechanism)
+        print('wd with code must be provided')
 
     MECH_start_str = 'INTEGER, DIMENSION(1) :: MONITOR'
 #    rxn_line_ind = '! index'
@@ -5601,6 +5602,7 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
     # temporarily add to definition of HOx
     HOx+=['O1D', 'O','O3','NO3']
     ClOx =['CFC', 'Cl', 'ClO' ]
+    NOx = [ 'NO', 'NO2', 'NO3', 'N2O5']
     non_I_specs_with_I_char = [ \
     'INO2', 'ISN1', 'ISNOOA', 'ISNOHOO', 'ISOPNB', 'ISOPND', 'ISOP', 'ISNP'
     # add species in v11-2d
@@ -5632,31 +5634,44 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
         # --- Get reaction string  and check within
         rxn_str = RR_dict[rxn_]
         reactant_str = rxn_str.split('-->')[0]
-        # Check if species are in reactions
+        product_str = rxn_str.split('-->')[1]
+        # - Check if species are in reactions
+        # BrOx reaction?
         if 'Br' in reactant_str:
             Br_is_reactant=True
+        # IOx reaction?
         if 'I' in reactant_str :
             # account for non-iodine species with I Character in...
             if not any([(i in reactant_str) for i in non_I_specs_with_I_char]):
                 I_is_reactant=True
+        # ClOx reaction?
         if any([(i in reactant_str) for i in ClOx]):
             Cl_is_reactant=True
-        # add gotcha for heterogenous N2O5 breakdown by Cl-
+        # Gotcha for heterogenous N2O5 breakdown by Cl-
 #        if (tags[rxn_] == 'T172') and (ver='v11-01')::
-        if (tags[rxn_] == 'T164') and (GC_version=='v11-01'):
+#        if (tags[rxn_] == 'T164') and (GC_version=='v11-01'):
+#            Cl_is_reactant=True
+        if ('N2O5' in reactant_str) and ('ClNO2' in reactant_str):
             Cl_is_reactant=True
-        if 'NO' in reactant_str:
+        # NOx reaction?
+        if any([(i in reactant_str) for i in NOx]):
             NOx_is_reactant=True
 #        print (tags[rxn_][1:] in hv_rxns_tags), tags[rxn_][1:], hv_rxns_tags
 #        print RR_dict[rxn_]
+        # hv reaction?
         if (tags[rxn_][1:] in hv_rxns_tags):
             hv_is_reactant=True
+        # HOx reaction?
         if any([(i in reactant_str) for i in HOx]):
             HOx_is_reactant=True
-        # gotcha for
-        IONITA_rxns = ['T040', 'T039', 'T037']
-        if any( [(tags[rxn_] == i) for i in IONITA_rxns] ) and \
-            (GC_version=='v11-01'):
+        # gotcha for IONITA in v11-01
+#         if (GC_version=='v11-01'):
+#             IONITA_rxns = ['T040', 'T039', 'T037']
+#             if any( [(tags[rxn_] == i) for i in IONITA_rxns] ):
+#                 IONITA_is_formed = True
+        # IONITA in  reaction?
+        # (IONITA = Aer-phase organic nitrate from isoprene precursors)
+        if ('IONITA' in product_str):
             IONITA_is_formed = True
         # --- Assign familes
         # 1st check if halogen crossover reaction...
@@ -5868,17 +5883,18 @@ def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
     if pygchem.__version__ == '0.2.0':
         ar = get_gc_data_np( ctm, spec, debug=debug )[:,:,:38,:]
     else:
-        ar = get_GC_output( wd, vars=['IJ_AVG_S__'+ spec], trop_limit=trop_limit)
+        ar = get_GC_output( wd, vars=['IJ_AVG_S__'+ spec], \
+            trop_limit=trop_limit)
     logging.debug( 'Shape of arrays: ar={}, t_p={}, a_m={}'.format(
-        *[i.shape for i in (ar, t_p, a_m) ]) )
+        *[ i.shape for i in (ar, t_p, a_m) ]) )
 
     # v/v * (mass total of air (kg)/ 1E3 (converted kg to g)) = moles of tracer
     ar = ar* ( a_m*1E3 / constants( 'RMM_air'))
     if Iodine:
-        # convert moles to mass (* RMM) , then to Gg
+        # Convert moles to mass (* RMM) , then to Gg
         ar = ar * float( species_mass('I') ) * spec_stoich(spec) /1E9
     else:
-        # convert moles to mass (* RMM) , then to Gg
+        # Convert moles to mass (* RMM) , then to Gg
         ar = ar * float( species_mass(spec) ) /1E9
 
     # Cut off at the "chemical troposphere" ( defined by GC integrator as 38th)
