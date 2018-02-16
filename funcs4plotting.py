@@ -1043,8 +1043,8 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
 # --------
 def plot_up_diurnal_by_season( spec='O3', sub_str='UK+EIRE', fig=None, \
         dfs=None, color_dict={'Obs.':'k', 'Model':'r'}, stat2plot='50%',
-        dpi=320, plt_legend=True,
-        show_plot=False, save_plot=True, verbose=False, debug=False):
+        dpi=320, plt_legend=True, units=None,
+        show_plot=False, save_plot=False, verbose=False, debug=False):
     """
     Plot up mulitplot of diurnal cycle by "season" for given dict of DataFrames
 
@@ -1084,11 +1084,16 @@ def plot_up_diurnal_by_season( spec='O3', sub_str='UK+EIRE', fig=None, \
     # Setup figure and PDF
     if isinstance( fig, type(None) ):
         fig = plt.figure(dpi=dpi)
+    # setup an inital subplot (to allow axis sharing)
+    ax1 = fig.add_subplot(2, 2, 1 )
     # Now loop seasons...
     for n_season, season_ in enumerate( seasons ):
         if verbose: print( (n_season, season_, spec, sub_str) )
         # Add subplot and set axis labelling
-        ax = fig.add_subplot(2,2, n_season+1 )
+        if (n_season > 0):
+            ax = fig.add_subplot(2,2, n_season+1, sharey=ax1)
+        else:
+            ax = ax1
         title = season_
         plt_legend=False
         if (n_season+1) == len( seasons ):
@@ -1119,7 +1124,7 @@ def plot_up_diurnal_by_season( spec='O3', sub_str='UK+EIRE', fig=None, \
             if plt_legend and ( n_key == len(list(dfs.keys()))-1 ):
                 legend=True
             # Plot up
-            BASIC_diurnal_plot(fig=fig, ax=ax, data=data_,
+            BASIC_diurnal_plot(fig=fig, ax=ax, data=data_, units=units,
                 dates=dates_, label=key_, title='{}'.format( season_),
                 plt_xlabel=plt_xlabel, plt_ylabel=plt_ylabel,
                 color=color, spec=spec, plt_legend=legend )
@@ -5537,7 +5542,7 @@ def plot_lons_lats_spatial_on_map_CARTOPY( central_longitude=0,
         lats=None, lons=None, add_background_image=True,
         projection=ccrs.PlateCarree, fig=None, ax=None,
         marker='o', s=50, color='red', show_plot=False, dpi=320,
-        buffer_degrees=20 ):
+        buffer_degrees=20, add_detailed_map=False ):
     """
     Plot a list of lons and lats spatially on a map (using cartopy)
 
@@ -5564,11 +5569,12 @@ def plot_lons_lats_spatial_on_map_CARTOPY( central_longitude=0,
     if isinstance(fig, type(None)):
         fig = plt.figure(dpi=dpi, facecolor='w', edgecolor='k')
     if isinstance(ax, type(None)):
-        ax = fig.add_subplot(111)
+        # setup a cartopy projection for plotting
+        ax = fig.add_subplot(111,
+            projection=projection(central_longitude=central_longitude)
+            )
 
     # --- Plot
-    # setup a cartopy projection for plotting
-    ax = plt.axes( projection=projection(central_longitude=central_longitude) )
     # Now scatter points on plot
     plt.scatter(lons, lats, color=color, s=s, marker=marker,
          transform=projection() )
@@ -5592,6 +5598,18 @@ def plot_lons_lats_spatial_on_map_CARTOPY( central_longitude=0,
     # Put a background image on for nice sea rendering.
     if add_background_image:
         ax.stock_img()
+        if add_detailed_map:
+            # Create a feature for States/Admin 1 regions at 1:50m
+            # from Natural Earth
+            states_provinces = cfeature.NaturalEarthFeature(
+                category='cultural',
+                name='admin_1_states_provinces_lines',
+                scale='50m',
+                facecolor='none')
+            ax.add_feature(cfeature.LAND)
+            ax.add_feature(cfeature.COASTLINE)
+            ax.add_feature(cfeature.BORDERS)
+#            ax.add_feature(states_provinces, edgecolor='gray')
     else:
         ax.coastlines(resolution='110m')
 #        ax.drawcountries() # not in cartopy
