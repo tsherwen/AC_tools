@@ -4481,9 +4481,14 @@ def get_human_readable_gradations( lvls=None, vmax=10, vmin=0, \
     # in both min and max have absolute values less than 0, then sig figs +1
     # Find the amount of significant figures needed to show a difference
     # between vmin and vmax.
-    if vmin==vmax:
-        logging.error("There is no difference between vmin and vmax!")
-        raise ValueError("There is no difference between the min and max of the data")
+    if (vmin == np.NaN) and  (vmin == np.NaN):
+        err_str = "Both vmin and vmax are NaNs!"
+        logging.error( err_str )
+        raise ValueError( err_str )
+    elif (vmin == vmax):
+        err_str = "There is no difference between vmin and vmax!"
+        logging.error( err_str )
+        raise ValueError( err_str )
     try:
         if ( ( abs( int( vmin)) == 0) and (abs( int( vmax)) == 0) ):
             sigfig_rounding_on_cb += 1
