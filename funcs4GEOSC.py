@@ -4463,7 +4463,7 @@ def concvert_df_VOC_C2v( df=None, verbose=True ):
 def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
         filename='ctm.nc', \
         folder=None, ext_str='_TEST_', file_prefix='ctm_',
-        split_by_month=False, \
+        split_by_month=False, mk_single_NetCDF_file=True, \
         mk_monthly_NetCDF_files=False, mk_weekly_NetCDF_files=False,
         verbose=True):
     """
@@ -4585,7 +4585,6 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
         convert_to_netCDF( folder=folder, filename=filename, \
             bpch_file_list=filenames, bpch_file_type=bpch_file_type )
     else: print('Please specify whether to make a sinlge or multiple .nc files')
-
 
     # If split by month
     if split_by_month:
