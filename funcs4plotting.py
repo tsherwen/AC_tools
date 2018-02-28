@@ -71,7 +71,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, \
         lon_0=None, lon_1=None, lat_0=None, lat_1=None, norm=None,\
         sigfig_rounding_on_cb=2, fixcb_buffered=None, ylabel=True, \
         xlabel=True, wd=None, verbose=True, debug=False, tight_layout=False, \
-        axis_titles=False, **Kwargs):
+        axis_titles=False, split_title_if_too_long=True, **Kwargs):
     """
     Plots Global/regional 2D (lon, lat) slices.
 
@@ -117,6 +117,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, \
     wd (str): Specify the wd to get the results from a run.
     window (boolean): use window plot settings (fewer axis labels/resolution of map)
     axis_titles (boolean): title X and y axis? (lat and lon)
+    split_title_if_too_long (boolean): split the title over multiple lines
 
     Returns
     -------
@@ -124,7 +125,8 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, \
 
     Notes
     -----
-     - Takes a numpy array and the resolution of the output. The plot extent is then set by this output.
+     - Takes a numpy array and the resolution of the output.
+     The plot extent is then set by this inpnut.
     """
     if isinstance(arr, type(None)):
         logging.error("No data given to map_plot!")
@@ -143,7 +145,8 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, \
         except TypeError:  # Assume 4x5 resolution
             # Assume 4x5 resolution
             logging.warning('No resolution specified or found. Assuming 4x5')
-            logging.warning('Try specifying the wd or manualy specifying the res')
+            log_str = 'Try specifying the wd or manualy specifying the res'
+            logging.warning(log_str)
             res='4x5'
 
     # Make sure the input data is usable and try to fix it if not.
@@ -188,11 +191,12 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, \
     if set_window:
         # Convert lats and lons to GC lats and restrict lats, lons, and arr
         if not isinstance( lat_0, type(None) ):
-            gclat_0, gclat_1 = [ get_gc_lat(i, res=res) for i in (lat_0, lat_1) ]
+            gclat_0, gclat_1 = [ get_gc_lat(i, res=res) \
+                for i in (lat_0, lat_1) ]
             lat = lat[ gclat_0:gclat_1 ]
-
         if not isinstance( lon_0, type(None) ):
-            gclon_0, gclon_1 = [ get_gc_lon(i, res=res) for i in (lon_0, lon_1) ]
+            gclon_0, gclon_1 = [ get_gc_lon(i, res=res) \
+                for i in (lon_0, lon_1) ]
             lon = lon[ gclon_0:gclon_1]
 
     # ----------------  Basemap setup  ----------------
@@ -207,9 +211,9 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, \
 
     # ---- Setup map ("m") using Basemap
     m = get_basemap( lat=lat, lon=lon, resolution=resolution, res=res, \
-        everyother=everyother, interval=interval, f_size=f_size, ylabel=ylabel, \
-        axis_titles=axis_titles,
-        xlabel=xlabel, drawcountries=drawcountries )
+        everyother=everyother, interval=interval, f_size=f_size,\
+        ylabel=ylabel, xlabel=xlabel, axis_titles=axis_titles,\
+        drawcountries=drawcountries )
     # Process data to grid
     x, y = np.meshgrid( *m(lon, lat) )
     # reduce plotted region for nested grids/subregion plots
@@ -261,21 +265,23 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, \
     if isinstance(cmap, type(None)):
         # Set readable levels for cb, then use these to dictate cmap
         if isinstance(lvls, type(None)):
-            lvls = get_human_readable_gradations( vmax=fixcb_[1], vmin=fixcb_[0], \
-                nticks=nticks, sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
+            lvls = get_human_readable_gradations( nticks=nticks, \
+                vmax=fixcb_[1], vmin=fixcb_[0], \
+                sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
 
         # Setup Colormap
         cmap, fixcb_buffered = get_colormap( np.array( fixcb_ ), \
                 nticks=nticks, fixcb=fixcb_, buffer_cmap_upper=True )
         # Update colormap with buffer
-        cmap = get_colormap( arr=np.array([fixcb_buffered[0], fixcb_buffered[1]]) )
+        cmap = get_colormap( arr=np.array([fixcb_buffered[0], \
+            fixcb_buffered[1]]) )
 
     # Allow function to operate without fixcb_buffered provided
     if isinstance( fixcb_buffered, type(None) ):
         fixcb_buffered = fixcb_
     fixcb_ = fixcb_buffered
-    logging.info( 'colorbar variables: ' + str([fixcb_buffered, fixcb, fixcb_, lvls, \
-                cmap, lvls]))
+    log_str = 'cb vars: ' + str([fixcb_buffered, fixcb, fixcb_, lvls, cmap, ])
+    logging.info( log_str)
     # Use a discrete colour map?
 #    if discrete_cmap:
 #        if isinstance( fixcb, type(None) ):
@@ -304,14 +310,17 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, \
             pass
         else:
             # Get logarithmically spaced integers
-            lvls = np.logspace( np.log10(fixcb[0]), np.log10(fixcb[1]), num=nticks)
+            lvls = np.logspace( np.log10(fixcb[0]), np.log10(fixcb[1]), \
+                num=nticks)
             # Normalise to Log space
             norm=mpl.colors.LogNorm(vmin=fixcb_[0], vmax=fixcb_[1])
 
             # Create colourbar instance
-            cb = plt.colorbar(poly, ax=m.ax, ticks=lvls, format=format, shrink=shrink, \
-                alpha=alpha, norm=norm, extend='min')
-        logging.debug(np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), lvls)
+            cb = plt.colorbar(poly, ax=m.ax, ticks=lvls, format=format,\
+                shrink=shrink, alpha=alpha, norm=norm, extend='min')
+        debug_str = 'min={},max={},lvls={}'
+        debug_str.format(np.ma.log(arr).min(), np.ma.log(arr).min(), lvls)
+        logging.debug(debug_str)
 
     # ----------------  Colorbars  ----------------
     if no_cb:
@@ -322,7 +331,8 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, \
             ax = plt.gca()
 
         # Create colourbar instance
-        cb = plt.colorbar( poly, ax=ax, shrink=shrink, alpha=alpha, extend=extend )
+        cb = plt.colorbar( poly, ax=ax, shrink=shrink, alpha=alpha, \
+            extend=extend )
         # set ylabel tick properties
         for t in cb.ax.get_yticklabels():
             t.set_fontsize(f_size)
@@ -378,7 +388,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, \
 
     if not isinstance( title, type(None) ):
         # Check if the title is too long and if not split it over lines
-        if len(title)>max_title_len:
+        if len(title)>max_title_len and split_title_if_too_long:
             print("tile takes up multiple lines. Splitting over lines now.")
             import textwrap
             title="\n".join(textwrap.wrap(title,max_title_len))
@@ -801,12 +811,18 @@ def plot_map( arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fa
 # --------
 # X.XX - Zonal plot - log or linear
 # --------
-def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=37, \
-        format='%.2f', interval=None, no_cb=False, units=None, shrink=0.4, alpha=1, \
-        res='4x5', window=False, cmap=None, log=False, fixcb=None, fixcb_buffered=None, \
-        xlimit =None, rotatecbunits='horizontal', extend='neither', ylabel=True, cb=None,\
-        lvls=None, sigfig_rounding_on_cb=2, nticks=10, norm=None, set_window=False, \
-        lat_0=None, lat_1=None, lat40_2_40=False, xlabel=True, mask_invalids=False, \
+def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10,
+        c_off=37, hPa_labels=False, \
+        format='%.2f', interval=None, no_cb=False, units=None, shrink=0.4,
+        alpha=1, \
+        res='4x5', window=False, cmap=None, log=False,
+        fixcb=None, fixcb_buffered=None, \
+        xlimit =None, rotatecbunits='horizontal', extend='neither', ylabel=True,
+        cb=None, ylim=[0,18],\
+        lvls=None, sigfig_rounding_on_cb=2, nticks=10, norm=None,
+        set_window=False, \
+        lat_0=None, lat_1=None, lat40_2_40=False, xlabel=True,
+        mask_invalids=False, \
         trop_limit=True, verbose=True, debug=False, \
         # redundent?
         lower_limited=False, nlvls=25,
@@ -911,15 +927,18 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
     if isinstance( cmap, type(None) ):
         # lvls provided, if not calculate these.
         if isinstance( lvls, type(None) ):
-            lvls = get_human_readable_gradations( vmax=fixcb_[1], vmin=fixcb_[0], \
-                nticks=nticks, sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
+            lvls = get_human_readable_gradations( nticks=nticks, \
+                vmax=fixcb_[1], vmin=fixcb_[0], \
+                sigfig_rounding_on_cb=sigfig_rounding_on_cb  )
 
         # Setup Colormap
-        cmap, fixcb_buffered = get_colormap( np.array( fixcb_ ), nticks=nticks, \
-            fixcb=fixcb_, buffer_cmap_upper=True )
+        cmap, fixcb_buffered = get_colormap( np.array( fixcb_ ),
+            nticks=nticks, fixcb=fixcb_, buffer_cmap_upper=True )
 
         # Update colormap with buffer
-        cmap = get_colormap( arr=np.array( [fixcb_buffered[0],fixcb_buffered[1]] ) )
+        cmap = get_colormap( arr=np.array( [fixcb_buffered[0],\
+            fixcb_buffered[1]] ) )
+
     # Allow function to operate without fixcb_buffered provided
     if isinstance( fixcb_buffered, type(None) ):
         fixcb_buffered = fixcb_
@@ -949,7 +968,8 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
                  shrink=shrink, alpha=alpha, norm=norm, extend='min')
 
         logging.debug('cb min = {}, cb max = {}, lvls = {}'.format( \
-            np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), cb_lvls = lvls))
+            np.ma.min(np.ma.log(arr)), np.ma.max(np.ma.log(arr)), \
+            cb_lvls = lvls))
 
     # --------------  Linear plots -------------------------------
     # standard plot
@@ -995,8 +1015,8 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
         cb.set_ticklabels( lvls )#, format=format )
 
         logging.debug( 'variables post log plot setup: ', tick_locs, lvls, \
-            [ type(i) for i in (tick_locs, lvls) ], cb.get_clim(), title, format )
-
+            [ type(i) for i in (tick_locs, lvls) ], cb.get_clim(), title, \
+            format )
 
     # Setup Y axis
     if (not isinstance( units, type( None) )) and (not no_cb):
@@ -1006,9 +1026,29 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
         ax.set_ylabel('Altitude (km)', fontsize=f_size*.75)
     else:
         ax.tick_params( axis='y', which='both', labelleft='off')
+    if hPa_labels:
+        if ylim[1] < 10:
+            everyother_hPa=5
+        else:
+            everyother_hPa=10
+        press = gchemgrid( 'c_hPa_geos5_r')[:c_off+1]
+        ax2 = ax.twinx()
+        press = [ myround(i,100) for i in press ][::-1]
+        ax2.set_yticks( press[::everyother_hPa] )
+        ax2.set_yticklabels( press[::everyother_hPa] )
+        majorFormatter = mpl.ticker.FormatStrFormatter('%d')
+        ax2.yaxis.set_minor_formatter( majorFormatter )
+        ax2.set_ylabel( 'Press. (hPa)', fontsize = f_size*.75)
+        ax2.invert_yaxis()
+        if ylabel:
+            pass
+        else:
+            ax.tick_params( axis='y', which='both', labelleft='off')
+            ax2.tick_params( axis='y', which='both', labelleft='off')
+
 
     if trop_limit:
-        ax.set_ylim( 0, 18 )
+        ax.set_ylim( ylim[0], ylim[1] )
     if interval != 1:
         ax.set_yticks( ax.get_yticks()[::interval] )
     # Setup X axis
@@ -1037,6 +1077,7 @@ def zonal_plot( arr, fig, ax=None, title=None, tropics=False, f_size=10, c_off=3
         print([ type( i ) for i in (ax, plt) ])
         print(title)
         ax.set_title(title, fontsize=f_size*1.5)
+
 
 # --------
 # X.XX - Diurnal plot by season
@@ -4014,11 +4055,11 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, upper=1, \
 # X.XX - Add colorbar to side of plot
 # --------
 def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
-        orientation='vertical', f_size=20, rotatecbunits='vertical', nticks=10, \
+        orientation='vertical', f_size=20, rotatecbunits='vertical', nticks=10,\
         extend='neither', norm=None, log=False, format=None, cmap=None,\
         vmin=0, vmax=10, cb_ax=None, ticklocation='auto', extendfrac=None, \
-        sigfig_rounding_on_cb=2, lvls=None, discrete_cmap=False, boundaries=None, \
-        verbose=True, debug=False ):
+        sigfig_rounding_on_cb=2, lvls=None, discrete_cmap=False,
+        boundaries=None, verbose=True, debug=False ):
     """
     Create Colorbar based on recieved parameters.
 
