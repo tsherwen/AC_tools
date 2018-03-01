@@ -134,15 +134,14 @@ def get_xy(Lon,Lat, lon_edges, lat_edges, debug=False):
 # X.XX - Save as pdf.
 # --------
 def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=320,\
-        justHH=False, no_dstr=True, save2png=True, \
+        justHH=False, no_dstr=True, save2png=True, wd=None, \
         save2eps=False, transparent=True, debug=False ):
     """
     Save figures (e.g. matplotlib) to pdf file
     """
-
     # set save directory ( using default directory dictionary )
-    from .funcs_vars import get_dir
-    wd = get_dir('ppwd')
+    if isinstance( wd, type(None) ):
+        wd='./'
 
     # Set pdf name
     if justHH:
@@ -162,20 +161,20 @@ def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=320,\
         plt.gcf().set_rasterized(True)
 
     # save and close
-    type = 'PDF'
+    file_extension = 'PDF'
     pdf.savefig( dpi=dpi, transparent=transparent )
     pdf.close()
 
     # Also export to png and eps?
     if save2png:
-        type += '/PDF'
+        file_extension += '/PDF'
         plt.savefig(npdf+'.png', format='png', dpi=dpi, \
             transparent=transparent )
     if save2eps:
-        type += '/EPS'
+        file_extension += '/EPS'
         plt.savefig(npdf+'.eps', format='eps', dpi=dpi, \
             transparent=transparent)
-    print((type+' saved & Closed as/at: ', npdf))
+    print((file_extension+' saved & Closed as/at: ', npdf))
 
 # --------
 # X.XX - Save as mulitple page pdf.
@@ -185,10 +184,7 @@ def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, wd=None, \
     """
     Save figures (e.g. matplotlib) to pdf file with multiple pages
     """
-
     # set save directory ( using default directory dictionary )
-    from .funcs4core import get_dir
-#    wd = get_dir('ppwd')
     if isinstance(wd, type(None)):
         wd='./'
 
