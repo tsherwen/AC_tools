@@ -313,12 +313,9 @@ def get_air_mass_np( ctm_f=None, wd=None, times=None, trop_limit=True,\
 
     Returns
     -------
-
-    Notes
-    -----
+    (np.array)
     """
-    logging.info( 'called get air mass' )
-
+    logging.info( 'get air mass called' )
     # retain PyGChem 0.2.0 version for back compatibility
     if pygchem.__version__ == '0.2.0':
         diagnostics = ctm_f.filter( name='AD', category="BXHGHT-$",time=times )
@@ -326,9 +323,7 @@ def get_air_mass_np( ctm_f=None, wd=None, times=None, trop_limit=True,\
         for diag in diagnostics:
             # Extract data
             scalar = np.array( diag.values[:,:,:] )[...,None]
-            logging.debug(diag.name ,'len(scalar)',len(scalar), 'type(scalar)',\
-                type(scalar), 'diag.scale', diag.scale, 'scalar.shape', \
-                scalar.shape,'diag.unit', diag.unit )
+            logging.debug( '{} - {}'.format(diag.name, scalar.shape) )
             try:
                 arr = np.concatenate( (np_scalar, scalar), axis=3 )
             except NameError:
@@ -340,28 +335,39 @@ def get_air_mass_np( ctm_f=None, wd=None, times=None, trop_limit=True,\
     # Or use PyGChem 0.3.0 approach
     else:
         # Get air mass in kg
-        arr = get_GC_output( wd=wd, vars=['BXHGHT_S__AD'], trop_limit=trop_limit, \
-            dtype=np.float64)
+        arr = get_GC_output( wd=wd, vars=['BXHGHT_S__AD'], \
+            trop_limit=trop_limit, dtype=np.float64)
 
         logging.debug( 'arr type={}, shape={}'.format( type(arr), arr.shape ))
     return arr
 
+
 # ----
 # X.XX - Get OH mean value - [1e5 molec/cm3]
 # ----
-def get_OH_mean( wd, debug=False ):
+def get_OH_mean( wd, debug=False, file_type='*geos*log*' ):
     """
     Get mean OH concentration (1e5 molec/cm3) from geos.log files
     in given directory
     """
     logging.debug('get_OH_mean called for wd={}'.format(wd))
     # --- Find all geos log files in directory...
-    files = glob.glob( wd+'/*geos*log*' )
+    files = glob.glob( wd+'/'+file_type )
     if len(files) < 1:
-        err_str = 'WARNING! - no *geos.log* files found - assuming as .log*'
-        logging.info(err_str)
-        print(err_str)
-        files = glob.glob( wd+'/log.*' )
+        err_str = 'WARNING! - no files found (assuming type={})'
+        logging.info( err_str.format(file_type) )
+        print( err_str.format(file_type) )
+        files = glob.glob( wd+'/logs/'+file_type )
+        if len(files) < 1:
+            err_str = 'WARNING! - no files found (type={} in wd/log/*)'
+            logging.info( err_str.format(file_type) )
+            # try
+            file_type = 'log.*'
+            files = glob.glob( wd+'/logs/'+file_type )
+            print( 'Loooking for {} files instead'.format( file_type)  )
+            if len(files) < 1:
+                err_str = 'WARNING! - no files found (type={} in wd/log/*)'
+                logging.info( err_str.format(file_type) )
 
     # --- If there are any, then
     if len(files) > 1:
