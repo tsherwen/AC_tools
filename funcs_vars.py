@@ -741,6 +741,11 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,\
     'LON': '$^{\circ}$E', 'LAT': '$^{\circ}$N', 'PRESS':'hPa',
     # add combined species for easy of processing
     'HOCl+Cl2': 'pptv', 'HOBr+Br2' :'pptv',
+    # add derivative species for easy of processing
+    'HNO3/NOx': 'pptv','HNO3+NIT': 'pptv', 'HNO3+NO3': 'pptv',
+    'NIT/NOx': 'pptv', 'HNO3/NIT': 'pptv',
+    #
+    'Cl-': 'pptv',
     }
     try:
         units = tra_unit[x]
@@ -2125,6 +2130,11 @@ def latex_spec_name(input_x, debug=False):
     'LON': 'Lon.', 'LAT':'Lat.', 'PRESS':'Press.',
     # add combined species for easy of processing
     'HOCl+Cl2': 'HOCl+Cl$_2$', 'HOBr+Br2' :'HOBr+Br$_2$',
+    'HNO3/NOx': 'HNO$_3$/NO$_{\\rm x}$',
+    'HNO3+NIT': 'HNO$_3$+NIT', 'HNO3+NO3': 'HNO$_3$+NO$_3$',
+    'NIT/NOx': 'NIT/NO$_{\\rm x}$', 'HNO3/NIT' : 'HNO$_3$/NIT',
+    # Add pseudo species
+    'Cl-' : 'Cl$^{-}$',
     }
     return spec_dict[input_x]
 
