@@ -2779,7 +2779,7 @@ def convert_v_v2ngm3( arr, wd=None, spec='AERI', trop_limit=True, \
                     dtype=np.float64)
 
     # Get moles  ( converting airmass from kg 1st)
-    mols = a_m*1E3/constants( 'RMM_air')
+    mols = a_m*1E3/constants( 'RMM_air' )
 
     # Adjust to mols, then mass
     arr = arr*mols*species_mass( spec )
@@ -2791,6 +2791,51 @@ def convert_v_v2ngm3( arr, wd=None, spec='AERI', trop_limit=True, \
 
     return arr
 
+
+# ----
+# X.XX - Convert v/v to ug/m^3
+# ----
+def convert_v_v2ugm3( arr, wd=None, spec='AERI', trop_limit=True, \
+        s_area=None, vol=None, a_m=None, res='4x5', debug=False ):
+    """
+    Take v/v array for a species, and conver this to mass loading
+    units used as standard are ng/m3
+
+    Parameters
+    -------
+    spec (str): species/tracer/variable name
+    a_m (np.array): 4D array of air mass
+    vol (array): volume contained in each grid box (cm^-3)
+    trop_limit (boolean): limit 4D arrays to troposphere
+    res (str): the resolution if wd not given (e.g. '4x5' )
+
+    Returns
+    -------
+    (array)
+    """
+
+    # Get volume (m^3, adjusted (x1E6) from cm^3)
+    if not isinstance(vol, np.ndarray):
+        vol = get_volume_np( wd=wd, trop_limit=trop_limit, s_area=s_area, \
+                    res=res ) /1E6
+
+    # Get air mass ( kg )
+    if not isinstance(a_m, np.ndarray):
+        a_m = get_GC_output( wd, vars=['BXHGHT_S__AD'], trop_limit=trop_limit,
+                    dtype=np.float64)
+
+    # Get moles  ( converting airmass from kg 1st)
+    mols = a_m*1E3/constants( 'RMM_air' )
+
+    # Adjust to mols, then mass
+    arr = arr*mols*species_mass( spec )
+    if debug:
+        print((species_mass( spec ), np.sum( arr )))
+
+    # Convert to (micro, x1E9)g/m3
+    arr = arr*1E6/vol
+
+    return arr
 
 # ----
 # X.XX - Print seasonal values array
@@ -4679,6 +4724,107 @@ def get_Lightning_NOx_source( Var_rc=None, Data_rc=None, debug=False ):
     # Convert to Tg (N)
     a = ( arr_mol_s / constants('AVG') ) * species_mass( 'N' )  /1E12
     return (a *60 *60 *24 *365 )
+
+# ----
+# X.XX -
+# ----
+def move_spin_files_to_spin_up_folder( wd=None, spinup_dir=None ):
+    """ move spin up spins into a seperate "spin_up" folder """
+    import glob
+    import shutil
+    # Set spin-up directory and make (if not already present)
+    if isinstance( spinup_dir, type(None)):
+        spinup_dir = wd +'/spin_up/'
+    if not os.path.exists(spinup_dir):
+        os.makedirs(spinup_dir)
+    # Get log files
+    log_files = glob.glob( wd+'*geos.log*' )
+    log_files += glob.glob( wd+'/logs/*geos.log*' )
+    log_files += glob.glob( wd+'*hemco.log*' )
+    log_files += glob.glob( wd+'/logs/*HEMCO.log*' )
+    log_files += glob.glob( wd+'*log.log*' )
+    log_files += glob.glob( wd+'/logs/*log.log*' )
+    assert len(log_files) != set(log_files), 'double up in log filenames!'
+    # Get output files too
+    out_files = glob.glob( wd+'*trac*avg*' )
+    out_files += glob.glob( wd+'*spec*avg*' )
+    out_files += glob.glob( wd+'*ctm.bpch*' )
+    out_files += glob.glob( wd+'*HEMCO_restart*' )
+    out_files += glob.glob( wd+'*HEMCO_diagnostics*' )
+    out_files += glob.glob( wd+'*info.dat*' )
+    out_files += glob.glob( wd+'*GEOSChem_restart*' )
+    out_files += glob.glob( wd+'/queue_files/*' )
+    assert len(out_files) != set(out_files), 'double up in output filenames!'
+    # get input files
+    in_files = glob.glob( wd+'/input_files/*' )
+    in_files += glob.glob( wd+'/queue_files/*' )
+    assert len(out_files) != set(out_files), 'double up in output filenames!'
+    # move files to "spin_up" folder
+    d = {'log':log_files, 'output':out_files, 'input': in_files}
+    for key in d.keys():
+        files = d[key]
+        print('moving {} {} files'.format( len(files), key ) )
+        just_names = [i.split('/')[-1] for i in files ]
+        fails = []
+        for n_file, file in enumerate( files ):
+            try:
+                shutil.move(file, spinup_dir+just_names[n_file])
+            except:
+                fails += [ file ]
+        if len( fails ) > 0 :
+            print( 'FAILED to move: {}'.format( fails ) )
+        print('moved {} {} files'.format( len(d[key])-len(fails), key ) )
+
+
+def clean_run_dir4monthly_run( wd=None,
+        edate = datetime.datetime(2014, 1, 1, 0),
+        sdate = datetime.datetime(2013, 1, 1, 0), debug=False ):
+    """ Remove existing model output and input files """
+    import shutil
+    import os
+    # spinup  directory
+    spinup_dir= wd +'/spin_up/'
+
+    # move the spin up files to a seperate spin up folder
+    move_spin_files_to_spin_up_folder(wd=wd, spinup_dir=spinup_dir )
+
+    # remove temporary files
+    [ os.remove(i) for i in glob.glob(wd+'*~') ]
+
+    # remove the old input.geos file (symbolically linked)
+    try:
+        os.unlink( wd+'input.geos' )
+    except:
+        print( 'FAILED to unlinke input.geos (from input_files folder)' )
+
+    # try and replace it with the input.geos.org
+    try:
+        shutil.move( wd+'input.geos.orig', wd+'input.geos')
+    except:
+        print( 'FAILED to replace input.geos with input.geos.orig' )
+
+    # Sym link the last file spun up file to start the new run
+    file_strs = [
+    'GEOSChem_restart.{}{:0>2}{:0>2}0000.nc',
+    'HEMCO_restart.{}{:0>2}{:0>2}0000.nc'
+    ]
+    oldfiles = [i.format(edate.year, edate.month, edate.day) for i in file_strs]
+    newfiles = [i.format(sdate.year, sdate.month, sdate.day) for i in file_strs]
+    # Add a gotchat for accessing earth0 files
+#     mount_earth0_dir = '/shared/earth_home/'
+#     if mount_earth0_dir in wd:
+#         output_wd = wd.replace( mount_earth0_dir, '/work/home/' )
+#     else:
+#         output_wd=wd
+    #
+    for nfile, file in enumerate( oldfiles ):
+        if debug: print( spinup_dir+file, wd+newfiles[nfile] )
+        try:
+            os.symlink(spinup_dir+file, wd+newfiles[nfile])
+        except:
+            prt_str = 'FAILED to sym link new restart files to spin up ones {}'
+            print( prt_str.format( file ) )
+
 
 
 # ------------------ Section X.X -------------------------------------------
