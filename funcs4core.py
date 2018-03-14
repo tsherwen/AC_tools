@@ -499,7 +499,8 @@ def iGEOSChem_ver(wd, also_return_GC_version=False, verbose=True, debug=False):
     # List iGEOSChem versions+ then DataFrame
     versions = [
     '1.1','1.2', '1.3', '1.4', '1.5', '1.6', '1.6.1', '1.6.2', \
-     '1.6.3', '1.7', '2.0', '3.0', '4.0', '5.0', '6.0', '6.1', '6.2', '7.0', \
+     '1.6.3', '1.7', '2.0', '3.0', '4.0', '5.0', '6.0', '6.1', '6.2', '6.3',
+     '7.0', \
     # Also hold a 'NOT FOUND' value to for ease of processing non-halogen code
      'NOT FOUND'
     ]
@@ -558,6 +559,7 @@ def iGEOSChem_ver(wd, also_return_GC_version=False, verbose=True, debug=False):
         '6.0':'v11-02',
         '6.1':'v11-02',
         '6.2':'v11-02',
+        '6.3':'v11-02',
 #        '7.0':'v11-02',
         'NOT FOUND':'NOT FOUND',
             }

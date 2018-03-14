@@ -865,11 +865,11 @@ def get_unit_scaling( units, scaleby=1 ):
     scaleby (float): scaling factor for unit
     """
     logging.debug("Getting unit scaling for {units}".format(units=units))
-    misc = 'K', 'm/s', 'unitless', 'kg' ,'m', 'm2','kg/m2/s', \
-            'molec/cm2/s', 'mol/cm3/s',  'kg/s', 'hPa', 'atoms C/cm2/s' \
-            'kg S', 'mb', 'atoms C/cm2/s', 'molec/cm3', 'v/v', 'cm/s', 's-1', \
-            'molec/m3', 'W/m2'
-
+    misc = (
+    'K', 'm/s', 'unitless', 'kg' ,'m', 'm2','kg/m2/s', 'molec/cm2/s',
+    'mol/cm3/s',  'kg/s', 'hPa', 'atoms C/cm2/s', 'kg S', 'mb', 'atoms C/cm2/s',
+    'molec/cm3', 'v/v', 'cm/s', 's-1', 'molec/m3', 'W/m2', 'unitless',
+    )
     # parts per trillion
     if any( [ (units ==  i) for i in ('pptv', 'pptC', 'ppt') ]):
         scaleby = 1E12
@@ -2064,7 +2064,7 @@ def latex_spec_name(input_x, debug=False):
     'CHBr3':'CHBr$_{3}$','O3':'O$_{3}$', 'CO':'CO' , 'DMS':'DMS', \
     'NO':'NO', 'NO2':'NO$_{2}$',\
     'NO3':'NO$_{3}$','HNO3':'HNO$_{3}$', 'HNO4':'HNO$_{4}$',\
-    'PAN':'PAN', 'HNO2':'HNO$_{2}$', 'N2O5':'N$_{2}$O$_{5}$',\
+    'PAN':'PAN', 'HNO2':'HONO', 'N2O5':'N$_{2}$O$_{5}$',\
     'ALK4':'$\geq$C4 alkanes','ISOP':'Isoprene', 'H2O2':'H$_{2}$O$_{2}$', \
     'ACET':'CH$_{3}$C(O)CH$_{3}$', 'MEK':'>C3 ketones', \
     'RCHO': 'CH$_{3}$CH$_{2}$CHO', \
