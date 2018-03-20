@@ -383,7 +383,7 @@ def get_OH_mean( wd, debug=False, file_type='*geos*log*' ):
         logging.info( 'mean OH calculated from {} files'.format( len(z) ) )
         return np.mean(z)
     else:
-        print('No *log files found!')
+        print('No *log files found! (folder:{})'.format(wd) )
         sys.exit()
 
 # ----
