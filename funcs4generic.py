@@ -2124,8 +2124,7 @@ def get_value_interpolated_from_nearby_values( Y_CORDS=None, X_CORDS=None, \
     M = np.ma.filled(M, fill_value=np.nan)
     # only consider non nan values as values to interpolate with
     vals = ~np.isnan(M)
-    if debug:
-        print(vals)
+    if debug: print(vals)
     # interpolate
     f = interpolate.Rbf(rr[vals], cc[vals], M[vals], function='linear')
     # extract interpolation...
