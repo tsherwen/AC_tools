@@ -875,7 +875,7 @@ def get_HEMCO_output( wd=None, files=None, filename=None, vars=None, \
 # X.XX - Get var data for model run
 # ----
 def get_GC_output( wd, vars=None, species=None, category=None, r_cubes=False, \
-        r_res=False, restore_zero_scaling=True, r_list=False, trop_limit=False, \
+        r_res=False, restore_zero_scaling=True, r_list=False, trop_limit=False,\
         dtype=np.float32, use_NetCDF=True, verbose=False, debug=False):
     """
     Data extractor for GEOS-Chem using PyGChem (>= 0.3.0 ). ctm.bpch files are extracted
@@ -1935,8 +1935,7 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
             t_lvl = get_GC_output( wd, vars=['TR_PAUSE__TP_LEVEL'], \
                 trop_limit=False )
         if not isinstance(n_air, np.ndarray):
-            n_air = get_GC_output( wd, vars=['BXHGHT_S__N(AIR)'], \
-                trop_limit=trop_limit, dtype=np.float64 )
+            n_air = get_number_density_variable( wd=wd, trop_limit=trop_limit )
 
     # Get OH conc [molec/cm3]
     if use_OH_from_geos_log:
@@ -2366,18 +2365,19 @@ def molec_cm2_s_2_Gg_Ox_np( arr, spec='O3', s_area=None, ctm_f=None, \
 # ----
 # X.XX - Get DU mean value
 # ----
-def get_DU_mean(s_area=None, a_m=None, t_p=None, O3_arr=None, \
-            ctm_f=False, area_weight=True, res='4x5', debug=False ):
+def get_DU_mean(spec='O3',s_area=None, a_m=None, t_p=None, O3_arr=None, wd=None,
+        ctm_f=False, area_weight=True, res='4x5', trop_limit=True, debug=False):
     """
     Get mean DU value weighed by grid box area
 
     Parameters
     -------
-     - t_p: time in the troposphere diganostic ( float values 0 to 1 )
-     - res: resolution of the model input (e.g. 4x5, 2x2.5 )
-     - ctm_f: ctm.bpch file object (vestigle from PyGChem <3.0)
-     - s_area: Surface array (array of values in metres)
-     - area_weight (boolean): weight by area of grid box?
+    t_p (ndarray): time in the troposphere diganostic ( float values 0 to 1 )
+    res (str): resolution of the model input (e.g. 4x5, 2x2.5 )
+    ctm_f (ctm.bpch file object): This is vestigle from PyGChem <3.0
+    s_area (ndarray): Surface array (array of values in metres)
+    area_weight (boolean): weight by area of grid box?
+    O3_arr (ndarray): array of mixing ratio (v/v), e.g. ozone
 
     Returns
     -------
@@ -2389,28 +2389,29 @@ def get_DU_mean(s_area=None, a_m=None, t_p=None, O3_arr=None, \
         s_area  =  get_surface_area( res )[...,0]  # m2 land map
     if not isinstance(a_m, np.ndarray):
         print("Extracting a_m in 'get_DU_mean'")
-        a_m = get_air_mass_np( ctm_f, debug=debug )
+        a_m = get_air_mass_np( ctm_f, wd=wd, trop_limit=trop_limit,
+            debug=debug )
     if not isinstance(t_p, np.ndarray):
         print("Extracting t_p in 'get_DU_mean'")
-        t_p = get_gc_data_np( ctm_f, spec='TIMETROP', category='TIME-TPS', \
-                        debug=debug)
+        t_p = get_GC_output( wd=wd, vars=[u'TIME_TPS__TIMETROP'],
+            trop_limit=trop_limit, debug=debug)
     if not isinstance(O3_arr, np.ndarray):
         print("Extracting arr in 'get_DU_mean'")
-        arr  = get_gc_data_np( ctm_f, 'O3', debug=debug )
+        arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+spec],
+            trop_limit=trop_limit, debug=debug )
     else:
         arr = O3_arr
-    if debug:
-        print([ (i.shape, i.mean()) for i in (s_area, a_m, t_p, arr) ])
+    if debug: print([ (i.shape, i.mean()) for i in (s_area, a_m, t_p, arr) ])
 
     # Get molec. of air to get moles of spec
     # molecs air
-    molecs_air  =  (a_m*1E3) / constants( 'RMM_air') * constants('AVG')
+    molecs_air = (a_m*1E3) / constants( 'RMM_air') * constants('AVG')
     # molecules O3
     arr = np.ma.array(arr) * molecs_air
 
     # average of time within the troposphere
-     # cut columns to tropopause
-    arr = np.sum( arr[:,:,:38,:]* t_p, axis=2 )
+    # cut columns to tropopause
+    arr = np.sum( arr* t_p, axis=2 )
     # average over time
     arr = arr.mean(axis=2)
 
@@ -2418,7 +2419,7 @@ def get_DU_mean(s_area=None, a_m=None, t_p=None, O3_arr=None, \
     arr = arr / s_area # adjust to per area
     arr  = arr / constants('mol2DU') # convert to DU
     if area_weight:
-        arr = np.sum(arr * s_area)/np.sum(s_area)    # weight by area
+        arr = np.sum(arr * s_area)/np.sum(s_area) # weight by area
     return arr
 
 
@@ -2616,11 +2617,12 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
 # ----
 # X.XX - molecule weighted array average value
 # ----
-def molec_weighted_avg( arr, wd=None, ctm_f=None, vol=None, t_p=None, n_air=None, \
+def molec_weighted_avg( arr, wd=None, ctm_f=None, vol=None, t_p=None,\
         trop_limit=True, multiply_method=False, rm_strat=True, molecs=None,\
-        weight_lon=False, weight_lat=False, LON_axis=0, LAT_axis=1, \
+        weight_lon=False, weight_lat=False, LON_axis=0, LAT_axis=1, n_air=None,\
         annual_mean=True, res='4x5', debug=False ):
-    """ Takes array and retuns the average (molecular weighted) value
+    """
+    Takes an array and retuns the average (molecular weighted) value
 
     Parameters
     -------
@@ -2654,9 +2656,8 @@ def molec_weighted_avg( arr, wd=None, ctm_f=None, vol=None, t_p=None, n_air=None
     """
     logging.info('molec_weighted_avg called for arr.shape={}'.format(arr.shape))
     if isinstance( molecs, type(None) ):
-        if not isinstance( n_air, np.ndarray):
-            n_air = get_GC_output( wd, vars=['BXHGHT_S__N(AIR)'], \
-                trop_limit=trop_limit, dtype=np.float64 )  # [molec air/m3]
+        if not isinstance( n_air, np.ndarray): # [molec air/m3]
+            n_air = get_number_density_variable( wd=wd, trop_limit=trop_limit )
         if not isinstance(vol, np.ndarray):
             vol = get_volume_np( ctm_f=ctm_f, wd=wd, res=res, \
                 trop_limit=trop_limit )
@@ -2665,39 +2666,46 @@ def molec_weighted_avg( arr, wd=None, ctm_f=None, vol=None, t_p=None, n_air=None
         molecs =  n_air * vol # [molec air]
         if annual_mean:
             molecs = molecs.mean(axis=-1)
-
     # Limit for troposphere?
     if trop_limit:
-
         # Get species time Tropopause diagnostic
         if isinstance( t_p, type(None) ) and rm_strat:
             t_p = get_GC_output( wd=wd, vars=['TIME_TPS__TIMETROP'], \
                 trop_limit=trop_limit )
-
-            # mask for troposphere
+            # Mask for troposphere
             arr, molecs = mask4troposphere( [arr, molecs], t_ps=t_p, res=res,\
                 use_time_in_trop=True, multiply_method=multiply_method)
-
-    # --- If masked array provided, applied same mask to molecules
+    # If masked array provided, applied same mask to molecules
     if isinstance( arr, np.ma.core.MaskedArray ):
         try:
             molecs  = np.ma.array( molecs, mask=arr.mask )
         except:# MaskError:
             print(("MaskError for array shapes in 'molec_weighted_avg': ", \
                 [ i.shape for i in (molecs, arr) ]))
-
+    # Weight over which axis?
     if weight_lon and (not weight_lat):  # 1st axis
         return (arr *molecs).sum(axis=LON_axis)/molecs.sum(axis=LON_axis)
-
     elif weight_lat and (not weight_lon):  # 2nd axis (LON, LAT, ALT, TIME )
         return (arr *molecs).sum(axis=LAT_axis)/molecs.sum(axis=LAT_axis)
-
     elif weight_lat and weight_lon:  # 1st+2nd axis (LON, LAT, ALT, TIME )
         return (arr *molecs).sum(axis=LAT_axis).sum(axis=LON_axis)/  \
             molecs.sum(axis=LAT_axis).sum(axis=LON_axis)
-
     else: # weight whole array to give single number
         return (arr *molecs).sum()/molecs.sum()
+
+
+def get_number_density_variable( wd=None, trop_limit=True  ):
+    """ Get number density variable from GEOS-Chem output NetCDF """
+    try:
+        n_air_var = 'BXHGHT_S__N(AIR)'
+        n_air = get_GC_output( wd, vars=[n_air_var], \
+            trop_limit=trop_limit, dtype=np.float64 )  # [molec air/m3]
+    except UnboundLocalError:
+        n_air_var = u'BXHGHT_S__AIRNUMDE'
+        n_air = get_GC_output( wd, vars=[n_air_var], \
+            trop_limit=trop_limit, dtype=np.float64 )  # [molec air/m3]
+    return n_air
+
 
 # ----
 # X.XX - split 4D ( lon, lat, alt, time) output by season
@@ -4161,6 +4169,48 @@ def get_avg_surface_conc_of_X( spec='O3', wd=None, s_area=None, res='4x5' ):
 
 
 # ----
+# X.XX -
+# ----
+def get_avg_trop_conc_of_X( spec='O3', wd=None, s_area=None, res='4x5',\
+        vol=None, t_p=None, n_air=None, molecs=None, units='v/v', mols=None,\
+        multiply_method=False, rm_strat=True, trop_limit=True, ctm_f=None,
+        a_m=None, annual_mean=True, rtn_units=False ):
+    """
+    Get average (molecule weighted) concentration of Y (mean over time)
+
+    Parameters
+    ----------
+    s_area (array): array of areas of grid boxes (could be any variable)
+    spec (str): species/tracer/variable name
+
+    Returns
+    -------
+    (float)
+    """
+    # Get species concentration in v/v
+    arr = get_GC_output( vars=['IJ_AVG_S__'+spec], wd=wd, trop_limit=trop_limit)
+    #
+    if units == 'v/v':
+        pass
+    elif units == 'molec/cm3':
+        arr = convert_v_v_2_molec_cm3( arr, a_m=a_m, vol=vol, mols=mols, wd=wd )
+    else:
+        print ('unit ({}) conversion not setup'.format( units ) )
+        sys.exit()
+    # Average over time
+    if annual_mean:
+        arr = arr.mean( axis=-1 )
+    # Area weight and return
+    val =  molec_weighted_avg( arr, res=res, trop_limit=trop_limit, \
+#        vol=vol, t_p=t_p, n_air=n_air, molecs=molecs,
+        rm_strat=rm_strat, wd=wd, annual_mean=annual_mean)
+    if rtn_units:
+        return val, units
+    else:
+        return val
+
+
+# ----
 # X.XX - Get shared variables as a dictionary object.
 # ----
 def get_default_variable_dict( wd=None,
@@ -4299,13 +4349,8 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
     # Get N in air [molec air/m3]
     if 'n_air' in var_list:
         # variable name has just changed in v11
-        if 'v11' in Data_rc['GC_version']:
-#        if False:
-            var_ = 'BXHGHT_S__AIRNUMDE'
-        else:
-            var_ = 'BXHGHT_S__N(AIR)'
-        Data_rc['n_air'] = get_GC_output( Var_rc['wd'], dtype=np.float64,
-            vars=[var_], trop_limit=Var_rc['trop_limit'] )
+        Data_rc['n_air'] = get_number_density_variable( wd=wd, \
+            trop_limit=trop_limit )
         # Kludge! - restrict length of array to main wd.
         Data_rc['n_air'] = Data_rc['n_air'][...,:Data_rc['vol'].shape[-1]]
     # Pressure ? ( in hPa )
