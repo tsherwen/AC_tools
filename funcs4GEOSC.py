@@ -5800,7 +5800,7 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90', \
     ClOx =['CFC', 'Cl', 'ClO' ]
     NOx = [ 'NO', 'NO2', 'NO3', 'N2O5']
     non_I_specs_with_I_char = [ \
-    'INO2', 'ISN1', 'ISNOOA', 'ISNOHOO', 'ISOPNB', 'ISOPND', 'ISOP', 'ISNP'
+    'INO2', 'ISN1', 'ISNOOA', 'ISNOHOO', 'ISOPNB', 'ISOPND', 'ISOP', 'ISNP',
     # add species in v11-2d
     'IONITA',
     # add species in v11-2d (benchmarks)
