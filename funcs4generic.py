@@ -2069,7 +2069,7 @@ def save_2D_arrays_to_3DNetCDF( ars=None, dates=None, res='4x5', lons=None, \
 # --------
 # X.XX - Interpolate values from subset of 2D array
 # --------
-def get_value_interpolated_from_nearby_values( Y_CORDS=None, X_CORDS=None, \
+def interpolate_sparse_grid2value( Y_CORDS=None, X_CORDS=None, \
         X=None, Y=None, XYarray=None, buffer_CORDS=5, \
         verbose=True, debug=False ):
     """
