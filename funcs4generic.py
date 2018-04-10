@@ -1143,6 +1143,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
 #    'Surface BL': 26,
     'Land Tropics Sur.': 27,
     'Boreal Land': 28,
+    'Alps':  29
     }[region]
 
 
@@ -1214,6 +1215,9 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
             mask = np.ma.mask_or( tmp, tropics_unmasked( res=res) )
 
         if case == 28:
+            print( 'WARNING - Mask not setup')
+            sys.exit()
+        if case == 29:
             print( 'WARNING - Mask not setup')
             sys.exit()
 
@@ -1290,7 +1294,18 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
         if case == 28:
             mask = np.ma.mask_or( lat2lat_2D_unmasked( lowerlat=50,
                 higherlat=80, res=res ), land_unmasked( res=res )[...,0]  )
-
+        if case == 29: # Alps
+            # Alps mask
+            lowerlat = 43
+            higherlat = 47
+            lowerlon = 5
+            higherlon  = 15
+            # Get a mask for lat and lon range, then combine
+            mask1 = lat2lat_2D_unmasked( res=res, lowerlat=lowerlat,
+                higherlat=higherlat)
+            mask2 = lon2lon_2D_unmasked( res=res, lowerlon=lowerlon,
+                higherlon=higherlon )
+            mask = np.ma.mask_or( mask1, mask2 )
 
     logging.debug( 'prior to setting dimensions: {}'.format(mask.shape) )
 
@@ -2097,15 +2112,30 @@ def interpolate_sparse_grid2value( Y_CORDS=None, X_CORDS=None, \
     # WARNING THIS APPRAOCH WILL NOT WORK NEAR ARRAY EDGES!!!
     # (TODO: add functionality for this.)
     # Get indices buffer sub-selection of grid.
-    s_low_X_ind = find_nearest_value( X_CORDS, X-buffer_CORDS )
-    s_high_X_ind = find_nearest_value( X_CORDS, X+buffer_CORDS )
-    s_low_Y_ind = find_nearest_value( Y_CORDS, Y-buffer_CORDS )
-    s_high_Y_ind = find_nearest_value( Y_CORDS, Y+buffer_CORDS )
+#    assert X_CORDS[-1] > X_CORDS[0], 'This -180=>180 and
+    if X_CORDS[0] < X_CORDS[-1]:
+        s_low_X_ind = find_nearest_value( X_CORDS, X-buffer_CORDS )
+        s_high_X_ind = find_nearest_value( X_CORDS, X+buffer_CORDS )
+    else: # Y_CORDS[0] > Y_CORDS[-1]
+        s_low_X_ind = find_nearest_value( X_CORDS, X+buffer_CORDS )
+        s_high_X_ind = find_nearest_value( X_CORDS, X-buffer_CORDS )
+        XYarray[::-1,:]
+    # WARNING: This approach assumes grid -90=>90 (but flips slice if not)
+    if Y_CORDS[0] < Y_CORDS[-1]:
+        s_low_Y_ind = find_nearest_value( Y_CORDS, Y-buffer_CORDS )
+        s_high_Y_ind = find_nearest_value( Y_CORDS,Y+buffer_CORDS )
+    else: # Y_CORDS[0] > Y_CORDS[-1]
+        s_low_Y_ind = find_nearest_value( Y_CORDS, Y+buffer_CORDS )
+        s_high_Y_ind = find_nearest_value( Y_CORDS,Y-buffer_CORDS )
+        XYarray[:,::-1]
+    # Print out values in use
     if verbose:
-        print(('Y={}, subrange=({}(ind={}),{}(ind={}))'.format( Y, \
-        Y_CORDS[s_low_Y_ind], s_low_Y_ind, Y_CORDS[s_high_Y_ind], s_high_Y_ind)))
-        print(('X={}, subrange=({}(ind={}),{}(ind={}))'.format( X, \
-        X_CORDS[s_low_X_ind], s_low_X_ind, X_CORDS[s_high_X_ind], s_high_X_ind)))
+        prt_str = 'Y={}, subrange=({}(ind={}),{}(ind={}))'
+        print( prt_str.format( Y, Y_CORDS[s_low_Y_ind], s_low_Y_ind,
+            Y_CORDS[s_high_Y_ind], s_high_Y_ind ) )
+        prt_str = 'X={}, subrange=({}(ind={}),{}(ind={}))'
+        print( prt_str.format( X, X_CORDS[s_low_X_ind], s_low_X_ind,
+            X_CORDS[s_high_X_ind], s_high_X_ind) )
     # Select sub array and get coordinate axis
     subXY = XYarray[s_low_X_ind:s_high_X_ind, s_low_Y_ind:s_high_Y_ind]
     subX = X_CORDS[s_low_X_ind:s_high_X_ind]
