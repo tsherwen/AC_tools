@@ -4349,8 +4349,8 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
     # Get N in air [molec air/m3]
     if 'n_air' in var_list:
         # variable name has just changed in v11
-        Data_rc['n_air'] = get_number_density_variable( wd=wd, \
-            trop_limit=trop_limit )
+        Data_rc['n_air'] = get_number_density_variable( wd=Var_rc['wd'], \
+            trop_limit=Var_rc['trop_limit'] )
         # Kludge! - restrict length of array to main wd.
         Data_rc['n_air'] = Data_rc['n_air'][...,:Data_rc['vol'].shape[-1]]
     # Pressure ? ( in hPa )
