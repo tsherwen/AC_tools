@@ -2428,7 +2428,7 @@ def get_DU_mean(spec='O3',s_area=None, a_m=None, t_p=None, O3_arr=None, wd=None,
 # ----
 def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
         wd=None, year_eq=True, res='4x5', return_as_int_sum=False, \
-        GC_version='v10-01', debug=False):
+        trop_limit=True, GC_version='v10-01', debug=False):
     """
     Get production and loss terms for O3 from prod/loss diagnostic
 
@@ -2447,20 +2447,23 @@ def get_POxLOx( ctms=None, vol=None, all_data=False, t_p=None, ver='1.6', \
     (list) of two (int)
     """
     logging.info( 'get_POxLOx called with iGC ver={}'.format( ver ) )
-
     # Get names of POx and LOx diagnostics
     if GC_version == 'v10-01':
         specs = GC_var('POxLOx')
     else:
         specs = ['POx', 'LOx']
-
+    # Get required variables if not provided
+    if isinstance( t_p, type(None) ):
+        t_p = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], \
+            trop_limit=trop_limit)
     # Get prod/loss in [molec/cm3/s]
     if pygchem.__version__ ==  '0.2.0':
         arrs = [ np.concatenate( [get_gc_data_np( ctm, spec=PLO3_to_PD(spec, \
             ver=ver, fp=True), category="PORL-L=$", debug=debug) \
             for ctm in ctms ], axis=3 ) for spec in specs ]
     else:
-        arrs = get_GC_output( wd=wd, vars=['PORL_L_S__'+i for i in specs] )
+        arrs = get_GC_output( wd=wd, vars=['PORL_L_S__'+i for i in specs],
+            trop_limit=trop_limit )
         arrs = [ arrs[i,...] for i in range( len(specs) ) ]
 
     if all_data:
@@ -4021,12 +4024,12 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
     if rm_strat:
         ars = mask4troposphere( ars,  t_ps=t_ps, wd=wd, trop_limit=trop_limit, \
             use_time_in_trop=use_time_in_trop, multiply_method=multiply_method )
-
     if debug:
         logging.debug( [ (i.sum(), i.shape) for i in ars ] )
-        logging.debug( [ (i.sum(), i.shape) for i in [ i[...,None] for i in ars ] ] )
-        logging.debug( np.concatenate( [ i[...,None] for i in ars ], axis=-1 ).shape )
-
+        logging.debug( [ (i.sum(), i.shape) \
+            for i in [ i[...,None] for i in ars ] ] )
+        logging.debug( np.concatenate( [ i[...,None] for i in ars ], \
+            axis=-1 ).shape )
     if conbine_ars:
         return np.concatenate( [ i[...,None] for i in ars ], axis=-1 )
     else:
@@ -5445,7 +5448,7 @@ def split_combined_KPP_eqns( list_in ):
 # X.XX - Get stoichiometry of each tagged reaction in KPP file
 # ----
 def get_stioch_for_family_reactions( fam='LOx', filename='gckpp_Monitor.F90',
-        Mechanism='Halogens', RR_dict=None, wd=None ):
+        Mechanism='Halogens', RR_dict=None, wd=None, debug=False ):
     """
     Get the stiochmetery for each reaction in family from compiled KPP file
 
@@ -5464,11 +5467,9 @@ def get_stioch_for_family_reactions( fam='LOx', filename='gckpp_Monitor.F90',
     if isinstance( RR_dict, type(None)):
         RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename, \
             wd=wd)
-
-    # assume unity if no coeffeicent
+    # Assume unity if no coeffeicent
     unity = 1.0
-
-    # loop dictionary of reactions and save those that contain tag
+    # Loop dictionary of reactions and save those that contain tag
     tagged_rxns = []
     tagged_rxn_stioch = []
     for key_ in list(RR_dict.keys()):
@@ -5479,25 +5480,24 @@ def get_stioch_for_family_reactions( fam='LOx', filename='gckpp_Monitor.F90',
             tagged_rxns += [key_]
             # split reaction str by '+' (excluding reactants part)
             rxn_str = rxn_str[18:].split('+')
-#            print rxn_str
+            if debug: print( rxn_str )
             # get product
             product_str = [i for i in rxn_str if (fam in i) ]
-#            print product_str
-            # Find
+            if debug: print( product_str )
+            # Find index of reaction
 #            ind_of_rxn = [ n for n,i in product_str if (fam in i) ]
-            # split Coe from
+            # split coefficient ("Coe") from reaction
             product_str = product_str[0].strip().split()
             if len(product_str)>1:
                 tagged_rxn_stioch += [ float(product_str[0]) ]
             else:
                 tagged_rxn_stioch += [ unity ]
-
     return dict(list(zip(tagged_rxns, tagged_rxn_stioch)))
 
 
 def get_tags4_family( fam='LOx', filename='gckpp_Monitor.F90',
         Mechanism='Halogens', tag_prefix='PT', RR_dict=None, wd=None,
-        debug=False ):
+        get_one_tag_per_fam=True, debug=False ):
     """
     For a P/L family tag (e.g. LOx), if there are induvidual tags then these
     are extracted
@@ -5532,13 +5532,21 @@ def get_tags4_family( fam='LOx', filename='gckpp_Monitor.F90',
             rxn_str = rxn_str[18:].split('+')
             # look for tag(s)... - should only be one per reaction!
             tags = [i.strip() for i in rxn_str if (tag_prefix in i) ]
+            if debug: print( rxn_str, tags )
             if len(tags)>=1:
-                tagged_rxn_tags += tags
+                if len(tags) ==1 :
+                    tagged_rxn_tags += tags
+                else:
+                    prt_str = 'WARNING: {} tags for rxn! - {} - {}'
+                    if debug: print( prt_str.format( len(tags), tags, rxn_str ))
+                    if get_one_tag_per_fam :
+                        tagged_rxn_tags += [ tags[0] ]
+                    else:
+                        tagged_rxn_tags += tags
             else:
                 tagged_rxn_tags+=['WARNING: RXN. NOT TAGGED! ({})'.format(key_)]
                 if debug: print(( key_, fam, 'ERROR!', tags, rxn_str ))
-
-
+    assert len(tagged_rxns)==len(tagged_rxn_tags), "# tags doesn't = # rxns!"
     return dict(list(zip(tagged_rxns, tagged_rxn_tags)))
 
 
