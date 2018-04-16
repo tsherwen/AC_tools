@@ -3779,10 +3779,8 @@ def convert_molec_cm3_2_v_v( arr=None, wd=None, vol=None, a_m=None, \
     arguements or are extracted online (from provided wd )
     """
     logging.info('convert_molec_cm3_2_v_v called for res={}'.format(res) )
-
     if explicitly_caculate:
         print('Not implimented yet!')
-
     # use an approximation assuming SATP
     else:
         # RMM
@@ -3796,13 +3794,10 @@ def convert_molec_cm3_2_v_v( arr=None, wd=None, vol=None, a_m=None, \
         #  (1/(g/mol)) = (mol/g) ; (mol/g) * (g/cm3) = mol/cm3
         MOLS = (1/RMM_air) * AIRDEN
         # v/v * mols * AVG's # (to get molecules)
-
         # get moles/cm3 ( from molecules/cm3 )
         arr = arr/constants('AVG')
-
         # get mol/mol and remove cm3 by dividing by mol/cm3
         arr = arr /MOLS
-
     return arr
 
 
@@ -3846,7 +3841,6 @@ def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
     logging.debug('mask4troposphere - with multiply method?={}' + \
         ',use_time_in_trop={}, type of t_lvl&t_ps:{}&{}'.format( \
         multiply_method, use_time_in_trop, type(t_lvl), type(t_ps) )  )
-
     # --- Get time tropopause diagnostic (if not given as argument)
     if not isinstance(t_ps, np.ndarray) and use_time_in_trop:
         t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], \
@@ -3857,15 +3851,12 @@ def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
             a[-1] = 47-38
             a = np.zeros(  tuple( a+[t_ps.shape[-1]] ) )
             t_ps = np.ma.concatenate( (t_ps,a),  axis=-2 )
-
     # Get tropopause level (if not given as argument)
     if not isinstance(t_lvl, np.ndarray) and ( not use_time_in_trop):
         t_lvl = get_GC_output( wd, vars=['TR_PAUSE__TP_LEVEL'], \
             trop_limit=False )
-
     # ---  Multiply by fractional time in trop. array
     if multiply_method and use_time_in_trop:
-
         # Invert values if masking troposphere
         if masks4stratosphere:
             t_ps = 1 - t_ps
@@ -3874,18 +3865,15 @@ def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
             t_ps = t_ps.mean(axis=-1)
         # Multiply fractional array by provided array
         ars = [i*t_ps for i in ars ]
-
     # ---  Mask by fractional time in trop. array
     elif (not multiply_method) and use_time_in_trop:
         # Mask area that are not exclusively stratospheric
         if masks4stratosphere:
             # mask troposphere
             t_ps = np.ma.masked_where( t_ps != 0, t_ps )
-
         # Mask area that are not exclusively tropospheric
         else:
             t_ps = np.ma.masked_where( t_ps != 1, t_ps )
-
     # ---  Mask using tropopause level diagnostic values
     else:
         # Setup dummy array with model numbers as values
@@ -3893,19 +3881,17 @@ def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
         logging.debug( [ i.shape for i in (t_ps, t_lvl, ars[0]) ] )
         for i, n in enumerate( range(1,ars[0].shape[-2]+1) ):
             t_ps[:,:,i,:] =n
-
         if masks4stratosphere:
             # mask where the levels are greater that the tropopause level
             t_ps = np.ma.masked_where( t_ps<t_lvl[:,:,None,:], t_ps)
         else:
             # mask where the levels are greater that the tropopause level
             t_ps = np.ma.masked_where( t_ps>t_lvl[:,:,None,:], t_ps)
-
     # --- Set array mask to have strat mask (trop if masks4stratosphere=True)
     if (not multiply_method):
         for n, arr in enumerate( ars ):
-            logging.debug( 'Using multiply_method={}, use_time_in_trop={}'.format(
-                multiply_method, use_time_in_trop ) )
+            log_str = 'Using multiply_method={}, use_time_in_trop={}'
+            logging.debug( log_str.format( multiply_method, use_time_in_trop ) )
             try:
                 ars[n] = np.ma.array( arr, mask=t_ps.mask )
             except:
@@ -3915,13 +3901,13 @@ def mask4troposphere( ars=[], wd=None, t_ps=None, trop_limit=False, \
                     ars[n] = np.ma.array( arr, mask=t_ps.mean(axis=-1).mask )
                 else:
                     # Log error
-                    log_str = 'Using multiply_method={}, use_time_in_trop={}'.format(
-                        multiply_method, use_time_in_trop )
+                    log_str = 'Using multiply_method={}, use_time_in_trop={}'
+                    log_str = log_str.format(multiply_method, use_time_in_trop )
                     logging.debug( log_str )
-                    log_str = 'mask not applied for shapes', [i.shape  for i in (arr, t_ps)  ]
+                    log_str = 'mask not applied for shapes',
+                    log_str += str([i.shape  for i in (arr, t_ps)  ])
                     logging.debug( log_str )
                     sys.exit()
-
     return ars
 
 # ----
@@ -3945,10 +3931,8 @@ def convert_molec_cm3_s2_molec_per_yr( ars=None, vol=None ):
     for n, arr in enumerate( ars ):
         # Times by volume
         ars[n]  = arr *vol
-
         # Convert /s to /yr
         ars[n] = arr *60*60*24*365
-
     return ars
 
 
@@ -3963,7 +3947,7 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
         verbose=False,  debug=False ):
     """
     Convert molec/cm3/s to g/grid box. This is used for converting prod/loss
-    output units.
+    output units
 
     Parameters
     -------
@@ -4005,7 +3989,6 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
              debug=debug )
         logging.info( 'WARNING: extracting volume online - inefficent' )
     logging.debug( [ (i.sum(), i.shape) for i in ars ] )
-
     # --- loop spec ars
     for n, arr in enumerate( ars ):
         # convert from molec/cm3/s to  molec/s
@@ -4019,7 +4002,6 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
             day_adjust = d_adjust( months, years)
             ars[n] = arr * day_adjust
     logging.debug( [ (i.sum(), i.shape) for i in ars ] )
-
     # only consider troposphere ( update this to use mask4troposphere )
     if rm_strat:
         ars = mask4troposphere( ars,  t_ps=t_ps, wd=wd, trop_limit=trop_limit, \
@@ -4045,24 +4027,18 @@ def prt_2D_vals_by_region( specs=None, res='4x5', arrs=None, prt_pcent=False, \
     """
     Print values of a 2D (lon, lat) arry masked for regions
     """
-
     # Which regions?
     m_titles = [ 'Tropics', 'Mid lats', 'Extratropics', 'Oceanic', 'NH', 'SH' ]
-
     # Get maskes
     masks = [ mask_all_but( i, mask2D=True, trop_limit=True, res=res)  \
         for i in m_titles ]
-#    o_mask = masks[ m_titles.index( 'Oceanic' ) ]
-
     if debug:
         print([( m_titles[n] , i.shape ) for n, i in enumerate( masks ) ])
-
     # --- Average or total ?
     if add_total:
         arrs += [ np.ma.concatenate( [ i[...,None] for i in arrs ], \
             axis=-1 ).sum(axis=-1) ]
         specs += ['Total']
-
     # --- Print out actual values
     pstr  = '{:<25}'+'{:<15}'*( len(m_titles)-1 )
     pstrn = '{:<25}' +'{:<15,.3f}'*( len(m_titles)-1 )
@@ -4070,7 +4046,6 @@ def prt_2D_vals_by_region( specs=None, res='4x5', arrs=None, prt_pcent=False, \
     print((m_titles, arrsn))
     print((pstr.format( *arrsn )))
     for n, s in enumerate( specs ):
-
         if summate:
             vars = [ s, np.ma.sum(arrs[n]) ]
             vars += [ np.ma.sum(arrs[n]*m) for m in masks ]
@@ -4078,7 +4053,6 @@ def prt_2D_vals_by_region( specs=None, res='4x5', arrs=None, prt_pcent=False, \
             vars = [ s, np.ma.mean(arrs[n]) ]
             vars += [ np.ma.mean(arrs[n]*m) for m in masks ]
         print((pstrn.format( *vars )))
-
     # --- Print out percent values
     if prt_pcent :
         print([i.shape for i in arrs ])
@@ -4101,7 +4075,6 @@ def prt_2D_vals_by_region( specs=None, res='4x5', arrs=None, prt_pcent=False, \
                 for m in masks ]
             vars_l += [ vars ]
             print((pstrn.format( *vars )))
-
         # --- Convert to DataFrame, then save to csv
         if save2csv:
             # construct df
@@ -4192,7 +4165,7 @@ def get_avg_trop_conc_of_X( spec='O3', wd=None, s_area=None, res='4x5',\
     """
     # Get species concentration in v/v
     arr = get_GC_output( vars=['IJ_AVG_S__'+spec], wd=wd, trop_limit=trop_limit)
-    #
+    # convert units if 'units' argument != 'v/v'
     if units == 'v/v':
         pass
     elif units == 'molec/cm3':
@@ -4251,7 +4224,6 @@ def get_default_variable_dict( wd=None,
     # Debug settings? (default = No )
     Var_rc['debug'] = False
     Var_rc['verbose'] = False
-
     # --- Analysis settings?
     # Consider just troposphere or consider full atmosphere?
     if full_vertical_grid:
@@ -4270,8 +4242,8 @@ def get_default_variable_dict( wd=None,
             Var_rc['limit_vertical_dim'] = True
         else:
             Var_rc['limit_vertical_dim'] = False
-
     return Var_rc
+
 
 # ----
 # X.XX - Get shared data variables as a dictionary object.
@@ -4297,7 +4269,6 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
     if isinstance(Var_rc, type(None)):
         Var_rc = get_default_variable_dict(
             full_vertical_grid=full_vertical_grid )
-
     # --- Extract basic variables by default
     # Resolution?
     Data_rc['res'] = get_gc_res(wd=Var_rc['wd'], filename=Var_rc['filename'])
@@ -4310,14 +4281,12 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
 #    if 'output_vertical_grid' in var_list:
     Data_rc['output_vertical_grid'] = check_output_vertical_grid( \
         wd=Var_rc['wd'], filename=Var_rc['filename'])
-
     # ---  Now add specifically requested variables?
     # Add a reference 4x5 dir that has all generic output (e.g. N/AIR.)
     if 'generic_4x5_wd' in var_list:
         generic_4x5_wd = '/work/home/ts551/data/all_model_simulations/iodine_runs/'
         generic_4x5_wd += 'iGEOSChem_3.0_v10/run/'
         Data_rc['generic_4x5_wd'] = generic_4x5_wd
-
     # Months?
     if 'months' in var_list:
         Data_rc['months'] = get_gc_months(wd=Var_rc['wd'], \
@@ -4341,7 +4310,8 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
         Data_rc['s_area'] = get_surface_area( Data_rc['res'] )
     # Volume (cm^3)
     if 'vol' in var_list:
-        assert ('s_area' in var_list), "please add 's_area' to var_rc (dependent)"
+        assert_str = "please add 's_area' to var_rc (dependent)"
+        assert ('s_area' in var_list), assert_str
         Data_rc['vol'] = get_volume_np( wd=Var_rc['wd'], \
             trop_limit=Var_rc['trop_limit'],\
             s_area=Data_rc['s_area'][...,None], res=Data_rc['res'] )
@@ -4362,7 +4332,7 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
             vars=['PEDGE_S__PSURF'])
     # Calculate molecules per grid box - [molec air]
     if 'molecs' in var_list:
-        # (Note: volumne ('vol') is converted from [m^3] to [cm^3] concurrently )
+        # (Note: volumne ('vol') is converted from [m^3] to [cm^3] concurrently)
         Data_rc['molecs'] = Data_rc['n_air'] * Data_rc['vol']/1E6
         # limit shape of array to prod/loss size (59 or 38)
         # Only if troposphere only run (with trop_limit=True) or
@@ -4386,24 +4356,21 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
     if ('lon' in var_list) or ('lat' in var_list):
         # Why is this variable extracted from an offline dictionary?
         # UPDATE to use NetCDF coordinate variable.
-        lon, lat, NIU = get_latlonalt4res( res=Data_rc['res'], wd=Var_rc['wd'], \
+        lon, lat, NIU = get_latlonalt4res( res=Data_rc['res'], wd=Var_rc['wd'],\
             full_vertical_grid=Var_rc['full_vertical_grid'],\
             filename=Var_rc['filename']  )
         Data_rc['lon'] = lon
         Data_rc['lat'] = lat
-
     # Tracer names? (aka those included in IJ_AVG_S__ diagnostic )
     if 'tracers' in var_list:
         with Dataset( Var_rc['wd']+Var_rc['filename'], 'r' ) as d:
             tracers = [i for i in d.variables if ('IJ_AVG_S__' in i)]
             tracers = [i.split('IJ_AVG_S__')[-1] for i in tracers ]
             Data_rc['tracers'] = tracers
-
     # Add a dictionary for converting between planeflight and input.geos names
     if 'tracers2planeflight' in var_list:
         Data_rc['tracers2planeflight'] = get_dict_of_tracers2planeflight_IDs(\
             wd=Var_rc['wd'])
-
     # Check all requested variables were extract? or call stop...
     vars_not_extracted = [i for i in var_list if i not in list(Data_rc.keys())]
     if len(vars_not_extracted) > 0:
@@ -4411,8 +4378,8 @@ def get_shared_data_as_dict( Var_rc=None, var_list=[], \
         print(err_msg)
         logging.info(err_msg)
         sys.exit()
-
     return Data_rc
+
 
 # ----
 # X.XX -
@@ -4421,33 +4388,29 @@ def get_dict_of_tracers2planeflight_IDs( wd=None ):
     """
     Make dictionary of tracers and planeflight IDs from input.geos file
     """
-    # local variables
+    # Local variables
     filename ='input.geos'
     tracer_str = 'Tracer #'
     header_str ='Tracer Entries ------->'
     tracers_l = []
     tracer_num = []
     mwt_l =[]
-    # open file and read the lines with tracer infomation
+    # Open file and read the lines with tracer infomation
     with open( wd+filename, 'rb') as file_:
-
-        # loop lines in file
+        # Loop lines in file
         for line_ in file_:
-
             # Get header
             if header_str in line_:
                 headers =line_[25:47]
-
             if tracer_str in line_:
                 num, tracer, mwt = line_[25:47].strip().split()
-
-                # save tracer name
-                # save tracer number
+                # Save tracer number
                 tracer_num +=[num]
+                # Save tracer name
                 tracers_l +=[tracer]
                 mwt_l+=[mwt]
-
     return dict( list(zip(tracers_l, tracer_num)) )
+
 
 # ----
 # X.XX -
@@ -4460,11 +4423,12 @@ def check_output_vertical_grid(wd=None, filename=None):
     # TODO - Kludge for now.
     return 'Full_72'
 
+
 # ----
 # X.XX -
 # ----
 def process_to_X_per_s( spec=None, ars=None, tags=None, ref_spec=None,  \
-        Var_rc=None, Data_rc=None, summate_routes=True, summate_altitudes=True ):
+        Var_rc=None, Data_rc=None, summate_routes=True, summate_altitudes=True):
     """
     Process arrays of molec/cm3/s to g(ref_spec)/s.
 
@@ -4486,7 +4450,6 @@ def process_to_X_per_s( spec=None, ars=None, tags=None, ref_spec=None,  \
         month_eq=True # use conversion in convert_molec_cm3_s_2_g_X_s
     else:
         month_eq=False
-
     # Convert to g X/s
     ars = convert_molec_cm3_s_2_g_X_s( ars=ars, ref_spec=ref_spec, \
         # shared settings...
@@ -4501,13 +4464,9 @@ def process_to_X_per_s( spec=None, ars=None, tags=None, ref_spec=None,  \
     # is the broadcasting right here? should the array just be overwritten?
     ars = [ ars[n]* spec_stoich(tag, ref_spec=ref_spec)  \
         for n, tag in enumerate( tags ) ]
-
-#    print [ i.shape for i in ars ]
-
     # Summate altitudes
     if summate_altitudes:
         ars = [ i.sum(axis=2) for i in ars ]
-
     # Summate routes?
     if summate_routes:
         # add buffer dimension for broadcasting.
@@ -4518,6 +4477,7 @@ def process_to_X_per_s( spec=None, ars=None, tags=None, ref_spec=None,  \
         return arr
     else:
         return ars
+
 
 # ----
 # X.XX -
@@ -4542,7 +4502,6 @@ def concvert_df_VOC_C2v( df=None, verbose=True ):
     C_equiv_species = [
     'ALK4', 'ISOP', 'ACET', 'MEK',  'ALD2', 'PRPE',  'C2H6', 'C3H8'
     ]
-
     # Loop these and try and convert
     for spec in C_equiv_species:
         try:
@@ -4552,7 +4511,6 @@ def concvert_df_VOC_C2v( df=None, verbose=True ):
         except:
             if verbose:
                 print(('Did not convert C/v to v/v for: ', spec))
-
     return df
 
 
@@ -4580,7 +4538,6 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
     mk_monthly_NetCDF_files (boolean): make a NetCDF per month of files
     mk_weekly_NetCDF_files (boolean): make a NetCDF per week of files
 
-
     Returns
     -------
     (None)
@@ -4593,13 +4550,11 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
     import os
     import sys
     import time
-
     # Get folder from command line.
     if isinstance( folder, type(None)):
         folder = sys.argv[1]
         if folder[-1] != '/':
             folder+='/'
-
     # Get list of files
     files = glob.glob(folder+bpch_file_type)
     df = pd.DataFrame( files, columns=['folder+file'] )
@@ -4612,7 +4567,6 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
     # split off file names
     filenames = [i.split('/')[-1] for i in files ]
     df['filenames'] = filenames
-
     # Convert files on bulk or make files by month/week?
     if mk_monthly_NetCDF_files or mk_weekly_NetCDF_files:
         # get times of model out in file
@@ -4676,7 +4630,6 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
             # now save the combined file
             ds.to_netcdf(folder+filename, unlimited_dims={'time_counter':True})
             # TODO: Now delete monthly files?
-
     # Convert files on bulk
     elif mk_single_NetCDF_file:
         print('WARNING - all files being convert to single NetCDF in one go!')
@@ -4684,7 +4637,6 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
         convert_to_netCDF( folder=folder, filename=filename, \
             bpch_file_list=filenames, bpch_file_type=bpch_file_type )
     else: print('Please specify whether to make a sinlge or multiple .nc files')
-
     # If split by month
     if split_by_month:
         print(('Splitting NetCDF file by month - {}'.format(folder+filename)))
@@ -4699,7 +4651,8 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
 def process_all_bpch_files_in_dir(folder=None, ext_str=None):
     """
     Process all bpch files in a given directory
-    (Warpper of process_bpch_files_in_dir2NetCDF for *ts*bpch* and *ctm*bpch* files)
+    (Warpper of process_bpch_files_in_dir2NetCDF for *ts*bpch* and *ctm*bpch*
+    files)
 
     folder (str): directory address for folder contain files
     ext_str (str): extra str to inc. in monthly filenames
@@ -4717,7 +4670,6 @@ def process_all_bpch_files_in_dir(folder=None, ext_str=None):
     process_bpch_files_in_dir2NetCDF( folder=folder, filename=filename, \
         ext_str=ext_str, file_prefix=file_prefix, \
         bpch_file_type=bpch_file_type, split_by_month=True)
-
     # - Process *ts*bpch* files
     # Temporary variables
     bpch_file_type = 'ts*bpch*'
@@ -4727,7 +4679,6 @@ def process_all_bpch_files_in_dir(folder=None, ext_str=None):
     process_bpch_files_in_dir2NetCDF( folder=folder, filename=filename, \
         ext_str=ext_str, file_prefix=file_prefix, \
         bpch_file_type=bpch_file_type, split_by_month=True)
-
 
 
 # ----
@@ -4823,34 +4774,31 @@ def move_spin_files_to_spin_up_folder( wd=None, spinup_dir=None ):
             print( 'FAILED to move: {}'.format( fails ) )
         print('moved {} {} files'.format( len(d[key])-len(fails), key ) )
 
-
+# ----
+# X.XX -
+# ----
 def clean_run_dir4monthly_run( wd=None,
         edate = datetime.datetime(2014, 1, 1, 0),
         sdate = datetime.datetime(2013, 1, 1, 0), debug=False ):
     """ Remove existing model output and input files """
     import shutil
     import os
-    # spinup  directory
+    # Spinup  directory
     spinup_dir= wd +'/spin_up/'
-
-    # move the spin up files to a seperate spin up folder
+    # Move the spin up files to a seperate spin up folder
     move_spin_files_to_spin_up_folder(wd=wd, spinup_dir=spinup_dir )
-
-    # remove temporary files
+    # Remove temporary files
     [ os.remove(i) for i in glob.glob(wd+'*~') ]
-
-    # remove the old input.geos file (symbolically linked)
+    # Remove the old input.geos file (symbolically linked)
     try:
         os.unlink( wd+'input.geos' )
     except:
         print( 'FAILED to unlinke input.geos (from input_files folder)' )
-
-    # try and replace it with the input.geos.org
+    # Try and replace it with the input.geos.org
     try:
         shutil.move( wd+'input.geos.orig', wd+'input.geos')
     except:
         print( 'FAILED to replace input.geos with input.geos.orig' )
-
     # Sym link the last file spun up file to start the new run
     file_strs = [
     'GEOSChem_restart.{}{:0>2}{:0>2}0000.nc',
@@ -4858,13 +4806,6 @@ def clean_run_dir4monthly_run( wd=None,
     ]
     oldfiles = [i.format(edate.year, edate.month, edate.day) for i in file_strs]
     newfiles = [i.format(sdate.year, sdate.month, sdate.day) for i in file_strs]
-    # Add a gotchat for accessing earth0 files
-#     mount_earth0_dir = '/shared/earth_home/'
-#     if mount_earth0_dir in wd:
-#         output_wd = wd.replace( mount_earth0_dir, '/work/home/' )
-#     else:
-#         output_wd=wd
-    #
     for nfile, file in enumerate( oldfiles ):
         if debug: print( spinup_dir+file, wd+newfiles[nfile] )
         try:
@@ -4872,6 +4813,95 @@ def clean_run_dir4monthly_run( wd=None,
         except:
             prt_str = 'FAILED to sym link new restart files to spin up ones {}'
             print( prt_str.format( file ) )
+
+
+# ----
+# X.XX - print stats on model run times
+# ----
+def get_model_run_stats( wd=None, file_type='*geos.log*', debug=False ):
+    """ Get model stats (e.g runtime) """
+    # Get log files
+    logging.debug('get_model_run_stats called for wd={}'.format(wd))
+    # --- Find all geos log files in directory...
+    files = glob.glob( wd+'/'+file_type )
+    if len(files) < 1:
+        err_str = 'WARNING! - no files found (assuming type={})'
+        logging.info( err_str.format(file_type) )
+        print( err_str.format(file_type) )
+        files = glob.glob( wd+'/logs/'+file_type )
+        if len(files) < 1:
+            err_str = 'WARNING! - no files found (type={} in wd/log/*)'
+            logging.info( err_str.format(file_type) )
+            # try
+            file_type = 'log.*'
+            files = glob.glob( wd+'/logs/'+file_type )
+            print( 'Loooking for {} files instead'.format( file_type)  )
+            if len(files) < 1:
+                err_str = 'WARNING! - no files found (type={} in wd/log/*)'
+                logging.info( err_str.format(file_type) )
+    # --- If there are any, then
+    if len(files) > 1:
+        # Define some variable names
+        Rstart = 'Real Start'
+        Rend = 'Real End'
+        Mend = 'Model End'
+        Mstart = 'Model Start'
+        Mtime = 'Model time (days)'
+        Rtime = 'Real time (hours)'
+        vars4df = [ Rstart, Rend, Mend, Mstart, ]
+        # Loop and extract OH means, take an average if n>0
+        filenames = [i.split('/')[-1] for i in files]
+        for n_file, file in enumerate( files ):
+            d = {}
+            with open(file) as f:
+                if debug: print((file, f))
+                for line in f:
+                    if '=> SIMULATION ' in line:
+                        date = line.split('TIME:')[1][:-5].strip()
+                        date = time.strptime( date, '%Y/%m/%d %H:%M' )
+                        if 'START' in line:
+                            d[Rstart] = AC.time2datetime( [date] )[0]
+                        if 'END' in line:
+                            d[Rend] = AC.time2datetime( [date] )[0]
+                    elif 'Start time of run' in line:
+                        sdate = line[30:].strip()
+                        sdate = time.strptime( sdate, '%Y%m%d %H%M%S' )
+                        d[Mstart] = AC.time2datetime( [sdate] )[0]
+                    elif 'End time of run' in line:
+                        edate = line[30:].strip()
+                        edate = time.strptime( edate, '%Y%m%d %H%M%S' )
+                        d[Mend] = AC.time2datetime( [edate] )[0]
+                if all([i in d.keys() for i in vars4df]):
+                    # Add differences
+                    d[Mtime] = (d[Mend]-d[Mstart]).total_seconds() / 60 /60 / 24
+                    d[Rtime] = (d[Rend]-d[Rstart]).total_seconds() / 60 /60
+                    # keys
+                    keys = vars4df + [Mtime, Rtime]
+                    try:
+                        df[ filenames[n_file] ] = [ d[i] for i in keys ]
+                    except:
+                        df = pd.DataFrame( index=keys )
+                else:
+                    print('Exc. incomplete file: {}'.format(filenames[n_file]) )
+        # - Now calculate some stats
+        df = df.T
+        # Get average times
+        AvgMtime = df[Mtime].mean()
+        AvgRtime = df[Rtime].mean()
+        # Print model output frequency
+        prt_str = 'Model output freg. = {:.2f} days (min={}, max={})'
+        print( prt_str.format( AvgMtime, df[Mtime].min(), df[Mtime].max() ) )
+        # Print time taken for model output
+        prt_str = 'Time taken per Model output = {:.2f} hours (min={}, max={})'
+        print( prt_str.format( AvgRtime, df[Rtime].min(), df[Rtime].max() ) )
+        # print model
+        prt_str = 'Avg. Model days per Real hour = {:.2f}'
+        print( prt_str.format( AvgMtime/AvgRtime ) )
+
+    else:
+        print('No *log files found! (folder:{})'.format(wd) )
+        sys.exit()
+
 
 
 
