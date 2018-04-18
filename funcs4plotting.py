@@ -3585,19 +3585,16 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
     """
     logging.info('X_stackplot called, X[0] & Y[0] shape={}.{}'.format( \
         *[i.shape for i in (X[0], Y) ]) )
-
-    # --- Fig and ax provided? Otherwise create these...
+    # - if "fig" and "ax" not provided then create them.
     if isinstance( fig, type(None) ):
         fig = plt.figure( figsize=(8,8), dpi=dpi, facecolor='w', \
             edgecolor='w')
         logging.info('Creating figure' )
-
     if isinstance( ax, type(None) ):
         ax = fig.add_subplot( 1,1,1  )
         logging.info('Creating ax' )
     logging.debug( '{}'.format( list(zip( labels, [np.sum(i) for i in X] )) )  )
-
-    # --- Stack arrays if not stacked...
+    # - Stack arrays if not stacked...
     if isinstance( X, np.ndarray ):
         X = np.ma.atleast_2d( X )
         logging.debug('Array passed has been made at least 2D if nessesary')
@@ -3618,20 +3615,16 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
         stack = np.ma.divide( stack,  max[:,None] ) *100
         print([ (i.min(), i.max(), i.mean(), i.shape) for i in (stack, max) ])
         xlim = [ 0, 100 ]
-
     debug_ptr = ( labels, [np.sum(stack[:,n]) for n, i in enumerate(labels) ])
     if debug: print( list(zip(debug_ptr)) )
-
-    # --- Setup baseline ( can expand to include other options... )
+    # - Setup baseline ( can expand to include other options... )
     if baseline == 'zero':
         first_line = np.zeros( stack[:,0].shape)
-
-    # --- Plot by label
+    # - Plot by label
     # Get list of colors
     if isinstance( colors, type(None) ):
         colors = color_list( len(stack[0,:]) )
     logging.debug( '{}'.format( list(zip( labels, [ colors[:len(labels)] ] )) ))
-
     # Color between x = 0 and the first array.
     logging.debug( '{}'.format(stack[:, 0]) )
     logging.debug( 'len colors={}, labels={}, stack={}'.format(
@@ -3645,23 +3638,19 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
                                    color=colors[i+1],
                                    label=labels[i+1] )
                                    for i in range( 0, len(stack[0,:])-1 ) ]
-
     # Plot transparent lines to get 2D line object to create legend
     # Not needed. just use the labels from the fill_between calls.
 #     [ plt.plot( Y, stack[:,n], alpha=0, color=colors[n], label=i) \
 #         for n,i in enumerate(labels) ]
-
     # Log scale?
     if log:
         ax.set_xscale('log')
-
     # Print maxima
     debug_ptr = [ title ]
     debug_ptr += [ [ (i.min(), i.max(), i.mean() ) for i in [stack[:,n] ] ]
             for n, label in enumerate(labels) ]
     if debug: print( debug_ptr )
-
-    # --- Beautify plot
+    # - Beautify plot
     if not isinstance( ylim, type(None) ):
         plt.ylim( ylim )
     if not isinstance( xlim, type(None) ):
@@ -3683,12 +3672,10 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
             handles, labels = ax.get_legend_handles_labels()
             leg = plt.legend( flip(handles, ncol), flip(labels, ncol), loc=loc,
                 ncol=ncol, fontsize=f_size*0.75)
-
         # ( + update line sizes)
         for legobj in leg.legendHandles:
                 legobj.set_linewidth( lw)
                 legobj.set_alpha( 1 )
-
     # Remove tick labels on y axis?
     if isinstance( ylabel, type(None) ):
         ax.tick_params( axis='y', which='both', labelleft='off', \
@@ -3696,7 +3683,6 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
     else:
         plt.ylabel( ylabel, fontsize=f_size*.75  )
         ax.tick_params( labelsize= f_size*.75 )
-
     # Remove tick labels on x axis?
     if xlabel:
         ax.set_xlabel(xlabel, fontsize=f_size*.75)
@@ -3707,8 +3693,8 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
                 labelsize= f_size*.75 )
         else:
             ax.tick_params( axis='x', which='both', labelsize= f_size*.75 )
-
     if show: plt.show()
+
 
 # --------------------------- Section 4 ------------------------------------
 # -------------- Plotting Ancillaries

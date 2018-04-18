@@ -3176,6 +3176,8 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
     elif fam == 'Iy' :
         # Select species in family
         specs = GC_var('Iy' )
+        # Also include iodine aerosol and CH3I
+#        specs = GC_var('Iy' ) + ['AERI', 'ISALA', 'ISALC', 'CH3I' ]
 
         # Extract data
         arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ], \
@@ -6237,7 +6239,7 @@ def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None, \
 
 
 # ----
-# X.XX - Get Emission of species in Gg
+# X.XX - Get Emission of species in g ( or other requested unit )
 # ----
 def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
         molec_cm2_s=False, nmonl_m2_d=False, kg_m2_s=False, \
@@ -6258,68 +6260,52 @@ def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
      - Asumption on iodine emissions
      ( set ref_spec to mass unit equivelnces wanted ( e.g. Br )  )
     """
-
-    if debug:
-        print(('get_emiss called for >{}<'.format(spec)))
+    logging.info( 'get_emiss called for >{}<'.format(spec) )
+    # Extract optional variables, if not provided as arguments
     if not isinstance(years, list):
         years = get_gc_years( ctm_f=ctm_f, set_=False, wd=wd )
     if not isinstance(months, list):
         months = get_gc_months( ctm_f=ctm_f, wd=wd)
-
-    # Adjust to " Gg (X) / monthly" from "Kg/m2/ s"
+    if not isinstance(s_area, np.ndarray):
+        s_area = get_surface_area(res)  # m2 land map
+    # Make array to adjust to "Gg (X) / month" from "Kg/m2/s"
     m_adjust = d_adjust(months, years)
-
-    #  get emissions in  Kg/m2/ s
+    # Get emissions in  Kg/m2/ s
     # retain compatibility with version 0.2.0
     if pygchem.__version__ == '0.2.0':
         arr = get_gc_data_np( ctm_f, spec, category="BIOGSRCE")[:,:,0,:]
     else:
         arr = get_GC_output( wd=wd, species=spec, category="BIOGSRCE")
-        res=get_dims4res( r_dims=True, just2D=True )[arr.shape[:2]]
-
-    if not isinstance(s_area, np.ndarray):
-        s_area = get_surface_area(res)  # m2 land map
-
+    # Get units as kg/m2/s or convert to kg/s
     if kg_m2_s:
         arr_ = arr
     else:
         # Kg/m2/ s => Kg/ s
         arr_ = arr*s_area
-
-        # Kg/ s => "kg / monthly"
+        # Kg/ s => "kg / month"
         arr_ = arr_ * m_adjust
         # g ( e.g. I  ) / month
         arr_ = arr_*1E3/ species_mass(spec)*species_mass(ref_spec) * \
             spec_stoich(spec)
-
+    # Convert to units requested
     if nmonl_m2_d:
         # Convert to (g) / m2
         arr_  =  arr_ / s_area
-
         # Convert to (g) / m2 / day
         arr_  =  arr_ / (365./12.)
-
         # Convert to nmol ( /m2/day ) ( reverse normalisation to X mass equiv. )
         arr_ = arr_ / species_mass(ref_spec)  /  spec_stoich(spec)
         arr_ = arr_*1E9
-
-        if debug:
-            print(('get_emiss - 2', arr_.shape))
-
+        if debug: print(('get_emiss - 2', arr_.shape))
     if molec_cm2_s:
         # From  "I Gg/month" to "I Gg/month/cm/2" #convert to /m2 => cm/2
         arr_  =  arr_ / (s_area *10000.)
-
         # Convert to / day => hour => hour => minute => sec
         arr_  =  arr_ / (365./12.) / 24. / 60. / 60.
-
         # Convert to molecules ( reverse normalisation to X mass equiv. )
         arr_ = ( arr_ / species_mass(ref_spec)  ) / spec_stoich(spec) *\
                         constants('AVG')
-
-        if debug:
-            print(('get_emiss - 3', arr_.shape))
-
+        if debug: print(('get_emiss - 3', arr_.shape))
     return arr_
 
 
