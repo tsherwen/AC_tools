@@ -5,8 +5,7 @@ Plot Vertical loss of Ox by family. Function can also print budget to csv.
 
 This is an example script to use AC_tools KPP mechanism parsing/tagging functions. The
 
-python AC_tools/Scripts/plot_KPP_mech_vertical_Ox_loss_by_route.py <working directory of >
-
+python AC_tools/Scripts/plot_KPP_mech_vertical_Ox_loss_by_route.py <working directory with NetCDF of GEOS-Chem output>
 
 """
 import AC_tools as AC
@@ -230,11 +229,8 @@ def get_fam_prod_loss_for_tagged_mechanism( wd=None, fam='LOx', ref_spec='O3',\
     return ars
 
 
-# ---------------------------------------------------------------------------
-# --------------- Functions to store / process generic/shared variables -----
-# ---------------------------------------------------------------------------
 def func_settings( wd=None, filename=None, full_vertical_grid=True ):
-    """ Stores settings for the function as dictionaries """
+    """ Function to store generic/shared variables/data """
     # - I/O settings
     # Setup dictionary.
     Var_rc = AC.get_default_variable_dict(full_vertical_grid=full_vertical_grid)
