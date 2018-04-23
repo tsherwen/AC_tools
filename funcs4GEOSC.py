@@ -2532,10 +2532,8 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
      - A reference species is expected to define the unit terms of the
     returned values.
     """
-
-    logging.info( 'get_wet_dep called for {}, with ref_spec: {} (Iodine:{})'.format(
-            specs, ref_spec, Iodine ) )
-
+    logging_str = 'get_wet_dep called for {}, with ref_spec: {} (Iodine:{})'
+    logging.info( logging_str.format( specs, ref_spec, Iodine ) )
     if not isinstance(months, list):
         months = get_gc_months( ctm_f, wd=wd )
     if not isinstance(years, list):
@@ -2544,7 +2542,7 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
         vol = get_volume_np( ctm_f=ctm_f, s_area=s_area, wd=wd, res=res,\
              debug=debug )
     w_dep = GC_var('w_dep')
-
+    # Special settings for iodine
     if Iodine and isinstance( specs, type(None) ):
         if (all_wdep):
             specs = GC_var('w_dep_specs')
@@ -2555,17 +2553,10 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
             if ver =='3.0':
                 specs = GC_var('w_dep_specs')[:-2] # skip ISALA/ISALC
         ref_spec = 'I'
-
-    # Return
-    if isinstance( ref_spec, type(None) ):
-        print('PLEASE PROVIDE REF SPEC')
-        print('CHECK implementation of ref_spec  - UPDATED')
-        sys.exit()
-
-    if debug:
-        print((specs , len(specs)))
-
-     # --- Extract and convert [kg/s] => g / s of ref_spec ( e.g. I equiv. )
+    # Check whether a reference species ("ref_spec") has been set
+    assert ref_spec != type(None), 'PLEASE PROVIDE REF SPEC'
+    if debug: print((specs , len(specs)))
+    # --- Extract and convert [kg/s] => g / s of ref_spec ( e.g. I equiv. )
     # Retain back compatibility
     if pygchem.__version__ == '0.2.0':
         dep_w = [ [ get_gc_data_np(ctm_f, spec ,category=var, \
@@ -2573,45 +2564,36 @@ def get_wet_dep( ctm_f=None, months=None, years=None, vol=None, \
             species_mass(ref_spec)*spec_stoich(spec) \
             for spec in specs[ii] ]  \
             for ii,var in enumerate(w_dep)]
-
     else:
         # Frontal rain? [kg/s]
         WETDLS_S__ = get_GC_output( wd=wd, vars=['WETDLS_S__'+i \
             for i in specs ], r_list=True, trop_limit=trop_limit )
-
         # Get convective scavenging  [kg/s]
         WETDCV_S__ = get_GC_output( wd=wd, vars=['WETDCV_S__'+i \
             for i in specs ], r_list=True, trop_limit=trop_limit )
         if debug:
-            print([ [ i.shape for i in l ] for l in (WETDLS_S__, WETDCV_S__)  ])
-
+            print([ [ i.shape for i in l ] for l in (WETDLS_S__, WETDCV_S__) ])
         # Convert to g/ s X(ref_spec) equiv.  + conbine two lists
         dep_w = []
         for n, spec in enumerate( specs ):
             if debug:
-                print((n, spec, ref_spec, spec_stoich( spec, ref_spec=ref_spec)))
-
+                print((n, spec, ref_spec ), )
+                print(( spec_stoich( spec, ref_spec=ref_spec) ))
             # Combine convective scavenging and Frontal rain
             dep_w += [ WETDLS_S__[n] + WETDCV_S__[n] ]
-
             # Convert [kg/s] to [g], then moles of species
             dep_w[n] = dep_w[n]*1E3/species_mass( spec )
-
             # Convert to unit terms of ref_spec
             dep_w[n] = dep_w[n]* species_mass(ref_spec)
-
             # Adjust to stoichiometry of ref_spec
             dep_w[n] = dep_w[n]*spec_stoich( spec, ref_spec=ref_spec)
-
     # Adjust to monthly values...
     if output_freq=='Monthly':
         m_adjust = d_adjust( months, years) # => Gg / month
         dep_w = [m_adjust *i for i in dep_w ]
-
     # List wet dep rxns, concat. and sum of rxns ( and convert to Gg )
     if sep_rxn:
         return np.concatenate( [ i[None,...] /scale for i in dep_w ], axis=0 )
-
     # List wet dep rxns and concat.
     else:
         return np.concatenate( [ i[...,None] /scale \
@@ -2696,7 +2678,9 @@ def molec_weighted_avg( arr, wd=None, ctm_f=None, vol=None, t_p=None,\
     else: # weight whole array to give single number
         return (arr *molecs).sum()/molecs.sum()
 
-
+# ----
+# X.XX -
+# ----
 def get_number_density_variable( wd=None, trop_limit=True  ):
     """ Get number density variable from GEOS-Chem output NetCDF """
     try:
@@ -2723,39 +2707,34 @@ def split_4D_array_into_seasons( arr, annual_plus_seasons=True, \
      - currently seasons index is mannual set assuming Jan-Dec
      - TODO - update to use extract data?
     """
-
-    if debug:
-        print((arr.shape))
-
+    if debug: print((arr.shape))
     if annual_plus_seasons:
         seasons  = ['Annual', 'DJF', 'MAM', 'JJA', 'SON']
         # assume calender month order
         # ( this can be automated using get_GC_datetime )
-        indices = [list(range(0,12)), [11, 0, 1], [2, 3, 4], [5, 6, 7], [8, 9, 10] ]
-
+        indices = [
+        list(range(0,12)), [11, 0, 1], [2, 3, 4], [5, 6, 7], [8, 9, 10]
+        ]
     else:
         seasons  = ['DJF', 'MAM', 'JJA', 'SON']
         # assume calender month order
         # ( this can be automated using get GC datetime )
         indices = [[11, 0, 1], [2, 3, 4], [5, 6, 7], [8, 9, 10]]
-
     ars = []
-    # extract data by month
+    # Extract data by month
     for n, s in enumerate( seasons ):
         if debug:
             print((s, n , indices[n]))
         ars += [ [ arr[...,i] for i in indices[n] ] ]
-
-    # average by season
+    # Average by season
     if debug:
-    #    print [ np.array(i).shape for i in ars ], np.array(ars).mean(), seasons
         print(([ np.ma.array(i).shape for i in ars ], seasons))
     ars =  [ np.ma.array(i).mean(axis=0) for i in ars]
     if debug:
         print(([ i.shape for i in ars ], np.ma.array(ars).mean(), seasons))
-
-    # return list array averaged by season
+    # Return list array averaged by season
     return ars, seasons
+
 
 # ----
 # X.XX - Convert v/v to ng/m^3
@@ -2987,11 +2966,11 @@ def prt_seaonal_values( arr=None, res='4x5', area_weight=True, zonal=False, \
 # ----
 def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
         annual_mean=True, t_ps=None, a_m=None, vol=None, res='4x5', \
-        title=None, rtn_list=False, use_time_in_trop=True, multiply_method=True, \
-        rtn_specs=False, verbose=False, rtn_units=False,
+        title=None, rtn_list=False, use_time_in_trop=True,\
+        multiply_method=True,rtn_specs=False, verbose=False, rtn_units=False,\
         units=None, debug=False ):
     """
-    Driver to extract data requested ( as families have differing diagnostic units)
+    Driver to extract data for a given family requested
 
     Parameters
     -------
@@ -3017,10 +2996,11 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
 
     Notes
     -----
+     - Used as families often have different units in diagnostics
      - to return species as list ( not fully implimented ) set rtn_list=True
      - to return species extract, set  rtn_species=True
-     - this function should be used in preference to other bulk output extractors
-      in this module.
+     - this function should be used in preference to other bulk output
+     extractors in this module.
     """
     func_call_str = 'fam_data_extractor called for ', fam, wd, title, res
     logging.info(func_call_str)
