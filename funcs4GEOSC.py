@@ -4842,17 +4842,17 @@ def get_model_run_stats( wd=None, file_type='*geos.log*', debug=False ):
                         date = line.split('TIME:')[1][:-5].strip()
                         date = time.strptime( date, '%Y/%m/%d %H:%M' )
                         if 'START' in line:
-                            d[Rstart] = AC.time2datetime( [date] )[0]
+                            d[Rstart] = time2datetime( [date] )[0]
                         if 'END' in line:
-                            d[Rend] = AC.time2datetime( [date] )[0]
+                            d[Rend] = time2datetime( [date] )[0]
                     elif 'Start time of run' in line:
                         sdate = line[30:].strip()
                         sdate = time.strptime( sdate, '%Y%m%d %H%M%S' )
-                        d[Mstart] = AC.time2datetime( [sdate] )[0]
+                        d[Mstart] = time2datetime( [sdate] )[0]
                     elif 'End time of run' in line:
                         edate = line[30:].strip()
                         edate = time.strptime( edate, '%Y%m%d %H%M%S' )
-                        d[Mend] = AC.time2datetime( [edate] )[0]
+                        d[Mend] = time2datetime( [edate] )[0]
                 if all([i in d.keys() for i in vars4df]):
                     # Add differences
                     d[Mtime] = (d[Mend]-d[Mstart]).total_seconds() / 60 /60 / 24
@@ -4957,7 +4957,111 @@ def prt_Species_List_lines4globchem_dat(spec_list=None, activty_list=None):
 # -------------- Funcs specifically for v11-1g and later
 # (tested on v11-2d-R1,v11-2d-R2, v11-2d-R3...)
 
+
+def get_fam_prod_loss_for_tagged_mechanism( wd=None, fam='LOx', ref_spec='O3',\
+        tags=None, RR_dict=None, Data_rc=None, Var_rc=None, tags2_rxn_num=None,\
+        RR_dict_fam_stioch=None, region=None, rm_strat=False, \
+        weight_by_num_molecules=False,  verbose=True, debug=False):
+    """
+    Extract prod/loss for family from wd and code directory
+
+    Parameters
+    -------
+    fam (str): tagged family to track (already compiled in KPP mechanism)
+    ref_spec (str): reference species to normalise to
+    region (str): region to consider (by masking all but this location)
+    wd (str): working directory ("wd") of model output
+    debug, verbose (bool): switches to turn on/set verbosity of output to screen
+    RR_dict (dict): dictionary of KPP rxn. mechanism (from get_dict_of_KPP_mech)
+    RR_dict_fam_stioch (dict): dictionary of stoichiometries for
+        get_stioch_for_family_reactions
+    tags2_rxn_num (dict): dicionary mapping tags to reaction numbers
+    tags (list): list of prod/loss tags to extract
+    Var_rc (dict): dictionary containing variables for working directory ('wd')
+        ( made by AC_tools' get_default_variable_dict function)
+    Data_rc (dict): dictionary containing model data
+        (made by AC_tools' get_shared_data_as_dict function )
+    rm_strat (boolean): (fractionally) replace values in statosphere with zeros
+    weight_by_num_molecules (boolean): weight grid boxes by number of molecules
+
+    Returns
+    -------
+    (None)
+    """
+    # --- Get tags
+    # Get dictionaries (reaction, tags, stoichiometry ) if not provided
+    if isinstance( RR_dict, type(None) ):
+        RR_dict = get_dict_of_KPP_mech( wd=CODE_wd,
+            GC_version=Data_rc['GC_version' ], Mechanism=Mechanism )
+        if debug: print( len(RR_dict), [RR_dict[i] for i in RR_dict.keys()[:5]])
+    if isinstance( tags2_rxn_num, type(None) ):
+        tags2_rxn_num = {v: k for k, v in tags_dict.items()}
+    if isinstance( RR_dict_fam_stioch, type(None)):
+        RR_dict_fam_stioch = get_stioch_for_family_reactions(
+            fam=fam, RR_dict=RR_dict, Mechanism=Mechanism )
+    # --- Get data
+    # get prod/loss arrays
+    ars = get_GC_output( wd=Var_rc['wd'], r_list=True,\
+        vars=['PORL_L_S__'+i for i in tags ], trop_limit=Var_rc['trop_limit'])
+    # Covert units based on whether model output is monthly
+    if Data_rc['output_freq'] == 'Monthly':
+        month_eq=True # use conversion in convert_molec_cm3_s_2_g_X_s
+    else:
+        month_eq=False
+    # Now convert the units (to G/s)
+    ars = convert_molec_cm3_s_2_g_X_s( ars=ars, ref_spec=ref_spec, \
+        # shared settings...
+        months=Data_rc['months'], years=Data_rc['years'],
+        vol=Data_rc['vol'], t_ps=Data_rc['t_ps'], \
+        trop_limit=Var_rc['trop_limit'], rm_strat=Var_rc['rm_strat'],
+        # there are 59 levels of computation for P/l in v11-1+ (so limit to 59)
+        limit_Prod_loss_dim_to=Var_rc['limit_Prod_loss_dim_to'],
+        # ... and function specific settings...
+        month_eq=month_eq,
+        conbine_ars=False )
+    # Add stoichiometric scaling (# of Ox losses per tagged rxn. )
+    ars = [ i*RR_dict_fam_stioch[tags2_rxn_num[tags[n]]] \
+        for n,i in enumerate(ars)]
+    # Scale to annual
+    if Data_rc['output_freq'] == 'Monthly':
+        # Should this be summated then divided adjusted to time points.
+        # sum over time
+        ars = [i.sum(axis=-1) for i in ars ]
+        # Adjust to equivalent months.
+        ars = [i/len(Data_rc['months'])*12 for i in ars ]
+    else:
+        # Average over time?
+        ars = [i.mean(axis=-1) for i in ars ]
+        # Scale to annual
+        ars = [i*60.*60.*24.*365. for i in ars]
+    # Check tropospheric LOx total
+    arr = np.ma.array( ars )
+    LOx_trop = ( arr*Data_rc['t_ps'].mean(axis=-1)[None, ...] ).sum()/ 1E12
+    if verbose: print( 'Annual tropospheric Ox loss (Tg O3): ', LOx_trop )
+    # Remove the stratosphere by multiplication through by "time in troposphere"
+    if rm_strat:
+        ars = [ i*Data_rc['t_ps'].mean(axis=-1) for i in ars ]
+    # Select data by location or average globally?
+    if not isinstance(region, type(None)):
+        # also allow for applying masks here...
+        print( 'NOT SETUP!!!')
+        sys.exit()
+    else:
+        if weight_by_num_molecules:
+            ars = [ molec_weighted_avg( i, weight_lon=True, res=Data_rc['res'],\
+                weight_lat=True, wd=Var_rc['wd'],
+                trop_limit=Var_rc['trop_limit'], rm_strat=Var_rc['rm_strat'],
+                # provide shared data arrays averaged over time...
+                molecs=Data_rc['molecs'].mean(axis=-1),
+                t_p=Data_rc['t_ps'].mean(axis=-1)  ) for i in ars ]
+    if debug: print( [i.shape for i in ars ])
+    return ars
+
+
 # -------------- Functions to produce KPP ***input*** file(s)
+# ----
+# X.XX -
+# ----
 def print_out_dfs2KPP_eqn_file( species_df=None, headers=None,
         extr_str='OUTPUT', rxn_dicts=None ):
     """ print out DataFrames to *.eqn file """
