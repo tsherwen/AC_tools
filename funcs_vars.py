@@ -526,7 +526,7 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         }
     elif S:
         d = {
-        'S' :1.0, 'SO4': 1.0, 'SO4s': 1.0, 'SO2': 1.0
+        'S' :1.0, 'SO4': 1.0, 'SO4s': 1.0, 'SO4S': 1.0, 'SO2': 1.0
         }
     elif N:
         d= {
@@ -541,7 +541,8 @@ def spec_stoich( spec, IO=False, I=False, NO=False, OH=False, N=False,
         'R4N2': 2.0, 'BrNO3': 1.0, 'INO': 1.0, 'PAN': 1.0, 'PMN': 1.0, \
         'HNO3': 1.0, 'HNO2': 1.0, 'NH3': 1.0, 'HNO4': 1.0, 'BrNO2': 1.0, \
         'IONO': 1.0, 'PROPNN': 1.0, 'NH4': 1.0, 'MPN': 1.0, 'MMN': 1.0, \
-        'ISOPN': 1.0, 'IONO2': 1.0, 'ClNO2': 1.0, 'ClNO3':1.0, \
+        'ISOPN': 1.0, 'IONO2': 1.0, 'ClNO2': 1.0, 'ClNO3':1.0,
+        'NIT': 1.0, 'NITs': 1.0, 'NITS': 1.0, \
         }
     elif C:
         d = {
@@ -2429,6 +2430,7 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'Assekrem': (5.6333332062, 23.2666664124,  2710),
     # --- Misc
     'UoM_Chem': (-2.2302418, 53.4659844, 38 ),
+    'CDD' : (6.83333333, 45.8333333, 4250 )
     }
     if rtn_dict:
         return loc_dict
@@ -3266,6 +3268,8 @@ def get_ref_spec( spec='LIOx' ):
     d = {
     'Cly' : 'Cl',
     'Cl' : 'Cl',
+    'LOx' :'O3',
+    'POx' :'O3',
     'LOX' :'O3',
     'POX' :'O3',
     'LIOx' :'I',
@@ -3283,6 +3287,9 @@ def get_ref_spec( spec='LIOx' ):
     'LBrOx' :'Br',
     'Br' : 'Br',
     'I' : 'I',
+    'SO4': 'S',
+    'NIT': 'N',
+    'NH4': 'N',
     }
     return d[spec]
 
