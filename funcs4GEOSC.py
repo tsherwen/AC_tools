@@ -1743,7 +1743,8 @@ def get_gc_months(ctm_f=None, wd=None, filename='ctm.nc', \
 # X.XX - Get gc datetime
 # ----
 def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
-        filename='ctm.nc', verbose=False, debug=False):
+        filename='ctm.nc', date_str='hours since %Y-%m-%d %H:%M:%S', \
+        verbose=False, debug=False):
     """
     Return list of dates in datetime output from CTM output
 
@@ -1770,37 +1771,39 @@ def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
     if pygchem.__version__ == '0.2.0':
         d  = ctm_f.filter(name=spec, category=cat)
         logging.debug( d, sorted(d), '{}'.format(*[ i.times for i in d ]) )
-
     # Extract datetime from cube
     else:
-        # create NetCDf if not created.
+        # Create NetCDf if not created.
         fname = wd+ '/'+filename
         if not os.path.isfile(fname):
             from .bpch2netCDF  import convert_to_netCDF
             convert_to_netCDF( wd )
-
         # "open" NetCDF + extract time
         with Dataset( fname, 'r' ) as rootgrp:
             dates = rootgrp['time']
-            if verbose:
-                print((dates, dates.units))
+            if verbose: print((dates, dates.units))
             # Get units from cube, default is 'hours since 1985-01-01 00:00:00'
-            starttime = time.strptime( str(dates.units),\
-                    'hours since %Y-%m-%d %H:%M:%S' )
+            starttime = time.strptime( str(dates.units), date_str )
             starttime = time2datetime( [starttime] )[0]
             dates = np.array(dates)
         logging.info( 'file start date: {}'.format(starttime) )
-
-
         # allow for single date output <= is there a better gotcha than this?
         if len(dates.shape)== 0 :
             dates = [float(dates)]
-
-        # convert to date time
-        dates = [ add_hrs( starttime, i ) for i in dates ]
+        # Convert to date time
+        if 'days since' in date_str:
+            dates = [ add_hrs( starttime, i ) for i in dates ]
+        elif 'minutes since' in date_str:
+            dates = [ add_minutes( starttime, i ) for i in dates ]
+        elif 'days since' in date_str:
+            dates = [ add_days( starttime, i ) for i in dates ]
+        else:
+            err_str = "processing not setup for unit: '{}' ".format( date_str )
+            print err_str
+            logging.info( err_str )
+            sys.exit()
         logging.debug( '1st date dates {}'.format(dates[:10])  )
-
-        # return datetime objects
+        # Return datetime objects
         return dates
 
 
