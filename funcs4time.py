@@ -341,6 +341,7 @@ def time2datetime( dates ):
     """
     Convert time object to datetime object
     """
+    assert type(dates) == list, 'Please provide a list of times to unc'
     return [ datetime_.fromtimestamp(time.mktime(i)) for i in dates ]
 
 
