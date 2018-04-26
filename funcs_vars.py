@@ -989,6 +989,8 @@ def constants(input_x, rtn_dict=False ):
     'AVG' : 6.0221413E23,
     # Dobson unit - (molecules per meter squared)
     'mol2DU': 2.69E20,
+    # Specific gas constant for dry air (J/(kg·K))
+    'Rdry': 287.058,
     }
     if rtn_dict:
         return con_dict
