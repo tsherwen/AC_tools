@@ -1728,9 +1728,25 @@ def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
         # "open" NetCDF + extract time
         with Dataset( fname, 'r' ) as rootgrp:
             dates = rootgrp['time']
-            if verbose: print((dates, dates.units))
+            unit_str = str(dates.units)
+            if verbose: print((dates, dates.units, unit_str))
             # Get units from cube, default is 'hours since 1985-01-01 00:00:00'
-            starttime = time.strptime( str(dates.units), date_str )
+            if 'hours since' in unit_str:
+                date_str='hours since %Y-%m-%d %H:%M:%S'
+                time_unit = 'hours'
+            elif 'minutes since' in unit_str:
+                date_str='minutes since %Y-%m-%d %H:%M:%S'
+                time_unit = 'minutes'
+            elif 'days since' in unit_str:
+                date_str='days since %Y-%m-%d %H:%M:%S'
+                time_unit = 'days'
+            else:
+                err_str = 'WARNING: time unit not setup: {}'.format( unit_str)
+                print(err_str)
+                logging.info(err_str)
+                sys.exit()
+            # calculate start time
+            starttime = time.strptime( unit_str, date_str )
             starttime = time2datetime( [starttime] )[0]
             dates = np.array(dates)
         logging.info( 'file start date: {}'.format(starttime) )
@@ -1738,11 +1754,11 @@ def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
         if len(dates.shape)== 0 :
             dates = [float(dates)]
         # Convert to date time
-        if 'days since' in date_str:
+        if time_unit == 'hours':
             dates = [ add_hrs( starttime, i ) for i in dates ]
-        elif 'minutes since' in date_str:
+        elif time_unit == 'minutes':
             dates = [ add_minutes( starttime, i ) for i in dates ]
-        elif 'days since' in date_str:
+        elif time_unit == 'days':
             dates = [ add_days( starttime, i ) for i in dates ]
         else:
             err_str = "processing not setup for unit: '{}' ".format( date_str )
@@ -1795,6 +1811,11 @@ def get_frequency_of_model_output( wd=None, months=None, years=None,
 #            print daysinmonth, months, years, diffs, set_of_diffs
         # if the lists are the same ...
         if diffs==daysinmonth[:-1]:
+            return 'Monthly'
+        elif set(diffs) == set(daysinmonth):
+            err_msg= 'Please check datetimes of file, issues in days/month'
+            print(err_msg)
+            logging.info(err_msg)
             return 'Monthly'
         else:
             err_msg= 'WARNING - Unequal timestep in output!'
@@ -3190,7 +3211,7 @@ def convert_tracers2PM25( ars=[], specs=[], region='Europe' ):
     else:
         print('ERROR - Region not in list - please set available region!!')
         sys.exit()
-    # RMM
+    # RMM of air
     RMM_air = constants('RMM_air') # g/mol
     # assume standard air density
     # At sea level and at 15 °C air has a density of approximately 1.225 kg/m3
@@ -3345,7 +3366,8 @@ def fam_data_extractor4ts_bpch_files(spec='NOy', wd=None, \
 # ----
 # X.XX - Convert species from v/v to ug/m^3
 # ----
-def convert_spec_v_v_2_ugm3( spec=None, data=None ):
+def convert_spec_v_v_2_ugm3( spec=None, data=None, explicitly_caculate=False,
+        press=None, T=None ):
     """
     Convert mixing ratio (v/v) to ug m^-3
 
@@ -3358,14 +3380,28 @@ def convert_spec_v_v_2_ugm3( spec=None, data=None ):
     -------
     (array)
     """
-    # --- assume standard conditions.
-    # RMM
+    logging.info('convert_spec_v_v_2_ugm3 called for spec={}'.format(spec) )
+    # Get Air density
+    if explicitly_caculate:
+        # calculate using provide pressions
+        assert_str = '{} needed to explicitly caculate!'
+        assert not isinstance(press, type(None)), assert_str.format( 'press')
+        assert not isinstance(T, type(None)), assert_str.format( 'T (Kelvin)')
+        # Use the ideal gas law to calculate p (air density kg/m3)
+        # press hPa), T (temperature in Kelvin),
+        # R (specific gas constant for dry air (J/(kg·K))),
+        R = constants('Rdry')
+        # convert pressure to HPa=>Pa & kg=g concurrently
+        AIRDEN = (press*100) / (R*1000 * T )
+    else:
+        # assume standard air density
+        # At sea level and at 15 °C air has a density of
+        # approximately 1.225 kg/m3
+        # (0.001225 g/cm3, 0.0023769 slug/ft3, 0.0765 lbm/ft3) according to
+        # ISA (International Standard Atmosphere).
+        AIRDEN = 0.001225 # g/cm3
+    # RMM of air
     RMM_air = constants('RMM_air') # g/mol
-    # assume standard air density
-    # At sea level and at 15 °C air has a density of approximately 1.225 kg/m3
-    #(0.001225 g/cm3, 0.0023769 slug/ft3, 0.0765 lbm/ft3) according to
-    # ISA (International Standard Atmosphere).
-    AIRDEN = 0.001225 # g/cm3
     # moles per cm3
     #  (1/(g/mol)) = (mol/g) ; (mol/g) * (g/cm3) = mol/cm3
     MOLS = (1/RMM_air) * AIRDEN
