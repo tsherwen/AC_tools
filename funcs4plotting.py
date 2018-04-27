@@ -1395,7 +1395,7 @@ def BASIC_seasonal_plot( dates=None, data=None, ax=None,
 # --------
 # X.XX - BASIC_seasonal_plot
 # --------
-def binned_boxplots_by_altitude( df=None, fig=None, ax=None,
+def binned_boxplots_by_altitude( df=None, fig=None, ax=None, dataset_name=None,
         num_of_datasets=1, dataset_num=0, label='Obs.', showfliers=False,
         bins=np.arange(8), binned_variable='O3', variable_to_bin_by='ALT',
         color=None, dpi=320, xlabel=None, ylabel='Altitude (km)', title=None,
@@ -1439,12 +1439,12 @@ def binned_boxplots_by_altitude( df=None, fig=None, ax=None,
             color = 'blue'
     # ---- Process data
     gdf = df.groupby( pd.cut(df[variable_to_bin_by].values, bins ) )
-    data = [ i[1][binned_variable].values  for i in gdf]
+    data = [ i[1][binned_variable].values for i in gdf]
     # ----- Now plots
     # - settings for boxplots
     bin_sizes = np.diff(bins)
     mid_points = [ (i/2.)+bins[n] for n, i in enumerate(bin_sizes) ]
-    mid_points_bin = [ (i/2.)+bins[n] for n, i in enumerate(bin_sizes) ]
+    upper_bin_edge = bins[1:]
     set_of_bin_sizes = list( set(bin_sizes) )
     if len(set_of_bin_sizes) == 1:
         if num_of_datasets >1:
@@ -1453,9 +1453,9 @@ def binned_boxplots_by_altitude( df=None, fig=None, ax=None,
             # where should the boxplots go?
             positions = mid_points -((space4boxplot*(num_of_datasets))*0.5 )
             positions = positions+(space4boxplot*dataset_num)+(space4boxplot*.5)
-            #
+            # if there are more than 2 dataset, divide the space up accordingly
             if num_of_datasets >2:
-                widths = widths /num_of_datasets *1.75
+                widths = widths / num_of_datasets * 1.75
         else:
             positions = mid_points
     else:
@@ -1478,10 +1478,13 @@ def binned_boxplots_by_altitude( df=None, fig=None, ax=None,
         plt.title( title )
     # Set y axis range
     if debug: print( (bins, bins[0], bins[-1]) )
-    ax.set_ylim( bins[0]-(bin_sizes[0]*0.5), bins[-1]+(bin_sizes[-1]*0.5) )
+    ax.set_ylim( bins[0], bins[-1]+(bin_sizes[-1]*0.5) )
     # Set y axis tick labels to be the bins
-    ax.set_yticks( mid_points )
-    ax.set_yticklabels( mid_points )
+    ax.set_yticks( upper_bin_edge )
+    if any([i.is_integer() for i in bins]):
+        ax.set_yticklabels( [ int(i) for i in upper_bin_edge ] )
+    else:
+        ax.set_yticklabels( upper_bin_edge )
     if debug: print( ( ax.get_yticks() ) )
     if debug: print( (ax.get_yticks(), bins) )
     # - Save or show?
