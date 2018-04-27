@@ -1437,15 +1437,14 @@ def binned_boxplots_by_altitude( df=None, fig=None, ax=None,
             color ='red'
         else:
             color = 'blue'
-
     # ---- Process data
     gdf = df.groupby( pd.cut(df[variable_to_bin_by].values, bins ) )
     data = [ i[1][binned_variable].values  for i in gdf]
-
     # ----- Now plots
     # - settings for boxplots
     bin_sizes = np.diff(bins)
     mid_points = [ (i/2.)+bins[n] for n, i in enumerate(bin_sizes) ]
+    mid_points_bin = [ (i/2.)+bins[n] for n, i in enumerate(bin_sizes) ]
     set_of_bin_sizes = list( set(bin_sizes) )
     if len(set_of_bin_sizes) == 1:
         if num_of_datasets >1:
@@ -1459,17 +1458,14 @@ def binned_boxplots_by_altitude( df=None, fig=None, ax=None,
                 widths = widths /num_of_datasets *1.75
         else:
             positions = mid_points
-
     else:
         print('Not yet setup to take different bin sizes')
         sys.exit()
-
     # - Add plots
     bp = ax.boxplot( x=data, positions=positions, patch_artist=True,
         widths=widths, notch=False, vert=False, showfliers=showfliers )
     # add an (invisible) plot to carry the label
     ax.plot([], [], label=label, color=color)
-
     # - Beautify
     # set the boxplot format?
     set_bp_style( bp, color=color )#, linewidth=lw )
@@ -1488,7 +1484,6 @@ def binned_boxplots_by_altitude( df=None, fig=None, ax=None,
     ax.set_yticklabels( mid_points )
     if debug: print( ( ax.get_yticks() ) )
     if debug: print( (ax.get_yticks(), bins) )
-
     # - Save or show?
     if show_plot: plt.show()
 
@@ -4682,6 +4677,18 @@ def show_plot():
     """
     plt.show()
     return
+
+# --------
+# X.XX -
+# --------
+def close_plot():
+    """
+    Wrapper for plt.close(). Use to closes plots on screen.
+    """
+    plt.close()
+    return
+
+
 
 # --------
 # X.XX -
