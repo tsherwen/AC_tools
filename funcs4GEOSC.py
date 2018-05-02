@@ -3420,7 +3420,8 @@ def convert_spec_v_v_2_ugm3( spec=None, data=None, explicitly_caculate=False,
 # ----
 def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None, \
         filename='ts_ctm.nc', LON=None, LAT=None, rtn_units=False, \
-        LON_ind=None, LAT_ind=None, rtn_ctm_units=False, verbose=True ):
+        LON_ind=None, LAT_ind=None, rtn_ctm_units=False,
+        verbose=True, debug=False ):
     """
     Extract *ts*bpch* (1D) data from file for a specific site
 
