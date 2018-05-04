@@ -357,7 +357,7 @@ def num2month(input=None, reverse=False, rtn_dict=False):
      - input is either a 3 character month string or an integer 1=>12
     """
     d={
-        1: 'Jan',
+         1: 'Jan',
          2: 'Feb',
          3: 'Mar',
          4: 'Apr',
