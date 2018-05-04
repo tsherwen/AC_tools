@@ -1481,7 +1481,7 @@ def binned_boxplots_by_altitude( df=None, fig=None, ax=None, dataset_name=None,
     ax.set_ylim( bins[0], bins[-1]+(bin_sizes[-1]*0.5) )
     # Set y axis tick labels to be the bins
     ax.set_yticks( upper_bin_edge )
-    if any([i.is_integer() for i in bins]):
+    if any([float(i).is_integer() for i in bins]):
         ax.set_yticklabels( [ int(i) for i in upper_bin_edge ] )
     else:
         ax.set_yticklabels( upper_bin_edge )
@@ -2946,7 +2946,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
         dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, title=None, \
         window=False, interval=1, ylabel=True, cb='CMRmap_r', width=0.015,\
-        orientation='vertical', rotatecbunits='vertical', title_y=1, \
+        orientation='vertical', rotatecbunits='vertical', title_y=1.05, \
         title_x=0.5, no_cb=True, return_m=False, log=False, wd=None, \
         resolution='c', lat_min = None, lat_max=None, lon_min=None, \
         lon_max=None, xlabel=True, limit_window=False, axis_titles=False,  \
