@@ -2877,7 +2877,10 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'I2O3','I2O4''CH3IT','CH2I2','I','INO'] ,
     'Iy' : [ \
     'I2','HOI','IO', 'OIO', 'HI','INO','IONO', 'IONO2','I2O2', \
-    'I2O3','I2O4','I'],
+    'I2O3','I2O4','I' ,]+['ICl', 'IBr'],
+    'Iy+AERO' : [ \
+    'I2','HOI','IO', 'OIO', 'HI','INO','IONO', 'IONO2','I2O2', \
+    'I2O3','I2O4','I' ,]+['ICl', 'IBr']+['AERI'+'ISALA'+'ISALC'],
     'Iy1.1' : [ \
     'I2','HOI','IO', 'OIO', 'HI','IONO', 'IONO2', 'I2O2', \
     'I2O4','I','INO'],
