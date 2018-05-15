@@ -2966,6 +2966,61 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
             arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
             arr = arr.sum( axis=-1) * scale
         units = 'pmol mol${^-1}$'
+    # --- All NIT (inc. HNO3)
+    elif fam == 'NIT_ALL' :
+        # Select species in family
+#        specs = GC_var('NIT_ALL' )
+        specs = 'HNO3', 'NIT', 'NITs'
+        scale =1E12
+        # Extract data
+        arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ], \
+                    trop_limit=trop_limit, r_list=True  )
+        # Adjust to stoichiometry
+        arr = [ arr[n]*spec_stoich(i, ref_spec='N') \
+             for n,i in enumerate( specs ) ]
+        if debug:
+            print([ ( i.shape, i.min(), i.max(), i.mean() ) for i in arr  ])
+        if not rtn_list:
+            arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
+            arr = arr.sum( axis=-1) * scale
+        units = 'pmol mol${^-1}$'
+    # --- all sulfate
+    elif fam == 'SO4' :
+        # Select species in family
+#        specs = GC_var('NIT_ALL' )
+        specs = 'SO4', 'SO4s',
+        scale =1E12
+        # Extract data
+        arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ], \
+                    trop_limit=trop_limit, r_list=True  )
+        # Adjust to stoichiometry
+        arr = [ arr[n]*spec_stoich(i, ref_spec='S') \
+             for n,i in enumerate( specs ) ]
+        if debug:
+            print([ ( i.shape, i.min(), i.max(), i.mean() ) for i in arr  ])
+        if not rtn_list:
+            arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
+            arr = arr.sum( axis=-1) * scale
+        units = 'pmol mol${^-1}$'
+    # --- all sulfate
+    elif fam == 'NH4' :
+        # Select species in family
+#        specs = GC_var('NIT_ALL' )
+        specs = 'NH4',
+        scale =1E12
+        # Extract data
+        arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+i for i in specs ], \
+                    trop_limit=trop_limit, r_list=True  )
+        # Adjust to stoichiometry
+        arr = [ arr[n]*spec_stoich(i, ref_spec='N') \
+             for n,i in enumerate( specs ) ]
+        if debug:
+            print([ ( i.shape, i.min(), i.max(), i.mean() ) for i in arr  ])
+        if not rtn_list:
+            arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
+            arr = arr.sum( axis=-1) * scale
+        units = 'pmol mol${^-1}$'
+
     # --- Ozone (O3)
     elif fam == 'O3' :
         # Select species in family
@@ -3029,7 +3084,6 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
             arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
             arr = arr.sum( axis=-1)
         units = 'v/v'
-
     # ---  Inorganic iodine ( Cly )
     elif fam == 'Cly' :
         # Select species in family
@@ -3048,7 +3102,6 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
             arr = np.ma.concatenate( [ i[...,None] for i in arr ], axis=-1 )
             arr = arr.sum( axis=-1)
         units = 'v/v'
-
     # ---  Reactive chlorine ( ClOx )
     elif fam == 'ClOx' :
         # Select species in family
@@ -5996,32 +6049,33 @@ def get_trop_burden( ctm=None, spec='O3', wd=None, a_m=None, t_p=None, \
             t_p = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], \
                 trop_limit=trop_limit)
     # Retain PyGChem 0.2.0 approach for back compatibility
-    if pygchem.__version__ == '0.2.0':
-        ar = get_gc_data_np( ctm, spec, debug=debug )[:,:,:38,:]
-    else:
-        ar = get_GC_output( wd, vars=['IJ_AVG_S__'+ spec], \
-            trop_limit=trop_limit)
+    if isinstance(arr, type(None) ):
+        if pygchem.__version__ == '0.2.0':
+            arr = get_gc_data_np( ctm, spec, debug=debug )[:,:,:38,:]
+        else:
+            arr = get_GC_output( wd, vars=['IJ_AVG_S__'+ spec], \
+                trop_limit=trop_limit)
     logging.debug( 'Shape of arrays: ar={}, t_p={}, a_m={}'.format(
-        *[ i.shape for i in (ar, t_p, a_m) ]) )
+        *[ i.shape for i in (arr, t_p, a_m) ]) )
     # v/v * (mass total of air (kg)/ 1E3 (converted kg to g)) = moles of tracer
-    ar = ar* ( a_m*1E3 / constants( 'RMM_air'))
+    arr = arr* ( a_m*1E3 / constants( 'RMM_air'))
     if Iodine:
         # Convert moles to mass (* RMM) , then to Gg
-        ar = ar * float( species_mass('I') ) * spec_stoich(spec) /1E9
+        arr = arr * float( species_mass('I') ) * spec_stoich(spec) /1E9
     else:
         # Convert moles to mass (* RMM) , then to Gg
-        ar = ar * float( species_mass(spec) ) /1E9
+        arr = arr * float( species_mass(spec) ) /1E9
     # Cut off at the "chemical troposphere" ( defined by GC integrator as 38th)
     if (not total_atmos):
-        ar = ar * t_p
+        arr = arr * t_p
     else:
         logging.info( 'get_trop_burden returning whole atmosphere (not troposphere)' )
     if debug:
         print(('Got burden for {} from {}'.format( spec, ctm )))
     if all_data:
-        return ar
+        return arr
     else:
-        return ar.mean(axis=3)
+        return arr.mean(axis=3)
 
 
 # ----
