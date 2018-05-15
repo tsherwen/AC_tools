@@ -2118,6 +2118,7 @@ def latex_spec_name(input_x, debug=False):
     'NOx':'NO$_{\\rm x}$', 'HOx':'HO$_{\\rm x}$', 'TNO3': 'TNO$_3$', \
     'SOx':'SO$_{\\rm x}$','PM2.5': 'PM$_{2.5}$', 'VOC': 'VOC', \
     'NIT+NH4+SO4': 'NO${_3}{^-}$+NH${_4}{^+}$+SO${_4}{^{2-}}$',
+    'NIT_ALL' : 'NIT (all)',
     # typos
     'CH2BR2':'CH$_{2}$Br$_{2}$',\
     # Cly names
