@@ -1142,7 +1142,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
 #      'North >60': 3
     'North Sea' : 21,
     'Med. Sea' : 22,
-    'Mediterranean. Sea' : 22,
+    'Mediterranean Sea' : 22,
     'Black Sea' : 23,
     'Irish Sea' : 24,
     'Europe' : 25,
@@ -1153,6 +1153,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
     'Alps':  29,
     'loc': 30,
     'location': 30,
+    'France': 31,
     }[region]
 
 
@@ -1281,7 +1282,7 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
         elif case == 21:
             mask = get_north_sea_unmasked( res=res )
         elif case == 22:
-            mask = get_unmasked_mediterranean_sea( res=res )
+            mask = get_mediterranean_sea_unmasked( res=res )
         elif case == 23:
             mask = get_unmasked_black_sea( res=res )
         elif case == 24:
@@ -1312,6 +1313,10 @@ def mask_all_but( region='All', M_all=False, saizlopez=False, \
         elif case == 30: # Location ('loc' )
             # Alps
             mask = location_unmasked( lat=lat, lon=lon, res=res )
+        elif case == 31: #  Rough(!) France map
+            # mask
+            mask = get_France_unmasked( res=res )
+
         else:
             print( 'WARNING - Mask not setup for case={}'.format(case) )
             sys.exit()
@@ -1399,26 +1404,20 @@ def get_EU_unmasked( res='1x1'  ):
     used by default, but any list of lat and lons could be provided and the extremities
     would be used as the mask edges
     """
-
     EU_resolutions = [ '0.25x0.3125', '0.5x0.666' ]
     if res not in EU_resolutions:
         EU_res = EU_resolutions[0] # default = '0.25x0.3125'
 #        EU_res = EU_resolutions[1] # default = '0.5x0.666'
     else:
         EU_res =res
-
     # Get GEOS-Chem EU lat and lons
     lon, lat, NIU = get_latlonalt4res( res=EU_res )
-
     # mask lats
     m1 = lat2lat_2D_unmasked( lowerlat=lat.min(), higherlat=lat.max(), res=res )
-
-    # mask lons
+    # Mask lons
     m2 = lon2lon_2D_unmasked(lowerlon=lon.min(), higherlon=lon.max(), res=res )
-
-    #  combine maskes
+    # Combine maskes
     m = m1 + m2
-
     return m
 
 # --------
@@ -1429,28 +1428,127 @@ def get_cruise_track_mask(  max_lon=None, min_lon=None, max_lat=None, \
     """
     Mask whole area of ship based research campaigns for bulk comparison
     """
-
     # only look at surface
     m = surface_unmasked( res=res, trop_limit=trop_limit )
-
     # apply ocean mask
     if unmask_water:
         m = m + ocean_unmasked(res=res)
-
     # Mask over given longitude range, if provided
     if not isinstance( max_lon, type(None) ):
         m = m  + lon2lon_2D_unmasked(lowerlon=min_lon, higherlon=max_lon, \
                         res=res )[:,:,None]
-
     # Mask over given latitude range, if provided
     if not isinstance( max_lat, type(None) ):
         m = m + lat2lat_2D_unmasked( lowerlat=min_lat, higherlat=max_lat, \
                     res=res )[:,:,None]
-
     # Invert
     m = np.logical_not( m )
-
     return m
+
+
+# --------
+# X.XX - Get mask of mediterranean sea
+# --------
+def get_France_unmasked( res='4x5' ):
+    """
+    A rough Mask of France for use with 2x2.5 / 4x5 model output
+    """
+    # France mask
+    lowerlat = 42.5
+    higherlat = 51
+    lowerlon = -4.441
+    higherlon = 7.7577
+    # Get a mask for lat and lon range, then combine
+    mask1 = lat2lat_2D_unmasked( res=res, lowerlat=lowerlat,
+        higherlat=higherlat)
+    mask2 = lon2lon_2D_unmasked( res=res, lowerlon=lowerlon,
+        higherlon=higherlon )
+    mask = np.ma.mask_or( mask1, mask2 )
+    # Only consider land grid boxes
+    mask = np.ma.mask_or( mask, land_unmasked( res=res )[...,0] )
+    return mask
+
+
+# --------
+# X.XX - Get mask of Mediterranean sea
+# --------
+def get_mediterranean_sea_unmasked( res='0.25x0.3125' ):
+    """
+    A rough Mask of the Mediterranean Sea for use with ~0.5/~0.25 mdodel output.
+    """
+    # West South corner (south Jordan) =
+    lowerlat = 34
+    lowerlon = -6.5
+    # East North corner (~Ukraine)
+    higherlat = 47
+    higherlon = 38
+    # Get a mask for lat and lon range, then combine
+    mask1 = lat2lat_2D_unmasked( res=res, lowerlat=lowerlat,
+        higherlat=higherlat)
+    mask2 = lon2lon_2D_unmasked( res=res, lowerlon=lowerlon,
+        higherlon=higherlon )
+    mask = np.ma.mask_or( mask1, mask2 )
+    # Add mask for water
+    mask = np.ma.mask_or( mask, ocean_unmasked( res=res )[...,0] )
+    # Also remove black sea ( by removing an inverted unmasked mask )
+    mask3 = get_black_sea_unmasked( res=res, unmask_water=False )
+    mask = np.ma.mask_or( mask, np.logical_not( mask3 ) )
+    # Also remove bay of biscay
+    # Also remove black sea
+    mask4 = get_bay_of_biscay_unmasked( res=res )
+    mask = np.ma.mask_or( mask, np.logical_not( mask4 ) )
+    return mask
+
+
+# --------
+# X.XX - Get mask of black sea
+# --------
+def get_black_sea_unmasked( res='0.25x0.3125', unmask_water=True ):
+    """
+    A rough Mask of the Mediterranean Sea for use with ~0.5/~0.25 mdodel output.
+    """
+    # West South corner (south Jordan) =
+    lowerlat = 41
+    lowerlon = 26.8
+    # East North corner (~Ukraine)
+    higherlat = 50
+    higherlon = 43
+    # Get a mask for lat and lon range, then combine
+    mask1 = lat2lat_2D_unmasked( res=res, lowerlat=lowerlat,
+        higherlat=higherlat)
+    mask2 = lon2lon_2D_unmasked( res=res, lowerlon=lowerlon,
+        higherlon=higherlon )
+    mask = np.ma.mask_or( mask1, mask2 )
+    # Add mask for water
+    if unmask_water:
+        mask = np.ma.mask_or( mask, ocean_unmasked( res=res )[...,0]  )
+    return mask
+
+# --------
+# X.XX - Get mask of bay of biscay
+# --------
+def get_bay_of_biscay_unmasked( res='0.25x0.3125', unmask_water=True ):
+    """
+    A rough Mask of the Mediterranean Sea for use with ~0.5/~0.25 mdodel output.
+    """
+    # West South corner (south Jordan) =
+    lowerlat = 42.5
+    lowerlon = -10
+    # East North corner (~Ukraine)
+    higherlat = 51
+    higherlon = 0
+    # Get a mask for lat and lon range, then combine
+    mask1 = lat2lat_2D_unmasked( res=res, lowerlat=lowerlat,
+        higherlat=higherlat)
+    mask2 = lon2lon_2D_unmasked( res=res, lowerlon=lowerlon,
+        higherlon=higherlon )
+    mask = np.ma.mask_or( mask1, mask2 )
+    # Add mask for water
+    if unmask_water:
+        mask = np.ma.mask_or( mask, ocean_unmasked( res=res )[...,0]  )
+    # Also remove black sea
+    return mask
+
 
 # --------
 # X.XX - Get mask of north sea
@@ -1461,8 +1559,8 @@ def get_cruise_track_mask(  max_lon=None, min_lon=None, max_lat=None, \
 #     (inc. English channel. )
 #
 #     """
-#     mask latitudes of mediterranean
-#     Drawing a box that include all of North sea and English channel
+#     mask latitudes of north sea
+#     Drawing a box that includes all of North sea and English channel
 #     Near Brest in France 48.3669927,-4.7560745
 #     Lillehammer 61.1122408,10.4386779
 #
@@ -1485,25 +1583,6 @@ def get_cruise_track_mask(  max_lon=None, min_lon=None, max_lat=None, \
 #     remove irish sea
 #
 #     return m.mask
-#
-#
-# --------
-# X.XX - Get mask of mediterranean sea
-# --------
-# def get_mediterranean_sea_unmasked( res='0.25x0.3125' ):
-#     """
-#     A rough Mask of the Mediterranean Sea for use with ~0.5/~0.25 mdodel output.
-#     """
-#
-#     mask latitudes of mediterranean
-#     Drawing a box that include all of Med. Sea
-#     East South corner (south Jordan) = 43.4623268,33.3809392
-#     West North corner (south Jordan) = 44.17207,25.30604
-#
-#     add mask for Black Sea
-#
-#     add mask for
-#     pass
 #
 #
 # --------
