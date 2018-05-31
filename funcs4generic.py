@@ -2314,17 +2314,16 @@ def get_2D_df_of_lon_lats_and_time(res='4x5', df_lar_var='lat',
         lons=None, lats=None, verbose=True, month=9 ):
     """ stack a 2D table (DataFrame) of lat/lon coords """
     # Get lon and lat resolution (Add other ways to get lat and lon here...
-#     lons_not_provided = isinstance(lons, type(None))
-#     lats_not_provided = isinstance(lats, type(None))
-#     if (lons_not_provided) or (lats_not_provided):
-#         pass
-#     else:
-#    try:
-#        assert( type(res) == str ), 'Resolution must be a string!'
-    lons, lats, NIU = get_latlonalt4res(res=res)
-#    except:
-#        print('please provide lons/lats or a res in get_latlonalt4res')
-
+    lons_not_provided = isinstance(lons, type(None))
+    lats_not_provided = isinstance(lats, type(None))
+    if (lons_not_provided) or (lats_not_provided):
+        try:
+            assert( type(res) == str ), 'Resolution must be a string!'
+            lons, lats, NIU = get_latlonalt4res(res=res)
+        except:
+            print('please provide lons/lats or a res in get_latlonalt4res')
+    else:
+        pass
     # Make Table like array
     b = np.zeros( (len(lons), len(lats)) )
     df = pd.DataFrame( b )
@@ -2336,7 +2335,6 @@ def get_2D_df_of_lon_lats_and_time(res='4x5', df_lar_var='lat',
     df = df.reset_index()
     # Set column headers
     df.columns = df_lon_var, df_lar_var, df_time_var
-
     # Add time dims...
     if add_all_months:
         dfs = []
@@ -2349,6 +2347,7 @@ def get_2D_df_of_lon_lats_and_time(res='4x5', df_lar_var='lat',
         print( 'WARNING: Only September considered' )
         df[df_time_var] = month
     return df
+
 
 # --------
 # X.XX - stack a 2D table (DataFrame) of lat/lon coords

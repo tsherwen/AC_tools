@@ -1823,7 +1823,7 @@ def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn =1,  \
         plt.title(title, fontsize=f_size )
     if not isinstance( alt_text, type(None) ):
 #        ax.text(x=0.85,y=0.85, s=alt_text, fontsize=f_size*1.5 )
-        ax.annotate( alt_text , xy=(0.85, 0.85),  textcoords='axes fraction')
+        ax.annotate( xytext=alt_text , xy=(0.85, 0.85),  textcoords='axes fraction')
 
     ax.set_xticklabels( np.arange(0,24,1 )  )
     plt.xticks( np.arange(0,1,1/24. ), fontsize=f_size*.75, \
