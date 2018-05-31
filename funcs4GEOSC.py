@@ -1732,13 +1732,16 @@ def get_gc_datetime(ctm_f=None, wd=None, spec='O3', cat='IJ-AVG-$', \
             if verbose: print((dates, dates.units, unit_str))
             # Get units from cube, default is 'hours since 1985-01-01 00:00:00'
             if 'hours since' in unit_str:
-                date_str='hours since %Y-%m-%d %H:%M:%S'
+                if isinstance( date_str, type(None) ):
+                    date_str='hours since %Y-%m-%d %H:%M:%S'
                 time_unit = 'hours'
             elif 'minutes since' in unit_str:
-                date_str='minutes since %Y-%m-%d %H:%M:%S'
+                if isinstance( date_str, type(None) ):
+                    date_str='minutes since %Y-%m-%d %H:%M:%S'
                 time_unit = 'minutes'
             elif 'days since' in unit_str:
-                date_str='days since %Y-%m-%d %H:%M:%S'
+                if isinstance( date_str, type(None) ):
+                    date_str='days since %Y-%m-%d %H:%M:%S'
                 time_unit = 'days'
             else:
                 err_str = 'WARNING: time unit not setup: {}'.format( unit_str)
