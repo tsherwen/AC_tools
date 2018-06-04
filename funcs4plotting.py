@@ -71,7 +71,8 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, \
         lon_0=None, lon_1=None, lat_0=None, lat_1=None, norm=None,\
         sigfig_rounding_on_cb=2, fixcb_buffered=None, ylabel=True, \
         xlabel=True, wd=None, verbose=True, debug=False, tight_layout=False, \
-        axis_titles=False, split_title_if_too_long=True, **Kwargs):
+        axis_titles=False, split_title_if_too_long=True, fillcontinents=False, \
+        **Kwargs):
     """
     Plots Global/regional 2D (lon, lat) slices.
 
@@ -379,13 +380,14 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, \
 #            cb.update_ticks()
     # Add grid lines to the plot?
     plt.grid( grid )
-
-    # Add title to plot?
-    max_title_len=30
-
+    #
+    if fillcontinents:
+        m.fillcontinents()
+    # for use of tight layout settings
     if tight_layout==True:
         plt.tight_layout()
-
+    # Add title to plot?
+    max_title_len=30
     if not isinstance( title, type(None) ):
         # Check if the title is too long and if not split it over lines
         if len(title)>max_title_len and split_title_if_too_long:
@@ -2950,7 +2952,8 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         title_x=0.5, no_cb=True, return_m=False, log=False, wd=None, \
         resolution='c', lat_min = None, lat_max=None, lon_min=None, \
         lon_max=None, xlabel=True, limit_window=False, axis_titles=False,  \
-        bottom_cb_pos=0.2,  figsize=(15, 10), verbose=False, debug=False ):
+        bottom_cb_pos=0.2,  figsize=(15, 10), fillcontinents=False,
+        verbose=False, debug=False ):
     """
     Wrapper for map_plot - Creates a "standard" spatial plot with acceptable
     ascethics. Customise with a range of arguements provide during the call
@@ -3062,10 +3065,11 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
 
     # Plot up
     plt_vars = map_plot( arr[...,0].T, format=format, cmap=cmap, ax=ax, \
-        fixcb=fixcb, return_m=return_m, log=log, window=window, no_cb=True,
+        fixcb=fixcb, return_m=True, log=log, window=window, no_cb=True,
         norm=norm, f_size=f_size*.75,  res=res, wd=wd, resolution=resolution,\
         fixcb_buffered=fixcb_buffered, interval=interval, xlabel=xlabel, \
-        ylabel=ylabel, axis_titles=axis_titles, verbose=verbose, debug=debug )
+        ylabel=ylabel, axis_titles=axis_titles, fillcontinents=fillcontinents,
+        verbose=verbose, debug=debug )
 
     # if title != None, add to plot
     if not isinstance(title, type(None)):
