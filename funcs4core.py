@@ -272,11 +272,9 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
      correct resolution to fix this.
     """
     logging.info("Calling get_latlonalt4res for res={}".format(res) )
-
     if isinstance( res, type(None) ):
         logging.warning("No resolution specified. Assuming 4x5!")
         res='4x5'
-
     if isinstance( wd, type(None) ):
         AC_tools_dir = os.path.dirname(__file__)
         dwd = os.path.join(AC_tools_dir, 'data/LM')
@@ -302,20 +300,18 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
             logging.error("{res} not a recognised resolution!".format(res=res))
             raise KeyError
         wd = os.path.join(dwd, dir)
-
+        # Local EMEP files for 1x1 and 0.5x0.5
         if (res=='1x1') or (res=='0.5x0.5'):
             filename='EMEP.geos.1x1.nc'
             lat_var = 'lat'
             lon_var = 'lon'
             wd = '/work/data/GEOS/HEMCO/EMEP/v2015-03/'
-
     # Get the data file name
     data_fname = os.path.join(wd, filename)
     if not os.path.exists(data_fname):
         logging.error("Could not find {fn}".format(fn=data_fname))
         raise IOError("Could not find {fn}".format(fn=data_fname))
-
-    # error message
+    # Error message
     LM_file_msg = "ERROR: are the refernces files in 'AC_tools/data/LM' ?"
     LM_file_msg +="\n (To download just run AC_tools/Scripts/get_data_files.py)"
     if centre:
@@ -341,17 +337,15 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
                 logging.error(error)
                 if verbose: print(LM_file_msg)
                 raise IOError(error)
-
     # Get edge values
-    exception_res = ('1x1', '0.5x0.5', '0.083x0.083')#, '0.125x0.125')
+    exception_res = ('1x1', '0.5x0.5', '0.083x0.083', '0.125x0.125')
     if (not centre) and (res not in exception_res):
         # Extract lat and lon from model output data file
         try:
             with Dataset( data_fname, 'r' ) as d:
                 lat = d[lat_bounds][:]
                 lon = d[lon_bounds][:]
-
-                # select lower edge of each bound, and final upper edge
+                # Select lower edge of each bound, and final upper edge
                 lat = [i[0] for i in lat ]+[ lat[-1][1] ]
                 lon = [i[0] for i in lon ]+[ lon[-1][1] ]
                 lat, lon = [np.array(i) for i in (lat, lon) ]
@@ -373,7 +367,6 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
                 if verbose: print(LM_file_msg)
                 logging.error(error)
                 raise IOError(error)
-
     # Manually set values for 0.25x0.3125_CH
 #    if res=='0.25x0.3125_CH':
 #        if centre:
@@ -382,36 +375,40 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
 #        else:
 #            lat = np.array( [-90]+list(np.arange(-89-0.5, 90+.5, 1))+[90] )
 #            lon = np.arange(-180-0.5, 180+.5, 1)
-
-    # Manually set values for 0.125x0.125
-#    if res=='0.125x0.125':
-
-
-    # Manually set values for 1.0x1.0
+    # Manually set (edge) values for 0.125x0.125:
+    if res=='0.125x0.125':
+        step_size = 0.125
+        if centre:
+            # below is correct, but use online values for grid
+            pass
+#            lat = np.arange(-90, 90+step_size, step_size)
+#            lon = np.arange(-180, 180, step_size)
+        else:
+            lat = np.arange(-90-(step_size/2), 90+(step_size/2), step_size)
+            lat = np.append( lat, [89.9375+step_size] )
+            lon = np.arange(-180-(step_size/2), 180+(step_size/2), step_size)
+    # Manually set values for (generic?) 1x1 grid
     if res=='1x1':
         step_size = 1.0
         if centre:
             lat = np.arange(-90, 90+step_size, step_size)
             lon = np.arange(-180, 180, step_size)
         else:
-            lat = np.array([-90]+list(np.arange(-89-0.5, 90+.5, step_size))+[90])
+            lat = np.array([-90]+list(np.arange(-89-(step_size/2), 90+(step_size/2), step_size))+[90])
             lon = np.arange(-180-(step_size/2), 180+(step_size/2), step_size)
-
-    # Manually set values for 0.5x0.5
+    # Manually set values for (generic?) 0.5x0.5 grid
     if res=='0.5x0.5':
         step_size = 0.5
         if centre:
             lat = np.array( [-90]+list(np.arange(-89, 90, step_size))+[90] )
             lon = np.arange(-180, 180, step_size)
         else:
-            lat = np.array([-90]+list(np.arange(-89.75, 90+.25, step_size))+[90])
+            lat = np.array([-90]+list(np.arange(-89.75, 90+(step_size/2), step_size))+[90])
             lon = np.arange(-180-(step_size/2), 180+(step_size/2), step_size)
     # Manually set values for 0.1x0.1
-
     # Manually set values for 0.083x0.083
     if res=='0.083x0.083':
         step_size = 0.083333336
-
         if centre:
             lat = np.arange( -89.95833588, 89.95833588+step_size, step_size )
             lon = np.arange(-179.95832825, 179.95835876, step_size )
@@ -421,7 +418,6 @@ def get_latlonalt4res( res=None, centre=True, hPa=False, nest=None, \
         else:
             lat = np.arange( -89.95833588, 89.95833588+step_size, step_size)
             lon = np.arange(-179.95832825, 179.95835876, step_size)
-
     # Get dictionary variable name in Gerrit's GEOS-Chem dimensions list
     # ( now only doing this for alt, as alt values not in model output? )
     if hPa:
