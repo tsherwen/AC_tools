@@ -4223,10 +4223,10 @@ def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
 
     This should be used for first slide in python animated videos to save computation
     """
-
+    # Setup basemap object
     m = Basemap(projection=projection,llcrnrlat=lat[0],urcrnrlat=lat[-1],\
             llcrnrlon=lon[0],urcrnrlon=lon[-1], resolution=resolution )
-
+    #  Add axis titles, parallels, and meridians
     if axis_titles:
         plt.ylabel('Latitude', fontsize = f_size*.75)
         plt.xlabel('Longitude',fontsize = f_size*.75)
@@ -4237,24 +4237,21 @@ def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
     if (res == '0.25x0.3125') :
         parallels = np.arange(-90,91,15*interval/1.5  )
         meridians = np.arange(-180,181,30*interval/3)
-
-    # use small font size for greater the runs with more axis labele
+    # Use small font size for greater the runs with more axis labele
     f_size = f_size*.75
-
-    # draw meridian lines
+    # Draw meridian lines
     plt.xticks( meridians[::everyother], fontsize = f_size )
-    # draw parrelel lines
+    # Draw parrelel lines
     plt.yticks( parallels[::everyother], fontsize = f_size )
     m.drawcoastlines()
     plt.grid( show_grid )
-    # remove tick labels on y axis
+    # Remove tick labels on y axis
     if not ylabel:
         ax_tmp = ax_tmp = plt.gca()
         ax_tmp.tick_params( axis='y', which='both', labelleft='off')
     if not xlabel:
         ax_tmp = ax_tmp = plt.gca()
         ax_tmp.tick_params( axis='x', which='both', labelbottom='off')
-
     return m
 
 # --------
