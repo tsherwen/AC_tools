@@ -238,6 +238,7 @@ def get_land_map(res='4x5', date=None, wd=None, debug=False):
     logging.info( 'called get surface area, for {}'.format(res) )
     # Get AC_tools location, then set example data folder location
     import os
+    import xr
     import inspect
     filename = inspect.getframeinfo(inspect.currentframe()).filename
     path = os.path.dirname(os.path.abspath(filename))
@@ -270,13 +271,12 @@ def get_land_map(res='4x5', date=None, wd=None, debug=False):
     # use new pygchem (>0.3.0) approach
     else:
         if res == '0.125x0.125':
-            import xr
             #
             ds = xr.open_dataset(land_dir+'ctm.nc')
             # No date? Just use annual average
             if isinstance( date, type(None) ):
                 landmap = ds['LWI'].mean(dim='time').values
-            else:
+            if isinstance( date, int ):
                 import glob
                 # find nearest datetime
 #                landmap = ds['LWI']
@@ -287,6 +287,8 @@ def get_land_map(res='4x5', date=None, wd=None, debug=False):
                 landmap = ds['LWI'][ind,...].values
                 # transpose (as PyGChem read was re-ordergin COARDS NetCDF)
                 landmap = landmap.T
+            else:
+                landmap = ds['LWI']
 
         else:
             landmap = get_GC_output( wd=land_dir, vars=['LANDMAP__LWI'] )
@@ -1221,7 +1223,8 @@ def get_gc_res( wd, filename='ctm.nc' ):
 # ----
 # X.XX - Get surface area ( m^2 ) for any global resolution
 # ----
-def calc_surface_area_in_grid( res='1x1', debug=False ):
+def calc_surface_area_in_grid( res='1x1', lon_e=None, lat_e=None, \
+        lon_c=None, lat_c=None, debug=False ):
     """
     Use GEOS-Chem appraoch for GEOS-Chem grid surface areas.
 
@@ -1229,6 +1232,10 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
     -------
     res (str): the resolution if wd not given (e.g. '4x5' )
     debug (boolean): legacy debug option, replaced by python logging
+    lon_c (array): centres of longitude boxes
+    lat_c (array): centres of latitude boxes
+    lon_e (array): edges of longitude boxes
+    lat_e (array): edges of latitude boxes
 
     Returns
     -------
@@ -1236,9 +1243,7 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
 
     Notes
     -----
-     - update this to take any values for res...
-     - Does this function need updating?
-
+     - Adapted for python from Fortrain in GEOS-Chem's grid_mod.F
         Credit: Bob Yantosca
         Original docs from ( grid_mod ):
     !======================================================================
@@ -1313,40 +1318,33 @@ def calc_surface_area_in_grid( res='1x1', debug=False ):
     !======================================================================
     """
     logging.info('called calc surface area in grid')
-
     # Get latitudes and longitudes in grid
-    lon_e, lat_e, NIU = get_latlonalt4res( res=res, centre=False, debug=debug )
-    lon_c, lat_c, NIU = get_latlonalt4res( res=res, centre=True, debug=debug )
-
+    if any([isinstance(i, type(None) for i in lon_e, lat_e]):
+        lon_e, lat_e, NIU = get_latlonalt4res( res=res, centre=False )
+    if any([isinstance(i, type(None) for i in lon_c, lat_c]):
+        lon_c, lat_c, NIU = get_latlonalt4res( res=res, centre=True )
     # Set variables values
-    PI_180 = pi/ 180.0
+    PI_180 = np.pi / 180.0
     Re = np.float64( 6.375E6 ) # Radius of Earth [m]
     lon_dim = get_dims4res(res=res)[0]
     lon_degrees = float( lon_dim )
-
     # Loop lats and calculate area
-    A1x1 = []
+    AREA = []
     for n, lat_ in enumerate( lat_e[:-1] ):
-
         # Lat at S and N edges of 1x1 box [radians]
         S = PI_180 * lat_e[n]
         N = PI_180 * lat_e[n+1]
-
         # S to N extent of grid box [unitless]
         RLAT    = np.sin( N ) - np.sin( S )
-
-        # 1x1 surface area [m2] (see [GEOS-Chem] "grid_mod.f" for algorithm)
-        A1x1 += [ 2.0 * pi * Re * Re / lon_degrees  * RLAT ]
-
-    A1x1 = np.array( A1x1 )
+        # grid surface area [m2] (see [GEOS-Chem] "grid_mod.f" for algorithm)
+        AREA += [ 2.0 * np.pi * Re * Re / lon_degrees  * RLAT ]
+    AREA = np.array( AREA )
     if debug:
-        print(A1x1)
-        print([ (i.shape, i.min(),i.max() ) for i in [ A1x1 ] ])
-
-    # convert to 2D array / apply to all longitudes
-    A1x1 = np.array( [ list( A1x1 ) ] * int(lon_dim) )
-
-    return A1x1
+        print(AREA)
+        print([ (i.shape, i.min(),i.max() ) for i in [ AREA ] ])
+    # Convert to 2D array / apply to all longitudes
+    AREA = np.array( [ list( AREA ) ] * int(lon_dim) )
+    return AREA
 
 # ----
 # X.XX - Process species for given family arrays to (v/v)
