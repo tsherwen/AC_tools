@@ -238,7 +238,7 @@ def get_land_map(res='4x5', date=None, wd=None, debug=False):
     logging.info( 'called get surface area, for {}'.format(res) )
     # Get AC_tools location, then set example data folder location
     import os
-    import xr
+    import xarray as xr
     import inspect
     filename = inspect.getframeinfo(inspect.currentframe()).filename
     path = os.path.dirname(os.path.abspath(filename))
@@ -1319,9 +1319,9 @@ def calc_surface_area_in_grid( res='1x1', lon_e=None, lat_e=None, \
     """
     logging.info('called calc surface area in grid')
     # Get latitudes and longitudes in grid
-    if any([isinstance(i, type(None) for i in lon_e, lat_e]):
+    if any([isinstance(i, type(None)) for i in (lon_e, lat_e,) ]):
         lon_e, lat_e, NIU = get_latlonalt4res( res=res, centre=False )
-    if any([isinstance(i, type(None) for i in lon_c, lat_c]):
+    if any([isinstance(i, type(None)) for i in (lon_c, lat_c,) ]):
         lon_c, lat_c, NIU = get_latlonalt4res( res=res, centre=True )
     # Set variables values
     PI_180 = np.pi / 180.0
