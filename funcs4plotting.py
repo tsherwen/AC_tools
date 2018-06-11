@@ -2943,7 +2943,7 @@ def plot_specs_zonal_change_annual2pdf( Vars, res='4x5', dpi=160, \
 # --------
 def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         norm=None, nticks=10, format=None, units=None, extend='neither',
-        ax=None, cb_height=0.6, \
+        ax=None, cb_height=0.6, centre=False, \
         discrete_cmap=False, f_size=15, fig=None, left_cb_pos=0.86, cb_ax=None,\
         bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,\
         dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, title=None, \
@@ -3069,7 +3069,7 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
         norm=norm, f_size=f_size*.75,  res=res, wd=wd, resolution=resolution,\
         fixcb_buffered=fixcb_buffered, interval=interval, xlabel=xlabel, \
         ylabel=ylabel, axis_titles=axis_titles, fillcontinents=fillcontinents,
-        verbose=verbose, debug=debug )
+        verbose=verbose, debug=debug, centre=centre )
 
     # if title != None, add to plot
     if not isinstance(title, type(None)):
@@ -3109,7 +3109,6 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     # Adjust plot ascetics
     fig.subplots_adjust( bottom=bottom, top=top, left=left, right=right,
                                         hspace=hspace, wspace=wspace)
-
 
     # Show/Save as PDF?
     if pdf: plot2pdf( title=pdftitle )
