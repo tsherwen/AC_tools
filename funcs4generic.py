@@ -1626,7 +1626,8 @@ def get_bay_of_biscay_unmasked( res='0.25x0.3125', unmask_water=True ):
 # --------
 # X.XX - Get orthogonal distance regression (ODR) of two datasets
 # --------
-def get_ODR(x=None, y=None):
+def get_linear_ODR( x=None, y=None, job=10, maxit=5000, beta0=(0,1),
+        xvalues=None, return_model=True, debug=False, verbose=False ):
     """
     Wrapper to run ODR for arrays of x and y
 
@@ -1636,7 +1637,6 @@ def get_ODR(x=None, y=None):
     (https://docs.scipy.org/doc/scipy/reference/odr.html)
     """
     import scipy.odr
-
     # Setup linear model to fit
     def f(B, x):
         '''Linear function y = m*x + b'''
@@ -1646,24 +1646,25 @@ def get_ODR(x=None, y=None):
         #
         # Return an array in the same format as y passed to Data or RealData.
         return B[0]*x + B[1]
-
-    # create a model
+    # Create a model
     linear = scipy.odr.Model(f)
-
     # Create a Data or RealData instance.:
     mydata = scipy.odr.Data(x, y)
-
     # Instantiate ODR with your data, model and initial parameter estimate.:
 #    myodr = scipy.odr.ODR(mydata, linear, beta0=[1., 2.])
-    myodr = scipy.odr.ODR(mydata, linear, [0., 1.],  maxit = 10000 )
-
+    myodr = scipy.odr.ODR(mydata, linear, beta0,  maxit=maxit, job=job )
     # Run the fit.:
     myoutput = myodr.run()
-
     # Examine output.:
-    myoutput.pprint()
+    if verbose: myoutput.pprint()
+    if return_model:
+        return myoutput
+    else:
+        if isinstance( xvalues, type(None)):
+            xvalues = np.arange( min(X), max(X), (max(X)-min(X))/100.)
+        return xvalues, f(myoutput.beta, xvalues )
 
-    return myoutput
+
 
 # --------
 # X.XX - Convert ug per m3 to 2 ppbv
