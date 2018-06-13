@@ -1326,7 +1326,8 @@ def calc_surface_area_in_grid( res='1x1', lon_e=None, lat_e=None, \
     # Set variables values
     PI_180 = np.pi / 180.0
     Re = np.float64( 6.375E6 ) # Radius of Earth [m]
-    lon_dim = get_dims4res(res=res)[0]
+#    lon_dim = get_dims4res(res=res)[0]
+    lon_dim = len(lon_c)
     lon_degrees = float( lon_dim )
     # Loop lats and calculate area
     AREA = []
