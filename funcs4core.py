@@ -475,6 +475,12 @@ def find_nearest_value( array, value ):
     ----------
     arrary (np.array): 1D array in which to search for nearest value
     value (float): value to search array for closest point
+
+    Notes
+    ----------
+     - Uses numpy.argmin, therefore: "In case of multiple occurrences of the
+    minimum values, the indices  corresponding to the first occurrence are
+    returned."
     """
     # Adapted from (credit:) HappyLeapSecond's Stackoverflow answer.
     # ( http://stackoverflow.com/questions/2566412/  )
