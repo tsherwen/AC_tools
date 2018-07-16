@@ -3873,7 +3873,8 @@ def convert_molec_cm3_s_2_g_X_s( ars=None, specs=None, ref_spec=None, \
         # convert from molec/cm3/s to  molec/s
         # limit arrays to the region of the atmosphere in which prod/loss is
         # calculated (38 in <v10, 59 in >=v11-1)
-        arr  = arr *vol[...,:limit_Prod_loss_dim_to,:]
+        arr  = arr[...,:limit_Prod_loss_dim_to,:] * \
+            vol[...,:limit_Prod_loss_dim_to,:]
         # conver to to molec/s = > Gg/s
         arr =  arr / constants( 'AVG') * species_mass(ref_spec)
         # to / yr
@@ -4852,7 +4853,7 @@ def prt_Species_List_lines4globchem_dat(spec_list=None, activty_list=None):
 def get_fam_prod_loss_for_tagged_mechanism( wd=None, fam='LOx', ref_spec='O3',\
         tags=None, RR_dict=None, Data_rc=None, Var_rc=None, tags2_rxn_num=None,\
         RR_dict_fam_stioch=None, region=None, rm_strat=False, \
-        weight_by_num_molecules=False,  verbose=True, debug=False):
+        weight_by_num_molecules=False, verbose=True, debug=False):
     """
     Extract prod/loss for family from wd and code directory
 
@@ -4894,6 +4895,8 @@ def get_fam_prod_loss_for_tagged_mechanism( wd=None, fam='LOx', ref_spec='O3',\
     # get prod/loss arrays
     ars = get_GC_output( wd=Var_rc['wd'], r_list=True,\
         vars=['PORL_L_S__'+i for i in tags ], trop_limit=Var_rc['trop_limit'])
+    # limit prod/loss vertical dimension?
+    limit_Prod_loss_dim_to = Var_rc[ 'limit_Prod_loss_dim_to' ]
     # Covert units based on whether model output is monthly
     if Data_rc['output_freq'] == 'Monthly':
         month_eq=True # use conversion in convert_molec_cm3_s_2_g_X_s
@@ -4906,7 +4909,7 @@ def get_fam_prod_loss_for_tagged_mechanism( wd=None, fam='LOx', ref_spec='O3',\
         vol=Data_rc['vol'], t_ps=Data_rc['t_ps'], \
         trop_limit=Var_rc['trop_limit'], rm_strat=Var_rc['rm_strat'],
         # there are 59 levels of computation for P/l in v11-1+ (so limit to 59)
-        limit_Prod_loss_dim_to=Var_rc['limit_Prod_loss_dim_to'],
+        limit_Prod_loss_dim_to=limit_Prod_loss_dim_to,
         # ... and function specific settings...
         month_eq=month_eq,
         conbine_ars=False )
@@ -4925,13 +4928,18 @@ def get_fam_prod_loss_for_tagged_mechanism( wd=None, fam='LOx', ref_spec='O3',\
         ars = [i.mean(axis=-1) for i in ars ]
         # Scale to annual
         ars = [i*60.*60.*24.*365. for i in ars]
+    # Get time in troposphere diagnostic
+    print( Data_rc['t_ps'].shape )
+    print( Data_rc['t_ps'].mean(axis=-1).shape )
+    t_ps = Data_rc['t_ps'].mean(axis=-1)[...,:limit_Prod_loss_dim_to]
     # Check tropospheric LOx total
     arr = np.ma.array( ars )
-    LOx_trop = ( arr*Data_rc['t_ps'].mean(axis=-1)[None, ...] ).sum()/ 1E12
+    print( arr.shape, t_ps.shape, limit_Prod_loss_dim_to )
+    LOx_trop = ( arr* t_ps[None,...]).sum()/ 1E12
     if verbose: print( 'Annual tropospheric Ox loss (Tg O3): ', LOx_trop )
     # Remove the stratosphere by multiplication through by "time in troposphere"
     if rm_strat:
-        ars = [ i*Data_rc['t_ps'].mean(axis=-1) for i in ars ]
+        ars = [ i*t_ps for i in ars ]
     # Select data by location or average globally?
     if not isinstance(region, type(None)):
         # also allow for applying masks here...
@@ -4940,11 +4948,11 @@ def get_fam_prod_loss_for_tagged_mechanism( wd=None, fam='LOx', ref_spec='O3',\
     else:
         if weight_by_num_molecules:
             ars = [ molec_weighted_avg( i, weight_lon=True, res=Data_rc['res'],\
-                weight_lat=True, wd=Var_rc['wd'],
-                trop_limit=Var_rc['trop_limit'], rm_strat=Var_rc['rm_strat'],
+                weight_lat=True, wd=Var_rc['wd'],\
+                trop_limit=Var_rc['trop_limit'], rm_strat=Var_rc['rm_strat'], \
                 # provide shared data arrays averaged over time...
-                molecs=Data_rc['molecs'].mean(axis=-1),
-                t_p=Data_rc['t_ps'].mean(axis=-1)  ) for i in ars ]
+                molecs=Data_rc['molecs'].mean(axis=-1), t_p=t_ps ) \
+                for i in ars ]
     if debug: print( [i.shape for i in ars ])
     return ars
 

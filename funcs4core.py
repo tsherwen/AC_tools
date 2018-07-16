@@ -527,7 +527,7 @@ def iGEOSChem_ver(wd, also_return_GC_version=False, verbose=True, debug=False):
     if also_return_GC_version:
         # list GEOS-Chem versions (written with dashes and underscores)
         versions = [
-        'v11-02',
+        'v11-02', 'v12.0.0',
         'v11-01', 'v11_01', 'v10-01', 'v10_01', 'v9-02', 'v9_02', 'v9-01-03',
         'v9_01_03', 'v9-01-02', 'v9_01_02', 'v9-01-01', 'v9_01_01', 'v8-03-02',
         'v8_03_02', 'v8-03-01', 'v8_03_01', 'v8-02-04', 'v8_02_04', 'v8-02-03',
@@ -562,7 +562,7 @@ def iGEOSChem_ver(wd, also_return_GC_version=False, verbose=True, debug=False):
         '6.1':'v11-02',
         '6.2':'v11-02',
         '6.3':'v11-02',
-#        '7.0':'v11-02',
+        '7.0':'v12.0.0',
         'NOT FOUND':'NOT FOUND',
             }
             #
