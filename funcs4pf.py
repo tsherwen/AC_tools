@@ -222,6 +222,123 @@ def prt_PlaneFlight_files( df=None, LAT_var='LAT', LON_var='LON', \
         a.close()
 
 
+# ----
+# X.XX -
+# ----
+def prt_PlaneFlight_files_v12_plus( df=None, LAT_var='LAT', LON_var='LON', \
+        PRESS_var='PRESS', loc_var='TYPE', OBS_var='OBS', \
+        Date_var='datetime', slist=None, num_tracers=85, Extra_spacings=False, \
+        Username='Tomas Sherwen', verbose=False, debug=False ):
+    """
+    Takes a dataframe of lats, lons, alts, and times and makes Planeflight.dat.*
+    files
+
+    Parameters
+    -------
+    df (pd.DataFrame): dataframe of data (as floats) indexed by times(datetime)
+    wd (str): the working (code) directory to search for files in
+    loc_var (str): name for (e.g. plane name), could be more than one.
+    LAT_var, LON_var, PRESS_var (str): name for pressure(HPa),lat and lon in df
+    Date_var (str): column name of df containing datetime (UTC) variables
+    Username (str): name of the programme's user
+    Extra_spacings (boolean): add extra spacing? (needed for large amounts of
+        output, like nested grids)
+    slist (list): list of tracers/species to output
+
+    Notes
+    -----
+     - to get output of a specific frequency for given point locations, just
+    add the times to the axis of the dataframe provided.
+     -  datetime columns is required (as this allows mulitple output loations
+     (e.g. sepeerate planes/sites) to be present in input df)
+     - This function expects the dataframe to be ordered by datetime
+    """
+    # --- Packages
+    from time import gmtime, strftime
+    import time
+
+    # --- Local variables
+    # Extra spaces need for runs with many points
+    if Extra_spacings:
+#        pstr = '{:>6}  {:>4} {:0>2}-{:0>2}-{:0>4} {:0>2}:{:0>2}  {:>6,.2f} {:>7,.2f} {:>7.2f}'
+#        endstr = '999999   END  0- 0-   0  0: 0    0.00    0.00    0.00'
+        print( 'Extra_spacings not setup for >= v12.0.0' )
+        sys.exit()
+    else:
+#        pstr = '{:>5}  {:<3} {:0>2}-{:0>2}-{:0>4} {:0>2}:{:0>2}  {:>6,.2f} {:>7,.2f} {:>7.2f}'
+#        endstr ='99999   END  0- 0-   0  0: 0    0.00    0.00    0.00 '
+        pstr = '{:>5}{:>7} {:0>2}-{:0>2}-{:0>4} {:0>2}:{:0>2}  {:>6,.2f} {:>7,.2f} {:>7.2f} {:>10.3f}'
+        endstr ='99999   END 00-00-0000 00:00    0.00    0.00    0.00'
+    # Output a general list of species/tracers/met vars if not provided as arguments
+    if isinstance( slist, type(None)):
+        met_vars = [
+        'GMAO_ABSH', 'GMAO_PSFC','GMAO_SURF', 'GMAO_TEMP', 'GMAO_UWND',
+        'GMAO_VWND''GMAO_PRES'
+        ]
+        assert isinstance( num_tracers, int), 'num_tracers must be an integer'
+        slist = ['TRA_{:0>3}'.format(i) for i in np.arange(1, num_tracers+1 ) ]
+        species  = ['OH', 'HO2']
+        slist = slist + species + met_vars
+    # Number of variables to output (needed for fortran read of *dat files)
+    nvar = len(slist)
+    # --- Make sure an altitude is defined in df if not provided
+    # Updates merged into v12.0.0 mean a OBS altitude is required.
+    try:
+        df[OBS_var].values
+    except KeyError:
+        fill_ALT_obs = 99999.00
+        df[OBS_var] = fill_ALT_obs
+    # --- work out how many (UTC) days in the output
+    # Get list of unique dates & remove mean from dates
+    dates = [datetime.datetime(*i.timetuple()[:3]) for i in df[Date_var] ]
+    # Add list of just YYYYMMDD strings to dataframe
+    df['YYYYMMDD'] = [i.strftime('%Y%m%d') for i in dates ]
+    # Get list of unique days
+    dates = np.ma.array( sorted( set(dates) ) )
+    # --- loop days and create the files
+    for date_ in dates:
+        # Get data for date
+        sub_df = df[ df['YYYYMMDD'].values == date_.strftime('%Y%m%d') ]
+        if verbose:
+            print('Entries for day ({}): '.format(date_), sub_df.shape)
+        # Create/Open up pf.dat setup
+        a=open('Planeflight.dat.'+date_.strftime('%Y%m%d'),'w')
+        # Print out file headers to pf.dat file
+        print('Planeflight.dat -- input file for ND40 diagnostic GEOS_FP', file=a)
+        print(Username, file=a)
+        print(strftime("%B %d %Y", gmtime()), file=a)
+        print('-----------------------------------------------', file=a)
+        print('{:<4}'.format(nvar),'! Number of variables to be output', file=a)
+        print('-----------------------------------------------', file=a)
+        # Print out species for GEOS-Chem to output to pf.dat file
+        for n in range(0,len(slist)):
+            print(slist[n], file=a)
+        # Print out species for GEOS-Chem to output to pf.dat file
+        print('-------------------------------------------------', file=a)
+        print('Now give the times and locations of the flight', file=a)
+        print('-------------------------------------------------', file=a)
+        header = [
+        'Point', 'Type', 'DD-MM-YYYY', 'HH:MM', 'LAT', 'LON', 'PRESS', 'OBS'
+        ]
+        h_pstr = '{:>5}{:>7} {:>10} {:>5}  {:>6} {:>7} {:>7} {:>10}'
+
+        print( h_pstr.format( *header), file=a )
+        # Loop requested times
+        for n, time_ in enumerate( sub_df[Date_var] ):
+            # Setup variable list to print
+            vars_ = [ n+1, sub_df[loc_var].values[n], time_.day, time_.month ]
+            vars_ += [ time_.year, time_.hour, time_.minute ]
+            # Extract lat, lon, and pressure for time
+            coord_vars = LAT_var, LON_var, PRESS_var, OBS_var
+            vars_ += [ float( sub_df[i].values[n] ) for i in coord_vars ]
+            # Set formating
+            vars_ = pstr.format( *vars_ )
+            # Print to file
+            print(vars_, file=a)
+        # Add footer to pf.dat file
+        print(endstr, file=a)
+        a.close()
+
 # ---------------------------------- Section X.X ---------------------------
 # -------------- Planeflight Extractors
 #
