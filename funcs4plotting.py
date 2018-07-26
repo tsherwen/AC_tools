@@ -1483,10 +1483,10 @@ def binned_boxplots_by_altitude( df=None, fig=None, ax=None, dataset_name=None,
     ax.set_ylim( bins[0], bins[-1]+(bin_sizes[-1]*0.5) )
     # Set y axis tick labels to be the bins
     ax.set_yticks( upper_bin_edge )
-    if any([float(i).is_integer() for i in bins]):
+    if all([float(i).is_integer() for i in bins]):
         ax.set_yticklabels( [ int(i) for i in upper_bin_edge ] )
     else:
-        ax.set_yticklabels( upper_bin_edge )
+        ax.set_yticklabels( [ float(i) for i in upper_bin_edge ] )
     if debug: print( ( ax.get_yticks() ) )
     if debug: print( (ax.get_yticks(), bins) )
     # - Save or show?
