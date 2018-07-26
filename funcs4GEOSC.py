@@ -3430,6 +3430,8 @@ def convert_spec_v_v_2_ugm3( spec=None, data=None, explicitly_caculate=False,
     -------
     spec (str): species/tracer/variable name
     data (array): array of data
+    press (float or array): pressure (hPa) as a float on array with size of data
+    T (float or array): temperature (K) as a float on array with size of data
 
     Returns
     -------
@@ -3439,14 +3441,14 @@ def convert_spec_v_v_2_ugm3( spec=None, data=None, explicitly_caculate=False,
     # Get Air density
     if explicitly_caculate:
         # calculate using provide pressions
-        assert_str = '{} needed to explicitly caculate!'
+        assert_str = 'variable ({}) needed to explicitly caculate!'
         assert not isinstance(press, type(None)), assert_str.format( 'press')
         assert not isinstance(T, type(None)), assert_str.format( 'T (Kelvin)')
         # Use the ideal gas law to calculate p (air density kg/m3)
-        # press hPa), T (temperature in Kelvin),
+        # press (pressure in hPa), T (temperature in Kelvin),
         # R (specific gas constant for dry air (J/(kg·K))),
         R = constants('Rdry')
-        # convert pressure to HPa=>Pa & kg=g concurrently
+        # Convert pressure to HPa=>Pa & kg=g concurrently
         AIRDEN = (press*100) / (R*1000 * T )
     else:
         # assume standard air density
@@ -3456,18 +3458,22 @@ def convert_spec_v_v_2_ugm3( spec=None, data=None, explicitly_caculate=False,
         # ISA (International Standard Atmosphere).
         AIRDEN = 0.001225 # g/cm3
     # RMM of air
-    RMM_air = constants('RMM_air') # g/mol
+    RMM_air = constants('RMM_air') # g/mol (of dry air)
     # moles per cm3
     #  (1/(g/mol)) = (mol/g) ; (mol/g) * (g/cm3) = mol/cm3
     MOLS = (1/RMM_air) * AIRDEN
     # --- convert spec
-    # moles * spec RMM * microgram
-    # e.g. v/v * mols/cm3 = mols of X per cm3; / spec RMM = mass
-    # unitless * mols * g/mol * conversion
-    scale = MOLS * species_mass( spec ) *1E6 *1E6
+    # v/v * mols/cm3 = mols of X per cm3;
+    data *= MOLS
+    # convert to grams of X per cm3; ( * RMM of species )
+    data *= species_mass( spec )
+    # convert to ug per cm3 (*1E6)
+    data *= 1E6
+    # convert to ug per m3 (*1E6)
+    data *= 1E6
     units = '$\mu$g m$^{-3}$'
     # scale data and return
-    return data *scale
+    return data
 
 
 # ----
