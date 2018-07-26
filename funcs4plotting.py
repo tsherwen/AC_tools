@@ -1399,7 +1399,7 @@ def BASIC_seasonal_plot( dates=None, data=None, ax=None,
 # --------
 def binned_boxplots_by_altitude( df=None, fig=None, ax=None, dataset_name=None,
         num_of_datasets=1, dataset_num=0, label='Obs.', showfliers=False,
-        bins=np.arange(8), binned_variable='O3', variable_to_bin_by='ALT',
+        bins=np.arange(8), binned_var='O3', var2bin_by='ALT',
         color=None, dpi=320, xlabel=None, ylabel='Altitude (km)', title=None,
         show_plot=False, widths=0.3, verbose=False, debug=False):
     """
@@ -1408,13 +1408,13 @@ def binned_boxplots_by_altitude( df=None, fig=None, ax=None, dataset_name=None,
     Parameters
     -------
     df (pd.DataFrame): dataframe of alts and variable
-    variable_to_bin_by (str): variable to bin by (e.g. altitude)
+    var2bin_by (str): variable to bin by (e.g. altitude)
     num_of_datasets (int): number of dataset for which boxplots will be plotted
     dataset_num (int): number of dataset in order to be order to be plotted
     fig (figure instance): fig. to use
     ax (axis instance): axis to use
     label (str): label for legend
-    variable_to_bin_by (str): variable (in df) to bin by
+    binned_var (str): variable (in df) to bin by var2bin_by
     bins (np.array): bins to split dataset into
     color (str): color for boxplot
     title (str): title for plot?
@@ -1440,8 +1440,12 @@ def binned_boxplots_by_altitude( df=None, fig=None, ax=None, dataset_name=None,
         else:
             color = 'blue'
     # ---- Process data
-    gdf = df.groupby( pd.cut(df[variable_to_bin_by].values, bins ) )
-    data = [ i[1][binned_variable].values for i in gdf]
+    # Make sure there are no NaNs in the arrays that have been passed
+    NAN_present = df[[var2bin_by, binned_var]].isnull().values.any()
+    assert (not NAN_present), 'bin or binned vars cannots contain NaNs!'
+    # Now group by bins and get data as list
+    gdf = df.groupby( pd.cut( df[var2bin_by].values, bins ) )
+    data = [ i[1][binned_var].values for i in gdf]
     # ----- Now plots
     # - settings for boxplots
     bin_sizes = np.diff(bins)
