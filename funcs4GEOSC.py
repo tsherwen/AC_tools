@@ -2901,18 +2901,22 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
         units = 'pmol mol${^-1}$'
     # --- OH ( in molec/cm3 )
     elif fam == 'OH' :
-        spec = 'OH'
-        arr = get_GC_output( wd=wd, vars=['CHEM_L_S__'+spec], \
+        # Set specs list to just contain fam
+        specs = [ fam ]
+        arr = get_GC_output( wd=wd, vars=['CHEM_L_S__'+fam], \
             trop_limit=trop_limit )
         units = 'molec. cm$^{-3}$'
     # --- HO2 ( in v/v  )
     elif fam == 'HO2' :
-        spec = 'HO2'
-        arr = get_GC_output( wd=wd, vars=['CHEM_L_S__'+spec], \
+        # Set specs list to just contain fam
+        specs = [ fam ]
+        arr = get_GC_output( wd=wd, vars=['CHEM_L_S__'+fam], \
             trop_limit=trop_limit )
         units = 'pmol mol$^{-1}$'
     # --- HOX
     elif fam == 'HOx' :
+        # Set specs list to just contain fam
+        specs = [ 'OH', 'HO2' ]
         # OH ( in molec/cm3 )
         OH_arr = get_GC_output( wd=wd, vars=['CHEM_L_S__'+'OH'], \
             trop_limit=trop_limit )
@@ -2933,6 +2937,8 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
         arr = arr / 1E6
     # --- Cl
     elif fam == 'Cl':
+        # Set specs list to just contain fam
+        specs = [ fam ]
         # Extract data
         arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+'Cl' ], \
                     trop_limit=trop_limit )
@@ -2971,7 +2977,6 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
     # --- All NIT (inc. HNO3)
     elif fam == 'NIT_ALL' :
         # Select species in family
-#        specs = GC_var('NIT_ALL' )
         specs = 'HNO3', 'NIT', 'NITs'
         scale =1E12
         # Extract data
@@ -2989,7 +2994,6 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
     # --- all sulfate
     elif fam == 'SO4' :
         # Select species in family
-#        specs = GC_var('NIT_ALL' )
         specs = 'SO4', 'SO4s',
         scale =1E12
         # Extract data
@@ -3025,6 +3029,8 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
 
     # --- Ozone (O3)
     elif fam == 'O3' :
+        # Set specs list to just contain fam
+        specs = [ fam ]
         # Select species in family
         units, scale = tra_unit(fam, IUPAC_unit=True, scale=True)
         # Extract data
@@ -3034,14 +3040,19 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
             print([ ( i.shape, i.min(), i.max(), i.mean() ) for i in [arr ] ])
         arr = arr *scale
         units = 'nmol mol${^-1}$'
+
     # Get Ox prod (POx/POX) ([molec/cm3/s])
     elif fam == 'POX' :
+        # Set specs list to just contain fam
+        specs = [ fam ]
         # Select species in family
         arr = get_GC_output( wd=wd, vars=['PORL_L_S__'+fam],
                     trop_limit=trop_limit )
         units = 'molec. cm$^{-3}$ s$^{-1}$'
     # Get Ox prod (POx/POX) ([molec/cm3/s])
     elif fam == 'CH4 loss' :
+        # Set specs list to just contain fam
+        specs = [ fam ]
         # Select species in family
         arr = get_CH4_lifetime( wd=wd, use_OH_from_geos_log=False,\
             average_value=False )
@@ -3177,6 +3188,8 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
             arr = get_GC_output( wd=wd, vars=['IJ_AVG_S__'+fam ] )
             units, scaleby = tra_unit(fam, scale=True)
             arr= arr*scaleby
+            # set the specs list to just be the family
+            specs = [ fam ]
         except:
             err_str = 'No case for {} - PLEASE CHECK INPUT FAM OR ADD CASE'.format( fam )
             print( err_str )
