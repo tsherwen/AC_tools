@@ -5011,7 +5011,10 @@ def print_out_dfs2KPP_eqn_file( species_df=None, headers=None,
     print( '', file=a )
     for spec in species_df[species_df['inactive'] == True].index:
         df_tmp = species_df[species_df.index == spec]
-        print( ptr_str.format(spec, df_tmp['Description'].values[0] ), file=a )
+        dsp_str = df_tmp['Description'].values[0]
+        if ('{' not in dsp_str):
+            dsp_str = '{'+dsp_str+'}'
+        print( ptr_str.format(spec)+dsp_str, file=a )
     # ----  Print equations to file
     print( '', file=a )
     print( '#EQUATIONS', file=a)
@@ -5348,15 +5351,14 @@ def get_KPP_PL_tag( last_tag, tag_prefix='T' ):
 # ----
 # X.XX -
 # ----
-def print_out_lines_for_gckpp_file( dict_of_tags=None, extr_str='' ):
+def print_out_lines_for_gckpp_file( tags=None, extr_str='' ):
     """ Print lines to gckpp.kpp for added for tags in now in the .eqn file """
-    # ---- Create *.kpp file to save lines to
+    # Create a *.kpp file for lines to be saved to
     a=open('gckpp.kpp_extra_lines_for_tagged_mech_{}'.format(extr_str),'w')
-    tags = sorted( dict_of_tags.keys() )
     print( '#FAMILIES', file=a )
     for tag in tags:
         print( '{} : {};'.format( 'P'+tag, tag ), file=a )
-    # ---  Now close the file...
+    # Now close the file...
     a.close()
 
 
