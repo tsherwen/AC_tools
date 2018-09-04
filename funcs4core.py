@@ -563,6 +563,8 @@ def iGEOSChem_ver(wd, also_return_GC_version=False, verbose=True, debug=False):
         '6.2':'v11-02',
         '6.3':'v11-02',
         '7.0':'v12.0.0',
+        '7.0.1':'v12.0.0',
+        '7.1.1':'v12.0.0',
         'NOT FOUND':'NOT FOUND',
             }
             #

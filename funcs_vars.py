@@ -2433,7 +2433,8 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'Assekrem': (5.6333332062, 23.2666664124,  2710),
     # --- Misc
     'UoM_Chem': (-2.2302418, 53.4659844, 38 ),
-    'CDD' : (6.83333333, 45.8333333, 4250 )
+    'CDD' : (6.83333333, 45.8333333, 4250 ),
+    'NEEM' : (-51.12, 77.75, 2484),
     }
     if rtn_dict:
         return loc_dict
