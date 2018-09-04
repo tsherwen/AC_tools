@@ -187,7 +187,7 @@ def main( folder=None, print_formatted_KPP_file=True, GC_version=None,
     # --- Add the species to the species_df
     # number of reactions tagged
     alltags = [tagged_rxns[i]['tag'] for i in tagged_rxns.keys()]
-    tags = set( list( alltags ) )
+    tags = list( sorted( set( alltags ) ) )
     ptr_str = '# of rxns tagged = {} (of which unique = {})'
     if verbose: print( ptr_str.format( len(alltags), len(tags) ) )
     # Make a DataFrame from the dictionary of *all* tagged rxns
@@ -198,7 +198,7 @@ def main( folder=None, print_formatted_KPP_file=True, GC_version=None,
     for tag in df_spec_tmp.index:
         infams = df_tags.loc[ df_tags['tag'] == tag ]['fam'].values.tolist()
         Description = 'Prod. tag for fams: {}'.format( ', '.join(infams ) )
-        print tag, infams, Description
+        print( tag, infams, Description)
         df_spec_tmp.loc[df_spec_tmp.index == tag, 'Description'] = Description
     df_spec_tmp.sort_values('Description')
     # Add to existing DataFrame
