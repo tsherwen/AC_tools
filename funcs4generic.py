@@ -1661,7 +1661,7 @@ def get_linear_ODR( x=None, y=None, job=10, maxit=5000, beta0=(0,1),
         return myoutput
     else:
         if isinstance( xvalues, type(None)):
-            xvalues = np.arange( min(X), max(X), (max(X)-min(X))/100.)
+            xvalues = np.arange( min(x), max(x), (max(x)-min(x))/100.)
         return xvalues, f(myoutput.beta, xvalues )
 
 
