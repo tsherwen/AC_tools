@@ -22,7 +22,7 @@ if __name__=='__main__':
 
 # Location of files on York visible apache server (atmosviz1)
 data_dir = "../data"
-data_url = "http://atmosviz1.york.ac.uk/~bn506/data/AC_tools/"
+data_url = "https://webfiles.york.ac.uk/WACL/SHERWEN_TOMAS/AC_tools/"
 
 # List of files to fetch
 file_list = [
