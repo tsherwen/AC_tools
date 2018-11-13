@@ -64,8 +64,8 @@ def main( folder=None, print_formatted_KPP_file=True, GC_version=None,
     if isinstance( GC_version, type(None) ):
         # TODO - get this online from log files
         # (already implemented in AC_Tools)
-        GC_version = 'v11-2'
-
+#        GC_version = 'v11-2'
+        GC_version = 'v12.0.1'
     # Add mechanism name to string (and KPP folder)
     folder += 'KPP/{}/'.format( mechanism )
 
@@ -84,8 +84,7 @@ def main( folder=None, print_formatted_KPP_file=True, GC_version=None,
     # Process rxns to be in dictionaries of DataFrames
     # (with extra diagnostic columns, inc. reactants, products, metadata,...)
     rxn_dicts = AC.process_KPP_rxn_dicts2DataFrames(rxn_dicts=rxn_dicts)
-
-    # Update the numbering of indexes...
+    # Update the numbering of DataFrame indexes...
     Gas_dict = rxn_dicts['Gas-phase']
     Het_dict = rxn_dicts['Heterogeneous']
     Hv_dict = rxn_dicts['Photolysis']

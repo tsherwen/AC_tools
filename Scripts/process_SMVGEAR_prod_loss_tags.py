@@ -9,7 +9,7 @@ of functions for working with KPP/SMVGEAR tags are in AC_tools
 NOTES
 ---
  - This code is for working with smvgear diagnostics. for KPP P/L see 
- process_KPP_prod_loss_tags.py
+ Tagged_GC_KPP_Mechanism4family.py
  - details on the GEOS-Chem diagnostic are in the GEOS-Chem manual 
  (http://acmg.seas.harvard.edu/geos/doc/man/chapter_13.html)
 """
