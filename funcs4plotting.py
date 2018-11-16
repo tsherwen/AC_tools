@@ -180,6 +180,7 @@ def map_plot( arr, return_m=False, grid=False, centre=False, cmap=None, \
         interval,  adjust_window, resolution,shrink  =0.5, 3, 'f', 0.6
     if degrade_resolution:
         resolution = 'l'
+        drawcountries = False
 
     nested_res = ['0.25x0.3125', '0.25x0.3125_CH', '0.25x0.3125_WA']
     if res in nested_res:
