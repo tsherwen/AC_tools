@@ -40,7 +40,7 @@ from netCDF4 import Dataset
 try:
     import iris
 except  ImportError:
-    print('WARNING iris and cartopy have stability issues')
+    print('WARNING: iris and cartopy have stability issues')
 import logging
 
 # -- Math/Analysis
@@ -4800,6 +4800,197 @@ def get_model_run_stats( wd=None, file_type='*geos.log*', debug=False ):
         print('No *log files found! (folder:{})'.format(wd) )
         sys.exit()
 
+# ----
+# X.XX -
+# ----
+def get_general_stats4run_dict_as_df( run_dict=None, extra_str='', REF1=None, 
+            REF2=None, REF_wd=None, res='4x5', trop_limit=True, 
+            save2csv=True, prefix='GC_', run_names=None, debug=False ):
+    """ 
+    Get various stats on a set of runs in a dictionary ({name: location})
+    
+    Parameters
+    ----------
+    run_dict (dict): dicionary of run names and locations 
+    run_names (list): provide the names of run_dict keys to order df index
+    REF_wd (str): name of run in dictionary to use to extract shared variables 
+    REF1 (str): name of (1st) run in dictionary to to % change calculations from
+    REF1 (str): name of (2nd) run in dictionary to to % change calculations from
+    prefix (str):  string to include as a prefix in saved csv's filename
+    extra_str (str):  string to include as a suffx in saved csv's filename
+    res (str): reolusiotn of model run (e.g. 4x5)
+    save2csv (boolean): save dataframe as a csv file
+    trop_limit (boolean): limit analysis to the troposphere?
+
+    Returns
+    -------
+    (colormap)
+
+    Notes
+    -----    
+    
+    """
+    # Extract names and locations of data 
+    if isinstance( run_names, type(None) ):
+        run_names = sorted(run_dict.keys())
+    wds = [ run_dict[i] for i in run_names ]
+    # mass unit scaling
+    mass_scale = 1E3
+    mass_unit = 'Tg'
+    # v/v scaling?
+    ppbv_unit = 'ppbv'
+    ppbv_scale = 1E9
+    pptv_unit = 'pptv'
+    pptv_scale = 1E12
+    # Get shared variables from a single model run
+    if isinstance( REF_wd, type(None) ):
+        REF_wd = wds[ 0 ]
+    # get time in the troposphere diagnostic
+    t_p = AC.get_GC_output( wd=REF_wd, vars=[u'TIME_TPS__TIMETROP'], \
+        trop_limit=True)
+    # Temperature
+    K = AC.get_GC_output( wd=REF_wd, vars=[u'DAO_3D_S__TMPU'], trop_limit=True)        
+    # airmass
+    a_m = AC.get_air_mass_np( wd=REF_wd, trop_limit=True )
+    # Surface area?
+    s_area = AC.get_surface_area( res )[...,0]  # m2 land map
+
+    # ----  ----  ----  ----  ----  ----  ----
+    # ---- Now build analysis in pd.DataFrame
+
+    # ---- Tropospheric burdens?
+    # Get tropospheric burden for run
+    varname = 'O3 burden ({})'.format(mass_unit)
+    ars = [ AC.get_O3_burden(i, t_p=t_p).sum() for i in wds ]
+    df = pd.DataFrame( ars, columns=[varname], index=run_names )
+
+    # Get NO2 burden
+    NO2_varname = 'NO2 burden ({})'.format(mass_unit)
+    ars = [ AC.get_trop_burden( spec='NO2', t_p=t_p, wd=i, all_data=False).sum()
+        for i in wds ]
+    # convert to N equivalent
+    ars = [i/AC.species_mass('NO2')*AC.species_mass('N') for i in ars]
+    df[NO2_varname] = ars
+
+    # Get NO burden
+    NO_varname = 'NO burden ({})'.format(mass_unit)
+    ars = [ AC.get_trop_burden( spec='NO', t_p=t_p, wd=i, all_data=False).sum()
+        for i in wds ]
+    # convert to N equivalent
+    ars = [i/AC.species_mass('NO')*AC.species_mass('N') for i in ars]
+    df[NO_varname] = ars
+
+    # Combine NO and NO2 to get NOx burden
+    NOx_varname = 'NOx burden ({})'.format(mass_unit)
+    df[NOx_varname] = df[NO2_varname] + df[NO_varname]
+
+    # Get NIT burden
+    NIT_varname = 'NIT burden ({})'.format(mass_unit)
+    ars = [ AC.get_trop_burden( spec='NIT', t_p=t_p, wd=i, all_data=False).sum()
+        for i in wds ]
+    # convert to N equivalent
+    ars = [i/AC.species_mass('NIT')*AC.species_mass('N') for i in ars]
+    df[NIT_varname] = ars
+
+    # Get NITs burden
+    NITs_varname = 'NITs burden ({})'.format(mass_unit)
+    ars = [ AC.get_trop_burden(spec='NITs', t_p=t_p, wd=i, all_data=False).sum()
+        for i in wds ]
+    # convert to N equivalent
+    ars = [i/AC.species_mass('NITs')*AC.species_mass('N') for i in ars]
+    df[NITs_varname] = ars
+
+    # sum NIT+NITs
+    varname = 'NIT+NITs burden ({})'.format(mass_unit)
+    df[varname] = df[NITs_varname] + df[NIT_varname]
+
+    # Get N2O5 burden
+    NITs_varname = 'N2O5 burden ({})'.format(mass_unit)
+    ars = [AC.get_trop_burden(spec='N2O5', t_p=t_p, wd=i,  all_data=False).sum()
+        for i in wds ]
+    # convert to N equivalent
+    ars = [i/AC.species_mass('N2O5')*AC.species_mass('N') for i in ars]
+    df[NITs_varname] = ars
+
+    # Scale units
+    for col_ in df.columns:
+        if 'Tg' in col_:
+            df.loc[:,col_] = df.loc[:,col_].values/mass_scale
+
+    # ---- Surface concentrations?
+    # Surface ozone
+    O3_sur_varname = 'O3 surface ({})'.format(ppbv_unit)
+    ars = [ AC.get_avg_surface_conc_of_X( spec='O3', wd=i, s_area=s_area) \
+        for i in wds ]
+    df[O3_sur_varname] = ars
+
+    # Surface NOx
+    NO_sur_varname = 'NO surface ({})'.format(ppbv_unit)
+    ars = [ AC.get_avg_surface_conc_of_X( spec='NO', wd=i, s_area=s_area) \
+        for i in wds ]
+    df[NO_sur_varname] = ars
+    NO2_sur_varname = 'NO2 surface ({})'.format(ppbv_unit)
+    ars = [ AC.get_avg_surface_conc_of_X( spec='NO2', wd=i, s_area=s_area) \
+        for i in wds ]
+    df[NO2_sur_varname] = ars
+    NOx_sur_varname = 'NOx surface ({})'.format(ppbv_unit)
+    df[NOx_sur_varname] =  df[NO2_sur_varname]+ df[NO_sur_varname]
+
+    # Surface N2O5
+    N2O5_sur_varname = 'N2O5 surface ({})'.format(pptv_unit)
+    ars = [ AC.get_avg_surface_conc_of_X( spec='N2O5', wd=i, s_area=s_area) \
+        for i in wds ]
+    df[N2O5_sur_varname] = ars
+
+    # ---- OH concentrations?
+    # first process the files to have different names for the different years
+    try:
+        OH_global_varname = 'Global mean OH'
+        ars = [ AC.get_OH_mean(i) for i in wds ]
+        df[OH_global_varname] = ars
+    except:
+        print('Unable to add OH values - please check the file directory! ')
+
+    # ---- CH4 concentrations?
+    try:
+        CH4_lifetime_varname = 'CH4 lifetime (yr)'
+        ars = [ AC.get_CH4_lifetime( wd=i, use_OH_from_geos_log=False, K=K, \
+            t_ps=t_p, average_value=True, use_time_in_trop=True, a_m=a_m )
+            for i in wds ]
+        df[CH4_lifetime_varname] = ars
+    except:
+        print('Unable to add CH4 lifetimes - please check the file directory! ')
+
+    # ---- Scale units
+    for col_ in df.columns:
+        if 'ppbv' in col_:
+            df.loc[:,col_] = df.loc[:,col_].values*ppbv_scale
+        if 'pptv' in col_:
+            df.loc[:,col_] = df.loc[:,col_].values*pptv_scale
+
+    # ---- Processing and save?
+    # Calculate % change from base case for each variable
+    if not isinstance(REF1, type(None) ):
+        for col_ in df.columns:
+            pcent_var = col_+' (% vs. {})'.format( REF1 )
+            df[pcent_var] = ( df[col_]-df[col_][REF1] ) / df[col_][REF1] *100
+    if not isinstance(REF2, type(None) ):
+        for col_ in df.columns:
+            pcent_var = col_+' (% vs. {})'.format( REF2 )
+            df[pcent_var] = ( df[col_]-df[col_][REF2] ) / df[col_][REF2] *100
+
+    # Re-order columns
+    df = df.reindex_axis(sorted(df.columns), axis=1)
+    # Reorder index 
+    df = df.T.reindex_axis(sorted(df.T.columns), axis=1).T
+    # Now round the numbers
+    df = df.round(3)
+    # Save csv to disk
+    csv_filename = '{}_summary_statistics{}.csv'.format( prefix, extra_str )
+    df.to_csv(csv_filename)    
+
+    # return the DataFrame too
+    return df
 
 # ------------------ Section X.X -------------------------------------------
 # -------------- Smvgear input/output file Processing

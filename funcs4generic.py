@@ -948,7 +948,7 @@ def location_unmasked( res='4x5', lat=None, lon=None, mask2D=False ):
     # Create a dummy array of ones, with all locations masked
     m = np.ma.array( np.ones( get_dims4res(res) ), mask=True)
     # Get location index
-    assert all([type(i)==float for i in lat, lon]), 'lat & lon must be floats'
+    assert all([type(i)==float for i in (lat, lon)]), 'lat & lon must be floats'
     lat_ind = get_gc_lat( lat=lat, res=res )
     lon_ind = get_gc_lon( lon=lon, res=res )
     # Unmask grid box for location
@@ -2421,12 +2421,15 @@ def get_vars_from_line_printed_in_txt_file(filename=None, folder=None,
 # --------
 def rm_spaces_and_chars_from_str(input_str, remove_slashes=True,
         replace_brackets=True, replace_quotes=True, replace_dots=True,
-        remove_plus=True):
+        remove_plus=True, swap_pcent=True, replace_braces=True ):
     """ remove the spaces and extra vars from strings"""
     input_str = input_str.replace(' ', '_')
     if replace_brackets:
         input_str = input_str.replace('(', '_')
         input_str = input_str.replace(')', '_')
+    if replace_braces:
+        input_str = input_str.replace('{', '_')
+        input_str = input_str.replace('}', '_')
     if replace_quotes:
         input_str = input_str.replace("'", '_')
     if replace_dots:
@@ -2436,6 +2439,8 @@ def rm_spaces_and_chars_from_str(input_str, remove_slashes=True,
         input_str = input_str.replace("/", '_')
     if remove_plus:
         input_str = input_str.replace("+", '_plus_')
+    if swap_pcent:
+        input_str = input_str.replace("%", 'pcent')    
     return input_str
 
 # --------------------------------------------------------------------------
