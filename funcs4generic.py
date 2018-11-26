@@ -2442,15 +2442,3 @@ def rm_spaces_and_chars_from_str(input_str, remove_slashes=True,
     if swap_pcent:
         input_str = input_str.replace("%", 'pcent')    
     return input_str
-
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# ---------------- Section X -------------------------------------------
-# -------------- Redundant Functions
-# --------------------------------------------------------------------------
-#
-# NOTE(s):
-# (1) These are retained even though they are redundant for back compatibility
-# (2) It is not advised to use these.
-

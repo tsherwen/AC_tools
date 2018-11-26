@@ -1001,15 +1001,3 @@ def get_scientific_number( number, precision, string=False ):
         return float(out)
     else:
         return out
-
-
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# ---------------- Section X -------------------------------------------
-# -------------- Redundant Functions
-# --------------------------------------------------------------------------
-#
-# NOTE(s):
-# (1) These are retained even though they are redundant for back compatibility
-# (2) It is not advised to use these.

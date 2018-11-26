@@ -5714,4 +5714,3 @@ def PDF_obs_vs_mod( ax, dates, data, f_size=20, pos=0, posn=1,  \
     if legend:
         plt.legend()
 
-

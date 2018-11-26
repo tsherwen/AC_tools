@@ -11,19 +11,12 @@ NOTE(S):
 """
 # ----------------------------- Section X.X -----------------------------------
 # -------------- Required modules:
-
-# --- compatibility with both python 2 and 3
-
-
 import logging
-
-# -- Math/Analysis
+# - Math/Analysis
 import numpy as np
-#from time import mktime
-#from pandas import DataFrame
 import pandas as pd
 
-# -- Time
+# - Time
 import time
 import calendar
 import datetime as datetime
@@ -34,7 +27,7 @@ try:
 except ImportError:
     print( 'ephem package not installed')
 
-# ----------------------- Section X.X -------------------------------------------
+# ----------------------- Section X.X ------------------------------------
 # -------------- Time Processing
 #
 
@@ -43,9 +36,10 @@ except ImportError:
 # --------------
 def get_day_fraction(date):
     """
-    Get day fraction.
-
-    NOTES:
+    Get day fraction from a datetime object
+    
+    Notes
+    -----
      - for working with numpy arrays of datetimes, instead of pandas dataframes
     """
     secs = (date.hour *60.*60.)+(date.minute*60.)+(date.second)
@@ -669,7 +663,7 @@ def adjust_UT_2_lt( time, date, data, site='CVO', dUTC=None, debug=False ):
 # -------------
 def data2daily( data, dates ):
     """
-    resample list of numpy data by day (e.g. taken from given list of dates )
+    Resample list of numpy data by day (e.g. taken from given list of dates )
 
     NOTES:
      - Redundent? Why is this a seperate function?
@@ -700,15 +694,13 @@ def get_int_btwn(start, end, months=False, years=False ):
         return [ i.strftime('%Y') for i in m_]
     else:
         return m_
-#    else:
-#        print 'State whether years or months are required as boolean arg (e.g. months=True)'
+
 
 # ----
 # X.XX -
 # -----
 def solartime(observer, sun=None):
-    """
-    """
+    """ Get Solartime  for location of 'observer' relative to 'sun' """
     if isinstance(sun, type(None)):
         ephem.Sun()
     # Astronomical math
@@ -719,42 +711,3 @@ def solartime(observer, sun=None):
     # sidereal time == ra (right ascension) is the highest point (noon)
     hour_angle = observer.sidereal_time() - sun.ra
     return ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h
-
-
-
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# ---------------- Section X -------------------------------------------
-# -------------- Redundant Functions
-# --------------------------------------------------------------------------
-#
-# NOTE(s):
-# (1) These are retained even though they are redundant for back compatibility
-# (2) It is not advised to use these.
-
-
-# --------------
-# X.XX - Process time/date to CV days equivilent - mje
-# -------------
-def year_to_since_2006(model):
-    """
-    Converts planeflight output date and time to unit Cape Verde (CVAO) years.
-
-    ARGUEMTNS:
-     -  extracted model data from funcs4pf.readfile_basic
-
-    NOTES:
-     - Credit MJE
-    """
-    year=(model[:,0]//10000)
-    month=((model[:,0]-year*10000)//100)
-    day=(model[:,0]-year*10000-month*100)
-    hour=model[:,1]//100
-    min=(model[:,1]-hour*100)
-    doy=[ datetime.datetime(np.int(year[i]),np.int(month[i]),np.int(day[i]),\
-                                np.int(hour[i]),np.int(min[i]),0)- \
-              datetime.datetime(2006,1,1,0,0,0) \
-              for i in range(len(year))]
-    since2006=[doy[i].days+doy[i].seconds/(24.*60.*60.) for i in range(len(doy))]
-    return since2006

@@ -6453,19 +6453,3 @@ def get_emiss( ctm_f=None, spec=None, wd=None, years=None, \
     return arr_
 
 
-
-
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# ---------------- Section X -------------------------------------------
-# -------------- Non-generic Functions
-# --------------------------------------------------------------------------
-#
-# NOTE(s):
-# (1) These are retained, but will be migrated to a seperate non-generic module
-# (2) It is not advised to use these.
-
-
-# Non generic function to move to new module
-
