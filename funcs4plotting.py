@@ -1361,12 +1361,14 @@ def BASIC_seasonal_plot( dates=None, data=None, ax=None,
     # Plot up median
     medians =  [ np.nanpercentile( i, 50, axis=0 ) for i in data_nan ]
     plt.plot( months, medians, color=color, lw=lw, ls=ls, label=label  )
-    # Plot quartiles as shaded area?
-    low = [ np.nanpercentile( i, pcent1, axis=0 ) for i in data_nan ]
-    high = [ np.nanpercentile( i, pcent2, axis=0 ) for i in data_nan ]
+    # define an axis if one isn't given
     if isinstance(ax, type(None)):
-        ax = plt.gca()
-    ax.fill_between( months, low, high, alpha=0.2, color=color   )
+        ax = plt.gca()    
+    # Plot quartiles as shaded area?
+    if plot_Q1_Q3:
+        low = [ np.nanpercentile( i, pcent1, axis=0 ) for i in data_nan ]
+        high = [ np.nanpercentile( i, pcent2, axis=0 ) for i in data_nan ]
+        ax.fill_between( months, low, high, alpha=0.2, color=color   )
     # Beatify plot
     ax.set_xticks( months )
     if xlabel:
@@ -3016,6 +3018,9 @@ def plot_spatial_figure( arr, fixcb=None, sigfig_rounding_on_cb=2, \
     NOTES:
         Provide an 3D array of lon, lat, and alt
     """
+    # reset settings for plotting maps from any values changed by seaborn
+    import seaborn as sns
+    sns.reset_orig()
     # If just lat and lon provided, add a dummy dimension.
     if len(arr.shape) == 2:
         arr = arr[...,None]
