@@ -5721,3 +5721,19 @@ def PDF_obs_vs_mod( ax, dates, data, f_size=20, pos=0, posn=1,  \
     if legend:
         plt.legend()
 
+# --------
+# X.XX - Probability distribution plotter
+# --------
+def get_CB_color_cycle():
+    """ 
+    Get a list of color blind friednly colors to cycle in plots
+
+    Notes
+    -----
+     - Credit @ thriveth: https://gist.github.com/thriveth/8560036
+    """
+    CB_color_cycle = [
+    '#377eb8', '#ff7f00', '#4daf4a', '#f781bf', '#a65628', '#984ea3',
+    '#999999', '#e41a1c', '#dede00'
+    ]
+    return CB_color_cycle
