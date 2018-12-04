@@ -28,7 +28,7 @@ import functools
 import matplotlib
 #import seaborn as sns
 import cartopy.crs as ccrs
-
+import cartopy.feature as cfeature
 
 # -- Time
 import time
@@ -5621,7 +5621,7 @@ def plot_lons_lats_spatial_on_map_CARTOPY( central_longitude=0,
     """
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
-    import cartopy.feature as cfeataure
+    import cartopy.feature as cfeature
     # --- Setup plot
     if isinstance(fig, type(None)):
         fig = plt.figure(dpi=dpi, facecolor='w', edgecolor='k')
@@ -5632,9 +5632,7 @@ def plot_lons_lats_spatial_on_map_CARTOPY( central_longitude=0,
             )
 
     # --- Plot
-    # Now scatter points on plot
-    plt.scatter(lons, lats, color=color, s=s, marker=marker,
-         transform=projection() )
+
 
     # Add buffer region around plot
 #    ax.get_extent()
@@ -5671,6 +5669,10 @@ def plot_lons_lats_spatial_on_map_CARTOPY( central_longitude=0,
         ax.coastlines(resolution='110m')
 #        ax.drawcountries() # not in cartopy
     ax.gridlines()
+
+    # Now scatter points on plot
+    ax.scatter(lons, lats, color=color, s=s, marker=marker,
+         transform=projection(), zorder=999 )
 
     # return  ax (and show plot?)
     if show_plot: plt.show()
