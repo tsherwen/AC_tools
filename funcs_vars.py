@@ -2308,7 +2308,12 @@ def gaw_2_name():
 # ----
 def get_global_GAW_sites(f='gaw_site_list_global.h5'):
     """
-    Get list of just GAW global sites.
+    Get list of (just) GAW global sites
+    
+    Notes
+    -----    
+     - This data is from Sofen et al 2016 and freely availible. 
+     (BADC doi:10.5285/08fbe63d-fa6d-4a7a-b952-5932e3ab0452 )
     """
     wd= get_dir('dwd') +'ozonesurface/'
     df= pd.read_hdf( wd+f,  'wp', mode='r' )
@@ -2435,6 +2440,14 @@ def get_loc( loc=None, rtn_dict=False, debug=False ):
     'UoM_Chem': (-2.2302418, 53.4659844, 38 ),
     'CDD' : (6.83333333, 45.8333333, 4250 ),
     'NEEM' : (-51.12, 77.75, 2484),
+    'Welgegund' : ( 26.939311,  -26.570146, 1480),
+    'WEL'  : ( 26.939311,  -26.570146, 1480),  # abrev. Welgegund
+    'Botsalano' : (25.75, -25.54, 1420 ),
+    'BOT' : (25.75, -25.54, 1420 ), # abrev. Botsalano
+    'Marikana' : ( 27.48, -25.70, 1170 ),
+    'MAR' : ( 27.48, -25.70, 1170 ), # abrev. Marikana
+    'Elandsfontein' : ( 29.42, -26.25, 1750 ),
+    'ELA' : ( 29.42, -26.25, 1750 ), # abrev. Elandsfontein
     }
     if rtn_dict:
         return loc_dict
