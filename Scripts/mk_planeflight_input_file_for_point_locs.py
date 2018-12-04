@@ -11,8 +11,9 @@ from . import AC_tools as AC
 
 def main(filename=None, LAT_var='LAT', LON_var='LON', \
         PRESS_var='PRESS', loc_var='TYPE', Username='Tomas Sherwen', \
-        slist=None, Extra_spacings=False, \
-        freq='H', start_year=2014, end_year=2016, debug=False):
+        slist=None, Extra_spacings=False, freq='H', start_year=2014, \
+        end_year=2016, GC_ver_above_v12=True, GC_ver='v12.0.0', \
+        debug=False):
     """
     Mk planeflight input files for GEOS-Chem ND40 diagnostic from a csv file 
     contains sites of interest (TYPE) and their descriptors (LON, LAT, PRESS)
@@ -79,8 +80,12 @@ def main(filename=None, LAT_var='LAT', LON_var='LON', \
     df = pd.concat(dfs).sort_values('datetime',ascending=True)
     
     # --- Print out files 
-    AC.prt_PlaneFlight_files(df=df, slist=slist, Extra_spacings=Extra_spacings)
+    if (GC_ver == 'v12.0.0') or GC_ver_above_v12:
+        AC.prt_PlaneFlight_files_v12_plus(df=df, slist=slist, Extra_spacings=Extra_spacings)
+    else:
+        AC.prt_PlaneFlight_files(df=df, slist=slist, Extra_spacings=Extra_spacings)
 
 
 if __name__ == "__main__":
     main()
+
