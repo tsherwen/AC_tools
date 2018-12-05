@@ -26,7 +26,6 @@ import matplotlib as mpl
 from pylab import setp
 import functools
 import matplotlib
-#import seaborn as sns
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 
@@ -1113,7 +1112,6 @@ def plot_up_diurnal_by_season( spec='O3', sub_str='UK+EIRE', fig=None, \
     sns.set_context("paper", font_scale=0.75)
     # ---Local variables
     seasons = ('DJF', 'MAM', 'JJA',  'SON' )
-
     # --- Split data by season
     for key_ in list(dfs.keys()):
         # Now assign "Seasons"
@@ -3710,6 +3708,93 @@ def X_stackplot( X=None, Y=None, labels=None, baseline='zero', \
     if show: plt.show()
 
 
+# --------
+# X.XX - Plot up locations (lons and lats) on a map
+# --------
+def plot_lons_lats_spatial_on_map_CARTOPY( central_longitude=0,
+        lats=None, lons=None, add_background_image=True,
+        projection=ccrs.PlateCarree, fig=None, ax=None,
+        marker='o', s=50, color='red', show_plot=False, dpi=320,
+        buffer_degrees=20, add_detailed_map=False ):
+    """
+    Plot a list of lons and lats spatially on a map (using cartopy)
+
+    projection (cartopy.crs obj.):  projection to use
+    s (int): size of plot location point (lon, lat)
+    lons, lats (np.array): list of locations (in decimal londitude and latitude)
+    color (str): color of points on map for locations
+    dpi (int): resolution of figure (dots per sq inch)
+    return_axis (boaol): return the basemap axis instance
+    marker (str): marker style
+
+    Returns
+    -------
+    (axis instance)
+
+    Notes
+    -----
+     - Basemap is redundent. Cartopy should be used instead.
+    """
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+    import cartopy.feature as cfeature
+    # --- Setup plot
+    if isinstance(fig, type(None)):
+        fig = plt.figure(dpi=dpi, facecolor='w', edgecolor='k')
+    if isinstance(ax, type(None)):
+        # setup a cartopy projection for plotting
+        ax = fig.add_subplot(111,
+            projection=projection(central_longitude=central_longitude)
+            )
+
+    # --- Plot
+
+
+    # Add buffer region around plot
+#    ax.get_extent()
+#     plt.ylim( myround(lats.min()-buffer_degrees, 10, ),
+#         myround(lats.max()+buffer_degrees, 10, round_up=True))
+#     plt.xlim( myround(lons.min()-buffer_degrees, 10, ),
+#         myround(lons.max()+buffer_degrees, 10, round_up=True))
+    x0, x1, y0, y1 = ax.get_extent()
+    try:
+        x0 = myround(lons.min()-buffer_degrees, 10, )
+        x1 = myround(lons.max()+buffer_degrees, 10, round_up=True)
+        y0 = myround(lats.min()-buffer_degrees, 10, )
+        y1 = myround(lats.max()+buffer_degrees, 10, round_up=True)
+        ax.set_extent( (x0, x1, y0, y1), projection() )
+    except ValueError:
+        print('lon and lat buffer not set extent as out of range' )
+
+    # Put a background image on for nice sea rendering.
+    if add_background_image:
+        ax.stock_img()
+        if add_detailed_map:
+            # Create a feature for States/Admin 1 regions at 1:50m
+            # from Natural Earth
+            states_provinces = cfeature.NaturalEarthFeature(
+                category='cultural',
+                name='admin_1_states_provinces_lines',
+                scale='50m',
+                facecolor='none')
+            ax.add_feature(cfeature.LAND)
+            ax.add_feature(cfeature.COASTLINE)
+            ax.add_feature(cfeature.BORDERS)
+#            ax.add_feature(states_provinces, edgecolor='gray')
+    else:
+        ax.coastlines(resolution='110m')
+#        ax.drawcountries() # not in cartopy
+    ax.gridlines()
+
+    # Now scatter points on plot
+    ax.scatter(lons, lats, color=color, s=s, marker=marker,
+         transform=projection(), zorder=999 )
+
+    # return  ax (and show plot?)
+    if show_plot: plt.show()
+    return ax
+
+
 # --------------------------- Section 4 ------------------------------------
 # -------------- Plotting Ancillaries
 #
@@ -3855,6 +3940,7 @@ def get_ls(num):
     ]
     return ls[:num]
 
+
 # --------
 # X.XX - takes time in troposphere diagnostic array (46, 47) overlayes
 # --------
@@ -3933,6 +4019,7 @@ def mask_not_obs( loc='Denmark', res='4x5', debug=False ):
 
     return np.ma.not_equal(  arr, 1)
 
+
 # --------------
 # X.XX - Annotate grid
 # -------------
@@ -3969,6 +4056,7 @@ def annotate_gc_grid(ax, res='4x5', f_size=6.5, \
                     fontweight ='normal'
                 ax.text( lo+1, la+1, '{},{}'.format(glon[nn], glat[n]),\
                      fontsize=f_size, color=color )
+
 
 # --------
 # X.XX - Function for centering colorbar
@@ -4050,6 +4138,7 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, upper=1, \
     plt.register_cmap(cmap=newcmap)
 
     return newcmap
+
 
 # --------
 # X.XX - Add colorbar to side of plot
@@ -4203,7 +4292,6 @@ def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
                 norm=norm, ticks=lvls, extend=extend, \
                 orientation=orientation, ticklocation=ticklocation)
 
-
     if log:
         round_to_n = lambda x, n: round(x, -int(floor(log10(x))) + (n - 1))
         cb.set_ticks( [ float('{:.2g}'.format( t )) for t in lvls ] )
@@ -4223,6 +4311,7 @@ def mk_cb( fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,\
     cb.ax.tick_params( labelsize=f_size ) #, size=f_size )
 
     return cb_ax
+
 
 # --------
 # X.XX - Create base map for plotting
@@ -4265,6 +4354,7 @@ def get_basemap( lat, lon, resolution='l', projection='cyl', res='4x5',\
         ax_tmp = ax_tmp = plt.gca()
         ax_tmp.tick_params( axis='x', which='both', labelbottom='off')
     return m
+
 
 # --------
 # X.XX - Provide an appropriate colormap for given data
@@ -4412,6 +4502,7 @@ def get_colormap( arr,  center_zero=True, minval=0.15, maxval=0.95, \
     else:
         return cmap
 
+
 # --------
 # X.XX -Make segments for variable line color plot
 # --------
@@ -4485,6 +4576,7 @@ def colorline( x, y, z=None, cmap=plt.get_cmap('copper'),  \
         axcb.set_label( cb_title )
 
     return lc
+
 
 # --------
 # X.XX - Get human readable gradations for plot
@@ -4694,6 +4786,7 @@ def show_plot():
     plt.show()
     return
 
+
 # --------
 # X.XX -
 # --------
@@ -4703,7 +4796,6 @@ def close_plot():
     """
     plt.close()
     return
-
 
 
 # --------
@@ -4756,49 +4848,22 @@ def set_bp_style( bp, color='k', linewidth=1.5, facecolor='none', \
     setp(bp['medians'][:], color=color, linewidth=linewidth)
 
 
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# ---------------- Section X -------------------------------------------
-# -------------- User specific functions.
-# --------------------------------------------------------------------------
-#
-# NOTE(s):
-# (1) These functions should be removed following checks on compatibility
-#
+# --------
+# X.XX - 
+# --------
+def get_CB_color_cycle():
+    """ 
+    Get a list of color blind friednly colors to cycle in plots
 
-# -------------
-# X.XX -  print NCAS & York logos in the bottom corners
-# -------------
-def add_logos_NCAS_york_bottom(fig):
+    Notes
+    -----
+     - Credit @ thriveth: https://gist.github.com/thriveth/8560036
     """
-    Add NCAS + York logo for external plots used externally
-
-    NOTE(s):
-     - This function is not general enough and needs to be removed from AC_tools
-    """
-    from PIL import Image
-
-    wd1 = get_dir ('dwd') +'misc/logos/'
-    logo_list= [
-    'NCAS_national_centre_logo.gif', 'nerclogo1000.gif' , 'york_uni_shield.tif' ,   \
-    'york_uni_name.tif'
+    CB_color_cycle = [
+    '#377eb8', '#ff7f00', '#4daf4a', '#f781bf', '#a65628', '#984ea3',
+    '#999999', '#e41a1c', '#dede00'
     ]
-
-    # Setup logo 1
-    logo1 = Image.open( wd1 + logo_list[3])  # York name
-    # [left, bottom, width, height]
-    ax2=fig.add_axes([0.01, 0.015, 0.55, 0.055], frameon=False)
-    ax2.imshow(logo1,interpolation="bilinear")
-    ax2.axis('off')
-
-    # Setup logo 2
-    logo2 = Image.open( wd1 + logo_list[0]) # NCAS logo
-    # [left, bottom, width, height]
-    ax3 = fig.add_axes([0.7, 0.01, 0.25, 0.1], frameon=False)
-    ax3.imshow(logo2,interpolation="bilinear")
-    ax3.axis('off')
-    return fig
+    return CB_color_cycle
 
 
 # --------------------------------------------------------------------------
@@ -4812,746 +4877,6 @@ def add_logos_NCAS_york_bottom(fig):
 # (1) These are retained even though they are redundant for back compatibility
 # (2) It is not advised to use these.
 
-# --------------
-# 1.16 - plot up timeseries from May through Septmeber
-# -------------
-def timeseries_by_day_plot( ax, dates, data, f_size=20, pos=0, posn=1,  \
-        title=None, legend=False, everyother=7,  x_nticks=12, \
-        window=False, label=None, ylabel=None, loc='upper right',  \
-        lw=1,ls='-', color=None, start_month=5, end_month=9,
-        boxplot=True, showmeans=False, debug=False ):
-    """
-    Timeseries plot.
-
-    ARGUEMENTS:
-     - Takes numpy arrays of datetimes and data as arguemnts.
-
-    NOTES:
-     - Description needs update.
-    """
-
-    # Process data - reduce resolution to daily, and get std
-    df = DataFrame(data={'data':data},index=dates )
-
-    # remove dates outside of range (start_month > < end_month )
-    def get_month(x):
-         return x.month
-    df[ 'month'] = df.index.map( get_month )
-    df = df[ df['month']<=end_month ]
-    df = df[ df['month']>=start_month ]
-
-    # split by day
-    def get_day(x):
-         return datetime.datetime(*x.timetuple()[:3])
-    df[ 'day'] = df.index.map( get_day )
-    sel_days = sorted(set(df[ 'day']))
-    df = DataFrame(data={'data':df.data, 'day':df.day},index=df.index )
-    daily = [ df[df['day']== i].data for i in sel_days ]
-    sel_days = [i.to_datetime() for i in sel_days ]
-
-    # label once per week
-    labels = [i.strftime("%-d %b") for  i in sel_days ][::everyother]
-
-    if boxplot:
-        # output boxplot for range
-        bp = ax.boxplot( daily, sel_days, showmeans=showmeans )
-
-        # xticks are numbers, therefore set all to ''
-        # except those you want to show dates
-        fill_label = ['']*len(sel_days)
-        fill_points =list(range(len(sel_days)))[::everyother]
-        for n,i in enumerate( fill_points) :
-            fill_label[i] = labels[n]
-
-        plt.xticks( list(range(len(sel_days))), fill_label, \
-                        rotation='vertical')
-    else:
-        plt.plot( sel_days, [np.mean(i) for i in daily] )
-        plt.xticks( sel_days[::everyother], labels, \
-                    rotation='vertical' )
-
-    # Beatify plot
-    if not isinstance( title, type(None) ):
-        plt.title( title )
-    if not isinstance( ylabel, type(None) ):
-        plt.ylabel( ylabel )
-
-
-# -------------
-# X.XX - box X-Y plot with histograms
-# -------------
-def X_Y_hist( x, y, z=None, zlabel=None, fig=None, \
-        left= 0.1, width=0.60, bottom=0.1, height=0.60, widthII=0.2, \
-        fit = 0.02, binwidth=0.1, cmap=plt.cm.gnuplot2, \
-        X_title='X title', Y_title='Y title', f_size=5 , line121=False ):
-    """
-    Plots a X vs. Y histogram
-    NOTES
-    ---
-    Just use pandas for this or seaborn
-     - http://seaborn.pydata.org/generated/seaborn.distplot.html
-     - http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.hist.html
-
-    """
-
-    # Use hist code
-    nullfmt = mpl.ticker.NullFormatter()         # no labels
-
-    # start with a rectangular Figure
-    if isinstance( fig, type(None) ):
-        fig = plt.figure(1, figsize=(8,8))
-
-    rect_scatter = [left, bottom, width, height]
-    axScatter = plt.axes(rect_scatter)
-
-    if z == None:
-        # the scatter plot:
-        axScatter.scatter(x, y)
-
-        # definitions for the hist axes & setup.
-#        bottom_h = left_h = left+width+fit
-#        rect_histx = [left, bottom_h, width, widthII]
-#        rect_histy = [left_h, bottom, widthII, height]
-
-    else:
-        vmin, vmax = [  ( float(np.ma.min(i)), float(np.ma.max(i)) ) \
-            for  i in [ z] ][0]
-        s_z = [ cmap(  (float(i) - vmin) / ( np.array([vmin,vmax]) ).ptp() ) \
-            for i in z ]
-        pts = axScatter.scatter(x, y, c=z)
-
-        # definitions for the hist axes & setup.
-#        widthII , height = [ i*.75 for i in widthII, height ]
-        widthII  = widthII*.75
-
-    # definitions for the hist axes & setup.
-    bottom_h = left_h = left+width+fit
-    rect_histx = [left, bottom_h, width, widthII]
-    rect_histy = [left_h, bottom, widthII, height]
-
-    # now determine nice limits by hand or prescribe:
-    xymax = np.ma.max( [np.ma.max(np.fabs(x)), np.ma.max(np.fabs(y))] )
-    lim = ( int(xymax/binwidth) + 1) * binwidth
-
-    # manually?
-    lim_min, lim_max  =  0,  max( np.ma.max(x), np.ma.max(y) )
-    axScatter.set_xlim( lim_min, lim_max )
-    axScatter.set_ylim(  lim_min, lim_max )
-    # or by hand?
-#    axScatter.set_xlim( (-lim, lim) )
- #   axScatter.set_ylim( (-lim, lim) )
-
-    # add trendline
-    Trendline( axScatter, x, y, order =1, intervals= 700 )
-
-    # plot up titles
-    plt.xlabel(  X_title )
-    plt.ylabel( Y_title )
-    if  line121:
-        print((lim_min, lim_max))
-        plt.plot( np.arange(lim_min, lim_max*1.5 )  , np.arange(lim_min, \
-            lim_max*1.5  ), linestyle='--', color=(0.5, 0.5, 0.5))
-
-    # add color bar if using z - [left, bottom, width, height],
-    if z != None:
-        cbaxes = plt.axes([0.9+fit*.5, bottom, fit*.5, height])
-        cb = plt.colorbar(pts, cax = cbaxes)
-        if zlabel != None:
-            cb.ax.set_ylabel(zlabel, rotation='vertical', labelpad=1 )
-
-    # plot up histograms
-    axHistx = plt.axes(rect_histx)
-    axHisty = plt.axes(rect_histy)
-
-    # no labels
-    axHistx.xaxis.set_major_formatter(nullfmt)
-    axHisty.yaxis.set_major_formatter(nullfmt)
-
-    # bin data
-    bins = np.arange(-lim, lim + binwidth, binwidth)
-    axHistx.hist(x, bins=bins)
-    axHisty.hist(y, bins=bins, orientation='horizontal')
-    plt.xticks( rotation='vertical' )
-#    plt.setp( axHisty.xaxis.get_majorticklabels(), rotation=70 )
-
-    axHistx.set_xlim( axScatter.get_xlim() )
-    axHisty.set_ylim( axScatter.get_ylim() )
-
-    # make sure scales are linear
-    [ i.set_yscale('linear') for i in (axHisty, axScatter) ]
-    [ i.set_xscale('linear') for i in (axHistx, axScatter) ]
-
-    plt.rcParams.update({'font.size': f_size})
-#    [ i.rcParams.update({'font.size': f_size}) for i in axHisty, axHistx, axScatter ]
-#    [ i.xticks( fontsize=f_size ) for i in axHisty, axHistx, axScatter ]
-#    [ i.yticks( fontsize=f_size ) for i in axHisty, axHistx, axScatter ]
-
-# --------
-# X.XX - Diurnal plot
-# --------
-def diurnal_plot_df(fig, ax,  dates, data, pos=1, posn =1, color=None, \
-        xlabel=True, ylabel=True, label=None, title=None, f_size=10, \
-        units='ppbv',lgnd_f_size=None, alpha=0.5, rotatexlabel=45, \
-        loc='upper right', time_resolution_str="%H:%M", stat2plot='mean', \
-        legend=False, ylim=None, lw=2.0, add_quartiles2plot=True, \
-        debug=False ):
-    """
-    Creates a diurnal plot for given data and dates using pandas Dataframe
-
-    Parameters
-    -------
-    data (array): numpy array of data
-    dates (numpy array of datetime.datetime): dates to use for x axis
-    fig (fig instance)
-    ax (ax instance)
-    stat2plot (str): stat (e.g. mean or medium) to use for main line
-    xlabel, ylabel (str): label for axis?
-    label (str): label for input data
-    units (str): unites to label
-    time_resolution_str (str): time string to reduce dataframe by
-    legend (boolean): add a legend?
-    title (str): title for plot
-    color (str/hex etc): color for line
-    f_size (float): fontsize
-    lgnd_f_size (float): fontsize for legend
-    loc (str): location for legend
-    rotatexlabel (numnber/str): rotation of x axis labels
-    pos, posn (int): vestigle(!) location indices for window plots
-    ylim (list): min and max y axis limit
-    lw (str): linewidth
-
-    Returns
-    -------
-    (None)
-
-    Notes
-    -----
-     - Adapted from David Hagen's example - https://www.davidhagan.me/articles?id=7
-    """
-    logging.info('diurnal_plot_df called with stat2plot={} '.format(stat2plot))
-    # ---  process input data
-    # Form a dataFrame from input numpy arrays.
-    df = pd.DataFrame( {'data':data}, index=dates )
-
-    # Add a time coluumn to group by (e.g. "%H:%M" for minutes)
-    df['Time'] = df.index.map(lambda x: x.strftime(time_resolution_str))
-
-    # Group by time resolution column
-    df = df.groupby('Time').describe().unstack()
-
-    # Convert X axis to strings
-#    print df
-    df.index = pd.to_datetime(df.index.astype(str))
-#    df.index = pd.to_datetime(df.index )#.astype(str))
-#    df.index = [ datetime.datetime( 2005, 1, 1, i ) for i in range(0, 24) ]
-
-    # --- Aesthetics
-    if isinstance(color, type(None)):
-        color=color_list(posn)[pos-1]
-    # lengend font size
-    if isinstance( lgnd_f_size, type(None)):
-        lgnd_f_size = f_size
-
-    # --- Plot up average line (median or mean)
-    if stat2plot == 'median':
-        stat2plot='50%'
-    ax.plot(df.index, df['data'][stat2plot], color=color, linewidth=lw, \
-        label=label)
-
-    # Add quartiles
-    if add_quartiles2plot:
-        ax.plot(df.index, df['data']['75%'], color=color, alpha=alpha)
-        ax.plot(df.index, df['data']['25%'], color=color, alpha=alpha)
-
-        # And shading for quartiles
-        try:
-            ax.fill_between(df.index, df['data'][stat2plot], df['data']['75%'],
-                alpha=alpha, facecolor=color)
-            ax.fill_between(df.index, df['data'][stat2plot], df['data']['25%'],
-                alpha=alpha, facecolor=color)
-        except:
-            logging.info( 'Failed to add percentile shading' )
-
-    # --- Beautify
-    # title?
-    if not isinstance(title, type(None) ):
-        plt.title( title )
-    # axis labels?
-    if xlabel:
-        plt.xlabel('Hour of day', fontsize=f_size )#*.75)
-        # Add hourly ticks if labeling xaxis
-        plt.xticks( rotation=rotatexlabel, fontsize=f_size )#*.75 )
-        ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H') )
-    else:
-        ax_tmp = ax_tmp = plt.gca()
-        ax_tmp.tick_params( axis='x', which='both', labelbottom='off')
-    if ylabel:
-        plt.ylabel('{}'.format(units), fontsize=f_size)#*.75)
-    else:
-        ax_tmp = ax_tmp = plt.gca()
-
-    # Add legend?
-    if legend:
-        plt.legend( fontsize=lgnd_f_size, loc=loc )
-
-    if not isinstance(ylim, type(None)):
-        plt.ylim(ylim)
-
-
-# --------
-# X.XX - Diurnal plot
-# --------
-# def diurnal_plot(fig, ax,  dates, data, pos=1, posn =1,  \
-#         bin_size=2/24.,widths=0.01, rmax=False, \
-#         ls='-', color=None, fractional=False, diurnal=False, mean=True, \
-#         xlabel=True, r_avgs=False, marker=None, label=None, \
-#         markersize=1, title=None, f_size=10, units='ppbv', scale='linear', \
-#         lw=1,lgnd_f_size=None, alpha=1, debug=False ):
-#     """
-#     REDUNDENT!  (use diurnal_plot_df instead)
-#      Creates a diurnal plot for given data and dates.
-#
-#
-#     NOTES:
-#      - Data and dates must be in numpy array form.
-#      - Dates must also be datetime.datetime objects
-#
-#      """
-#
-#     # Convert datetime to fractional day <= set this to map on array at once?
-#     dates = np.array( [ get_day_fraction(i) for i in dates ] )
-#
-#     # asectics
-#     ls =[ls]*5
-#     if posn> 4:
-#         ls=get_ls( posn )
-#     if color == None:
-#         color=color_list(posn)[pos-1]
-#     else:
-#         color=color
-#     if isinstance( lgnd_f_size, type(None)):
-#         lgnd_f_size = f_size
-#
-#     # Bin data
-#     binned, bins_used = bin_data( data, dates, bin_size, debug=debug )
-#
-#     # Take average of hourly binned data.
-#     if mean:
-#         avgs = np.ma.array([np.ma.mean(i) for i in binned]  )
-#     else:
-#         avgs = np.ma.array([np.ma.median(i) for i in binned]  )
-#     avg = np.ma.mean( avgs )
-#     max_ = np.ma.max( avgs )
-# #    print avgs, avg, np.ma.max( avgs )
-#
-#     if fractional:
-# #        y = ( avgs - np.ma.max( avgs )  )  / avgs *100
-# #        y = ( avgs - np.ma.max( avgs )  )  / avg *100
-#         y = ( avgs - np.ma.max( avgs )  )  / max_*100
-#         print(('test'*100, avg, max_, avgs))
-#
-#         ymin, ymax =  -0.15, 0.025
-#         ymin, ymax =  [i*100 for i in (ymin, ymax) ]
-#         units = '%'
-#     elif diurnal:
-#         y =  avgs - np.ma.max( avgs )
-#         ymin, ymax =  -3.5 , 0.5
-#     else:
-#         y = avgs
-#         ymin, ymax =  None, None#27, 37
-#
-#     # Plot
-#     plt.plot( bins_used, y, color=color , label=label, linestyle=ls[pos-1], \
-#         alpha=alpha, marker=marker, lw=lw, ms=markersize )
-#
-#     # Beautify
-#     ax.set_xticklabels( np.arange(0,24,1 )[::2]  )
-#     plt.xticks( np.arange(0,1,1/24. )[::2], fontsize=f_size )
-#     plt.xlim(0., 23/24.)
-#
-#     if ymin != None:
-#         plt.ylim( ymin, ymax )
-#     plt.yticks( fontsize=f_size*.75)
-#     plt.xticks( fontsize=f_size*.75)
-#     if (title != None):
-#         plt.title( title )
-#     if xlabel:
-#         plt.xlabel('Hour of day', fontsize=f_size*.75)
-#     plt.ylabel('{}'.format(units), fontsize=f_size*.75)
-#
-#     # Apply legend to last plot
-#     if pos == posn:
-#         plt.legend( fontsize=lgnd_f_size )
-#
-#     # return max
-#     if rmax :
-#         return np.ma.max( avgs )
-#
-#     if r_avgs:
-#         return avgs
-
-# --------
-# X.XX - Lat plot
-# --------
-def lat_plot(fig, ax, arr, title=None, f_size=10, units='ppbv', \
-        scale='linear', debug=False ):
-    """
-    Creates a latitude plot on given figure and axis
-    """
-
-    NIU, lat, NIU = get_latlonalt4res( res=res )
-    del NIU
-    plt.plot( lat, arr )
-    plt.ylabel(units)
-    plt.xlabel('Latitude' )
-    if (title != None):
-        plt.title(title)
-    ax.set_yscale(scale)
-    parallels = np.arange(-90,91,15)
-    plt.xticks( parallels, fontsize = f_size ) # draw parrelel lines
-    plt.rcParams.update({'font.size': f_size})
-
-
-# --------
-# X.XX - Diurnal boxplot
-# --------
-# def diurnal_boxplot(fig, ax,  dates, data, pos=1, posn =1,  bin_size=2/24.,\
-#         widths=0.01, white_fill=True, alpha=0.1, linewidth=0.5, \
-#         showmeans=False, title=None, f_size=10, units='ppbv', \
-#         scale='linear', debug=False ):
-#     """
-#     Creates a diurnal plot of boxplots (hourly) for given data and dates.
-#     NOTES:
-#      - Data and dates must be in numpy array form.
-#      - Dates must also be datetime.datetime objects
-#     """
-#
-#     # Convert datetime to fractional day <= set this to map on array at once?
-#     dates = np.array( [ get_day_fraction(i) for i in dates ] )
-#
-#     # bin data
-#     binned, bins_used, b_all = avg_n_bin_y_by_x(data, dates, bin_size, \
-#         binned_data=True, debug=debug)
-#
-#     # Generate positions
-#     positions=[ i+(bin_size*.75/posn)+( (bin_size*.75/posn)*float(pos)) \
-#         for i in bins_used ]
-#
-#     # Plot
-#     bp = ax.boxplot( b_all,  positions=positions, widths=widths, \
-#         showmeans=showmeans, patch_artist=True )
-#     set_bp( bp, pos, white_fill=white_fill, c_list=color_list(posn) )
-#
-#     # Beautify
-#     ax.set_xticklabels( np.arange(0,24,bin_size*24 )[::2]  )
-#     plt.xticks( np.arange(0,1,bin_size )[::2] )
-#     plt.xlim(-0.05, 1.05)
-#     plt.ylabel(units)
-#     if (title != None):
-#         plt.title(title)
-#     plt.xlabel('Hour of day')
-#     plt.ylabel('{}'.format(units))
-#     ax.xaxis.grid(True, which='major')
-#     ax.xaxis.grid(True, which='minor')
-#
-#     # --- Highlight bins
-#     bs = np.arange(0, 24, bin_size )#[ bs[0] - bin_size ] + bs
-#     [ plt.axvline( x=i, color='k', linewidth=linewidth, alpha=alpha, \
-#          linestyle='dashed' ) for i in bs ]
-
-
-# --------------
-# X.XX - plot up monthly from data provided from DB netCDF
-# -------------
-# def obs_month_plot(data, color=None, title=None, rtn_data=False, plt_day=True, debug=False):
-#     """
-#     Plot up seaonal (monthly ) data. Requires data, and dates in numpy
-#     array form. Dates must be as datetime.datetime objects.
-#
-#     NOTES:
-#      - REDUNDENT? (see 1.13)
-#     """
-#
-#     # Setup decimal day list
-#     day_time= [i+float(1/23) for i in range(23) ]
-#     if debug: print( (data.shape, day_time) )
-#
-#     # Plot up all data <= this is inefficient.
-#     if plt_day:
-#         for i in range( len( data[0,:] ) ) :
-#             day_d = data[:,i]  # select day's data and convert to -1
-#             plt.plot(day_time , day_d , alpha=0.1, color=color)
-#
-#     # Return data?
-#     if rtn_data:
-#         if debug: print('rtn_data')
-#         data_ = np.ma.mean(data[:,:],axis=1)
-#         return day_time, data_
-#     # Plot up daily decimal days
-#     else :
-#         if debug: print(' not - rtn_data')
-#         plt.plot( day_time, np.ma.mean(data[:,:],axis=1) , lw=3 , color=color, \
-#              label=title)
-#         return plt
-
-
-# -------------
-# X.XX - Input for plotting
-# -------------
-def get_input_vars(debug=False):
-    """
-    Get input from command line arguments
-
-    Parameters
-    ----------
-    debug (boolean): legacy debug option, replaced by python logging
-
-    Returns
-    -------
-    (list): spec(str), filename(str), category(str), start date(tuple),
-    end date  (tuple)
-    """
-    # If working directory (wd) provided, use command line arguments
-    try:
-        wd = sys.argv[1]
-        print(('$>'*5, sys.argv))
-
-    # else prompt for input settings
-    except:
-        wd = eval(input("ctm.bpch dir: "))
-        spec = eval(input("species (default = O3): "))
-        if (len(spec) < 1):
-            spec = 'O3'
-        fn = eval(input("ctm.bpch name (default = ctm.bpch): "))
-        if (len(fn) < 1):
-            fn = 'ctm.bpch'
-        cat_ = eval(input("Category (default = 'IJ-AVG-$'): "))
-        if (len(cat_) < 1):
-            cat_ = "IJ-AVG-$"
-        start = eval(input("Enter start time as 'YYYY,MM,DD' (default = all): "))
-        if (len(list(start)) < 1):
-            start = None
-        else:
-            start = datetime.datetime( *tuple( map( int, start.split('-')) ) )
-        end = eval(input("Enter end time as 'YYYY,MM,DD' (default = all): "))
-        if (len(end) < 1):
-            end = None
-        else:
-            end = datetime.datetime( *tuple( map( int, end.split('-')) ) )
-        print((wd, fn, cat_, spec, start, end))
-
-    # Has species file name been provided? ( e.g.  "O3" )
-    try:
-        spec = sys.argv[2]
-    except:
-        try:
-            spec
-        except:
-            spec = 'O3'
-
-    # Has ctm.bpch file name been provided? ( e.g.  "ctm.bpch" )
-    try:
-        fn = sys.argv[3]
-    except:
-        try:
-            fn
-        except:
-            fn = 'ctm.bpch'
-
-    # Has category been provided? ( e.g.  "IJ-AVG-$" )
-    try:
-        cat_ = sys.argv[4]
-    except:
-        try:
-            cat_
-        except:
-            cat_ = "IJ-AVG-$"
-
-    # Has start date been provided? ( in form "YYYY, MM, DD" )
-    try:
-        print((sys.argv[5].split('-')))
-        start = datetime.datetime( *tuple( map( int, sys.argv[5].split('-')) ) )
-    except:
-        try:
-            start
-        except:
-            start = None
-
-    # Has end date been provided? ( in form "YYYY, MM, DD" )
-    try:
-        print((sys.argv[6].split('-')))
-        end = datetime.datetime( *tuple( map( int, sys.argv[6].split('-')) ) )
-    except:
-        try:
-            end
-        except:
-            end = None
-
-    if debug: print(('$>'*5, wd, fn, cat_, spec, start, end))
-
-    # if final character not '/' add this
-    if wd[-1]  != '/':
-        wd += '/'
-
-    return wd, fn, cat_, spec, start, end
-
-
-# -------------
-# X.XX - weighted average
-# -------------
-# def weighted_average( data, interval , bins_used=False, debug=False):
-#     """
-#     Calculate a weighed average of data fro a given interval
-#
-#     NOTES just use pandas.cut!
-#     docs: http://pandas-docs.github.io/pandas-docs-travis/generated/pandas.cut.html
-#
-#
-#     """
-#
-#     min_v, max_v = int( data.min() ), int( data.max() )
-#     bins = np.arange(min_v, max_v, interval)
-#     if debug: print([ (i, type(i) ) for i in [ min_v, max_v, bins ] ])
-#     int_d = np.int_(data)
-#     binned, bins_used  = [], []
-#     for bin_ in bins:
-#         b_mean = np.mean( data[np.where( int_d == bin_ )] )
-#         if ( b_mean != 0 ):
-#             binned.append( b_mean )
-#             bins_used.append( bin_ )
-#         else:
-#             print(('no data for bin {}'.format(bin_)))
-#             pass
-#     if debug: print([ ( i, len(i) ) for i in [binned , bins] ])
-#     if (bins_used):
-#         return binned, bins_used
-#     else:
-#         return binned
-
-
-# --------------
-# X.XX - moving average
-# -------------
-def moving_average(x, n, type='simple'):
-    """
-    compute an n period moving average.
-
-    NOTE:
-     - type is 'simple' | 'exponential'
-     - Just use pandas for this?
-    (http://pandas.pydata.org/pandas-docs/version/0.17.0/generated/pandas.rolling_mean.html)
-    """
-    x = np.asarray(x)
-    if type=='simple':
-        weights = np.ones(n)
-    else:
-        weights = np.exp(np.linspace(-1., 0., n))
-
-    weights /= weights.sum()
-
-    a =  np.convolve(x, weights, mode='full')[:len(x)]
-    a[:n] = a[n]
-    return a
-
-# --------------
-# X.XX -  Get percentiles
-# -------------
-def percentile(N, percent, key=lambda x:x):
-    """
-    Find the percentile of a list of values.
-
-    @parameter N - is a list of values. Note N MUST BE already sorted.
-    @parameter percent - a float value from 0.0 to 1.0.
-    @parameter key - optional key function to compute value from each element of N.
-
-    @return - the percentile of the values
-    NOTES:
-     - Credit: {{{ http://code.activestate.com/recipes/511478/ (r1)
-
-    NOTES
-    ----
-    Just use numpy percentile function or pandas .describe() function?
-
-    """
-    if not N:
-        return None
-    k = (len(N)-1) * percent
-    f = math.floor(k)
-    c = math.ceil(k)
-    if f == c:
-        return key(N[int(k)])
-    d0 = key(N[int(f)]) * (c-k)
-    d1 = key(N[int(c)]) * (k-f)
-    return d0+d1
-
-# --------
-# X.XX - Coupler to select plot type
-# --------
-def create_plot4case( fig, ax, dates, data, spec, f_size=20, lw=None, ls=None, \
-        loc=True, legend=True, units='', boxplot=False, lname='Weyborne', \
-        run_name='run', start_month=7, end_month=7, plot_type='daily', \
-        case=None, l_dict=None, label=None, alt_text=None, color=None):
-    """
-    Coupler for timeseries data (dates as datetimes + data) to be
-            converted multiple graph forms with just change of case
-    """
-
-    # --- select frequency
-    # select case
-    if isinstance(case, type(None) ):
-        case ={
-        'diurnal': 1, 'daily': 1, 'monthly':2,'weekly': 3,  \
-        'May-Sept':4, 'July' : 5, 'Month': 5,
-        'PDF':6
-        }[plot_type]
-
-    # --- select labels
-    # 'Build' latex run name dictionary is not given.
-    if isinstance( l_dict, type(None) ):
-        l_dict= GC_var('latex_run_names')
-
-    # create label from dictionary if not provided
-    if isinstance( label, type(None) ):
-        label= l_dict[ run_name ]
-
-    # --- select line plot details.
-    # set linewidth +linestyle default if not given
-    if isinstance( lw, type(None) ):
-        lw=1
-    if isinstance( ls, type(None) ):
-        ls='-'
-
-    # --- plot requested timeseries
-    if case == 1:
-        timeseries_daily_plot( fig, ax, dates, data, f_size=f_size,
-            title=latex_spec_name(spec), color=color )
-
-    if case == 2:
-        timeseries_seasonal_plot( ax, dates, data,  \
-            label=label, ylabel=units, color=color, \
-            title=latex_spec_name(spec), \
-            ls=ls, lw=lw, loc=loc, legend=legend, f_size=f_size)
-
-    if case == 4:
-        timeseries_by_day_plot( ax, dates, data,  \
-            label=label, ylabel=units, color=color, \
-            title=latex_spec_name(spec), boxplot=boxplot, \
-            ls=ls, lw=lw, loc=loc, legend=legend, f_size=f_size)
-
-    if case == 5:
-        timeseries_month_plot( ax, dates, data,  \
-            label=label, ylabel=units, color=color, alt_text=alt_text, \
-            start_month=start_month, end_month=end_month, \
-            title=latex_spec_name(spec)+' @ '+lname, boxplot=boxplot, \
-            ls=ls, lw=lw, loc=loc, legend=legend, f_size=f_size)
-
-    if case == 6:
-        PDF_obs_vs_mod( ax, dates, data, \
-            label=label, ylabel=units, color=color, \
-            start_month=start_month, end_month=end_month, \
-            title=latex_spec_name(spec)+' @ '+lname, alt_text=alt_text,  \
-            ls=ls, lw=lw, loc=loc, legend=legend, f_size=f_size)
-
 
 # --------
 # X.XX - Plot up locations (lons and lats) on a map
@@ -5562,7 +4887,7 @@ def plot_lons_lats_spatial_on_map(lons=None, lats=None, p_size=50, color='red',
         window=False, axis_titles=True, split_title_if_too_long=False,
         resolution='c'):
     """
-    Plot a list of lons and lats spatially on a map
+    Plot a list of lons and lats spatially on a map using basemap 
 
     Parameters
     -------
@@ -5574,6 +4899,10 @@ def plot_lons_lats_spatial_on_map(lons=None, lats=None, p_size=50, color='red',
     dpi (int): resolution of figure (dots per sq inch)
     return_axis (boaol): return the basemap axis instance
     marker (str): marker style
+
+    Notes
+    -----
+     - matplotlib's basemap is now reduedent! use cartopy
     """
     import matplotlib.pyplot as plt
     # --- Setup plot
@@ -5595,145 +4924,5 @@ def plot_lons_lats_spatial_on_map(lons=None, lats=None, p_size=50, color='red',
     if return_axis: return m
 
 
-def plot_lons_lats_spatial_on_map_CARTOPY( central_longitude=0,
-        lats=None, lons=None, add_background_image=True,
-        projection=ccrs.PlateCarree, fig=None, ax=None,
-        marker='o', s=50, color='red', show_plot=False, dpi=320,
-        buffer_degrees=20, add_detailed_map=False ):
-    """
-    Plot a list of lons and lats spatially on a map (using cartopy)
-
-    projection (cartopy.crs obj.):  projection to use
-    s (int): size of plot location point (lon, lat)
-    lons, lats (np.array): list of locations (in decimal londitude and latitude)
-    color (str): color of points on map for locations
-    dpi (int): resolution of figure (dots per sq inch)
-    return_axis (boaol): return the basemap axis instance
-    marker (str): marker style
-
-    Returns
-    -------
-    (axis instance)
-
-    Notes
-    -----
-     - Basemap is redundent. Cartopy should be used instead.
-    """
-    import matplotlib.pyplot as plt
-    import cartopy.crs as ccrs
-    import cartopy.feature as cfeature
-    # --- Setup plot
-    if isinstance(fig, type(None)):
-        fig = plt.figure(dpi=dpi, facecolor='w', edgecolor='k')
-    if isinstance(ax, type(None)):
-        # setup a cartopy projection for plotting
-        ax = fig.add_subplot(111,
-            projection=projection(central_longitude=central_longitude)
-            )
-
-    # --- Plot
 
 
-    # Add buffer region around plot
-#    ax.get_extent()
-#     plt.ylim( myround(lats.min()-buffer_degrees, 10, ),
-#         myround(lats.max()+buffer_degrees, 10, round_up=True))
-#     plt.xlim( myround(lons.min()-buffer_degrees, 10, ),
-#         myround(lons.max()+buffer_degrees, 10, round_up=True))
-    x0, x1, y0, y1 = ax.get_extent()
-    try:
-        x0 = myround(lons.min()-buffer_degrees, 10, )
-        x1 = myround(lons.max()+buffer_degrees, 10, round_up=True)
-        y0 = myround(lats.min()-buffer_degrees, 10, )
-        y1 = myround(lats.max()+buffer_degrees, 10, round_up=True)
-        ax.set_extent( (x0, x1, y0, y1), projection() )
-    except ValueError:
-        print('lon and lat buffer not set extent as out of range' )
-
-    # Put a background image on for nice sea rendering.
-    if add_background_image:
-        ax.stock_img()
-        if add_detailed_map:
-            # Create a feature for States/Admin 1 regions at 1:50m
-            # from Natural Earth
-            states_provinces = cfeature.NaturalEarthFeature(
-                category='cultural',
-                name='admin_1_states_provinces_lines',
-                scale='50m',
-                facecolor='none')
-            ax.add_feature(cfeature.LAND)
-            ax.add_feature(cfeature.COASTLINE)
-            ax.add_feature(cfeature.BORDERS)
-#            ax.add_feature(states_provinces, edgecolor='gray')
-    else:
-        ax.coastlines(resolution='110m')
-#        ax.drawcountries() # not in cartopy
-    ax.gridlines()
-
-    # Now scatter points on plot
-    ax.scatter(lons, lats, color=color, s=s, marker=marker,
-         transform=projection(), zorder=999 )
-
-    # return  ax (and show plot?)
-    if show_plot: plt.show()
-    return ax
-
-# --------
-# X.XX - Probability distribution plotter
-# --------
-def PDF_obs_vs_mod( ax, dates, data, f_size=20, pos=0, posn=1,  \
-        title=None, legend=False, everyother=7*24,  x_nticks=12, \
-        window=False, label=None, ylabel=None, loc='upper left',  \
-        lw=1,ls='-', color=None, start_month=1, end_month=12,
-        unitrotation=45, alpha=.5, bins=100, alt_text=None, debug=False ):
-    """
-    Constructs a PDF plot with given dates and data.
-
-    NOTES:
-     - If not provided with axis etc, then these are made.
-     - data and dates need to be as a np.array, with dates as datetime.datetim objects
-    """
-
-    # Process data - reduce resolution to daily, and get std
-    df = DataFrame(data={'data':data},index=dates )
-
-    # remove dates outside of range (start_month > < end_month )
-    def get_month(x):
-         return x.month
-    df[ 'month'] = df.index.map( get_month )
-    df = df[ df['month']<=end_month ]
-    df = df[ df['month']>=start_month ]
-    df = DataFrame(data={'data':df['data']}, index=df.index )
-
-    # plot up PDF
-    plt.hist( df.values, label=label+' (n={})'.format( len(data) ),
-        histtype='stepfilled', color=color, alpha=alpha, bins=bins )
-
-    # Beatify plot
-    if not isinstance( title, type(None) ):
-        plt.title( title + ' for {}-{}'.format( num2month(start_month),\
-            num2month(end_month))  )
-    if not isinstance( alt_text, type(None) ):
-        plt.figtext(x=0.05,y=0.85, s=alt_text, fontsize=f_size*.75)
-
-    if not isinstance( ylabel, type(None) ):
-        plt.ylabel( ylabel )
-    if legend:
-        plt.legend()
-
-# --------
-# X.XX - Probability distribution plotter
-# --------
-def get_CB_color_cycle():
-    """ 
-    Get a list of color blind friednly colors to cycle in plots
-
-    Notes
-    -----
-     - Credit @ thriveth: https://gist.github.com/thriveth/8560036
-    """
-    CB_color_cycle = [
-    '#377eb8', '#ff7f00', '#4daf4a', '#f781bf', '#a65628', '#984ea3',
-    '#999999', '#e41a1c', '#dede00'
-    ]
-    return CB_color_cycle
