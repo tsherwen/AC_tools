@@ -2633,8 +2633,7 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     (category, name = species)
     f_strat  = strat flux (to tropsosphere) (category, name = species)
     """
-    if debug:
-        print('GC_var called')
+    if debug: print( 'GC_var called for {}'.format( input_x ) )
     GC_var_dict = {
     # --- Ox budget analysis
     'f_var' : ['EW-FLX-$', 'NS-FLX-$', 'UP-FLX-$' ],
@@ -2699,6 +2698,7 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     'Iy' : [ \
     'I2','HOI','IO', 'OIO', 'HI','INO','IONO', 'IONO2','I2O2', \
     'I2O3','I2O4','I' ,]+['ICl', 'IBr'],
+    'IxOy' : [ 'IO', 'OIO',  'I2O2', 'I2O3', 'I2O4'], 
     'Iy+AERO' : [ \
     'I2','HOI','IO', 'OIO', 'HI','INO','IONO', 'IONO2','I2O2', \
     'I2O3','I2O4','I' ,]+['ICl', 'IBr']+['AERI'+'ISALA'+'ISALC'],
@@ -3008,7 +3008,10 @@ def get_ref_spec( spec='LIOx' ):
     'PBrOx' :'Br',
     'LBrOx' :'Br',
     'Br' : 'Br',
+    'Bry' : 'Br',
     'I' : 'I',
+    'Iy' : 'I',
+    'IxOy': 'I', 
     'SO4': 'S',
     'NIT': 'N',
     'NH4': 'N',
