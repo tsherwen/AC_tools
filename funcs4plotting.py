@@ -4866,6 +4866,127 @@ def get_CB_color_cycle():
     return CB_color_cycle
 
 
+# --------
+# X.XX -
+# --------
+def equi(m, centerlon, centerlat, radius, *args, **kwargs):
+    """
+    Draw a concentric circle on basemap centred at given location
+
+    Parameters
+    ----------
+    centerlon (float), longditude to centre circle on
+    centerlat (float), latitude to centre circle on
+    radius (float), radius in kilometers of circle to plot
+
+    Returns
+    -------
+    (None)
+    
+    Notes
+    -----
+     - This is an external function, for original postin please see link below
+http://www.geophysique.be/2011/02/20/matplotlib-basemap-tutorial-09-drawing-circles/     
+     - worker function to use "Shoot" function, also inlcuded in AC_tools
+     
+    """
+    glon1 = centerlon
+    glat1 = centerlat
+    X = []
+    Y = []
+    for azimuth in range(0, 360):
+        glon2, glat2, baz = shoot(glon1, glat1, azimuth, radius)
+        X.append(glon2)
+        Y.append(glat2)
+    X.append(X[0])
+    Y.append(Y[0])
+    X,Y = m(X,Y)
+    plt.plot(X,Y,**kwargs)
+
+
+# --------
+# X.XX -
+# --------
+def shoot(lon, lat, azimuth, maxdist=None):
+    """
+    "Shooter Function" to map a circle to a location on the Earth
+
+    Parameters
+    ----------
+    lon (float), longditude to centre circle on
+    lat (float), latitude to centre circle on
+    azimuth (float), degrees of draw point from centre point
+    maxdist (float), maxixmum distance extent of circle
+
+    Notes
+    -----
+     - This is an external function, for original postin please see link below
+http://www.geophysique.be/2011/02/19/matplotlib-basemap-tutorial-08-shooting-great-circles/
+     - Original javascript on http://williams.best.vwh.net/gccalc.htm
+     - Translated to python by Thomas Lecocq
+    """
+    glat1 = lat * np.pi / 180.
+    glon1 = lon * np.pi / 180.
+    s = maxdist / 1.852
+    faz = azimuth * np.pi / 180.
+
+    EPS= 0.00000000005
+    if ((np.abs(np.cos(glat1))<EPS) and not (np.abs(np.sin(faz))<EPS)):
+        alert("Only N-S courses are meaningful, starting at a pole!")
+
+    a=6378.13/1.852
+    f=1/298.257223563
+    r = 1 - f
+    tu = r * np.tan(glat1)
+    sf = np.sin(faz)
+    cf = np.cos(faz)
+    if (cf==0):
+        b=0.
+    else:
+        b=2. * np.arctan2 (tu, cf)
+
+    cu = 1. / np.sqrt(1 + tu * tu)
+    su = tu * cu
+    sa = cu * sf
+    c2a = 1 - sa * sa
+    x = 1. + np.sqrt(1. + c2a * (1. / (r * r) - 1.))
+    x = (x - 2.) / x
+    c = 1. - x
+    c = (x * x / 4. + 1.) / c
+    d = (0.375 * x * x - 1.) * x
+    tu = s / (r * a * c)
+    y = tu
+    c = y + 1
+    while (np.abs (y - c) > EPS):
+
+        sy = np.sin(y)
+        cy = np.cos(y)
+        cz = np.cos(b + y)
+        e = 2. * cz * cz - 1.
+        c = y
+        x = e * cy
+        y = e + e - 1.
+        y = (((sy * sy * 4. - 3.) * y * cz * d / 6. + x) *
+              d / 4. - cz) * sy * d + tu
+
+    b = cu * cy * cf - su * sy
+    c = r * np.sqrt(sa * sa + b * b)
+    d = su * cy + cu * sy * cf
+    glat2 = (np.arctan2(d, c) + np.pi) % (2*np.pi) - np.pi
+    c = cu * cy - su * sy * cf
+    x = np.arctan2(sy * sf, c)
+    c = ((-3. * c2a + 4.) * f + 4.) * c2a * f / 16.
+    d = ((e * cy * c + cz) * sy * c + y) * sa
+    glon2 = ((glon1 + x - (1. - c) * d * f + np.pi) % (2*np.pi)) - np.pi
+
+    baz = (np.arctan2(sa, b) + np.pi) % (2 * np.pi)
+
+    glon2 *= 180./np.pi
+    glat2 *= 180./np.pi
+    baz *= 180./np.pi
+
+    return (glon2, glat2, baz)
+
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
