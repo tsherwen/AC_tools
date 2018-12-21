@@ -3222,7 +3222,89 @@ def fam_data_extractor( wd=None, fam=None, trop_limit=True, ver='3.0', \
         return arr, specs
     else:
         return arr
+# ----
+# X.XX - Convert GC tracers to PM2.5
+# ----
+def convert_tracers2PM10( ars=[], specs=[], region='Europe' ):
+    """
+    Aproximate PM10 from PM10 ratios
 
+    Parameters
+    -------
+    ars (list): list of arrays
+    specs (list): list of species to convert
+    region (str): region for which PM2.5 is being approximated? (RH differs)
+
+    Returns
+    -------
+    (list)
+
+    Notes
+    -----
+     - for details see GEOS-Chem wiki:
+http://wiki.seas.harvard.edu/geos-chem/index.php/Particulate_matter_in_GEOS-Chem#PM2.5_in_the_1-yr_benchmark_plots
+     - definition of PM10 is that of PM2.5 + DST + SALC. 
+     - SALC uses the same scaling as SALA for hydration. 
+    """
+    # - Convert to PM2.5 ('$\mu$g m$^{-3}$')
+    # Note. below list does not contain SOA species
+    if region == 'USA':
+        PM25_convertion_factor = {
+        'NH4'  : 1.33,
+        'NIT'  : 1.33,
+        'SO4'  : 1.33,
+        'BCPI' : 1.00, # no scaling
+        'BCPO' : 1.00, # no scaling
+        'OCPI' : 1.16*2.1,
+        'OCPO' : 2.1,
+        'DST1' : 1.00, # no scaling
+        'DST2' : 1.00, # no scaling
+        'DST3'  : 1.00, # no scaling
+        'DST4' : 1.00, # no scaling
+        'SALA' : 1.86,
+        'SALC' : 1.86,
+        # Other species
+        }
+    elif region == 'Europe':
+        PM25_convertion_factor = {
+        'NH4'  : 1.51,
+        'NIT'  : 1.51,
+        'SO4'  : 1.51,
+        'BCPI' : 1.00, # no scaling
+        'BCPO' : 1.00, # no scaling
+        'OCPI' : 1.24*2.1,
+        'OCPO' : 2.1,
+        'DST1' : 1.00, # no scaling
+        'DST2' : 1.00, # no scaling
+        'DST3'  : 1.00, # no scaling
+        'DST4' : 1.00, # no scaling
+        'SALA' : 2.42,
+        'SALC' : 2.42,
+        # Other species
+        }
+    else:
+        print('ERROR - Region not in list - please set available region!!')
+        sys.exit()
+    # RMM of air
+    RMM_air = constants('RMM_air') # g/mol
+    # assume standard air density
+    # At sea level and at 15 °C air has a density of approximately 1.225 kg/m3
+    #(0.001225 g/cm3, 0.0023769 slug/ft3, 0.0765 lbm/ft3) according to
+    # ISA (International Standard Atmosphere).
+    AIRDEN = 0.001225 # g/cm3
+    # moles per cm3
+    #  (1/(g/mol)) = (mol/g) ; (mol/g) * (g/cm3) = mol/cm3
+    MOLS = (1/RMM_air) * AIRDEN
+    # loop ars and convert to PM2.5 equiv
+    for n, spec in enumerate( specs ):
+        # moles * spec RMM * microgram
+        # e.g. v/v * mols/cm3 = mols of X per cm3; / spec RMM = mass
+        # unitless * mols * g/mol * conversion
+        scale = MOLS * species_mass( spec ) *1E6 *1E6
+        units = '$\mu$g m$^{-3}$'
+        # convert...
+        ars[n] = ars[n]*scale*PM25_convertion_factor[spec]
+    return ars
 
 # ----
 # X.XX - Convert GC tracers to PM2.5
