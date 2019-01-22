@@ -25,7 +25,7 @@ import glob
 
 
 def main( folder=None, print_formatted_KPP_file=True, GC_version=None,
-        verbose=True, mechanism = 'Standard', debug=False):
+        verbose=True, mechanism='Standard', debug=False):
     """
     Parse combined KPP file (>= v11-2d) to dictionary of pd.DataFrames, then
     print these into files than can be pasted into a GEOS-Chem KPP mechanism

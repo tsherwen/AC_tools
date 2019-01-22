@@ -366,10 +366,17 @@ def get_OH_mean( wd, debug=False, file_type='*geos*log*' ):
             # try
             file_type = 'log.*'
             files = glob.glob( wd+'/logs/'+file_type )
-            print( 'Loooking for {} files instead'.format( file_type)  )
+            print( 'Loooking for {} files instead'.format( file_type ) )
             if len(files) < 1:
                 err_str = 'WARNING! - no files found (type={} in wd/log/*)'
                 logging.info( err_str.format(file_type) )
+				# try
+                file_type = '*geos.log.*'
+                files = glob.glob( wd+'/logs/'+file_type )
+                print( 'Loooking for {} files instead'.format( file_type ) )
+                if len(files) < 1:
+				    err_str = 'WARNING! - no files found (type={} in wd/log/*)'
+				    logging.info( err_str.format(file_type) )
 
     # --- If there are any, then
     if len(files) > 1:
@@ -1855,6 +1862,74 @@ def get_frequency_of_model_output( wd=None, months=None, years=None,
             return assumed_freq
 
 
+
+# ----
+# X.XX - Get hemispheric OH 
+# ----
+def get_hemispheric_OH( ctm_f=None, wd=None, res='4x5', \
+        vol=None, a_m=None, t_ps=None, K=None, t_lvl=None, n_air=None, \
+        years=None, months=None, monthly=False, trop_limit=True, \
+        use_OH_from_geos_log=False, average_value=True, 
+#        LCH4_Cl=None,  \
+        use_time_in_trop=True, masktrop=False, 
+#        include_Cl_ox=False, \
+        verbose=True, debug=False
+		)
+    """"
+    Get atmospheric OH concentration by hemisphere
+
+    Parameters
+    -------
+
+    Returns
+    -------
+    list
+
+    Notes
+    -----
+    """
+    # --- Get shared variables that are not provided
+    if not isinstance(vol, np.ndarray): # cm^3
+        vol = get_volume_np( ctm_f =ctm_f, wd=wd, trop_limit=trop_limit )
+    if not isinstance(a_m, np.ndarray): # Kg
+        a_m = get_air_mass_np( ctm_f=ctm_f, wd=wd, trop_limit=trop_limit )
+    if not isinstance(K, np.ndarray): # K
+        K = get_GC_output( wd=wd, vars=['DAO_3D_S__TMPU'], \
+            trop_limit=trop_limit  )
+    if not isinstance(t_ps, np.ndarray):
+        t_ps = get_GC_output( wd, vars=['TIME_TPS__TIMETROP'], \
+            trop_limit=trop_limit )
+    if not use_time_in_trop:
+        if not isinstance(t_lvl, np.ndarray):
+            t_lvl = get_GC_output( wd, vars=['TR_PAUSE__TP_LEVEL'], \
+                trop_limit=False )
+        if not isinstance(n_air, np.ndarray):
+            n_air = get_number_density_variable( wd=wd, trop_limit=trop_limit )
+
+    # Get OH conc [molec/cm3]
+    if use_OH_from_geos_log:
+        OH   = get_OH_mean( wd ) * 1E5
+    else: # Extract from GEOS-Chem fields
+        OH = get_GC_output( wd=wd, vars=['CHEM_L_S__'+'OH'], \
+            trop_limit=trop_limit )
+#        #  What are the units for 'CHEM_L_S__OH' ? need to convert?
+          # (NetCDF says molec/m3, and wiki says  [molec/cm3]  )
+#        OH = OH *1E6
+
+	#
+    if use_time_in_trop and masktrop:
+        # Mask non tropospheric boxes
+        K, vol, a_m = mask4troposphere( [K, vol, a_m], t_ps=t_ps )	
+
+	# Get maskes
+	
+	# return SH, NH, Global
+	
+	return SH, NH, Global 
+	
+
+
+
 # ----
 # X.XX - Get CH4 Lifetime in years
 # ----
@@ -1933,6 +2008,7 @@ def get_CH4_lifetime( ctm_f=None, wd=None, res='4x5', \
             if include_Cl_ox:
                 Cl = mask4troposphere( [Cl], t_ps=t_ps)[0]
                 CH4 = mask4troposphere( [CH4], t_ps=t_ps)[0]
+	# Mask for troposphere
     if use_time_in_trop and masktrop:
         # Mask non tropospheric boxes
         K, vol, a_m = mask4troposphere( [K, vol, a_m], t_ps=t_ps )
@@ -5028,7 +5104,7 @@ def get_general_stats4run_dict_as_df( run_dict=None, extra_str='', REF1=None,
     # first process the files to have different names for the different years
     try:
         OH_global_varname = 'Global mean OH'
-        ars = [ get_OH_mean(i) for i in wds ]
+        ars = [ get_OH_mean(wd=i) for i in wds ]
         df[OH_global_varname] = ars
     except:
         print('Unable to add OH values - please check the file directory! ')
