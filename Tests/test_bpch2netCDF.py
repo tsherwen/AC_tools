@@ -3,20 +3,20 @@ import logging
 import pytest
 import os
 #import urllib.parse, urllib.error
-# temporality restore urllib2 as urllib not installed                                                                                                           
+# temporality restore urllib2 as urllib not installed
 from urllib import urlopen
 import urllib2
 
-slow = pytest.mark.skipif(                                                     
-    not pytest.config.getoption("--slow"),                                
-    reason="need --slow option to run"                                       
-)   
+slow = pytest.mark.skipif(
+    not pytest.config.getoption("--slow"),
+    reason="need --slow option to run"
+)
 
 test_file_dir = '../data'
 
-#def setup_function(function):
-#    """                                                                                    
-#    Downloads all the test dataset files using rsync.                                      
+# def setup_function(function):
+#    """
+#    Downloads all the test dataset files using rsync.
 #    """
 #
 #    test_files = ['test.nc', 'test.bpch','tracerinfo.dat','diaginfo.dat']
@@ -37,26 +37,29 @@ test_file_dir = '../data'
 #            file_data = urllib2.urlopen( url ).read()
 #            my_file.write(file_data)
 #            my_file.close()
-#            
+#
 #            logging.debug(file_name + " downloaded.")
-#                                                                     
+#
 #    return
 
+
 def file_comparison(file_1, file_2):
-        file_1_data = open(file_1, 'r')
-        file_2_data = open(file_2, 'r')
-        if file_1_data.read() == file_2_data.read():
-            same = True
-        else:
-            same = False
-        return same
+    file_1_data = open(file_1, 'r')
+    file_2_data = open(file_2, 'r')
+    if file_1_data.read() == file_2_data.read():
+        same = True
+    else:
+        same = False
+    return same
+
 
 @slow
 def test_convert_to_netCDF():
     logging.info("beginning test")
     # Recreate a ctm.nc file and confirm it is the same
     logging.debug("Creating the temp netCDF file")
-    convert_to_netCDF(folder=test_file_dir, bpch_file_list=['test.bpch'], remake=True, filename='test.nc')
+    convert_to_netCDF(folder=test_file_dir, bpch_file_list=[
+                      'test.bpch'], remake=True, filename='test.nc')
     datafile = os.path.join(test_file_dir, 'ctm.nc')
     testfile = os.path.join(test_file_dir, 'test.nc')
 
@@ -68,6 +71,7 @@ def test_convert_to_netCDF():
     logging.info("test complete")
     return
 
+
 def test_get_folder():
     logging.info("beginning test")
     folder = get_folder(test_file_dir)
@@ -75,8 +79,3 @@ def test_get_folder():
     assert os.path.exists(folder), "Cannot find the test folder"
     logging.info("test complete")
     return
-
-
-
-
-

@@ -13,23 +13,25 @@ from netCDF4 import Dataset
 import numpy as np
 import pylab as pl
 import calendar
-# add extra's for copied function... 
-import os, sys, argparse
+# add extra's for copied function...
+import os
+import sys
+import argparse
 import datetime
 
-# --- verbose and debug settings for script main call 
-VERBOSE=False
-DEBUG=False
+# --- verbose and debug settings for script main call
+VERBOSE = False
+DEBUG = False
 
 
-def main( filename=None, VarName='OLSON', verbose=False, debug=False ):
+def main(filename=None, VarName='OLSON', verbose=False, debug=False):
     """
     Driver to split off variables
     """
     # Get the file name and location
     wd, fn = get_file_loc_and_name()
     # name output file if name not given
-    if isinstance( filename, type(None) ):
+    if isinstance(filename, type(None)):
         filename = wd.split('/')[-2]
     if debug:
         print((wd, fn, filename))
@@ -37,16 +39,16 @@ def main( filename=None, VarName='OLSON', verbose=False, debug=False ):
 
     # Set output name
     outfile_name = inFile+'.out'
-    
-    # Read input data 
+
+    # Read input data
     VarData, input_DATA = read_data(inFile, VarName=VarName)
-    
+
     # Set values?
 #    print type(VarData)
 #    print [ (i.shape, i.mean(), i.min(), i.max()) for i in VarData]
 #    VarData[VarData>1] = 1
 #    print [ (i.shape, i.mean(), i.min(), i.max()) for i in VarData]
-    
+
     # --- Write the output file
     outfile = Dataset(outfile_name, 'w', format='NETCDF4')
     set_global_atts(input_DATA, outfile)
@@ -58,23 +60,23 @@ def main( filename=None, VarName='OLSON', verbose=False, debug=False ):
     outfile.close()
 
 
-def get_file_loc_and_name( ):
+def get_file_loc_and_name():
     """ Get file location and name """
 
     # Use command line grab function
     import sys
-    
+
     # Get arguments from command line
     wd = sys.argv[1]
     fn = sys.argv[2]
 
-    return wd, fn 
-    
+    return wd, fn
+
 
 def copy_dimensions(infile, outfile):
     """ 
     Copy the dimensions of the infile to the outfile
-    """    
+    """
     for dimName, dimData in iter(list(infile.dimensions.items())):
         outfile.createDimension(dimName, len(dimData))
 
@@ -87,19 +89,19 @@ def copy_variables(infile, outfile, VarName='OLSON'):
     # Get vars
     var_list = ['lon', 'lat', 'time']
     # Also consider LANDMAP value
-    var_list+=[VarName]
-    # Now loop        
+    var_list += [VarName]
+    # Now loop
     for var_name in var_list:
         varin = infile.variables[var_name]
-        outVar = outfile.createVariable(var_name, varin.datatype, 
-                                        varin.dimensions, 
+        outVar = outfile.createVariable(var_name, varin.datatype,
+                                        varin.dimensions,
                                         )
         outVar[:] = varin[:]
-            
+
         var_atts = {}
         for att in varin.ncattrs():
             if not att == '_FillValue':
-                var_atts[att] = eval('varin.'+att) 
+                var_atts[att] = eval('varin.'+att)
         outVar.setncatts(var_atts)
 
 
@@ -115,17 +117,17 @@ def read_data(ifile, VarName='OLSON'):
 
 def set_global_atts(infile, outfile):
     """Set the global attributes for outfile.
-        
+
     Note that the global attributes are simply copied from infile.
     """
-        
+
     global_atts = {}
     for att in infile.ncattrs():
-        global_atts[att] = eval('infile.'+att)  
-        
+        global_atts[att] = eval('infile.'+att)
+
     # set attributes
     outfile.setncatts(global_atts)
 
 
 if __name__ == "__main__":
-    main( verbose=VERBOSE, debug=DEBUG )
+    main(verbose=VERBOSE, debug=DEBUG)
