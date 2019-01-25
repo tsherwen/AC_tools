@@ -1,3 +1,5 @@
+# compatibility with both python 2 and 3
+from __future__ import print_function
 from . funcs4plotting import *
 from . funcs_vars import *
 from . funcs4time import *
@@ -12,8 +14,6 @@ To access the help, from python or ipython, type help(AC_tools) to get general h
 To get more detailed help from a module for example, type help(AC_tools.funcs4time.py)
 If you find missing documentation any thing is unclear in any of this, please request a git push to github.
 """
-# compatibility with both python 2 and 3
-from __future__ import print_function
 
 # Setup logging for module
 import logging
