@@ -12,13 +12,8 @@ NOTE(S):
  - Where external code is used credit is given.
 """
 
-# ----------------------------- Section 0 -----------------------------------
-# -------------- Required modules:
-
-# --- compatibility with both python 2 and 3
-
-
-# -- I/O / Low level
+# - Required modules:
+# I/O / Low level
 import re
 import os
 #import platform
@@ -27,22 +22,15 @@ from netCDF4 import Dataset
 #import Scientific.IO.NetCDF as S
 import sys
 import glob
-
-# -- Math/Analysis
+# Math/Analysis
 import numpy as np
 
-# --  This needs to be updated, imports should be specific and in individual functions
+# the below import needs to be updated,
+# imports should be specific and in individual functions
 # import tms modules with shared functions
 from . funcs4core import *
 
 
-# ----------------------------- Section 1 -----------------------------------
-# -------------- Planeflight variables
-#
-
-# --------------
-# X.XX - dictionary of variables used for planeflight_mod.F output
-# -------------
 def pf_var(input, ver='3.0', ntracers=85, fill_var_with_zeroes=False):
     """
     Dictionary store for planeflight ("pf") names/tracers
@@ -235,10 +223,6 @@ def pf_var(input, ver='3.0', ntracers=85, fill_var_with_zeroes=False):
 
     return vars
 
-# --------------
-# X.XX - Translator for planeflight species to GEOS-Chem species
-# -------------
-
 
 def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, ver='1.7',
                       special_case=None, invert=False, rtn_dict=False, debug=False):
@@ -312,13 +296,6 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, ver='1.7',
         return d[input]
 
 
-# ----------------- Section X.X -------------------------------------------
-# -------------- GeosChem (bpch) general variables
-#
-
-# --------------
-# X.XX - v9-2 species in input.geos from num
-# -------------
 def num2spec(num=69, rtn_dict=False, invert=False, ver='1.7'):
     """
     Parameters
@@ -364,14 +341,10 @@ def num2spec(num=69, rtn_dict=False, invert=False, ver='1.7'):
     else:
         return d[num]
 
-# --------------
-# X.XX - RMM (Mass) (g /mol) for species
-# -------------
-
 
 def species_mass(spec):
     """
-    Function to get species relative molecular mass ( RMM ) in g/mol
+    Function to get species relative molecular mass (RMM) in g/mol
 
     Parameters
     ----------
@@ -446,10 +419,6 @@ def species_mass(spec):
     }
 
     return d[spec]
-
-# --------------
-# X.XX - Get the stoichiometry of a reference specie (e.g. Iodine) in "spec"
-# --------------
 
 
 def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
@@ -660,9 +629,6 @@ def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
         return 1.0
 
 
-# --------------
-#  X.XX - Get tracer's unit (and scale if requested)
-# --------------
 def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,
              ClearFlo_unit=False, IUPAC_unit=False, use_pf_species_units=False,
              debug=False):
@@ -831,10 +797,6 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,
     else:
         return units
 
-# --------
-# X.XX - Convert gamap category/species name to Iris/bpch name
-# --------
-
 
 def diagnosticname_gamap2iris(x):
     """
@@ -863,10 +825,6 @@ def diagnosticname_gamap2iris(x):
     }
     return d[x]
 
-# --------
-# X.XX - Get scaling for a given unit
-# --------
-
 
 def get_unit_scaling(units, scaleby=1):
     """
@@ -893,10 +851,6 @@ def get_unit_scaling(units, scaleby=1):
         scaleby = 1
         logging.debug('WARNING: {} is not in unit lists: '.format(units))
     return scaleby
-
-# --------
-# X.XX - Species class for GEOS-Chem - Credit: Ben Newsome
-# --------
 
 
 class species:
@@ -944,9 +898,6 @@ class species:
         # (e.g. how many carbons in species )
 
 
-# --------
-# X.XX -  dictionary of category + species names from diagnostic ordering
-# --------
 def get_ctm_nc_var(variable):
     """
     Get number variable for diagnostic family where NetCDF import
@@ -978,9 +929,6 @@ def get_ctm_nc_var(variable):
     return d[variable]
 
 
-# --------------
-# X.XX - Store of  constants for use by funcs/progs
-# --------------
 def constants(input_x, rtn_dict=False):
     """
     Dictionary storing commonly used constants
@@ -1013,70 +961,13 @@ def constants(input_x, rtn_dict=False):
         return con_dict[input_x]
 
 
-# --------------
-# X.XX - Remove ClBrI het loss tracers during testing
-# -------------
-def rm_ClBrI_het_loss(spec_l=None, r_=None, fam=None, debug=False):
-    """
-    Allow for remove of het loss routes during testing. Can return species list
-    (spec_l) + optionally
-    """
-
-    # Print argument variables
-    if debug:
-        print(('before ind removal', spec_l, fam))
-        print([len(i) for i in (spec_l, fam)]) \
-
-
-    # --- Local variables
-    rm_tracers = [
-        'LR44', 'LR45', 'LR42', 'LR43', 'LR33', 'LR35', 'LR39', 'LR32',
-        'LR47', 'LR46']
-    # -- get indices of tracers to rm, then pop from lists
-    ind = [n for n, i in enumerate(spec_l) if (i in rm_tracers)]
-    # remove species from list
-    [spec_l.pop(i) for i in sorted(ind)[::-1]]
-    rtn_list = [spec_l]
-    # remove ind from fam list
-    if not isinstance(fam, type(None)):
-        [fam.pop(i) for i in sorted(ind)[::-1]]
-        rtn_list += [fam]
-
-    # remove ind from "r_" list
-    if not isinstance(r_, type(None)):
-        if debug:
-            print((len([item for sublist in r_ for item in sublist]), len(r_)))
-        count = len(spec_l)
-        for list_ in r_[::-1]:
-            for element in list_[::-1]:
-                if count in ind:
-                    list_.pop(list_[::-1].index(element))
-                # reduce count
-                count = count - 1
-        if debug:
-            print((len([item for sublist in r_ for item in sublist])))
-        rtn_list += [r_]
-
-    if debug:
-        print(('after ind removal', spec_l, fam, ind, sorted(ind)[::-1]))
-        print([len(i) for i in (spec_l, fam)]) \
-
-    return rtn_list
-
-
-# ------------------------------------------------------------------------
-# ------------------------------------------------------------------------
-# ------------------------------------------------------------------------
-# ---------------- Section X.X -------------------------------------------
 # -------------- Dynamic processing of p/l
 #
 # NOTE - below functions for automated processing/parsing of smvgear
 # mechanisms for tagging. It is redundant and far more coherent version
 # for processing KPP mechanisms and tags is included in funcs4GEOS.py
 
-# -------------
-# X.XX - Extract reactions to form a dictionary of active reactions
-# -------------
+
 def rxn_dict_from_smvlog(wd, PHOTOPROCESS=None, ver='1.7',
                          LaTeX=False, debug=False):
     """
@@ -1165,10 +1056,6 @@ def rxn_dict_from_smvlog(wd, PHOTOPROCESS=None, ver='1.7',
         rdict = dict(list(zip(rxns, rxn_strs)))
     return rdict
 
-# -------------
-# X.XX - Extract reactions tracked by prod loss diag for a given p/l family
-# -------------
-
 
 def rxns_in_pl(wd, spec='LOX', debug=False):
     """
@@ -1226,10 +1113,6 @@ def rxns_in_pl(wd, spec='LOX', debug=False):
     rdict = dict(list(zip(n, rxns)))
     return rdict
 
-# -------------
-# X.XX - Extract reaction infomation for given tracer tags
-# -------------
-
 
 def rxn4pl(pls, wd='example/example', rdict=None, reduce_size=True,
            ver='1.7', debug=False):
@@ -1281,10 +1164,6 @@ def rxn4pl(pls, wd='example/example', rdict=None, reduce_size=True,
 
     # --- Return as reactions referenced by tag
     return dict(list(zip(keys[:, 0],  [rdict[int(i)] for i in keys[:, 1]])))
-
-# -------------
-# X.XX - Construct a list of indicies for each fam from given tags
-# -------------
 
 
 def get_indicies_4_fam(tags, fam=False, IO_BrOx2=False, rtnspecs=False,
@@ -1364,10 +1243,6 @@ def get_indicies_4_fam(tags, fam=False, IO_BrOx2=False, rtnspecs=False,
     else:
         return ll
 
-# -------------
-# X.XX - Get tags for reactions
-# -------------
-
 
 def get_p_l_tags(rxns, debug=False):
     """
@@ -1403,10 +1278,6 @@ def get_p_l_tags(rxns, debug=False):
             tagsl = [tags]
 
     return tagsl
-
-# -------------
-# X.XX - extract reactions tracked by prod loss diag in input.geos
-# -------------
 
 
 def p_l_species_input_geos(wd, ver='1.7', rm_multiple_tagged_rxs=False, debug=False):
@@ -1482,10 +1353,6 @@ def p_l_species_input_geos(wd, ver='1.7', rm_multiple_tagged_rxs=False, debug=Fa
 
     return PD, vars
 
-# -------------
-# X.XX - extract all active tags from smv.log
-# -------------
-
 
 def tags_from_smvlog(wd):  # , spec='LOX' ):
     """
@@ -1518,10 +1385,6 @@ def tags_from_smvlog(wd):  # , spec='LOX' ):
     # --- only consider tags
     return [i for i in rxns if any([x in i
                                     for x in ('PD', 'RD', 'PO3', 'LO3', 'LR')])]
-
-# -------------
-# X.XX - extract all active PDs from smv.log
-# -------------
 
 
 def PDs_from_smvlog(wd, spec='LOX'):
@@ -1559,10 +1422,6 @@ def PDs_from_smvlog(wd, spec='LOX'):
     rxns = [i for i in rxns if all([(ii not in i) for ii in exceptions])]
     rxns = [j for k in rxns for j in k]
     return rxns
-
-# -------------
-# X.XX - Give all reactions tag is active within
-# -------------
 
 
 def rxns4tag(tag, rdict=None, ver='1.7', wd=None):
@@ -1605,10 +1464,6 @@ def rxns4tag(tag, rdict=None, ver='1.7', wd=None):
             rxns.append([list(rdict.keys())[n]] + rxn)
 
     return rxns
-
-# -------------
-# X.XX - get details for a given tag
-# -------------
 
 
 def get_tag_details(wd, tag=None, PDs=None,  rdict=None, PHOTOPROCESS=None, ver='1.7',
@@ -1662,10 +1517,6 @@ def get_tag_details(wd, tag=None, PDs=None,  rdict=None, PHOTOPROCESS=None, ver=
     else:
         return dets
 
-# -------------
-# X.XX - Takes a reaction number add gives the Ox Coe
-# -------------
-
 
 def get_rxn_Coe(wd, num, tag, nums=None, rxns=None, tags=None, Coe=None, spec='LOX',
                 ver='1.6', debug=False):
@@ -1708,32 +1559,6 @@ def get_rxn_Coe(wd, num, tag, nums=None, rxns=None, tags=None, Coe=None, spec='L
     return Coe
 
 
-# --------------
-# 6.13 - PD to rxn str - remake of redundant function
-# -------------
-# def PD_to_rxn_string( tag, ver='1.6', rdict=None, wd=None, \
-#        verbose=False, debug=False ):
-#    """
-#        NOTE
-#            - This is a remake of the function, the last version was lost in a
-#            reconstruction of AC_tools/PhD_progs
-#    """
-#
-#    # Get rxn/wd dictionary if not provided
-#    if isinstance( wd, type(None) ):
-#        wd =  MUTD_runs( ver=ver )[0]
-#    if isinstance( rdict, type(None) ):
-#        rdict =  rxn_dict_from_smvlog( wd, ver=ver )
-#
-#    # Extract rxn details, then only use the reaction string
-#    rxn_ = rxns4tag( tag=tag, rdict=rdict, ver=ver, wd=wd )
-#    rxn_str =  ''.join( rxn_[0][5:9])
-#
-#    return rxn_str
-
-# --------------
-# 6.14 - Get OH reactants from reaction number dictionary
-# -------------
 def get_pldict_reactants(pl_dict=None, only_rtn_tracers=True, rm_OH=True, rm_Cl=True,
                          tags=None, debug=False):
     """
@@ -1783,13 +1608,6 @@ def get_pldict_reactants(pl_dict=None, only_rtn_tracers=True, rm_OH=True, rm_Cl=
     return strs
 
 
-# ---------------- Section X.X -------------------------------------------
-# -------------- Drivers
-#
-
-# --------------
-# 2.01 - Convert Production/Loss RD IDs for O3 to PD## for input.geos/tracer.dat linked files
-# -------------
 def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5', verbose=False, debug=False):
     """
     Converts globchem.dat tracer to PD/LD from prod/loss diag in input.geos
@@ -1830,10 +1648,6 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5', verbose=False, debug=
         return dict(list(zip(vars, PDs)))[PL]
     else:
         print('update programme - manual PLdict now obsolete. ')
-
-# -------------
-# X.XX - Uses functions to build a dictionary for a given family of loss
-# -------------
 
 
 def get_pl_dict(wd, spec='LOX', rmx2=False, ver='1.7', rm_redundent_ClBrI_tags=False,
@@ -1940,10 +1754,6 @@ def get_pl_dict(wd, spec='LOX', rmx2=False, ver='1.7', rm_redundent_ClBrI_tags=F
     # reaction str and Coe of rxn.
     return dict(list(zip([i[0] for i in details], [i[1:] + [Coes[n]]
                                                    for n, i in enumerate(details)])))
-
-# -------------
-# X.XX - Get prod loss reactions for a given family.
-# -------------
 
 
 def prod_loss_4_spec(wd, fam, all_clean=True, ver='1.7', debug=False):
@@ -2063,28 +1873,10 @@ def prod_loss_4_spec(wd, fam, all_clean=True, ver='1.7', debug=False):
 
     return nums, rxns, tags, Coe
 
-# ------------------------------------------------------------------------
-# ------------------------------------------------------------------------
-# ------------------------------------------------------------------------
 
-
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# ---------------- Section X -------------------------------------------
-# -------------- Redundant Functions
-# --------------------------------------------------------------------------
-#
-# NOTE(s):
-# (1) These are retained even though they are redundant for back compatibility
-# (2) It is not advised to use these.
-
-# --------------
-# X.XX -  GEOS-Chem/ctm.bpch values
-# --------------
 def latex_spec_name(input_x, debug=False):
     """
-    Formatted ( Latex ) strings for species and analysis
+    Formatted (Latex) strings for species and analysis names
 
     Notes
     -----
@@ -2179,55 +1971,13 @@ def latex_spec_name(input_x, debug=False):
     }
     return spec_dict[input_x]
 
-# --------
-# X.XX -  Observational site class
-# --------
-
-
-class GEO_Site:
-    """
-    Class for holding infomation about observational sites
-    """
-
-    def __init__(self, name):
-        self.name = name
-        self.help = (""" This class holds infomatio on obs. sites  """)
-        wd = get_dir('tpwd')+'/d_REF_dat_files/'
-        filename = "ClBrI_ClNO2_FULL.dat"
-
-        # Check file exists
-        if not os.path.exists(wd + filename):
-            print(("ERROR. Is this file correct?: ",  wd + filename))
-        # Open File and extract info on site
-        df = pd.read_csv(wd+'/'+filename, skipinitialspace=True)
-
-        #  Select Site
-        df = df[df['ID'] == name]
-        if len(df.index) > 0:
-            # Select site
-            df = df[df['ID'] == name]
-            self.LAT = float(df['LAT'].values)
-            self.LON = float(df['LON'].values)
-            self.ALT = float(df['PRESS'].values)  # hPa
-            self.UTC = float(df['UTC'].values)  # Time zone (UTC diff )
-        else:
-            print(('ERROR whilst reading site details', name))
-
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# ---------------- Section X -------------------------------------------
 # -------------- Non-generic Functions
-# --------------------------------------------------------------------------
 #
 # NOTE(s):
 # (1) These are retained, but will be migrated to a seperate non-generic module
 # (2) It is not advised to use these.
 
 
-# ----
-#  X.XX - Return dictionary of gaw sites
-# ----
 def gaw_2_name():
     """
     Returns dictionary GAW of sites
@@ -2243,18 +1993,14 @@ def gaw_2_name():
 
     return dict(list(zip(df.index, names)))
 
-# ----
-#  X.XX - Returns list of gaw sites in HDF file of O3 surface data
-# ----
-
 
 def get_global_GAW_sites(f='gaw_site_list_global.h5'):
     """
     Get list of (just) GAW global sites
 
     Notes
-    -----    
-     - This data is from Sofen et al 2016 and freely availible. 
+    -----
+     - This data is from Sofen et al 2016 and freely availible.
      (BADC doi:10.5285/08fbe63d-fa6d-4a7a-b952-5932e3ab0452 )
     """
     wd = get_dir('dwd') + 'ozonesurface/'
@@ -2268,9 +2014,6 @@ def get_global_GAW_sites(f='gaw_site_list_global.h5'):
     return vars
 
 
-# --------------
-# 7.05 - Stores locations for use by funcs/progs -
-# --------------
 def get_loc(loc=None, rtn_dict=False, debug=False):
     """
     Dictionary to store locations for automated analysis
@@ -2397,261 +2140,7 @@ def get_loc(loc=None, rtn_dict=False, debug=False):
     else:
         return loc_dict[loc]
 
-# --------------
-# 7.06 - Get Locations of observations (lats, lons, alts ) for given sites
-# --------------
 
-
-def get_obs_loc(loc, debug=False):
-    """
-    Dictionary to store groups of locations for automated analysis
-
-    Notes
-    -----
-     - UPDATE NEEDED: move this to func_vars4obs
-    """
-    d = {
-        'Denmark': [
-            [68.35, 59.85, 56.13, 55.69], [18.81, 17.63, 13.05, 12.10]],
-        # split by obs site...
-        'Denmark1': [[68.35], [18.81]],
-        'Denmark2': [[59.85], [17.63]],
-        'Denmark3': [[56.13], [13.05]],
-        'Denmark4': [[55.69], [12.1]],
-        # Berlin, bonn, hamburg, Westerland, Munich, Brotjacklriegel,  Deuselbach, Schauinsland
-        'Germany': [
-            [52.5167, 50.7340, 53.5653, 54.9100, 52.4231, 48.1333, \
-             48.491, 49.4508, 47.91111],
-            [13.3833, 7.0998, 10.0014, 8.3075, 10.7872, 11.5667, 13.133, 7.302, \
-             7.8894]],  \
-        'Weybourne': [[52.9420], [1.1380]], \
-        'Penlee': [[50.3214], [-4.1858]],\
-        'Penlee_M2': [[49.7795272], [-2.0229414]], \
-        'Penlee_M3': [[49.8370764, ], [-5.3652425]], \
-        'Penlee_M4': [[50.0], [-4.15]], \
-        'Penlee_M5': [[50.25], [-0.85]], \
-        'Penlee_M6': [[50.25], [-7.05]], \
-        'Mace_head_M3': [[53.209003], [-10.846408]], \
-        'Leicester': [[52.619823], [-1.127311]], \
-        # Europe?
-        'De Zilk': [[52.299999237], [4.5000]], \
-        'Mainz': [[49.9841900], [8.2791000]], \
-    }
-
-    return d[loc]
-
-# --------------
-# 7.07 - sonde station variables (list of 432 sondes)
-# -------------
-
-
-def sonde_STNs():
-    """
-    Dictionary of WOUDC sonde location variables
-
-    Notes
-    -----
-     - redundent. Now using NetCDF meta data online
-     - UPDATE NEEDED: move this to func_vars4obs
-    """
-
-    sonde_dict = {
-        101: ['SYOWA', 101.0, -69.0, 39.58, 22.0, 'JPN', 'ANTARCTICA'],
-        104: ['BEDFORD', 104.0, 42.45, -71.267, 80.0, 'USA', 'IV'],
-        105: ['FAIRBANKS (COLLEGE)', 105.0, 64.817, -147.867, 138.0, 'USA', 'IV'],
-        107: ['WALLOPS ISLAND', 107.0, 37.898, -75.483, 13.0, 'USA', 'IV'],
-        108: ['CANTON ISLAND', 108.0, -2.76, -171.7, 3.0, 'USA', 'V'],
-        109: ['HILO', 109.0, 19.5735, -155.0485, 11.0, 'USA', 'V'],
-        111: ['AMUNDSEN-SCOTT (SOUTH POLE)', 111.0, -89.983, 0.0, 2820.0, 'ATA',
-              'ANTARCTICA'],
-        131: ['PUERTO MONTT', 131.0, -41.45, -72.833, 5.0, 'CHL', 'III'],
-        132: ['SOFIA', 132.0, 42.817, 23.383, 588.0, 'BGR', 'VI'],
-        137: ['TOPEKA', 137.0, 39.067, -95.633, 270.0, 'USA', 'IV'],
-        138: ['CHRISTCHURCH', 138.0, -43.483, 172.55, 34.0, 'NZL', 'V'],
-        149: ['OVEJUYO (LA PAZ)', 149.0, -16.517, -68.033, 3420.0, 'BOL', 'III'],
-        156: ['PAYERNE', 156.0, 46.49, 6.57, 491.0, 'CHE', 'VI'],
-        157: ['THALWIL', 157.0, 46.817, 8.455, 515.0, 'CHE', 'VI'],
-        163: ['WILKES', 163.0, -66.25, 110.517, 12.0, 'USA', 'ANTARCTICA'],
-        174: ['LINDENBERG', 174.0, 52.21, 14.12, 112.0, 'DEU', 'VI'],
-        175: ['NAIROBI', 175.0, -1.267, 36.8, 1745.0, 'KEN', 'I'],
-        181: ['BERLIN/TEMPLEHOF', 181.0, 52.467, 13.433, 50.0, 'DEU', 'VI'],
-        187: ['PUNE', 187.0, 18.553, 73.86, 559.0, 'IND', 'II'],
-        190: ['NAHA', 190.0, 26.2, 127.683, 27.0, 'JPN', 'II'],
-        191: ['SAMOA', 191.0, -14.25, -170.56, 82.0, 'ASM', 'V'],
-        194: ['YORKTON', 194.0, 51.263, -102.467, 504.0, 'CAN', 'IV'],
-        197: ['BISCARROSSE/SMS', 197.0, 44.367, -1.233, 18.0, 'FRA', 'VI'],
-        198: ['COLD LAKE', 198.0, 54.783, -110.05, 702.0, 'CAN', 'IV'],
-        199: ['BARROW', 199.0, 71.317, -156.635, 11.0, 'USA', 'IV'],
-        203: ['FT. SHERMAN', 203.0, 9.33, -79.983, 57.0, 'PAN', 'IV'],
-        205: ['THIRUVANANTHAPURAM', 205.0, 8.483, 76.97, 60.0, 'IND', 'II'],
-        206: ['BOMBAY', 206.0, 19.117, 72.85, 145.0, 'IND', 'II'],
-        210: ['PALESTINE', 210.0, 31.8, -95.717, 121.0, 'USA', 'IV'],
-        213: ['EL ARENOSILLO', 213.0, 37.1, -6.733, 41.0, 'ESP', 'VI'],
-        217: ['POKER FLAT', 217.0, 65.133, -147.45, 357.5, 'USA', 'IV'],
-        219: ['NATAL', 219.0, -5.71, -35.21, 30.5, 'BRA', 'III'],
-        221: ['LEGIONOWO', 221.0, 52.4, 20.967, 96.0, 'POL', 'VI'],
-        224: ['CHILCA', 224.0, -12.5, -76.8, -1.0, 'PER', 'III'],
-        225: ['KOUROU', 225.0, 5.333, -52.65, 4.0, 'GUF', 'III'],
-        227: ['MCDONALD OBSERVATORY', 227.0, 30.666, -90.933, 2081.0, 'USA', 'IV'],
-        228: ['GIMLI', 228.0, 50.633, -97.05, 228.0, 'CAN', 'IV'],
-        229: ['ALBROOK', 229.0, 8.983, -79.55, 66.0, 'PAN', 'IV'],
-        231: ['SPOKANE', 231.0, 47.667, -117.417, 576.0, 'USA', 'IV'],
-        233: ['MARAMBIO', 233.0, -64.233, -56.623, 196.0, 'ATA', 'ANTARCTICA'],
-        234: ['SAN JUAN', 234.0, 18.483, -66.133, 17.0, 'PRI', 'IV'],
-        235: ['LONG VIEW', 235.0, 32.5, -94.75, 103.0, 'USA', 'IV'],
-        236: ['COOLIDGE FIELD', 236.0, 17.283, -61.783, 10.0, 'ATG', 'IV'],
-        237: ['GREAT FALLS', 237.0, 47.483, -111.35, 1118.0, 'USA', 'IV'],
-        238: ['DENVER', 238.0, 39.767, -104.883, 1611.0, 'USA', 'IV'],
-        239: ['SAN DIEGO', 239.0, 32.76, -117.19, 72.5, 'USA', 'IV'],
-        242: ['PRAHA', 242.0, 50.02, 14.45, 304.0, 'CZE', 'VI'],
-        254: ['LAVERTON', 254.0, -37.867, 144.75, 21.0, 'AUS', 'V'],
-        255: ['AINSWORTH (AIRPORT)', 255.0, 42.583, -100.0, 789.0, 'USA', 'IV'],
-        256: ['LAUDER', 256.0, -45.03, 169.683, 370.0, 'NZL', 'V'],
-        257: ['VANSCOY', 257.0, 52.115, -107.165, 510.0, 'CAN', 'IV'],
-        260: ['TABLE MOUNTAIN (CA)', 260.0, 34.4, -117.7, 2286.0, 'USA', 'IV'],
-        262: ['SODANKYLA', 262.0, 67.335, 26.505, 179.0, 'FIN', 'VI'],
-        265: ['IRENE', 265.0, -25.91, 28.211, 1524.0, 'ZAF', 'I'],
-        280: ['NOVOLASAREVSKAYA / FORSTER', 280.0, -70.767, 11.867, 110.0, 'ATA',
-              'ANTARCTICA'],
-        297: ['S.PIETRO CAPOFIUME', 297.0, 44.65, 11.617, 11.0, 'ITA', 'VI'],
-        303: ['IQALUIT', 303.0, 63.75, -68.55, 20.0, 'CAN', 'IV'],
-        308: ['MADRID / BARAJAS', 308.0, 40.46, -3.65, 650.0, 'ESP', 'VI'],
-        315: ['EUREKA / EUREKA LAB', 315.0, 80.04, -86.175, 310.0, 'CAN', 'IV'],
-        316: ['DE BILT', 316.0, 52.1, 5.18, 4.0, 'NLD', 'VI'],
-        318: ['VALENTIA OBSERVATORY', 318.0, 51.93, -10.25, 14.0, 'IRL', 'VI'],
-        323: ['NEUMAYER', 323.0, -70.65, -8.25, 42.0, 'ATA', 'ANTARCTICA'],
-        328: ['ASCENSION ISLAND', 328.0, -7.98, -14.42, 91.0, 'SHN', 'I'],
-        329: ['BRAZZAVILLE', 329.0, -4.28, 15.25, 314.0, 'COG', 'I'],
-        330: ['HANOI', 330.0, 21.033, 105.84, 5.0, 'VNM', 'II'],
-        333: ['PORTO NACIONAL', 333.0, -10.8, -48.4, 240.0, 'BRA', 'III'],
-        334: ['CUIABA', 334.0, -15.6, -56.1, 990.0, 'BRA', 'III'],
-        335: ['ETOSHA PAN', 335.0, -19.2, 15.9, 1100.0, 'NAM', 'I'],
-        336: ['ISFAHAN', 336.0, 32.477, 51.425, 1550.0, 'IRN', 'II'],
-        338: ['BRATTS LAKE (REGINA)', 338.0, 50.205, -104.705, 592.0, 'CAN', 'IV'],
-        339: ['USHUAIA', 339.0, -54.85, -68.308, 15.0, 'ARG', 'III'],
-        344: ['HONG KONG OBSERVATORY', 344.0, 22.31, 114.17, 66.0, 'HKG', 'II'],
-        348: ['ANKARA', 348.0, 39.95, 32.883, 896.0, 'TUR', 'VI'],
-        360: ['PELLSTON (MI)', 360.0, 45.56, -84.67, 238.0, 'USA', 'IV'],
-        361: ['HOLTVILLE (CA)', 361.0, 32.81, -115.42, -18.0, 'USA', 'IV'],
-        394: ['BROADMEADOWS', 394.0, -37.6914, 144.9467, 108.0, 'AUS', 'V'],
-        400: ['MAITRI', 400.0, -70.46, 11.45, 223.5, 'ATA', 'ANTARCTICA'],
-        401: ['SANTA CRUZ', 401.0, 28.42, -16.26, 36.0, 'ESP', 'I'],
-        404: ['JOKIOINEN', 404.0, 60.81, 23.5, 103.0, 'FIN', 'VI'],
-        406: ['SCORESBYSUND', 406.0, 70.49, -21.98, 50.0, 'GRL', 'VI'],
-        418: ['HUNTSVILLE', 418.0, 34.72, -86.64, 196.0, 'USA', 'IV'],
-        420: ['BELTSVILLE (MD)', 420.0, 39.02, -76.74, 64.0, 'USA', 'IV'],
-        432: ['PAPEETE (TAHITI)', 432.0, -18.0, -149.0, 2.0, 'PYF', 'V'],
-        434: ['SAN CRISTOBAL', 434.0, -0.92, -89.6, 8.0, 'ECU', 'III'],
-        435: ['PARAMARIBO', 435.0, 5.81, -55.21, 22.5, 'SUR', 'III'],
-        436: ['LA REUNION ISLAND', 436.0, -20.99, 55.48, 61.5, 'REU', 'I'],
-        437: ['WATUKOSEK (JAVA)', 437.0, -7.57, 112.65, 50.0, 'IDN', 'V'],
-        438: ['SUVA (FIJI)', 438.0, -18.13, 178.315, 6.0, 'FJI', 'V'],
-        439: ['KAASHIDHOO', 439.0, 5.0, 73.5, 1.0, 'MDV', 'V'],
-        441: ['EASTER ISLAND', 441.0, -27.17, -109.42, 62.0, 'CHL', 'III'],
-        443: ['SEPANG AIRPORT', 443.0, 2.73, 101.7, 17.0, 'MYS', 'V'],
-        444: ['CHEJU', 444.0, 33.5, 126.5, 300.0, 'KOR', 'II'],
-        445: ['TRINIDAD HEAD', 445.0, 40.8, -124.16, 55.0, 'USA', 'IV'],
-        448: ['MALINDI', 448.0, -2.99, 40.19, -6.0, 'KEN', 'I'],
-        450: ['DAVIS', 450.0, -68.577, 77.973, 16.0, 'ATA', 'ANTARCTICA'],
-        456: ['EGBERT', 456.0, 44.23, -79.78, 253.0, 'CAN', 'IV'],
-        457: ['KELOWNA', 457.0, 49.93, -119.4, 456.0, 'CAN', 'IV'],
-        458: ['YARMOUTH', 458.0, 43.87, -66.1, 9.0, 'CAN', 'IV'],
-        459: ['TBD', 459.0, 0.0, 0.0, 0.0, '', 'VI'],
-        460: ['THULE', 460.0, 76.53, -68.74, 57.0, 'GRL', 'VI'],
-        466: ['MAXARANGUAPE (SHADOZ-NATAL)', 466.0, -5.445, -35.33, 32.0,
-              'BRA', 'III'],
-        472: ['COTONOU', 472.0, 6.21, 2.23, 10.0, 'BEN', 'I'],
-        477: ['HEREDIA', 477.0, 10.0, -84.11, 1176.0, 'CRI', 'IV'],
-        480: ['SABLE ISLAND', 480.0, 43.93, -60.02, 4.0, 'CAN', 'IV'],
-        482: ['WALSINGHAM', 482.0, 42.6, -80.6, 200.0, 'CAN', 'IV'],
-        483: ['BARBADOS', 483.0, 13.16, -59.43, 32.0, 'BRB', 'III'],
-        484: ['HOUSTON (TX)', 484.0, 29.72, -95.4, 19.0, 'USA', 'IV'],
-        485: ['TECAMEC (UNAM)', 485.0, 19.33, -99.18, 2272.0, 'MEX', 'IV'],
-        487: ['NARRAGANSETT', 487.0, 41.49, -71.42, 21.0, 'USA', 'IV'],
-        488: ['PARADOX', 488.0, 43.92, -73.64, 284.0, 'USA', 'IV'],
-        489: ['RICHLAND', 489.0, 46.2, -119.16, 123.0, 'USA', 'IV'],
-        490: ['VALPARAISO (IN)', 490.0, 41.5, -87.0, 240.0, 'USA', 'IV'],
-        494: ['ALAJUELA', 494.0, 9.98, -84.21, 899.0, 'CRI', 'IV']
-    }
-    return sonde_dict
-
-# ----
-#  7.08 - returns  (lat, lon, alt (press), timezone (UTC) ) for a given site
-# ----
-
-
-def gaw_2_loc(site, f='GLOBAL_SURFACE_O3_2006_2012.nc'):
-    """
-    Extract GAW site locations for a given site.
-
-    Notes
-    -----
-     - Also stores non GAW sites ( obs)
-     - UPDATE NEEDED: move this to func_vars4obs
-     - Another file is availible with just GAW sites:
-    ( 'GAW_SURFACE_O3_2006_2012.nc' )
-    """
-#    from ..funcs4generic import hPa_to_Km
-    from .funcs4core import hPa_to_Km
-
-    # Use simple dictionary if site listed
-    try:
-        gaw_sites = {
-            'SMO': (-14.247,  -170.565, 1002.7885270480558, -11),
-            'MNM': (24.285, 153.981, 1011.9342452324959, 9),
-            'BMW': (32.27, -64.88, 1008.6109830510485, -4),
-            'CVO': (16.848, -24.871, 1011.6679817831093, -1),
-            'RPB': (13.17000, -59.43000, 1007.0196960034474, -4),
-            'ogasawara': (26.38, 142.10, 996.08181619552602, 9),
-            'OGA': (26.38, 142.10, 996.08181619552602, 9), \
-            # Add extras for ease of analysis (e.g. Roscoff ... )
-            'ROS': (48.433, -3.5904, 1011.6679817831093, +1)
-        }
-        return gaw_sites[site]
-
-    # If not in list then extract details from NetCDF
-    except:
-        wd = get_dir('dwd') + 'ozonesurface/'
-        with Dataset(wd+f, 'r', format='NETCDF4') as f:
-            lon = f.groups[site].longitude
-            alt = f.groups[site].altitude / 1E3
-            lat = f.groups[site].latitude
-            print([(i, type(i)) for i in (lat, lon, alt)])
-        return (lat, lon, float(hPa_to_Km([alt], reverse=True)[0]), -9999)
-
-# --------------
-# 1.02 - Return NO2 photolysis reaction REA_XX assignment
-# -------------
-
-
-def get_NO2_phot_REA_XXX(ver='1.6', debug=False):
-    """
-    Returns the NO2 photolysis reaction number depending on iGC version
-
-    Notes
-    -----:
-     - This is a halogen run specific function
-    """
-
-    if ver == '1.6':
-        num = 457
-    elif ver == '3.0':
-        #        num = 549 # ( inc. run.ClBrI.R.t22 )
-        num = 556  # run.ClBrI.R.t22.Br1.H1.NOSSABr2
-
-    # Request value /debug
-    else:
-        print('PLEASE ADD NO2 photolysis reaction for iGC version')
-        sys.exit()
-    if debug:
-        print((ver, num))
-
-    return 'REA_' + str(num)
-
-
-# --------------
-# 4.04 -  GEOS-Chem/ctm.bpch values
-# --------------
 def GC_var(input_x=None, rtn_dict=False, debug=False):
     """
     General Dictionary to manage common variables used by GC
@@ -3019,12 +2508,9 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
         return GC_var_dict[input_x]
 
 
-# --------
-# 4.19 - reference spec for family
-# --------
 def get_ref_spec(spec='LIOx'):
     """
-    Store of reference species for families.
+    Store of reference species for families
 
     Parameters
     ----------
@@ -3069,3 +2555,5 @@ def get_ref_spec(spec='LIOx'):
         'NH4': 'N',
     }
     return d[spec]
+
+

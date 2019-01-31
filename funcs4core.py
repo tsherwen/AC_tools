@@ -7,13 +7,7 @@ GEOS-Chem/Data analysis in AC_Tools
 NOTES:
  - user specific functions need to be migrated to a seperate fuction
 """
-
-# ----------------------------- Section 0 -----------------------------------
-# -------------- Required modules:
-
-# --- compatibility with both python 2 and 3
-
-
+# - Required modules:
 import numpy as np
 from netCDF4 import Dataset
 import pandas as pd
@@ -21,13 +15,8 @@ import platform
 import sys
 import logging
 import os
-
 from math import log10, floor
 import math
-
-# --------------
-# X.XX - Store of dirs for earth0, atmosviz1, and tms mac
-# -------------
 
 
 def get_dir(input, loc='earth0'):
@@ -113,10 +102,6 @@ def get_dir(input, loc='earth0'):
 
     return d
 
-# ----
-# X.XX -  Get Latitude as GC grid box number in dimension
-# ----
-
 
 def get_gc_lat(lat, res='4x5', wd=None, filename='ctm.nc', debug=False):
     """
@@ -138,10 +123,6 @@ def get_gc_lat(lat, res='4x5', wd=None, filename='ctm.nc', debug=False):
     del NIU
     return find_nearest_value(lat_c, lat)
 
-# ----
-# X.XX -  Get Longitude as GC grid box number in dimension
-# ----
-
 
 def get_gc_lon(lon, res='4x5', wd=None, filename='ctm.nc', debug=False):
     """
@@ -162,10 +143,6 @@ def get_gc_lon(lon, res='4x5', wd=None, filename='ctm.nc', debug=False):
     lon_c, NIU, NIU = get_latlonalt4res(res=res, wd=wd, filename=filename)
     del NIU
     return find_nearest_value(lon_c, lon)
-
-# --------
-# X.XX - Get model array dimension for a given resolution
-# --------
 
 
 def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False,
@@ -244,10 +221,6 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False,
             return dims
     else:
         return dims[res]
-
-# ----
-#  X.XX - Get grid values of lon, lat, and alt for a given resolution
-# ----
 
 
 def get_latlonalt4res(res=None, centre=True, hPa=False, nest=None,
@@ -460,14 +433,10 @@ def get_latlonalt4res(res=None, centre=True, hPa=False, nest=None,
     else:
         return rtn_list
 
-# --------------
-# X.XX - Convert from hPa to km or vice versa.
-# -------------
-
 
 def hPa_to_Km(input, reverse=False, debug=False):
     """
-    hPa/km convertor
+    convert hPa to km
 
     Parameters
     ----------
@@ -483,10 +452,6 @@ def hPa_to_Km(input, reverse=False, debug=False):
         return [np.exp(np.float(i) / -7.6)*1013. for i in input]
     else:
         return [-7.6*np.log(float(i) / 1013.) for i in input]
-
-# --------
-# X.XX - Find nearest
-# --------
 
 
 def find_nearest_value(array, value):
@@ -508,10 +473,6 @@ def find_nearest_value(array, value):
     # ( http://stackoverflow.com/questions/2566412/  )
     idx = (np.abs(array-value)).argmin()
     return idx
-
-# -------------
-# X.XX - Work out iGEOS-Chem version from working directory name
-# -------------
 
 
 def iGEOSChem_ver(wd, also_return_GC_version=False, verbose=True, debug=False):
@@ -600,9 +561,6 @@ def iGEOSChem_ver(wd, also_return_GC_version=False, verbose=True, debug=False):
     return iGC_ver
 
 
-# --------------
-# X.XX - Reference data (lon, lat, and alt) adapted from gchem - credit: GK (Gerrit Kuhlmann )
-# -------------
 def gchemgrid(input=None, rtn_dict=False, debug=False):
     """
     GeosChem grid lookup table. Can give the latitude, longitude or altitude
@@ -874,9 +832,6 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
         return d[input]
 
 
-# --------------
-# X.XX - Get significant figures
-# -------------
 def get_sigfig(x, p=3):
     """
     Return a number with only the significant figures required.
@@ -958,10 +913,6 @@ def get_sigfig(x, p=3):
 
 #    output round(x, -int(floor(log10(abs(x)))))
 #    return output
-
-# --------------
-# X.XX - Get number in scientific form
-# -------------
 
 
 def get_scientific_number(number, precision, string=False):

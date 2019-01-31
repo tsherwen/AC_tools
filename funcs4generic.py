@@ -9,38 +9,23 @@ NOTE(S):
  - This module is underdevelopment vestigial/inefficient code is being removed/updated.
  - Where external code is used credit is given.
 """
-
-# ----------------------------- Section 0 -----------------------------------
-# -------------- Required modules:
-
-# --- compatibility with both python 2 and 3
-
-
-# -- I/O / Low level
+# - Required modules:
+# I/O / Low level
 import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 from pandas import DataFrame
-
-# -- time
+# time
 import time
 import datetime as datetime
-
-# -- math
+# math
 from math import radians, sin, cos, asin, sqrt, pi, atan2
 
-# --  This needs to be updated, imports should be specific and in individual functions
+# The below imports need to be updated,
+# imports should be specific and in individual functions
 # import tms modules with shared functions
 from . funcs4core import *
 from . funcs_vars import *
-
-# -------------------------- Section 7 -------------------------------
-# -------------- Generic Processing
-#
-
-# -------------
-# X.XX -  Split arrays into chunks (e.g. days)
-# -------------
 
 
 def chunks(l, n):
@@ -51,20 +36,10 @@ def chunks(l, n):
         n = 1
     return [l[i:i + n] for i in range(0, len(l), n)]
 
-# -------------
-# X.XX - Get len of file
-# -------------
-
 
 def file_len(fname):
-    """
-    Get length of file
-    """
+    """ Get length of file """
     return sum(1 for line in open(fname))
-
-# -------------
-# X.XX - My round - credit: Alok Singhal
-# -------------
 
 
 def myround(x, base=5, integer=True, round_up=False):
@@ -88,22 +63,13 @@ def myround(x, base=5, integer=True, round_up=False):
     else:
         return rounded
 
-# --------------
-# X.XX - Count number of files/the filenames that contain certain phrase/number conbinations (e.g. dates) - tms
-# -------------
-
 
 def counter_directory_contains_files(model_path, must_contain):
-    """
-    Count number of files in directory
-    """
+    """ Count number of files in directory """
     model_ouput_file_counter = len(glob.glob1(model_path, must_contain))
     return model_ouput_file_counter
 
 
-# ----
-# X.XX - Rename vars/strs in files
-# ----
 def replace_strs_in_files(wd, input_str, output_str, debug=False):
     """
     replace text in files
@@ -114,10 +80,6 @@ def replace_strs_in_files(wd, input_str, output_str, debug=False):
             print(f)
             os.rename(wd + f, wd + f.replace(input_str, output_str))
             print((f.replace(input_str, output_str)))
-
-# ----
-# X.XX - Get X and Y coordinates for a given grid - Credit: Eric Sofen
-# ----
 
 
 def get_xy(Lon, Lat, lon_edges, lat_edges, debug=False):
@@ -140,10 +102,6 @@ def get_xy(Lon, Lat, lon_edges, lat_edges, debug=False):
     else:
         #print Lon, Lat, gridindx, gridindy
         return gridindx[0], gridindy[0]
-
-# --------
-# X.XX - Save as pdf.
-# --------
 
 
 def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=320,
@@ -189,10 +147,6 @@ def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=320,
                     transparent=transparent)
     print((file_extension+' saved & Closed as/at: ', npdf))
 
-# --------
-# X.XX - Save as mulitple page pdf.
-# --------
-
 
 def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, wd=None,
                   dpi=320, open=False, close=False, justHH=False, no_dstr=True):
@@ -232,14 +186,9 @@ def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, wd=None,
         print(('pdf is still open @: {}'.format(npdf)))
 
 
-# --------------
-# X.XX -  Return mesh and indics for which obs are within
-# -------------
 def obs2grid(glon=None, glat=None, galt=None, nest='high res global',
              sites=None, debug=False):
-    """
-    values that have a given lat, lon and alt
-    """
+    """ values that have a given lat, lon and alt """
     if isinstance(glon, type(None)):
         glon, glat, galt = get_latlonalt4res(nest=nest, centre=False,
                                              debug=debug)
@@ -257,27 +206,16 @@ def obs2grid(glon=None, glat=None, galt=None, nest='high res global',
         indices_list += [vars]
     return indices_list
 
-# --------
-# X.XX - Sort (GAW) sites by Latitude and return
-# --------
 
 
 def sort_sites_by_lat(sites):
-    """
-    Order given list of GAW sties by latitudes
-    """
-
+    """ Order given list of GAW sties by latitudes """
     # Get info
     vars = [gaw_2_loc(s) for s in sites]  # lat, lon, alt, TZ
-
     # Sort by lat, index orginal sites list and return
     lats = [i[0] for i in vars]
     slats = sorted(lats)[::-1]
     return [sites[i] for i in [lats.index(ii) for ii in slats]]
-
-# --------
-# X.XX - Find nearest
-# --------
 
 
 def find_nearest(array, value):
@@ -291,20 +229,12 @@ def find_nearest(array, value):
     idx = (np.abs(array-value)).argmin()
     return idx
 
-# --------
-# X.XX - Get suffix for number
-# --------
-
 
 def get_suffix(n):
     """  Add the appropriate suffix (th/st/rd) to any number given  """
     def ordinal(n): return "%d%s" % (
         n, "tsnrhtdd"[(n/10 % 10 != 1)*(n % 10 < 4)*n % 10::4])
     return ordinal(n)
-
-# --------
-# X.XX - Get shortest distance on a sphere ( for finding closest point )
-# --------
 
 
 def get_shortest_in(needle, haystack, r_distance=False):
@@ -338,10 +268,6 @@ def get_shortest_in(needle, haystack, r_distance=False):
     else:
         return list(d).index(np.min(d))
 
-# --------
-# X.XX - Get logarithmically spaced integers
-# --------
-
 
 def gen_log_space(limit, n):
     """
@@ -368,10 +294,6 @@ def gen_log_space(limit, n):
             ratio = (float(limit)/result[-1]) ** (1.0/(n-len(result)))
     # round, re-adjust to 0 indexing (i.e. minus 1) and return np.uint64 array
     return np.array([round(x)-1 for x in result], dtype=np.uint64)
-
-# --------
-# X.XX - Get indices in array where change in value of x occurs
-# --------
 
 
 def get_arr_edge_indices(arr, res='4x5', extra_points_point_on_edge=None,
@@ -469,10 +391,6 @@ def get_arr_edge_indices(arr, res='4x5', extra_points_point_on_edge=None,
 
     return coords
 
-# --------
-# X.XX - Get data binned by uniques days in data
-# --------
-
 
 def split_data_by_days(data=None, dates=None, day_list=None,
                        verbose=False, debug=False):
@@ -511,14 +429,6 @@ def split_data_by_days(data=None, dates=None, day_list=None,
     # Return as list of days (datetimes) + list of data for each day
     return data4days, day_list
 
-# -------------------------- Section 2 -------------------------------
-# -------------- Maskes for data analysis
-#
-
-# --------
-# X.XX - Ocean mask
-# --------
-
 
 def ocean_unmasked(res='4x5', debug=False):
     """
@@ -539,10 +449,6 @@ def ocean_unmasked(res='4x5', debug=False):
         print((mask, mask.shape))
     return m.mask
 
-# --------
-# X.XX - Land mask
-# --------
-
 
 def land_unmasked(res='4x5', debug=False):
     """
@@ -558,10 +464,6 @@ def land_unmasked(res='4x5', debug=False):
         print((mask, mask.shape))
     return m.mask
 
-# --------
-# X.XX - Ice mask
-# --------
-
 
 def ice_unmasked(res='4x5', debug=False):
     """
@@ -576,10 +478,6 @@ def ice_unmasked(res='4x5', debug=False):
     if debug:
         print((mask, mask.shape))
     return m
-
-# --------
-# X.XX - Surface mask
-# --------
 
 
 def surface_unmasked(res='4x5', trop_limit=False, mask2D=False,
@@ -605,9 +503,6 @@ def surface_unmasked(res='4x5', trop_limit=False, mask2D=False,
         return m[..., 0].mask
     else:
         return m.mask
-# --------
-# X.XX  - Tropical Mask
-# --------
 
 
 def tropics_unmasked(res='4x5', saizlopez=False, pradosroman=False,
@@ -637,10 +532,6 @@ def tropics_unmasked(res='4x5', saizlopez=False, pradosroman=False,
         return m[..., 0].mask
     else:
         return m.mask
-
-# --------
-# X.XX  - Mid Lats Mask
-# --------
 
 
 def mid_lats_unmasked(res='4x5', saizlopez=False, pradosroman=False,
@@ -675,9 +566,6 @@ def mid_lats_unmasked(res='4x5', saizlopez=False, pradosroman=False,
         return m[..., 0].mask
     else:
         return m.mask
-# --------
-# X.XX - 40N to 40S Mask
-# --------
 
 
 def mask_lat40_2_40(res='4x5', mask2D=False):
@@ -703,9 +591,6 @@ def mask_lat40_2_40(res='4x5', mask2D=False):
         return m[..., 0].mask
     else:
         return m.mask
-# --------
-# X.XX - Extra Tropics Mask
-# --------
 
 
 def extratropics_unmasked(res='4x5', mask2D=False):
@@ -728,9 +613,6 @@ def extratropics_unmasked(res='4x5', mask2D=False):
         return m[..., 0].mask
     else:
         return m.mask
-# --------
-# X.XX - Create unmask array ( for ease of dataprocessing )
-# --------
 
 
 def all_unmasked(res='4x5', mask2D=False):
@@ -746,10 +628,6 @@ def all_unmasked(res='4x5', mask2D=False):
         return m[..., 0].mask
     else:
         return m.mask
-
-# --------
-# X.XX - Maskes Regions by Pressure
-# --------
 
 
 def mask_3D(hPa, sect, MBL=True, res='4x5', extra_mask=None,
@@ -844,9 +722,6 @@ def mask_3D(hPa, sect, MBL=True, res='4x5', extra_mask=None,
     return m.mask
 
 
-# --------
-# X.XX  - Custom 2D (Lat) Mask
-# --------
 def lat2lat_2D_unmasked(lowerlat=None, higherlat=None, res='2x2.5',
                         debug=False):
     """
@@ -868,10 +743,6 @@ def lat2lat_2D_unmasked(lowerlat=None, higherlat=None, res='2x2.5',
         m[:, i] = 1
     m = np.ma.masked_not_equal(m, 1)
     return m.mask
-
-# --------
-# X.XX - South Pole mask
-# --------
 
 
 def southpole_unmasked(res='4x5', mask2D=False):
@@ -903,10 +774,6 @@ def southpole_unmasked(res='4x5', mask2D=False):
     else:
         return m.mask
 
-# --------
-# X.XX - North Pole mask
-# --------
-
 
 def northpole_unmasked(res='4x5', mask2D=False):
     """
@@ -935,10 +802,6 @@ def northpole_unmasked(res='4x5', mask2D=False):
     else:
         return m.mask
 
-# --------
-# X.XX - North Hemisphere mask
-# --------
-
 
 def NH_unmasked(res='4x5', mask2D=False):
     """
@@ -964,9 +827,6 @@ def NH_unmasked(res='4x5', mask2D=False):
         return m.mask
 
 
-# --------
-# X.XX - South Hemisphere mask
-# --------
 def SH_unmasked(res='4x5', mask2D=False):
     """
     Return global np.ma with south hemisphere masked
@@ -991,9 +851,6 @@ def SH_unmasked(res='4x5', mask2D=False):
         return m.mask
 
 
-# --------
-# X.XX - North Hemisphere mask
-# --------
 def location_unmasked(res='4x5', lat=None, lon=None, mask2D=False):
     """
     Return global np.ma.mask with all locations apart from that containing the
@@ -1018,11 +875,9 @@ def location_unmasked(res='4x5', lat=None, lon=None, mask2D=False):
         return m.mask
 
 
-# --------
-# X.XX  - Get Analysis maskes
-# --------
 def get_analysis_masks(masks='basic',  hPa=None, M_all=False, res='4x5',
-                       saizlopez=False, r_pstr=True, wd=None, trop_limit=True, mask4D=False,
+                       saizlopez=False, r_pstr=True, wd=None, trop_limit=True,
+                       mask4D=False,
                        use_multiply_method=True, debug=False):
     """
     Return list of mask arrays for analysis
@@ -1121,10 +976,6 @@ def get_analysis_masks(masks='basic',  hPa=None, M_all=False, res='4x5',
         return maskes, mtitles, npstr, pstr
     else:
         return maskes, mtitles
-
-# --------
-# X.XX -  Retrieve individual 4D mask of locations except region given
-# --------
 
 
 def mask_all_but(region='All', M_all=False, saizlopez=False,
@@ -1428,9 +1279,6 @@ def mask_all_but(region='All', M_all=False, saizlopez=False,
     return mask
 
 
-# --------
-# X.XX - Custom 2D (Lon) Mask
-# --------
 def lon2lon_2D_unmasked(lowerlon, higherlon, res='2x2.5', debug=False):
     """
     Takes a lower and higher latitude value and then creates
@@ -1454,10 +1302,6 @@ def lon2lon_2D_unmasked(lowerlon, higherlon, res='2x2.5', debug=False):
     m = np.ma.masked_not_equal(m, 1)
     return m.mask
 
-# --------
-# X.XX - EU mask
-# --------
-
 
 def get_EU_unmasked(res='1x1'):
     """
@@ -1480,10 +1324,6 @@ def get_EU_unmasked(res='1x1'):
     # Combine maskes
     m = m1 + m2
     return m
-
-# --------
-# X.XX - Cruise track mask
-# --------
 
 
 def get_cruise_track_mask(max_lon=None, min_lon=None, max_lat=None,
@@ -1509,13 +1349,8 @@ def get_cruise_track_mask(max_lon=None, min_lon=None, max_lat=None,
     return m
 
 
-# --------
-# X.XX - Get mask of mediterranean sea
-# --------
 def get_France_unmasked(res='4x5'):
-    """
-    A rough Mask of France for use with 2x2.5 / 4x5 model output
-    """
+    """ A rough Mask of France for use with 2x2.5 / 4x5 model output """
     # France mask
     lowerlat = 42.5
     higherlat = 51
@@ -1532,9 +1367,6 @@ def get_France_unmasked(res='4x5'):
     return mask
 
 
-# --------
-# X.XX - Get mask of Mediterranean sea
-# --------
 def get_mediterranean_sea_unmasked(res='0.25x0.3125'):
     """
     A rough Mask of the Mediterranean Sea for use with ~0.5/~0.25 mdodel output.
@@ -1563,9 +1395,6 @@ def get_mediterranean_sea_unmasked(res='0.25x0.3125'):
     return mask
 
 
-# --------
-# X.XX - Get mask of black sea
-# --------
 def get_black_sea_unmasked(res='0.25x0.3125', unmask_water=True):
     """
     A rough Mask of the Mediterranean Sea for use with ~0.5/~0.25 mdodel output.
@@ -1586,10 +1415,6 @@ def get_black_sea_unmasked(res='0.25x0.3125', unmask_water=True):
     if unmask_water:
         mask = np.ma.mask_or(mask, ocean_unmasked(res=res)[..., 0])
     return mask
-
-# --------
-# X.XX - Get mask of bay of biscay
-# --------
 
 
 def get_bay_of_biscay_unmasked(res='0.25x0.3125', unmask_water=True):
@@ -1615,9 +1440,6 @@ def get_bay_of_biscay_unmasked(res='0.25x0.3125', unmask_water=True):
     return mask
 
 
-# --------
-# X.XX - Get mask of north sea
-# --------
 # def get_north_sea_unmasked( res='0.25x0.3125' ):
 #     """
 #     A rough Mask of the North Sea for use with ~0.5/~0.25 mdodel output.
@@ -1650,9 +1472,6 @@ def get_bay_of_biscay_unmasked(res='0.25x0.3125', unmask_water=True):
 #     return m.mask
 #
 #
-# --------
-# X.XX - Get mask of black sea
-# --------
 # def get_unmasked_black_sea( res='0.25x0.3125'):
 #     """
 #     A rough Mask of the Black Sea for use with ~0.5/~0.25 mdodel output.
@@ -1663,9 +1482,7 @@ def get_bay_of_biscay_unmasked(res='0.25x0.3125', unmask_water=True):
 #     West North corner  = 44.17207,25.30604
 #     pass
 #
-# --------
-# X.XX - Get mask of irsh sea
-# --------
+#
 # def get_unmasked_irish_sea( res='0.25x0.3125', unmasked_oceans=None):
 #     """
 #     A rough Mask of the Irish Sea for use with ~0.5/~0.25 mdodel output.
@@ -1688,9 +1505,7 @@ def get_bay_of_biscay_unmasked(res='0.25x0.3125', unmask_water=True):
 #
 #     return mask
 
-# --------
-# X.XX - Get orthogonal distance regression (ODR) of two datasets
-# --------
+
 def get_linear_ODR(x=None, y=None, job=10, maxit=5000, beta0=(0, 1),
                    xvalues=None, return_model=True, debug=False, verbose=False):
     """
@@ -1732,9 +1547,6 @@ def get_linear_ODR(x=None, y=None, job=10, maxit=5000, beta0=(0, 1),
         return xvalues, f(myoutput.beta, xvalues)
 
 
-# --------
-# X.XX - Convert ug per m3 to 2 ppbv
-# --------
 def convert_ug_per_m3_2_ppbv(data=None,  spec='O3', rtn_units=False,
                              units='ug m$^{-3}$'):
     """
@@ -1767,9 +1579,6 @@ def convert_ug_per_m3_2_ppbv(data=None,  spec='O3', rtn_units=False,
         return data
 
 
-# --------
-# X.XX - Convert mg per m3 to 2 ppbv
-# --------
 def convert_mg_per_m3_2_ppbv(data=None,  spec='O3', rtn_units=False,
                              units='mg m$^{-3}$'):
     """
@@ -1802,9 +1611,6 @@ def convert_mg_per_m3_2_ppbv(data=None,  spec='O3', rtn_units=False,
         return data
 
 
-# --------
-# X.XX - Get 2D (lat, lon) mask of night time for a given datetime
-# --------
 def get_2D_nighttime_mask4date_pd(date=None, ncfile=None, res='4x5',
                                   mask_daytime=False, buffer_hours=0, debug=False):
     """
@@ -1994,9 +1800,6 @@ def get_2D_nighttime_mask4date_pd(date=None, ncfile=None, res='4x5',
     return marr
 
 
-# --------
-# X.XX - Get 2D array of solar time.
-# --------
 def get_2D_solartime_array4_date(date=None, ncfile=None, res='4x5',
                                  lons=None, lats=None, varname='SolarTime',  debug=False):
     """
@@ -2101,9 +1904,6 @@ def get_2D_solartime_array4_date(date=None, ncfile=None, res='4x5',
     return df.unstack().values
 
 
-# --------
-# X.XX - Save 2D arrays (lat, lon) to 3D netCDF (3rd dim=time)
-# --------
 def save_2D_arrays_to_3DNetCDF(ars=None, dates=None, res='4x5', lons=None,
                                lats=None, varname='MASK', Description=None, Contact=None,
                                filename='misc_output', var_type='f8', debug=False):
@@ -2236,9 +2036,6 @@ def save_2D_arrays_to_3DNetCDF(ars=None, dates=None, res='4x5', lons=None,
         logging.debug('saved NetCDF file:{}'.format(ncfilename))
 
 
-# --------
-# X.XX - Interpolate values from subset of 2D array
-# --------
 def interpolate_sparse_grid2value(Y_CORDS=None, X_CORDS=None,
                                   X=None, Y=None, XYarray=None, buffer_CORDS=5,
                                   verbose=True, debug=False):
@@ -2331,9 +2128,6 @@ def interpolate_sparse_grid2value(Y_CORDS=None, X_CORDS=None,
     return interpolated[X_ind, Y_ind]
 
 
-# --------
-# X.XX - Split a NetCDF by month
-# --------
 def split_NetCDF_by_month(folder=None, filename=None, ext_str='',
                           file_prefix='ts_ctm'):
     """
@@ -2374,11 +2168,9 @@ def split_NetCDF_by_month(folder=None, filename=None, ext_str='',
         del ds_tmp
 
 
-# --------
-# X.XX - stack a 2D table (DataFrame) of lat/lon coords
-# --------
 def get_2D_df_of_lon_lats_and_time(res='4x5', df_lar_var='lat',
-                                   df_lon_var='lon', df_time_var='month', add_all_months=False,
+                                   df_lon_var='lon', df_time_var='month',
+                                   add_all_months=False,
                                    lons=None, lats=None, verbose=True, month=9):
     """ stack a 2D table (DataFrame) of lat/lon coords """
     # Get lon and lat resolution (Add other ways to get lat and lon here...
@@ -2417,11 +2209,9 @@ def get_2D_df_of_lon_lats_and_time(res='4x5', df_lar_var='lat',
     return df
 
 
-# --------
-# X.XX - stack a 2D table (DataFrame) of lat/lon coords
-# --------
 def get_vars_from_line_printed_in_txt_file(filename=None, folder=None,
-                                           prefix=' HOUR:', var_names=None, type4var_names=None):
+                                           prefix=' HOUR:', var_names=None,
+                                           type4var_names=None):
     """
     Get variables from a line printed to non-binary file with a given prefix
 
@@ -2483,15 +2273,12 @@ def get_vars_from_line_printed_in_txt_file(filename=None, folder=None,
         err_str = 'No lines with prefix ({})'.format(prefix)
         logging.info(err_str)
 
-# --------
-# X.XX - remove the spaces and extra vars from strings
-# --------
-
 
 def rm_spaces_and_chars_from_str(input_str, remove_slashes=True,
-                                 replace_brackets=True, replace_quotes=True, replace_dots=True,
+                                 replace_brackets=True, replace_quotes=True,
+                                 replace_dots=True,
                                  remove_plus=True, swap_pcent=True, replace_braces=True):
-    """ remove the spaces and extra vars from strings"""
+    """ remove the spaces and extra vars from strings """
     input_str = input_str.replace(' ', '_')
     if replace_brackets:
         input_str = input_str.replace('(', '_')
