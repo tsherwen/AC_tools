@@ -3,40 +3,26 @@
 """
 Generic functions for use with GEOS-Chem's planeflight diagnostic module
 """
-# --- compatibility with both python 2 and 3
+# compatibility with both python 2 and 3
 from __future__ import print_function
 
-# ----------------------------- Section 0 -----------------------------------
-# -------------- Required modules:
-
-# -- I/O functions / Low level
+# - Required modules:
+# I/O functions / Low level
 import sys
 import csv
 import glob
 import pandas as pd
 import logging
-
-# Math functions
+# Math
 import numpy as np
-
-# -- This needs to be updated, imports should be specific and in individual functions
+# The below list to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
 from . funcs4core import *
 from . funcs4generic import *
 from . funcs4time import *
 from . funcs_vars import *
-
-# -- Time functions
+# Time
 import datetime as datetime
-
-# ---------------------------------- Section X.X ---------------------------
-# -------------- Planeflight Processors
-#
-# (some example functions using these functions are in AC_tools/Scripts)
-
-# ----
-# X.XX -
-# ----
 
 
 def update_Planeflight_files(wd=None, num_tracers=103, verbose=True):
@@ -122,12 +108,10 @@ def update_Planeflight_files(wd=None, num_tracers=103, verbose=True):
     prt_PlaneFlight_files(df=df, slist=slist, Extra_spacings=False)
 
 
-# ----
-# X.XX -
-# ----
 def prt_PlaneFlight_files(df=None, LAT_var='LAT', LON_var='LON',
                           PRESS_var='PRESS', loc_var='TYPE', Username='Tomas Sherwen',
-                          Date_var='datetime', slist=None, num_tracers=85, Extra_spacings=False,
+                          Date_var='datetime', slist=None, num_tracers=85,
+                          Extra_spacings=False,
                           verbose=False, debug=False):
     """
     Takes a dataframe of lats, lons, alts, and times and makes Planeflight.dat.*
@@ -225,12 +209,10 @@ def prt_PlaneFlight_files(df=None, LAT_var='LAT', LON_var='LON',
         a.close()
 
 
-# ----
-# X.XX -
-# ----
 def prt_PlaneFlight_files_v12_plus(df=None, LAT_var='LAT', LON_var='LON',
                                    PRESS_var='PRESS', loc_var='TYPE', OBS_var='OBS',
-                                   Date_var='datetime', slist=None, num_tracers=85, Extra_spacings=False,
+                                   Date_var='datetime', slist=None, num_tracers=85,
+                                   Extra_spacings=False,
                                    Username='Tomas Sherwen', verbose=False, debug=False):
     """
     Takes a dataframe of lats, lons, alts, and times and makes Planeflight.dat.*
@@ -342,14 +324,6 @@ def prt_PlaneFlight_files_v12_plus(df=None, LAT_var='LAT', LON_var='LON',
         print(endstr, file=a)
         a.close()
 
-# ---------------------------------- Section X.X ---------------------------
-# -------------- Planeflight Extractors
-#
-
-# --------------
-# X.XX - Get headers for a given pf file (return var names, and points )
-# ----------
-
 
 def get_pf_headers(file, debug=False):
     """
@@ -383,9 +357,6 @@ def get_pf_headers(file, debug=False):
     return names, list(set(points))
 
 
-# --------------
-# X.0X - converts planeflight.dat file to pandas array
-# ----------
 def pf_csv2pandas(file=None, vars=None, epoch=False, r_vars=False,
                   debug=False):
     """
@@ -416,12 +387,11 @@ def pf_csv2pandas(file=None, vars=None, epoch=False, r_vars=False,
             names = vars
         if debug:
             print(vars, names)
-
         # Convert to pandas array
         df = pd.read_csv(f, header=None, skiprows=1,
-                         delim_whitespace=True, names=names, dtype={'HHMM': str,
-                                                                    'YYYYMMDD': str, 'POINT': object})
-
+                         delim_whitespace=True, names=names,
+                         dtype={'HHMM': str,'YYYYMMDD': str, 'POINT': object}
+                         )
         # Convert strings to datetime using pandas mapping
         df = DF_YYYYMMDD_HHMM_2_dt(df, rmvars=None, epoch=epoch)
         if debug:
@@ -434,12 +404,10 @@ def pf_csv2pandas(file=None, vars=None, epoch=False, r_vars=False,
         return df
 
 
-# ----
-# X.XX - Read pf data from 2D NetCDF table file
-# ----
 def get_pf_data_from_NetCDF_table(ncfile=None, req_var='TRA_69', spec='IO',
-                                  loc='CVO', start=None, end=None, ver='1.7', verbose=False,
-                                  sdate=None, edate=None, debug=False):
+                                  loc='CVO', start=None, end=None, ver='1.7',
+                                  sdate=None, edate=None,
+                                  verbose=False, debug=False):
     """
     Extracts data from NetCDF file processed by pf2NetCDF (pandas) converter in PhD_Progs
 

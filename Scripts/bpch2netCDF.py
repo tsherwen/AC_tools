@@ -16,7 +16,7 @@ import netCDF4
 try:
     import iris
 except ImportError:
-    print('WARNING iris and cartopy have stability issues')
+    print('WARNING iris not imported')
 # retain back compatibility for PyGChem
 try:
     if (sys.version_info.major <= 2):
