@@ -1558,18 +1558,46 @@ def get_CH4_lifetime(wd=None, res='4x5',
                      years=None, months=None, monthly=False, trop_limit=True,
                      use_OH_from_geos_log=False, average_value=True, LCH4_Cl=None,
                      use_time_in_trop=True, masktrop=False, include_Cl_ox=False,
+                     OHVar='CHEM_L_S__OH', ClVar='IJ_AVG_S__Cl', TempVar='DAO_3D_S__TMPU',
+                     TimeInTropVar='TIME_TPS__TIMETROP',
+                     RateCl_CH4Var='PORL_L_S__PD354',
+                     TropLevelVar='TR_PAUSE__TP_LEVEL',
                      verbose=True, debug=False):
     """
-    Get amtospheric methane (CH4) lifetime by calculating loss rate against OH
+    Get atmospheric methane (CH4) lifetime by calculating loss rate (vs. OH or OH+Cl)
 
     Parameters
     -------
+    trop_limit (boolean): limit 4D arrays to troposphere
+    wd (str): the directory to search for file CTM output file in
+    vol (array): volumne contained in each grid box (cm^-3)
+    years, months (list): list of years and months in model output file
+    res (str): GEOS-Chem output configuration resolution ( '4x5' etc... )
+    TempVar (str), Variable name in NetCDF file for temperature (K)
+    K (array), array of temperature in degrees (K)
+    t_ps (array), array of time each grid box has spent in the troposphere
+    t_lvl (array), array of tropopause level
+    masktrop (boolean), mask the stratosphere from from the arrays?
+    include_Cl_ox (boolean), include loss of CH4 from CL (as-well as OH)?
+    a_m (np.array): 4D array of air mass
+    n_air (array): number desnity of air
+    LCH4_Cl (array): Rate of loss of CH4 vs. Cl (NOTE: not currently used)
+    use_OH_from_geos_log (boolean), use the value for OH from the geos.log file?
+    ClVar (str), Variable name in NetCDF file for Cl concentration
+    average_value  (boolean), get a mass weighted average value?
+    OHVar (str), Variable name in NetCDF file for OH concentration
+    TimeInTropVar (str), Variable name in NetCDF file for time in troposphere
+    RateCl_CH4Var (str), Variable name in NetCDF file for Cl+CH4 rate
+    TropLevelVar (str), Variable name in NetCDF file for tropopause level
+    debug (boolean): legacy debug option, replaced by python logging
+    verbose (boolean): print verbose output?
 
     Returns
     -------
+    (float)
 
     Notes
-    -----
+    -------
      - Multiple options for calculation of this value.
      - uses diagnostic arrays for [OH] instead of goes.log values as default.
      - Calculates the total atmospheric lifetime of CH4 due to oxidation by
@@ -1592,14 +1620,14 @@ def get_CH4_lifetime(wd=None, res='4x5',
     if not isinstance(a_m, np.ndarray):  # Kg
         a_m = get_air_mass_np(wd=wd, trop_limit=trop_limit)
     if not isinstance(K, np.ndarray):  # K
-        K = get_GC_output(wd=wd, vars=['DAO_3D_S__TMPU'],
+        K = get_GC_output(wd=wd, vars=[TempVar],
                           trop_limit=trop_limit)
     if not isinstance(t_ps, np.ndarray):
-        t_ps = get_GC_output(wd, vars=['TIME_TPS__TIMETROP'],
+        t_ps = get_GC_output(wd, vars=[TimeInTropVar],
                              trop_limit=trop_limit)
     if not use_time_in_trop:
         if not isinstance(t_lvl, np.ndarray):
-            t_lvl = get_GC_output(wd, vars=['TR_PAUSE__TP_LEVEL'],
+            t_lvl = get_GC_output(wd, vars=[TropLevelVar],
                                   trop_limit=False)
         if not isinstance(n_air, np.ndarray):
             n_air = get_number_density_variable(wd=wd, trop_limit=trop_limit)
@@ -1607,14 +1635,14 @@ def get_CH4_lifetime(wd=None, res='4x5',
     if use_OH_from_geos_log:
         OH = get_OH_mean(wd) * 1E5
     else:  # Extract from GEOS-Chem fields
-        OH = get_GC_output(wd=wd, vars=['CHEM_L_S__'+'OH'],
+        OH = get_GC_output(wd=wd, vars=[OHVar],
                            trop_limit=trop_limit)
 #        #  What are the units for 'CHEM_L_S__OH' ? need to convert?
         # (NetCDF says molec/m3, and wiki says  [molec/cm3]  )
 #        OH = OH *1E6
     if include_Cl_ox:
         # Get mixing ratio [v/v]
-        Cl = get_GC_output(wd, vars=['IJ_AVG_S__'+'Cl'],
+        Cl = get_GC_output(wd, vars=[ClVar],
                            trop_limit=trop_limit)
         # Convert units to [molec/cm3]
         Cl = convert_v_v_2_molec_cm3(Cl, vol=vol, a_m=a_m)
@@ -1640,7 +1668,7 @@ def get_CH4_lifetime(wd=None, res='4x5',
     KCH4 = 2.45E-12 * np.ma.exp((-1775. / K))
     # Fixing PD from smvgear tag (LR63) as PD354
     if include_Cl_ox:
-        Lrate_CH4_Cl = get_GC_output(wd, vars=['PORL_L_S__'+'PD354'],
+        Lrate_CH4_Cl = get_GC_output(wd, vars=[RateCl_CH4Var],
                                      trop_limit=trop_limit)
     # --- Now Calculate CH4 lifetimes
     if use_time_in_trop:
