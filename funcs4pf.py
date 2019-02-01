@@ -341,17 +341,20 @@ def get_pf_headers(file, debug=False):
     if debug:
         print(file)
     # Open pf file
-    with open(file, 'rb') as f:
-        reader = csv.reader(f, delimiter=' ', skipinitialspace=True)
-        for row in reader:
-            if row[0] != 'POINT':
-                new = row[1:2][0]
-                try:
-                    points.append(new)
-                except:
-                    points = [new]
-            else:
-                names = row[2:]
+    with open(file, 'r') as f:
+        Lines = [i for i in f]
+        names = Lines[0].strip().split()
+        points = [i.strip().split()[0] for i in Lines[1:] ]
+#         reader = csv.reader(f, delimiter=' ', skipinitialspace=True)
+#         for row in f:
+#             if row[0] != 'POINT':
+#                 new = row[1:2][0]
+#                 try:
+#                     points.append(new)
+#                 except:
+#                     points = [new]
+#             else:
+#                 names = row[2:]
     if debug:
         print(names, list(set(points)))
     return names, list(set(points))
