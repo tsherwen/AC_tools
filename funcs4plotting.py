@@ -9,14 +9,7 @@ NOTE(S):
  - This module is underdevelopment vestigial/inefficient code is being removed/updated.
  - Where external code is used credit is given.
 """
-
-# ------------------- Section 0 -------------------------------------------
-# -------------- Required modules:
-
-# --- compatibility with both python 2 and 3
-
-
-# -- Plotting
+# - Required modules:
 try:
     from mpl_toolkits.basemap import Basemap
 except ModuleNotFoundError:
@@ -28,24 +21,21 @@ import functools
 import matplotlib
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-
-# -- Time
+# Time
 import time
 import calendar
 import datetime as datetime
 from datetime import datetime as datetime_
-
-# -- I/O/Admin...
+# I/O/Admin...
 import gc
-
-# ---  This needs to be updated, imports should be specific and in individual functions
+# The below imports need to be updated,
+# imports should be specific and in individual functions
 # import tms modules with shared functions
 from . funcs_vars import *
 from . funcs4generic import *
 from . funcs4time import *
 from . funcs4pf import *
 from . funcs4GEOSC import *  # wd2ctms, get_gc_res
-
 # math
 from math import log10, floor
 import numpy as np
@@ -55,13 +45,6 @@ import scipy
 #from option_d import test_cm as cmd
 
 
-# ----------------------------- Section 1 ------------------------------------
-# -------------- Common Plot Types
-#
-
-# ----
-# 1.01 - Map plot for given array and resolution (lon, lat
-# -----
 def map_plot(arr, return_m=False, grid=False, centre=False, cmap=None,
              no_cb=False, cb=None, rotatecbunits='horizontal', fixcb=None, nticks=10,
              mask_invalids=False,
@@ -76,7 +59,7 @@ def map_plot(arr, return_m=False, grid=False, centre=False, cmap=None,
              axis_titles=False, split_title_if_too_long=True, fillcontinents=False,
              **Kwargs):
     """
-    Plots Global/regional 2D (lon, lat) slices.
+    Make a global/regional 2D (lon, lat) spatial plot
 
     Parameters
     ----------
@@ -413,11 +396,10 @@ def map_plot(arr, return_m=False, grid=False, centre=False, cmap=None,
     return return_l
 
 
-# ----
-# X.XX - UPDATED - Map plot for given array and resolution (lon, lat)
-# -----
+
 def plot_map(arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=False,
-             cb=None, rotatecbunits='horizontal', fixcb=None, nticks=10, mask_invalids=False,
+             cb=None, rotatecbunits='horizontal', fixcb=None, nticks=10,
+             mask_invalids=False,
              format='%.2f', adjust_window=0, f_size=20, alpha=1, log=False,
              set_window=False, res=None, ax=None, case='default', units=None,
              drawcountries=True,  set_cb_ticks=True, title=None, lvls=None,
@@ -428,7 +410,7 @@ def plot_map(arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fal
              xlabel=True, wd=None, verbose=True, debug=False, tight_layout=False,
              **Kwargs):
     """
-    Plots Global/regional 2D (lon, lat) slices.
+    Make a global/regional 2D (lon, lat) spatial plot
 
     WARNING - This is an updated version of map_plot (incomplement/develop),
        use map_plot instead!
@@ -810,9 +792,6 @@ def plot_map(arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fal
     return return_l
 
 
-# --------
-# X.XX - Zonal plot - log or linear
-# --------
 def zonal_plot(arr, fig, ax=None, title=None, tropics=False, f_size=10,
                c_off=37, hPa_labels=False,
                format='%.2f', interval=None, no_cb=False, units=None, shrink=0.4,
@@ -936,7 +915,8 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, f_size=10,
 
         # Setup Colormap
         cmap, fixcb_buffered = get_colormap(np.array(fixcb_),
-                                            nticks=nticks, fixcb=fixcb_, buffer_cmap_upper=True)
+                                            nticks=nticks, fixcb=fixcb_,
+                                            buffer_cmap_upper=True)
 
         # Update colormap with buffer
         cmap = get_colormap(arr=np.array([fixcb_buffered[0],
@@ -1085,13 +1065,12 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, f_size=10,
         ax.set_title(title, fontsize=f_size*1.5)
 
 
-# --------
-# X.XX - Diurnal plot by season
-# --------
 def plot_up_diurnal_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
-                              dfs=None, color_dict={'Obs.': 'k', 'Model': 'r'}, stat2plot='50%',
+                              dfs=None, color_dict={'Obs.': 'k', 'Model': 'r'},
+                              stat2plot='50%',
                               dpi=320, plt_legend=True, units=None,
-                              show_plot=False, save_plot=False, verbose=False, debug=False):
+                              show_plot=False, save_plot=False, verbose=False,
+                              debug=False):
     """
     Plot up mulitplot of diurnal cycle by "season" for given dict of DataFrames
 
@@ -1190,9 +1169,6 @@ def plot_up_diurnal_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
         plt.show()
 
 
-# --------
-# X.XX - Diurnal plot - (UPDATED)
-# --------
 def BASIC_diurnal_plot(fig=None, ax=None, dates=None, data=None, color='red',
                        title=None, label=None, plt_legend=None, plt_xlabel=True,
                        plt_ylabel=True, show_plt=False, plot_pcent_change_from_max=False,
@@ -1342,9 +1318,6 @@ def BASIC_diurnal_plot(fig=None, ax=None, dates=None, data=None, color='red',
         return np.ma.array(avgs)
 
 
-# --------
-# X.XX - BASIC_seasonal_plot
-# --------
 def BASIC_seasonal_plot(dates=None, data=None, ax=None,
                         title=None, legend=False,  ylabel=None, loc='best', ncols=1,
                         showmeans=False, boxplot=True, return_avgs=False,
@@ -1419,15 +1392,13 @@ def BASIC_seasonal_plot(dates=None, data=None, ax=None,
     if return_avgs:
         return np.ma.array(medians)
 
-# --------
-# X.XX - BASIC_seasonal_plot
-# --------
-
 
 def binned_boxplots_by_altitude(df=None, fig=None, ax=None, dataset_name=None,
-                                num_of_datasets=1, dataset_num=0, label='Obs.', showfliers=False,
+                                num_of_datasets=1, dataset_num=0, label='Obs.',
+                                showfliers=False,
                                 bins=np.arange(8), binned_var='O3', var2bin_by='ALT',
-                                color=None, dpi=320, xlabel=None, ylabel='Altitude (km)', title=None,
+                                color=None, dpi=320, xlabel=None, ylabel='Altitude (km)',
+                                title=None,
                                 show_plot=False, widths=0.3, verbose=False, debug=False):
     """
     Plot up dataset (1 or more) as boxplots binned by altitude
@@ -1529,9 +1500,6 @@ def binned_boxplots_by_altitude(df=None, fig=None, ax=None, dataset_name=None,
         plt.show()
 
 
-# --------
-# X.XX - Plot up Sonde data
-# --------
 def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None,
                f_size=10, color=None,  err_bar=False, obs=True,
                legend=False, units='nmol mol$^{-1}$', stddev=True,
@@ -1655,9 +1623,6 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None,
                 ax2.tick_params(axis='y', which='both', labelleft='off')
 
 
-# --------------
-# 1.13 - plot up monthly from data provided from DB netCDF
-# -------------
 def monthly_plot(ax, data, f_size=20, pos=0, posn=1, lw=1, ls='-', color=None,
                  title=None, subtitle=None, legend=False, xrotation=90,
                  window=False, label=None, ylabel=None, xlabel=True,
@@ -1714,9 +1679,6 @@ def monthly_plot(ax, data, f_size=20, pos=0, posn=1, lw=1, ls='-', color=None,
         plt.legend(loc=loc,  fontsize=int(f_size/1.5))
 
 
-# --------------
-# 1.14 - plot up monthly timeseries from ...
-# -------------
 def timeseries_seasonal_plot(ax, dates, data, f_size=20, pos=0, posn=1,
                              title=None, legend=False, everyother=24,  x_nticks=12,
                              window=False, label=None, ylabel=None, loc='upper left',
@@ -1810,10 +1772,6 @@ def timeseries_seasonal_plot(ax, dates, data, f_size=20, pos=0, posn=1,
     else:
         ax.set_yscale('linear')
 
-# --------------
-# X.XX - plot up daily timeseries from ...
-# -------------
-
 
 def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn=1,
                           bin_size=1/24., widths=0.01, rotatexlabel='vertical',
@@ -1891,16 +1849,15 @@ def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn=1,
                  linestyle='dashed') for i in bs]
 
 
-# --------------
-# X.XX - plot up timeseries from between two given months
-# -------------
+
 def timeseries_month_plot(ax, dates, data, f_size=20, pos=0, posn=1,
                           title=None, legend=False, everyother=7*24,  x_nticks=12,
                           window=False, label=None, ylabel=None, loc='upper left',
                           lw=1, ls='-', color=None, start_month=7, end_month=7,
                           boxplot=True, showmeans=False, alt_text=None, r_plt=False,
                           unitrotation=45, color_by_z=False, fig=None,  xlabel=True,
-                          second_title='', add_dates2title=True, positive=None, debug=False):
+                          second_title='', add_dates2title=True, positive=None,
+                          debug=False):
     """
     Plot up month timeseries of values. Requires data, and dates in numpy
     array form. Dates must be as datetime.datetime objects.
@@ -1962,9 +1919,7 @@ def timeseries_month_plot(ax, dates, data, f_size=20, pos=0, posn=1,
         plt.legend(fontsize=f_size*.75, loc=loc)
 
 
-# --------
-# X.XX - North Pole surface plot
-# --------
+
 def north_pole_surface_plot(arr, return_m=False, grid=True, centre=False,
                             cmap=None, format='%.2f', m=None, fixcb=False,  nbins=25,
                             res='4x5', ax=None, alpha=1, nticks=10, everyother=1,
@@ -1975,7 +1930,7 @@ def north_pole_surface_plot(arr, return_m=False, grid=True, centre=False,
                             no_cb=False, cb=None, units=None, f_size=20, \
                             debug=False,  **Kwargs):
     """
-    Plot up data at north pole as a  2D slice.
+    Plot up data at north pole as a 2D slice.
 
     NOTES:
      - Requires data (arr) as numpy array. Arr should be full global size
@@ -2079,11 +2034,15 @@ def north_pole_surface_plot(arr, return_m=False, grid=True, centre=False,
 # X.XX - South Pole surface plot
 # --------
 def south_pole_surface_plot(arr, return_m=False, grid=True, centre=False,
-                            cmap=None, format='%.2f', res='4x5', ax=None, alpha=1,  title=None,
-                            fixcb=False, nbins=25, nticks=10, drawcountries=True, set_cb_ticks=True,
+                            cmap=None, format='%.2f', res='4x5', ax=None, alpha=1,
+                            title=None,
+                            fixcb=False, nbins=25, nticks=10, drawcountries=True,
+                            set_cb_ticks=True,
                             #             rotatecbunits='horizontal', extend='neither',
-                            interval=1, resolution='l', shrink=0.4, window=False, everyother=1,
-                            lon_0=0, boundinglat=-40, degrade_resolution=False, no_cb=False, cb=None,
+                            interval=1, resolution='l', shrink=0.4, window=False,
+                            everyother=1,
+                            lon_0=0, boundinglat=-40, degrade_resolution=False,
+                            no_cb=False, cb=None,
                             units=None, f_size=20, debug=False,  **Kwargs):
     """
     Plot up data at south pole 2D slice.
@@ -2184,13 +2143,13 @@ def south_pole_surface_plot(arr, return_m=False, grid=True, centre=False,
         return plt, cb
 
 
-# --------
-# X.XX - PDF of monthly surface change plots for given species (takes 5D arr )
-# --------
 def plot_specs_surface_change_monthly2pdf(arr, res='4x5', dpi=160,
-                                          no_dstr=True, f_size=20, pcent=True, specs=None, dlist=None,
-                                          savetitle='', diff=False, extend='neither', column=False,
-                                          scale=1, units=None, set_window=False, lat_0=None, lat_1=None,
+                                          no_dstr=True, f_size=20, pcent=True, specs=None,
+                                          dlist=None,
+                                          savetitle='', diff=False, extend='neither',
+                                          column=False,
+                                          scale=1, units=None, set_window=False,
+                                          lat_0=None, lat_1=None,
                                           mask_invalids=False, debug=False):
     """
     Create multipage PDF with each page containing a 2D (lon,lat) slice
@@ -2312,13 +2271,13 @@ def plot_specs_surface_change_monthly2pdf(arr, res='4x5', dpi=160,
     plot2pdfmulti(pdff, savetitle, close=True, dpi=dpi, no_dstr=no_dstr)
 
 
-# --------
-# X.XX - PDF of monthly zonal change plots for given species
-# --------
 def plot_specs_zonal_change_monthly2pdf(Vars, res='4x5', dpi=160,
-                                        no_dstr=True, f_size=20, pcent=False, specs=None, dlist=None,
-                                        t_ps=None, savetitle='', diff=False, extend='neither',
-                                        set_window=False, lat_0=None, lat_1=None, mask_invalids=False,
+                                        no_dstr=True, f_size=20, pcent=False, specs=None,
+                                        dlist=None,
+                                        t_ps=None, savetitle='', diff=False,
+                                        extend='neither',
+                                        set_window=False, lat_0=None, lat_1=None,
+                                        mask_invalids=False,
                                         set_lon=None, units=None, debug=False):
     """
     Create multipage PDF with each page containing a zonalplot for given species in
@@ -2449,12 +2408,11 @@ def plot_specs_zonal_change_monthly2pdf(Vars, res='4x5', dpi=160,
     plot2pdfmulti(pdff, savetitle, close=True, dpi=dpi, no_dstr=no_dstr)
 
 
-# --------
-# X.XX - Change as 2D plot of surface ( for column or surface change )
-# --------
 def plot_specs_poles_change_monthly2pdf(specs=None, arr=None, res='4x5',
-                                        dpi=160, no_dstr=True, f_size=20, pcent=False, diff=False,
-                                        dlist=None, savetitle='', units=None, perspective='north',
+                                        dpi=160, no_dstr=True, f_size=20, pcent=False,
+                                        diff=False,
+                                        dlist=None, savetitle='', units=None,
+                                        perspective='north',
                                         format=None, extend='neither', boundinglat=50,
                                         verbose=True, debug=False):
     """
@@ -2573,11 +2531,13 @@ def plot_specs_poles_change_monthly2pdf(specs=None, arr=None, res='4x5',
             if perspective == 'north':
                 north_pole_surface_plot(parr[:, :, m], no_cb=True,
                                         fixcb=fixcb, diff=diff, pcent=pcent, res=res,
-                                        f_size=f_size*2, cmap=cmap, boundinglat=boundinglat)
+                                        f_size=f_size*2, cmap=cmap,
+                                        boundinglat=boundinglat)
             if perspective == 'south':
                 south_pole_surface_plot(parr[:, :, m], no_cb=True,
                                         fixcb=fixcb, diff=diff, pcent=pcent, res=res,
-                                        f_size=f_size*2, cmap=cmap, boundinglat=-boundinglat)
+                                        f_size=f_size*2, cmap=cmap,
+                                        boundinglat=-boundinglat)
 
             plt.text(1.1, -0.01, month.strftime("%b"), fontsize=f_size*2,
                      transform=ax.transAxes, ha='right', va='bottom')
@@ -2603,9 +2563,6 @@ def plot_specs_poles_change_monthly2pdf(specs=None, arr=None, res='4x5',
     plot2pdfmulti(pdff, savetitle, close=True, dpi=dpi, no_dstr=no_dstr)
 
 
-# --------
-# X.XX - Generic X vs. Y plot
-# --------
 def X_Y_scatter(x, y, z=None, fig=None, ax=None, vmin=None, vmax=None,
                 left=0.1, width=0.60, bottom=0.1, height=0.60, widthII=0.2,
                 lim2std=10, trendline=True, f_size=20, lw=10, title=None,
@@ -2676,9 +2633,6 @@ def X_Y_scatter(x, y, z=None, fig=None, ax=None, vmin=None, vmax=None,
     plt.yticks(fontsize=f_size)
 
 
-# --------
-# X.XX - Scatter 3D cube
-# --------
 def scatter_3D_cube(data, dims=None, res='2x2.5', fig=None, everyother=1, interval=1,
                     f_size=20, cm='RdYlBu', debug=False):
     """
@@ -2719,9 +2673,6 @@ def scatter_3D_cube(data, dims=None, res='2x2.5', fig=None, everyother=1, interv
     ax.set_zlim(alt[0], alt[-1])
 
 
-# --------
-# X.XX - Plot up seasonal output from 4D arr (lon, lat, alt, time)
-# --------
 def get_seasonal_plot(arr, fixcb=None, fig=None, f_size=15,
                       case='linear', format=None, extend='neither', units=None,
                       right=0.9, left=0.05, bottom=0.05, top=0.85, hspace=0.1,
@@ -2766,13 +2717,13 @@ def get_seasonal_plot(arr, fixcb=None, fig=None, f_size=15,
                         right=right, hspace=hspace, wspace=wspace)
 
 
-# --------
-# X.XX - PDF of annual surface change plots for given species (takes 5D arr )
-# --------
 def plot_specs_surface_change_annual2pdf(arr, res='4x5', dpi=160,
-                                         no_dstr=True, f_size=20, pcent=True, specs=None, dlist=None,
-                                         savetitle='', diff=False, extend='neither', column=False,
-                                         scale=1, units=None, set_window=False, lat_0=None, lat_1=None,
+                                         no_dstr=True, f_size=20, pcent=True, specs=None,
+                                         dlist=None,
+                                         savetitle='', diff=False, extend='neither',
+                                         column=False,
+                                         scale=1, units=None, set_window=False,
+                                         lat_0=None, lat_1=None,
                                          mask_invalids=False, debug=False):
     """
     Create multipage PDF with each page containing a 2D (lon,lat) slice
@@ -2891,13 +2842,13 @@ def plot_specs_surface_change_annual2pdf(arr, res='4x5', dpi=160,
     plot2pdfmulti(pdff, savetitle, close=True, dpi=dpi, no_dstr=no_dstr)
 
 
-# --------
-# X.XX - PDF of annual zonal change plots for given species
-# --------
 def plot_specs_zonal_change_annual2pdf(Vars, res='4x5', dpi=160,
-                                       no_dstr=True, f_size=20, pcent=False, specs=None, dlist=None,
-                                       t_ps=None, savetitle='', diff=False, extend='neither',
-                                       set_window=False, lat_0=None, lat_1=None, mask_invalids=False,
+                                       no_dstr=True, f_size=20, pcent=False, specs=None,
+                                       dlist=None,
+                                       t_ps=None, savetitle='', diff=False,
+                                       extend='neither',
+                                       set_window=False, lat_0=None, lat_1=None,
+                                       mask_invalids=False,
                                        set_lon=None, units=None, debug=False):
     """
     Create multipage PDF with each page containing a zonal plot for given species in list
@@ -3023,15 +2974,15 @@ def plot_specs_zonal_change_annual2pdf(Vars, res='4x5', dpi=160,
         plot2pdfmulti(pdff, savetitle, close=True, dpi=dpi, no_dstr=no_dstr)
 
 
-# --------
-# X.XX - Spatial Figure maker ( just provide lon, lat, time,  np array )
-# --------
 def plot_spatial_figure(arr, fixcb=None, sigfig_rounding_on_cb=2,
                         norm=None, nticks=10, format=None, units=None, extend='neither',
                         ax=None, cb_height=0.6, centre=False,
-                        discrete_cmap=False, f_size=15, fig=None, left_cb_pos=0.86, cb_ax=None,
-                        bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035, right=0.85,
-                        dpi=160, res='4x5', show=True, pdf=False, pdftitle=None, title=None,
+                        discrete_cmap=False, f_size=15, fig=None, left_cb_pos=0.86,
+                        cb_ax=None,
+                        bottom=0.005, top=0.95, hspace=0.4, wspace=0.3, left=0.035,
+                        right=0.85,
+                        dpi=160, res='4x5', show=True, pdf=False, pdftitle=None,
+                        title=None,
                         window=False, interval=1, ylabel=True, cb='CMRmap_r', width=0.015,
                         orientation='vertical', rotatecbunits='vertical', title_y=1.05,
                         title_x=0.5, no_cb=True, return_m=False, log=False, wd=None,
@@ -3144,7 +3095,9 @@ def plot_spatial_figure(arr, fixcb=None, sigfig_rounding_on_cb=2,
 
     # Setup Colormap
     cmap, fixcb_buffered = get_colormap(np.array(fixcb),
-                                        nticks=nticks, fixcb=fixcb, cb=cb, buffer_cmap_upper=True)
+                                        nticks=nticks, fixcb=fixcb, cb=cb,
+                                        buffer_cmap_upper=True
+                                        )
 
     if discrete_cmap:
         cmap, norm = mk_discrete_cmap(nticks=nticks,
@@ -3155,9 +3108,11 @@ def plot_spatial_figure(arr, fixcb=None, sigfig_rounding_on_cb=2,
     # Plot up
     plt_vars = map_plot(arr[..., 0].T, format=format, cmap=cmap, ax=ax,
                         fixcb=fixcb, return_m=True, log=log, window=window, no_cb=True,
-                        norm=norm, f_size=f_size*.75,  res=res, wd=wd, resolution=resolution,
+                        norm=norm, f_size=f_size*.75,  res=res, wd=wd,
+                        resolution=resolution,
                         fixcb_buffered=fixcb_buffered, interval=interval, xlabel=xlabel,
-                        ylabel=ylabel, axis_titles=axis_titles, fillcontinents=fillcontinents,
+                        ylabel=ylabel, axis_titles=axis_titles,
+                        fillcontinents=fillcontinents,
                         verbose=verbose, debug=debug, centre=centre)
 
     # if title != None, add to plot
@@ -3208,22 +3163,23 @@ def plot_spatial_figure(arr, fixcb=None, sigfig_rounding_on_cb=2,
         return [fig, cmap] + plt_vars + [fixcb]  # += [ cb_ax ]
 
 
-# --------
-# X.XX - Zonal Figure maker ( just provide lon, lat np array )
-# --------
 def plot_zonal_figure(arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None,
                       norm=None, nticks=10, format=None, units=None, extend='neither',
-                      discrete_cmap=False, f_size=15, fig=None, res='4x5', wd=None, t_ps=None,
+                      discrete_cmap=False, f_size=15, fig=None, res='4x5', wd=None,
+                      t_ps=None,
                       trop_limit=True, axn=None, cb_ax=None, orientation='vertical',
                       rotatecbunits='vertical', width=0.015, height=0.6,
-                      bottom=0.1, top=0.925, hspace=0.4, wspace=0.5, left=0.075, right=0.875,
-                      cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160, no_cb=True,
+                      bottom=0.1, top=0.925, hspace=0.4, wspace=0.5, left=0.075,
+                      right=0.875,
+                      cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160,
+                      no_cb=True,
                       region='All', lat_0=None, lat_1=None, pdftitle=None, return_m=False,
-                      rtn_plt_vars=False, set_window=False, pdf=False, show=True, log=False,
+                      rtn_plt_vars=False, set_window=False, pdf=False, show=True,
+                      log=False,
                       window=False, xlabel=True, ylabel=True, title=None,
                       interval=None, verbose=False, debug=False):
     """
-    Creates zonal zonal plot as formated figure.
+    Create a zonal plot as formated figure
 
 
     NOTES:
@@ -3280,7 +3236,8 @@ def plot_zonal_figure(arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None,
 
     # Setup Colormap
     cmap, fixcb_buffered = get_colormap(np.array(fixcb),
-                                        nticks=nticks, fixcb=fixcb, buffer_cmap_upper=True,
+                                        nticks=nticks, fixcb=fixcb,
+                                        buffer_cmap_upper=True,
                                         verbose=verbose, debug=debug)
 
     #  Plot
@@ -3332,9 +3289,6 @@ def plot_zonal_figure(arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None,
         return [fig, cmap, fixcb]  # + plt_vars + [ fixcb ] #+= [ cb_ax ]
 
 
-# --------
-# X.XX - Lat plotter of average + Q1/Q3
-# --------
 def plot_arr_avg_Q1_Q3(X, Y, ax=None, color='blue', label=None,
                        plt_mean=True, plt_median=False, pcent1=25, pcent2=75,
                        verbose=False, debug=False):
@@ -3366,16 +3320,14 @@ def plot_arr_avg_Q1_Q3(X, Y, ax=None, color='blue', label=None,
     return ax
 
 
-# --------------
-# 1.35 - Timeseries plotter ( takes datetime + np.array )
-# -------------
 def timeseries_plot(ax, dates, data, f_size=20, pos=0, posn=1,
                     title=None, legend=False, everyother=7*24,  x_nticks=12,
                     window=False, label=None, ylabel=None, loc='upper left',
                     lw=1, ls='-', color=None, start_date=None, end_date=None,
                     boxplot=True, showmeans=False, alt_text=None, r_plt=False,
                     unitrotation=45, color_by_z=False, fig=None,  xlabel=True,
-                    positive=None, plt_median=False, add_Q1_Q3=False, pcent1=25, pcent2=75,
+                    positive=None, plt_median=False, add_Q1_Q3=False, pcent1=25,
+                    pcent2=75,
                     debug=False):
     """
     Plot up timeseries of values.
@@ -3452,15 +3404,15 @@ def timeseries_plot(ax, dates, data, f_size=20, pos=0, posn=1,
         plt.legend(fontsize=f_size*.75, loc=loc)
 
 
-# --------
-# 1.36 - Get monthly surface plots for (4D) array
-# --------
 def plt_4Darray_surface_by_month(arr, res='4x5', dpi=160,
-                                 no_dstr=True, f_size=10, dlist=None, fixcb=None, format=None,
-                                 savetitle='', extend='neither',  wd=None, ax=None, fig=None,
+                                 no_dstr=True, f_size=10, dlist=None, fixcb=None,
+                                 format=None,
+                                 savetitle='', extend='neither',  wd=None, ax=None,
+                                 fig=None,
                                  sigfig_rounding_on_cb=3, nticks=7, discrete_cmap=False,
                                  units=None, set_window=False, lat_0=None, lat_1=None,
-                                 return_m=False, log=False, window=True, interval=3, ylabel=True,
+                                 return_m=False, log=False, window=True, interval=3,
+                                 ylabel=True,
                                  norm=None, fig_title=False, pdftitle='',
                                  pdf=False, show=False, verbose=False, debug=False):
     """
@@ -3496,7 +3448,8 @@ def plt_4Darray_surface_by_month(arr, res='4x5', dpi=160,
 
     # Setup Colormap
     cmap, fixcb_buffered = get_colormap(np.array(fixcb),
-                                        nticks=nticks, fixcb=fixcb, buffer_cmap_upper=True)
+                                        nticks=nticks, fixcb=fixcb,
+                                        buffer_cmap_upper=True)
 
     if discrete_cmap:
         cmap, norm = mk_discrete_cmap(nticks=nticks,
@@ -3559,20 +3512,21 @@ def plt_4Darray_surface_by_month(arr, res='4x5', dpi=160,
         plt.show()
 
 
-# --------
-# 1.37 - Get monthly surface plots for (4D) array
-# --------
 def plt_4Darray_zonal_by_month(arr, res='4x5', dpi=160,
                                no_dstr=True, f_size=15, dlist=None, fixcb=None,
-                               savetitle='', extend='neither',  wd=None, ax=None, fig=None,
+                               savetitle='', extend='neither',  wd=None, ax=None,
+                               fig=None,
                                sigfig_rounding_on_cb=3, nticks=7, discrete_cmap=False,
                                units=None, set_window=False, lat_0=None, lat_1=None,
-                               return_m=False, log=False, window=True, interval=3, ylabel=True,
-                               norm=None, fig_title=False, pdftitle='', t_ps=None, xlabel=True,
-                               format=None, orientation='vertical', trop_limit=True, region='All',
+                               return_m=False, log=False, window=True, interval=3,
+                               ylabel=True,
+                               norm=None, fig_title=False, pdftitle='', t_ps=None,
+                               xlabel=True,
+                               format=None, orientation='vertical', trop_limit=True,
+                               region='All',
                                pdf=False, show=False, verbose=False, debug=False):
     """
-    Create a window plot of surface amp plots from a 4D array
+    Create a window plot of zonal plots from a 4D array
     """
 
     # Average over lon
@@ -3607,7 +3561,8 @@ def plt_4Darray_zonal_by_month(arr, res='4x5', dpi=160,
 
     # Setup Colormap
     cmap, fixcb_buffered = get_colormap(np.array(fixcb),
-                                        nticks=nticks, fixcb=fixcb, buffer_cmap_upper=True)
+                                        nticks=nticks, fixcb=fixcb,
+                                        buffer_cmap_upper=True)
 
     if discrete_cmap:
         cmap, norm = mk_discrete_cmap(nticks=nticks,
@@ -3670,9 +3625,6 @@ def plt_4Darray_zonal_by_month(arr, res='4x5', dpi=160,
         plt.show()
 
 
-# --------
-# 1.38 - Stackplot for variables over X axis
-# --------
 def X_stackplot(X=None, Y=None, labels=None, baseline='zero',
                 fig=None, ax=None, dpi=160, show=False, f_size=10, legend=False,
                 colors=None, title=None, loc='upper right', ylim=None, xlim=None,
@@ -3816,13 +3768,11 @@ def X_stackplot(X=None, Y=None, labels=None, baseline='zero',
         plt.show()
 
 
-# --------
-# X.XX - Plot up locations (lons and lats) on a map
-# --------
 def plot_lons_lats_spatial_on_map_CARTOPY(central_longitude=0,
                                           lats=None, lons=None, add_background_image=True,
                                           projection=ccrs.PlateCarree, fig=None, ax=None,
-                                          marker='o', s=50, color='red', show_plot=False, dpi=320,
+                                          marker='o', s=50, color='red', show_plot=False,
+                                          dpi=320,
                                           buffer_degrees=20, add_detailed_map=False):
     """
     Plot a list of lons and lats spatially on a map (using cartopy)
@@ -3904,14 +3854,9 @@ def plot_lons_lats_spatial_on_map_CARTOPY(central_longitude=0,
     return ax
 
 
-# --------------------------- Section 4 ------------------------------------
 # -------------- Plotting Ancillaries
-#
 
 
-# -------------
-# X.XX -  color list for rainbow plots
-# -------------
 def color_list(length, cb='gist_rainbow'):
     """
     Create a list of colours to generate colors for plots contain multiple datasets
@@ -3921,9 +3866,6 @@ def color_list(length, cb='gist_rainbow'):
     return color
 
 
-# -------------
-# X.XX - R squared - credit: Software carpentry
-# -------------
 def r_squared(x, y):
     """
     Return R^2 where x and y are array-like.
@@ -3939,9 +3881,6 @@ def r_squared(x, y):
     return r_value**2
 
 
-# -------------
-# X.XX - setup box plots
-# -------------
 def set_bp(bp, num, c_list=['k', 'red'], white_fill=True, set_all=True,
            median_color='white', linewidth=2, debug=False):
     """
@@ -3962,9 +3901,6 @@ def set_bp(bp, num, c_list=['k', 'red'], white_fill=True, set_all=True,
         setp(bp['medians'][:], color=median_color, linewidth=linewidth)
 
 
-# -------------
-# X.XX - Get all marker types
-# -------------
 def markers_list(rm_plain_markers=False):
     """
     Create a list of available markers for use in plots
@@ -3984,9 +3920,6 @@ def markers_list(rm_plain_markers=False):
     return markers
 
 
-# -------------
-# X.XX linear (polyfit) trendline calculator for X-Y plot (with histograms)
-# -------------
 def Trendline(ax, X, Y, order=1, intervals=700, f_size=20, color='blue',
               lw=1, debug=False):
     """
@@ -4026,9 +3959,6 @@ def Trendline(ax, X, Y, order=1, intervals=700, f_size=20, color='blue',
     ax.legend()
 
 
-# -------------
-# X.XX - plot_gc_bin_bands - plot up Fast-J  bins  ( 7 longest nm bins)
-# -------------
 def plot_gc_bin_bands(facecolor='#B0C4DE'):
     """
     Plot highlighted lines of ("tropospheric") GEOS-Chem/Fast-J photolysis bins
@@ -4039,21 +3969,13 @@ def plot_gc_bin_bands(facecolor='#B0C4DE'):
                  alpha=alphas[n]) for n in range(len(vars[0]))]
 
 
-# --------------
-# X.XX - line styles
-# -------------
 def get_ls(num):
-    """
-    Get a list of available line styles
-    """
+    """ Get a list of available line styles """
     ls = [':', '--', '-.', '-', ':', '--', '-.', '-', ':', ':', '--', '-.', '-', ':', '--', '-.', '-', ':'
           ]
     return ls[:num]
 
 
-# --------
-# X.XX - takes time in troposphere diagnostic array (46, 47) overlayes
-# --------
 def greyoutstrat(fig,  arr, axn=[1, 1, 1], ax=None, cmap=plt.cm.bone_r,
                  res='4x5', rasterized=True, debug=False):
     """
@@ -4076,16 +3998,10 @@ def greyoutstrat(fig,  arr, axn=[1, 1, 1], ax=None, cmap=plt.cm.bone_r,
     if rasterized:
         plt.gcf().set_rasterized(True)
 
-# --------
-# X.XX - adjust subplots
-# --------
-
 
 def adjust_subplots(fig, left=None, bottom=None, right=None, top=None,
                     wspace=None, hspace=None):
-    """
-    Set subplot adjust in provide figure
-    """
+    """ Set subplot adjustment values for provided figure """
     # the left side of the subplots of the figure
     if isinstance(left, type(None)):
         left = 0.125
@@ -4109,9 +4025,6 @@ def adjust_subplots(fig, left=None, bottom=None, right=None, top=None,
                         wspace=wspace, hspace=hspace)
 
 
-# --------
-# X.XX - Iodine deposition mask (for sites... e.g Denmark, Germany, Norfolk )
-# --------
 def mask_not_obs(loc='Denmark', res='4x5', debug=False):
     """
     provide a mask of all regions apart from the location given
@@ -4132,9 +4045,6 @@ def mask_not_obs(loc='Denmark', res='4x5', debug=False):
     return np.ma.not_equal(arr, 1)
 
 
-# --------------
-# X.XX - Annotate grid
-# -------------
 def annotate_gc_grid(ax, res='4x5', f_size=6.5,
                      loc_list=[[-9999, -9999]], everyother=1, label_gc_grid=True):
     """
@@ -4170,14 +4080,11 @@ def annotate_gc_grid(ax, res='4x5', f_size=6.5,
                         fontsize=f_size, color=color)
 
 
-# --------
-# X.XX - Function for centering colorbar
-# --------
 def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, upper=1,
                     start_center=0.5, stop=1.0, maintain_scaling=True, arr=None,
                     name='shiftedcmap', npoints=257, verbose=True, debug=False):
     """
-    ORGINAL DESCRIPTION: Function to offset the "center" of a colormap. Useful
+    ORGINAL DESCRIPTION: Function to offset the "centre" of a colormap. Useful
     for data with a negative min and positive max and you want the middle of
     the colormap's dynamic range to be at zero.
 
@@ -4223,7 +4130,9 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, upper=1,
         if midpoint != 0.5:
             cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
                 'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=lower,
-                                                    b=upper), cmap(np.linspace(lower, upper, npoints)))
+                                                    b=upper), cmap(np.linspace(lower,
+                                                    upper, npoints))
+                                                    )
             logging.debug('maintain scale for vars: {}'.format(
                 *[str(float(i)) for i in list([eq_range, act_range, vmin,
                                                vmax, abs(vmin), abs(
@@ -4233,7 +4142,10 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, upper=1,
 
     # Regular index to compute the colors
     reg_index = np.hstack([np.linspace(start, start_center, 128,
-                                       endpoint=False), np.linspace(start_center, stop, 129, endpoint=True)])
+                                       endpoint=False),
+                                       np.linspace(start_center, stop, 129,
+                                       endpoint=True)]
+                                       )
 
     # Shifted index to match the data
     shift_index = np.hstack([np.linspace(0.0, midpoint, 128, endpoint=False),
@@ -4253,9 +4165,6 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, upper=1,
     return newcmap
 
 
-# --------
-# X.XX - Add colorbar to side of plot
-# --------
 def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,
           orientation='vertical', f_size=20, rotatecbunits='vertical', nticks=10,
           extend='neither', norm=None, log=False, format=None, cmap=None,
@@ -4396,7 +4305,8 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,
 #            height += height*extendfrac
 
         cb = mpl.colorbar.ColorbarBase(cb_ax, cmap=cmap, format=format,
-                                       norm=norm, ticks=lvls, extend=extend, extendfrac=extendfrac,
+                                       norm=norm, ticks=lvls, extend=extend,
+                                       extendfrac=extendfrac,
                                        boundaries=boundaries,
                                        spacing='proportional',
                                        #                spacing='uniform',
@@ -4432,14 +4342,11 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,
     return cb_ax
 
 
-# --------
-# X.XX - Create base map for plotting
-# --------
 def get_basemap(lat, lon, resolution='l', projection='cyl', res='4x5',
                 everyother=1, f_size=10, interval=1, axis_titles=False,
                 show_grid=True, drawcountries=False, ylabel=True, xlabel=True):
     """
-    Creates a basemap object.
+    Create a basemap object for plotting spatial maps
 
     This should be used for first slide in python animated videos to save computation
     """
@@ -4475,9 +4382,6 @@ def get_basemap(lat, lon, resolution='l', projection='cyl', res='4x5',
     return m
 
 
-# --------
-# X.XX - Provide an appropriate colormap for given data
-# --------
 def get_colormap(arr,  center_zero=True, minval=0.15, maxval=0.95,
                  npoints=100, cb='CMRmap_r', maintain_scaling=True,
                  negative=False, positive=False, divergent=False,
@@ -4525,8 +4429,10 @@ def get_colormap(arr,  center_zero=True, minval=0.15, maxval=0.95,
     # i.e head of colormap often rounded for ascetic/readability reasons
     if buffer_cmap_upper:
         lvls, lvls_diff = get_human_readable_gradations(vmax=fixcb[1],
-                                                        vmin=fixcb[0], nticks=nticks,  rtn_lvls_diff=True,
-                                                        sigfig_rounding_on_cb=sigfig_rounding_on_cb)
+                                                        vmin=fixcb[0], nticks=nticks,
+                                                        rtn_lvls_diff=True,
+                                             sigfig_rounding_on_cb=sigfig_rounding_on_cb
+                                                        )
 
         # increase maximum value in color by 5% of level diff
         # to allow space for max lvl
@@ -4581,12 +4487,14 @@ def get_colormap(arr,  center_zero=True, minval=0.15, maxval=0.95,
     if (negative and ('gnuplot2' in cb)) or (positive and ('CMRmap' in cb)):
         cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
             'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=0,
-                                                b=maxval-minval, ), cmap(np.linspace(0, maxval-minval, npoints)))
+                                                b=maxval-minval, ), cmap(np.linspace(0,
+                                                maxval-minval, npoints)))
     if (positive and ('gnuplot2' in cb)) or (negative and ('CMRmap' in cb)):
         #    if positive and ( 'CMRmap' in cb ):
         cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
             'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval,
-                                                b=maxval), cmap(np.linspace(minval, maxval, npoints)))
+                                                b=maxval), cmap(np.linspace(minval,
+                                                maxval, npoints)))
 
     # --- divergent
     if ((not positive) and (not negative)) or divergent:
@@ -4604,7 +4512,8 @@ def get_colormap(arr,  center_zero=True, minval=0.15, maxval=0.95,
             logging.debug('vals. for mid point {}, min {}, max {}'.format(
                 str(1-vmax/(vmax + abs(vmin))), str(vmin), str(vmax)))
             cmap = shiftedColorMap(cmap, midpoint=1-vmax/(vmax + abs(vmin)),
-                                   maintain_scaling=maintain_scaling, arr=arr, name='shifted',
+                                   maintain_scaling=maintain_scaling, arr=arr,
+                                   name='shifted',
                                    verbose=verbose, debug=debug)
 
     # Use updated jet replacements from mpl
@@ -4623,9 +4532,6 @@ def get_colormap(arr,  center_zero=True, minval=0.15, maxval=0.95,
         return cmap
 
 
-# --------
-# X.XX -Make segments for variable line color plot
-# --------
 def make_segments(x, y):
     """
     Create list of line segments from x and y coordinates, in the correct format
@@ -4637,14 +4543,12 @@ def make_segments(x, y):
     return segments
 
 
-# --------
-# X.XX - Make colored line for plot
-# --------
 def colorline(x, y, z=None, cmap=plt.get_cmap('copper'),
               norm=None, linewidth=3, alpha=1.0, ax=None, fig=None,
               cb_title='Modelled wind direction', convert_x_2datetime=True,
               debug=False):
     """
+    plot a line (x,y) for plot coloured by variable (z)
     http://nbviewer.ipython.org/github/dpsanders/matplotlib-examples/blob/master/colorline.ipynb
     http://matplotlib.org/examples/pylab_examples/multicolored_line.html
     Plot a colored line with coordinates x and y
@@ -4702,16 +4606,14 @@ def colorline(x, y, z=None, cmap=plt.get_cmap('copper'),
     return lc
 
 
-# --------
-# X.XX - Get human readable gradations for plot
-# --------
 def get_human_readable_gradations(lvls=None, vmax=10, vmin=0,
                                   nticks=10, sigfig_rounding_on_cb=2,
                                   sigfig_rounding_on_cb_ticks=2,
                                   sigfig_rounding_on_cb_lvls=2, rtn_lvls_diff=False,
                                   verbose=True, debug=False):
     """
-    Get human readible gradations for ploting ( e.g. colorbars etc ).
+    Get human readible gradations for plotting (e.g. colorbars etc)
+
     OUTPUT:
     lvls: list of values where the ticks should be
     ticks: list of strings to call the ticks in Sig figs.
@@ -4865,10 +4767,6 @@ def get_human_readable_gradations(lvls=None, vmax=10, vmin=0,
     else:
         return lvls
 
-# --------
-# X.XX - mk colourmap discrete
-# --------
-
 
 def mk_discrete_cmap(lvls=None, cmap=None, arr=None,
                      vmin=0, vmax=10, nticks=10, debug=False):
@@ -4907,31 +4805,18 @@ def mk_discrete_cmap(lvls=None, cmap=None, arr=None,
     return cmap, norm
 
 
-# --------
-# X.XX -
-# --------
 def show_plot():
-    """
-    Wrapper for plt.show(). Use to plot to screen.
-    """
+    """ Wrapper for plt.show(). Use to plot to screen """
     plt.show()
     return
 
 
-# --------
-# X.XX -
-# --------
 def close_plot():
-    """
-    Wrapper for plt.close(). Use to closes plots on screen.
-    """
+    """ Wrapper for plt.close(). Use to closes plots on screen """
     plt.close()
     return
 
 
-# --------
-# X.XX -
-# --------
 def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=True):
     """
     Save a plot to disk.
@@ -4963,9 +4848,6 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=T
     return
 
 
-# --------
-# X.XX -
-# --------
 def set_bp_style(bp, color='k', linewidth=1.5, facecolor='none',
                  debug=False):
     """ Manually set properties of boxplot ("bp") """
@@ -4979,11 +4861,9 @@ def set_bp_style(bp, color='k', linewidth=1.5, facecolor='none',
     setp(bp['medians'][:], color=color, linewidth=linewidth)
 
 
-# --------
-# X.XX -
-# --------
+
 def get_CB_color_cycle():
-    """ 
+    """
     Get a list of color blind friednly colors to cycle in plots
 
     Notes
@@ -4997,9 +4877,6 @@ def get_CB_color_cycle():
     return CB_color_cycle
 
 
-# --------
-# X.XX -
-# --------
 def equi(m, centerlon, centerlat, radius, *args, **kwargs):
     """
     Draw a concentric circle on basemap centred at given location
@@ -5017,7 +4894,7 @@ def equi(m, centerlon, centerlat, radius, *args, **kwargs):
     Notes
     -----
      - This is an external function, for original postin please see link below
-http://www.geophysique.be/2011/02/20/matplotlib-basemap-tutorial-09-drawing-circles/     
+http://www.geophysique.be/2011/02/20/matplotlib-basemap-tutorial-09-drawing-circles/
      - worker function to use "Shoot" function, also inlcuded in AC_tools
 
     """
@@ -5035,9 +4912,6 @@ http://www.geophysique.be/2011/02/20/matplotlib-basemap-tutorial-09-drawing-circ
     plt.plot(X, Y, **kwargs)
 
 
-# --------
-# X.XX -
-# --------
 def shoot(lon, lat, azimuth, maxdist=None):
     """
     "Shooter Function" to map a circle to a location on the Earth
@@ -5118,28 +4992,23 @@ http://www.geophysique.be/2011/02/19/matplotlib-basemap-tutorial-08-shooting-gre
 
     return (glon2, glat2, baz)
 
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-# ---------------- Section X -------------------------------------------
+
 # -------------- Redundant Functions
-# --------------------------------------------------------------------------
-#
 # NOTE(s):
 # (1) These are retained even though they are redundant for back compatibility
 # (2) It is not advised to use these.
 
 
-# --------
-# X.XX - Plot up locations (lons and lats) on a map
-# --------
 def plot_lons_lats_spatial_on_map(lons=None, lats=None, p_size=50, color='red',
-                                  title=None, f_size=15, dpi=320, fig=None, ax=None, label=None,
-                                  return_axis=False, marker='o', alpha=1,  ylabel=True, xlabel=True,
-                                  window=False, axis_titles=True, split_title_if_too_long=False,
+                                  title=None, f_size=15, dpi=320, fig=None, ax=None,
+                                  label=None,
+                                  return_axis=False, marker='o', alpha=1,  ylabel=True,
+                                  xlabel=True,
+                                  window=False, axis_titles=True,
+                                  split_title_if_too_long=False,
                                   resolution='c'):
     """
-    Plot a list of lons and lats spatially on a map using basemap 
+    Plot a list of lons and lats spatially on a map using basemap
 
     Parameters
     -------
@@ -5154,7 +5023,7 @@ def plot_lons_lats_spatial_on_map(lons=None, lats=None, p_size=50, color='red',
 
     Notes
     -----
-     - matplotlib's basemap is now reduedent! use cartopy
+     - matplotlib's basemap is now redundant! use cartopy
     """
     import matplotlib.pyplot as plt
     # --- Setup plot
