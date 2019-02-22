@@ -10,7 +10,7 @@ Use help(<name of function>) to get details on a particular function.
 # I/O / Low level
 import os
 import sys
-import csv
+#import csv
 import glob
 import pandas as pd
 import xarray as xr
@@ -23,14 +23,14 @@ from netCDF4 import Dataset
 import logging
 # Math/Analysis
 import numpy as np
-from time import mktime
-import scipy.stats as stats
-import math
+#from time import mktime
+#import scipy.stats as stats
+#import math
 # Time
 import time
-import calendar
-import datetime as datetime
-from datetime import datetime as datetime_
+#import calendar
+#import datetime as datetime
+#from datetime import datetime as datetime_
 # The below imports need to be updated,
 # imports should be specific and in individual functions
 # import tms modules with shared functions
@@ -70,10 +70,11 @@ def GetGEOSChemFilesAsDataset( FileStr='GEOSChem.SpeciesConc.*.nc4', wd=None,
     return ds
 
 
-def GetTropBurdenInGg( ds=None, SpecVar=None, StateMet=None, wd=None, TimeInTropVar='N/A',
-        TropLevelVar='Met_TropLev', AirMassVar='Met_AD', AvgOverTime=False, TropMask=None,
+def GetTropBurdenInGg( ds=None, spec=None, SpecVar=None, StateMet=None, wd=None,
+        TropLevelVar='Met_TropLev', AirMassVar='Met_AD', AvgOverTime=False,
         SumSpatially=True, RmTroposphere=True, use_time_in_trop=False,
-        SpeciesConcPrefix='SpeciesConc_'  ):
+        TropMask=None, SpeciesConcPrefix='SpeciesConc_', TimeInTropVar='N/A',
+        ):
     """
     Get Tropospheric burden for a/all species in dataset
 
@@ -81,14 +82,19 @@ def GetTropBurdenInGg( ds=None, SpecVar=None, StateMet=None, wd=None, TimeInTrop
     ----------
     wd (str): Specify the wd to get the results from a run.
     StateMet (dataset): Dataset object containing time in troposphere
+    TropMask (nd.array): 3D or 4D boolean array where stratosphere is False
+    spec (str): Name of the species (optional)
+    SpecVar (str):  Name of the species inc. Diagnostic prefix (optional)
+    SpeciesConcPrefix (str): the diagnostic prefix for concentration
 
     Returns
     -------
-    (dataset or pandas.DataFrame)
+    (xr.dataset or pandas.DataFrame)
 
     Notes
     -----
-     - A pandas dataframe is returned
+     - A pandas dataframe is returned if values are requested to be summed spatially
+     (e.g. SumSpatially=True), otherwise a dataset xr.dataset is returned.
     """
     # Only setup to take xarray datasets etc currently...
     assert type(StateMet) != None, 'Func. just setup to take StateMet currently'
@@ -97,25 +103,29 @@ def GetTropBurdenInGg( ds=None, SpecVar=None, StateMet=None, wd=None, TimeInTrop
     dsL = ds.copy()
     # Extract local variables
     AirMass = StateMet[AirMassVar]
-    TropLevel = StateMet[TropLevelVar]
+#    TropLevel = StateMet[TropLevelVar]
+    # Define SpecVar as the diga. prefix + "spec" if "spec" provided
+    if not isinstance(spec, type(None) ):
+        if isinstance(SpecVar, type(None) ):
+            SpecVar = SpeciesConcPrefix+spec
     # Create mask for stratosphere if not provided
     if isinstance( TropMask, type(None) ):
-        TropMask = Create4DMask4TropLevel( StateMet=StateMet,
-                                      use_time_in_trop=use_time_in_trop,
-                                      )
+        TropMask = Create4DMask4TropLevel( StateMet=StateMet )
     # only allow "SpeciesConc" species
     Specs2Convert = [i for i in dsL.data_vars if 'SpeciesConc' in i]
     dsL = dsL[Specs2Convert]
+    MXUnits = 'mol mol-1 dry'
     # Covert all species into burdens (Gg)
-    if isinstance( SpecVar, type(None) ):
+    if isinstance( SpecVar, type(None) ) and isinstance(spec, type(None) ):
         # Loop by spec
         for SpecVar in Specs2Convert:
             # Remove diagnostic prefix from chemical species
             spec = SpecVar.replace(SpeciesConcPrefix, '')
             # Check units
             SpecUnits = dsL[SpecVar].units
-            MixingRatioUnits = SpecUnits ==  'mol mol-1 dry'
-            assert MixingRatioUnits, 'Units must be in v/v terms! ({})'.format(SpecUnits)
+            MixingRatioUnits = MXUnits == SpecUnits
+            assert_str = "Units must be in '{}' terms! (They are: '{}')"
+            assert MixingRatioUnits, assert_str.format(MXUnits, SpecUnits)
             # v/v * (mass total of air (kg)/ 1E3 (converted kg to g)) = moles of tracer
             dsL[SpecVar] = dsL[SpecVar] * (AirMass*1E3 / constants('RMM_air'))
             # Convert moles to mass (* RMM) , then to Gg
@@ -128,7 +138,6 @@ def GetTropBurdenInGg( ds=None, SpecVar=None, StateMet=None, wd=None, TimeInTrop
             # Loop by spec
             for SpecVar in Specs2Convert:
                  dsL[SpecVar] = dsL[SpecVar].where(TropMask)
-
     else:
         # Just consifer the species of interest
         dsL = dsL[[SpecVar]]
@@ -136,8 +145,9 @@ def GetTropBurdenInGg( ds=None, SpecVar=None, StateMet=None, wd=None, TimeInTrop
         spec = SpecVar.replace(SpeciesConcPrefix, '')
         # Check units
         SpecUnits = dsL[SpecVar].units
-        MixingRatioUnits = SpecUnits == 'mol mol-1 dry'
-        assert MixingRatioUnits, 'Units must be in v/v terms! ({})'.format(SpecUnits)
+        MixingRatioUnits = MXUnits == SpecUnits
+        assert_str = "Units must be in '{}' terms! (They are: '{}')"
+        assert MixingRatioUnits, assert_str.format(MXUnits, SpecUnits)
         # v/v * (mass total of air (kg)/ 1E3 (converted kg to g)) = moles of tracer
         dsL[SpecVar] = dsL[SpecVar] * (AirMass*1E3 / constants('RMM_air'))
         # Convert moles to mass (* RMM) , then to Gg
@@ -148,7 +158,6 @@ def GetTropBurdenInGg( ds=None, SpecVar=None, StateMet=None, wd=None, TimeInTrop
         # remove the tropospheric values?
         if RmTroposphere:
             dsL[SpecVar] = dsL[SpecVar].where(TropMask)
-
     # Sum the values spatially?
     if SumSpatially:
         dsL= dsL.sum()
@@ -181,9 +190,54 @@ def Create4DMask4TropLevel( StateMet=None,
     return MASK
 
 
+def ReadInInstfilesSaveOnlySurfaceValues( wd=None, FileStr='GEOSChem.inst1hr.*',
+                                          FileExtension='.nc4', SaveNewNetCDF=True,
+                                          DeleteExistingNetCDF=True ):
+    """
+    Extract just surface values and save as NetCDF (& DELETE old NetCDF)
+    """
+    import glob
+    # Check input
+    assert type(wd) == str, 'Working directory (wd) provided must be a string!'
+    # Get files
+    files = glob.glob( wd+FileStr )
+    assert len(files) >= 1, 'No files found matching-{}'.format( wd+FileStr )
+    for FullFileRoot in sorted(files):
+        print( FullFileRoot )
+        ds = xr.open_dataset( FullFileRoot )
+        ds = ds.sel(lev=ds['lev'][0].values)
+        # Create new file name
+        Suffix = '_Just_surface'+FileExtension
+        FileStrNew = FullFileRoot.replace( FileExtension, Suffix )
+        print( FileStrNew )
+        # Save and close file
+        if SaveNewNetCDF:
+            ds.to_netcdf( FileStrNew, engine='scipy' )
+        ds.close()
+        # Delele old file?
+        if DeleteExistingNetCDF:
+            os.remove( FullFileRoot )
+
+
 def GetSpeciesConcDataset( FileStr='GEOSChem.SpeciesConc.*.nc4', wd=None ):
     """
     Wrapper to retrive GEOSChem SpeciesConc NetCDFs as a xr.dataset
+
+    Parameters
+    ----------
+    wd (str): Specify the wd to get the results from a run.
+    FileStr (str): a str for file format with wildcards (?, *)
+
+    Returns
+    -------
+    (dataset)
+    """
+    return GetGEOSChemFilesAsDataset( FileStr=FileStr, wd=wd )
+
+
+def GetInst1hrDataset( FileStr='GEOSChem.inst1hr.*', wd=None ):
+    """
+    Wrapper to get NetCDF 1hr instantaneous (Inst1hr) output as a Dataset
 
     Parameters
     ----------
@@ -212,9 +266,9 @@ def GetStateMetDataset( FileStr='GEOSChem.StateMet.*', wd=None ):
     return GetGEOSChemFilesAsDataset( FileStr=FileStr, wd=wd )
 
 
-def GetProdLossDataset( FileStr='GEOSChem.ProdLoss..*', wd=None ):
+def GetProdLossDataset( FileStr='GEOSChem.ProdLoss.*', wd=None ):
     """
-    Wrapper to get NetCDF StateMet output as a Dataset
+    Wrapper to get NetCDF ProdLoss output as a Dataset
     Parameters
     ----------
     wd (str): Specify the wd to get the results from a run.
@@ -226,3 +280,17 @@ def GetProdLossDataset( FileStr='GEOSChem.ProdLoss..*', wd=None ):
     """
     return GetGEOSChemFilesAsDataset( FileStr=FileStr, wd=wd )
 
+
+def GetJValuesDataset( FileStr='GEOSChem.JValues.*', wd=None ):
+    """
+    Wrapper to get NetCDF photolysis rates (Jvalues) output as a Dataset
+    Parameters
+    ----------
+    wd (str): Specify the wd to get the results from a run.
+    FileStr (str): a str for file format with wildcards (?, *)
+
+    Returns
+    -------
+    (dataset)
+    """
+    return GetGEOSChemFilesAsDataset( FileStr=FileStr, wd=wd )
