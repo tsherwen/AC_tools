@@ -7,6 +7,7 @@ from . funcs4pf import *
 from . funcs4generic import *
 from . funcs4core import *
 from . funcs4GEOSC import *
+from . funcs4GEOSC_nc import *
 import numpy as np
 """
 AC_tools is a module of functions started by Tomas, and contributed to by others in the Evans' group, and hopefully maintained by the Group.

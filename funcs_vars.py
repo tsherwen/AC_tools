@@ -416,6 +416,19 @@ def species_mass(spec):
         'TOLU': 92.14, 'CH3CCl3': 133.0, 'CCl4': 152.0, 'HCFC22': 86.0, \
         'CFC113': 187.0, 'HCFC141b': 117.0, 'CFC115': 187.0, 'OCS': 60.0, \
         'XYLE': 106.16, 'H2402': 260.0, 'HCFC142b': 117.0, 'HCFC123': 117.0, \
+        # Extra species in v12.x
+        'GLYX' : 58.0, 'MGLY':72.0, 'SOAP': 150.0, 'SOAS': 150.0, 'NPMN':147.0, \
+        u'RIPB': 118.0, u'LVOCOA': 154.0, u'IEPOXD': 118.0, u'IEPOXB': 118.0, \
+        u'IEPOXA': 118.0, u'RIPD': 118.0, u'LVOC': 154.0, u'INDIOL': 102.0, \
+        u'RIPA': 118.0, u'IPMN': 147.0, u'DHDN': 226.0, u'HPALD': 116.0, \
+        u'SOAGX': 58.0, u'MGLY': 72.0, u'IONITA': 14.0, u'NPMN': 147.0, \
+        u'MONITS': 215.0, u'MONITU': 215.0, u'MONITA': 14.0, u'HC187': 187.0, \
+        u'ISN1OG': 226.0, u'ISN1OA': 226.0, u'IMAE': 102.0, u'ETHLN': 105.0, \
+        u'SOAIE': 118.0, u'HONIT': 215.0, u'GLYX': 58.0, u'SOAME': 102.0, \
+        u'SOAMG': 72.0, u'HCOOH': 46.0, u'ISN1': 147.0, u'ACTA': 60.0, \
+        u'SOAP': 150.0, u'SOAS': 150.0,
+        # Temporary species or values where numbers not known for certain.
+        'pFe' : 55.85, 'EOH': 46.07
     }
 
     return d[spec]

@@ -98,7 +98,9 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
     # (Uniform formatting required for parsing - this step may not be required)
     if print_formatted_KPP_file:
         AC.print_out_dfs2KPP_eqn_file(headers=headers, species_df=species_df,
-                                      rxn_dicts=rxn_dicts, extr_str='EXISTING_MECH_{}'.format(mechanism))
+                                      rxn_dicts=rxn_dicts, 
+                                      extr_str='EXISTING_MECH_{}'.format(mechanism)
+                                      )
 
     # ---- Get outputted KPP files and process these...
     # Get outputted KPP mechanism
@@ -116,7 +118,8 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
     # Get tagged reactions (as a dictionary)
     fam = 'LOx'
     df_fam = AC.get_reactants_and_products4tagged_fam(folder=folder,
-                                                      KPP_output_mech=KPP_output_mech, fam=fam)
+                                                      KPP_output_mech=KPP_output_mech, 
+                                                      fam=fam)
     # Loop reaction indexes for LOx family
     for n_key_, key_ in enumerate(rxn_dicts.keys()):
         df_tmp = rxn_dicts[key_].copy()
@@ -206,7 +209,8 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
 
     # --- Print out updated KPP .eqn file (with tags)
     AC.print_out_dfs2KPP_eqn_file(headers=headers, species_df=species_df,
-                                  rxn_dicts=rxn_dicts, extr_str='TAGGED_MECH_{}'.format(mechanism))
+                                  rxn_dicts=rxn_dicts, 
+                                  extr_str='TAGGED_MECH_{}'.format(mechanism))
 
     # --- Save out the tags and the reactions tagged
     # (to use for post-processing of tagged output)

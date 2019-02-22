@@ -248,7 +248,7 @@ def get_land_map(res='4x5', date=None, wd=None, debug=False):
     return landmap
 
 
-def get_air_mass_np(wd=None, times=None, trop_limit=True,
+def get_air_mass_np(wd=None, times=None, trop_limit=True, AirMassVar='BXHGHT_S__AD', 
                     debug=False):
     """
     Get array of air mass (4D) in kg
@@ -266,9 +266,9 @@ def get_air_mass_np(wd=None, times=None, trop_limit=True,
     """
     logging.info('get air mass called')
     # Get air mass in kg
-    arr = get_GC_output(wd=wd, vars=['BXHGHT_S__AD'],
+    arr = get_GC_output(wd=wd, vars=[AirMassVar],
                         trop_limit=trop_limit, dtype=np.float64)
-
+    # Save details on extracted data to debug log
     logging.debug('arr type={}, shape={}'.format(type(arr), arr.shape))
     return arr
 
@@ -4711,9 +4711,11 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
 
 def get_trop_burden(spec='O3', wd=None, a_m=None, t_p=None,
                     Iodine=False, all_data=True, total_atmos=False, res='4x5',
-                    trop_limit=True, arr=None, debug=False):
+                    trop_limit=True, arr=None, 
+                    TimeInTropVar='TIME_TPS__TIMETROP',
+                    debug=False):
     """
-    Get Trosposheric burden for species ("spec")
+    Get Tropospheric burden for species ("spec")
 
     Parameters
     ----------
@@ -4737,7 +4739,7 @@ def get_trop_burden(spec='O3', wd=None, a_m=None, t_p=None,
     if not isinstance(a_m, np.ndarray):
         a_m = get_air_mass_np(wd=wd, trop_limit=trop_limit, debug=debug)
     if not isinstance(t_p, np.ndarray):
-        t_p = get_GC_output(wd, vars=['TIME_TPS__TIMETROP'], trop_limit=trop_limit)
+        t_p = get_GC_output(wd, vars=[TimeInTropVar], trop_limit=trop_limit)
     if isinstance(arr, type(None)):
         arr = get_GC_output(wd, vars=['IJ_AVG_S__' + spec], trop_limit=trop_limit)
     logging.debug('Shape of arrays: ar={}, t_p={}, a_m={}'.format(
