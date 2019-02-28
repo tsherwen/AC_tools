@@ -181,7 +181,8 @@ def list_variables(wd=None):
     return
 
 
-def get_land_map(res='4x5', date=None, wd=None, debug=False):
+def get_land_map(res='4x5', date=None, wd=None, rtn_ds=False,
+        average_over_time=True, debug=False):
     """
     Return land, water, and ice indices (LWI ) from GEOS-Chem with integers
     for Land (1) and Water (0). Ice fraction is given as fractional values.
@@ -190,6 +191,9 @@ def get_land_map(res='4x5', date=None, wd=None, debug=False):
     -------
     res (str): resolution of model to get land map for
     wd (str): directory contain file with LWI
+    date (datetime.datetime): date to nearest point to (method=nearest)
+    rtn_ds (boolean): return the output as a xr.Dataset
+    average_over_time (boolean): Average over time (no time dim. returned)
 
     Returns
     -------
@@ -225,7 +229,15 @@ def get_land_map(res='4x5', date=None, wd=None, debug=False):
         ds = xr.open_dataset(land_dir+'ctm.nc')
         # No date? Just use annual average
         if isinstance(date, type(None)):
-            landmap = ds['LWI'].mean(dim='time').values
+            if average_over_time:
+                landmap = ds['LWI'].mean(dim='time')
+            else:
+                landmap = ds['LWI']
+
+            if rtn_ds:
+                landmap
+            else:
+                landmap.values
         if isinstance(date, int):
             import glob
             # find nearest datetime
@@ -241,14 +253,17 @@ def get_land_map(res='4x5', date=None, wd=None, debug=False):
             landmap = ds['LWI']
 
     else:
-        landmap = get_GC_output(wd=land_dir, vars=['LANDMAP__LWI'])
+        if rtn_ds:
+            landmap = xr.open_dataset(land_dir+'/ctm.nc')
+        else:
+            landmap = get_GC_output(wd=land_dir, vars=['LANDMAP__LWI'])
         # Just use NetCDF4 instead of AC_tools function
 #            landmap = Dataset(land_dir+'ctm.nc', 'r')['LANDMAP__LWI'][:]
 
     return landmap
 
 
-def get_air_mass_np(wd=None, times=None, trop_limit=True, AirMassVar='BXHGHT_S__AD', 
+def get_air_mass_np(wd=None, times=None, trop_limit=True, AirMassVar='BXHGHT_S__AD',
                     debug=False):
     """
     Get array of air mass (4D) in kg
@@ -4048,6 +4063,7 @@ def check_output_vertical_grid(wd=None, filename=None):
 
 def process_to_X_per_s(spec=None, ars=None, tags=None, ref_spec=None,
                        Var_rc=None, Data_rc=None, summate_routes=True,
+                       adjust_by_stiochiometry_of_tag=False,
                        summate_altitudes=True):
     """
     Process arrays of molec/cm3/s to g(ref_spec)/s.
@@ -4083,8 +4099,9 @@ def process_to_X_per_s(spec=None, ars=None, tags=None, ref_spec=None,
                                       conbine_ars=False)
     # Adjust for # of X in tag
     # is the broadcasting right here? should the array just be overwritten?
-    ars = [ars[n] * spec_stoich(tag, ref_spec=ref_spec)
-           for n, tag in enumerate(tags)]
+    if adjust_by_stiochiometry_of_tag:
+        ars = [ars[n] * spec_stoich(tag, ref_spec=ref_spec)
+               for n, tag in enumerate(tags)]
     # Summate altitudes
     if summate_altitudes:
         ars = [i.sum(axis=2) for i in ars]
@@ -4711,7 +4728,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
 
 def get_trop_burden(spec='O3', wd=None, a_m=None, t_p=None,
                     Iodine=False, all_data=True, total_atmos=False, res='4x5',
-                    trop_limit=True, arr=None, 
+                    trop_limit=True, arr=None,
                     TimeInTropVar='TIME_TPS__TIMETROP',
                     debug=False):
     """

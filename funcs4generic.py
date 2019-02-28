@@ -708,7 +708,8 @@ def mask_3D(hPa, sect, MBL=True, res='4x5', extra_mask=None,
             return m.mask * land_unmasked(res)
         else:
             land_unmasked_ = mask_all_but('Land', mask3D=True, res=res,
-                                          use_multiply_method=False, trop_limit=trop_limit)
+                                          use_multiply_method=False,
+                                          trop_limit=trop_limit)
 
             # MBL unmasked
             m = np.logical_or(np.logical_not(m.mask),
@@ -1122,7 +1123,8 @@ def mask_all_but(region='All', M_all=False, saizlopez=False,
                                        res=res)
         elif case == 20:  # 'Ocn. 50S-50N'
             mask = np.ma.mask_or(lat2lat_2D_unmasked(lowerlat=-50,
-                                                     higherlat=50, res=res), ocean_unmasked(res=res)[..., 0])
+                                                     higherlat=50, res=res),
+                                                     ocean_unmasked(res=res)[..., 0])
         elif case == 21:
             mask = get_north_sea_unmasked(res=res)
         elif case == 25:
@@ -1189,7 +1191,8 @@ def mask_all_but(region='All', M_all=False, saizlopez=False,
                                        res=res)
         elif case == 20:
             mask = np.ma.mask_or(lat2lat_2D_unmasked(lowerlat=-50,
-                                                     higherlat=50, res=res), ocean_unmasked(res=res)[..., 0])
+                                                     higherlat=50, res=res),
+                                                     ocean_unmasked(res=res)[..., 0])
         elif case == 21:
             mask = get_north_sea_unmasked(res=res)
         elif case == 22:
@@ -1208,7 +1211,8 @@ def mask_all_but(region='All', M_all=False, saizlopez=False,
             mask = np.ma.mask_or(tmp, tropics_unmasked(res=res))
         elif case == 28:
             mask = np.ma.mask_or(lat2lat_2D_unmasked(lowerlat=50,
-                                                     higherlat=80, res=res), land_unmasked(res=res)[..., 0])
+                                                     higherlat=80, res=res),
+                                                     land_unmasked(res=res)[..., 0])
         elif case == 29:  # Alps
             # Alps mask
             lowerlat = 43
@@ -1437,6 +1441,25 @@ def get_bay_of_biscay_unmasked(res='0.25x0.3125', unmask_water=True):
     if unmask_water:
         mask = np.ma.mask_or(mask, ocean_unmasked(res=res)[..., 0])
     # Also remove black sea
+    return mask
+
+
+def get_Southern_Africa_Masked(res='0.25x0.3125', ):
+    """
+    Create a mask of sub equatorial africa
+    """
+    # Sub equatorial africa
+    lowerlat = -40
+    higherlat = 0
+    lowerlon = -10
+    higherlon = 55
+    # Get a mask for lat and lon range, then combine
+    mask1 = lat2lat_2D_unmasked(res=res, lowerlat=lowerlat,
+                                higherlat=higherlat)
+    mask2 = lon2lon_2D_unmasked(res=res, lowerlon=lowerlon,
+                                higherlon=higherlon)
+    mask = np.ma.mask_or(mask1, mask2)
+
     return mask
 
 
