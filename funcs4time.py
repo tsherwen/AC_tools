@@ -203,7 +203,7 @@ def d_adjust(months=None, years=None):
     # ajust to months ( => min => hours => days => months )
     ars = []
     for i, m_ in enumerate(months):
-        ars += [ 60*60*24*calendar.monthrange(int(years[i]),int(m_))[1] ]
+        ars += [60*60*24*calendar.monthrange(int(years[i]), int(m_))[1]]
     # return as a np.array
     return np.array(ars)
 
@@ -526,5 +526,3 @@ def solartime(observer, sun=None):
     # sidereal time == ra (right ascension) is the highest point (noon)
     hour_angle = observer.sidereal_time() - sun.ra
     return ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h
-
-

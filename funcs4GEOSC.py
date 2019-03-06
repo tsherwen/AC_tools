@@ -182,7 +182,7 @@ def list_variables(wd=None):
 
 
 def get_land_map(res='4x5', date=None, wd=None, rtn_ds=False,
-        average_over_time=True, debug=False):
+                 average_over_time=True, debug=False):
     """
     Return land, water, and ice indices (LWI ) from GEOS-Chem with integers
     for Land (1) and Water (0). Ice fraction is given as fractional values.
@@ -551,7 +551,6 @@ def get_HEMCO_output(wd=None, files=None, filename=None, vars=None,
     return arr
 
 
-
 def get_GC_output(wd, vars=None, species=None, category=None, r_cubes=False,
                   r_res=False, restore_zero_scaling=True, r_list=False, trop_limit=False,
                   dtype=np.float32, use_NetCDF=True, verbose=False, debug=False):
@@ -605,7 +604,7 @@ def get_GC_output(wd, vars=None, species=None, category=None, r_cubes=False,
     if not isinstance(vars, type(None)):
         logging.info('Opening >{}<, for var: >{}<'.format(wd, ','.join(vars)) +
                      '(extra) gamap variables provided: >{}< + >{}<'.format(category,
-                     species))
+                                                                            species))
 
     # Also option to use gamap names ( species  + category ) to and func converts these
     # to iris cube names
@@ -1341,7 +1340,8 @@ def get_gc_months(wd=None, filename='ctm.nc',
     """
     Return list of months in GEOS-Chem output (ctm.bpch or NetCDF)
     """
-    dates = get_gc_datetime(wd=wd, filename=filename, debug=debug, verbose=verbose)
+    dates = get_gc_datetime(wd=wd, filename=filename,
+                            debug=debug, verbose=verbose)
     return [i.month for i in dates]
 
 
@@ -1795,7 +1795,6 @@ def get_gc_alt(alt, unit='km'):
     return find_nearest(alt_c, alt)
 
 
-
 def species_v_v_to_Gg(arr, spec, a_m=None, Iodine=True, All=False,
                       Ox=False, wd=None, debug=False):
     """
@@ -1926,10 +1925,10 @@ def spec_dep(wd=None, spec='O3', s_area=None, months=None,
     # Extract dry dep flux in  [molec/cm2/s]
     arr = get_GC_output(wd, category='DRYD-FLX', species=spec+'df')
     DebugStr = 'arr (len=={}) descrp: {}'
-    logging.debug( DebugStr.format(len(arr),*[str(ii)
-        for ii in [(i.shape, i.sum(), i.mean())
-        for i in [arr]]])
-        )
+    logging.debug(DebugStr.format(len(arr), *[str(ii)
+                                              for ii in [(i.shape, i.sum(), i.mean())
+                                                         for i in [arr]]])
+                  )
     # Convert to Gg "Ox" (Gg X /s)
     arr = molec_cm2_s_2_Gg_Ox_np(arr, spec, s_area=s_area, Iodine=Iodine,
                                  res=res, debug=debug)
@@ -2082,7 +2081,7 @@ def get_POxLOx(ctms=None, vol=None, all_data=False, t_p=None, ver='1.6',
                             trop_limit=trop_limit)
     # Get prod/loss in [molec/cm3/s]
     arrs = get_GC_output(wd=wd, vars=['PORL_L_S__'+i for i in specs],
-        trop_limit=trop_limit)
+                         trop_limit=trop_limit)
     arrs = [arrs[i, ...] for i in range(len(specs))]
     if all_data:
         logging.info("WARNING 'all_data' only configured for PyGChem 0.2.0")
@@ -2100,7 +2099,7 @@ def get_POxLOx(ctms=None, vol=None, all_data=False, t_p=None, ver='1.6',
         # [molec/cm3/s] => Gg Ox / yr
         arrs = [molec_cm3_s_2_Gg_Ox_np(arr, specs[n], vol=vol, wd=wd, res=res,
                                        debug=debug, year_eq=year_eq)
-                                       for n, arr in enumerate(arrs)]
+                for n, arr in enumerate(arrs)]
         # if not using year_eq in "molec_cm3_s_2_Gg_Ox_np", now convert
         if not year_eq:
             arrs = [i*60.*60.*24.*365. for i in arrs]
@@ -2175,11 +2174,11 @@ def get_wet_dep(months=None, years=None, vol=None,
     # Frontal rain? [kg/s]
     WETDLS_S__ = get_GC_output(wd=wd, vars=['WETDLS_S__'+i
                                             for i in specs], r_list=True,
-                                            trop_limit=trop_limit)
+                               trop_limit=trop_limit)
     # Get convective scavenging  [kg/s]
     WETDCV_S__ = get_GC_output(wd=wd, vars=['WETDCV_S__'+i
                                             for i in specs], r_list=True,
-                                            trop_limit=trop_limit)
+                               trop_limit=trop_limit)
     if debug:
         print([[i.shape for i in l] for l in (WETDLS_S__, WETDCV_S__)])
     # Convert to g/ s X(ref_spec) equiv.  + conbine two lists
@@ -3150,7 +3149,7 @@ def fam_data_extractor4ts_bpch_files(spec='NOy', wd=None,
         elif spec == 'PM2.5':
             # Select species in family
             specs = [
-            'BCPI', 'NH4', 'OCPI', 'SO4', 'BCPO', 'SALA', 'DST1', 'DST2', 'NIT', 'OCPO'
+                'BCPI', 'NH4', 'OCPI', 'SO4', 'BCPO', 'SALA', 'DST1', 'DST2', 'NIT', 'OCPO'
             ]
         # --- Try just extracting the provided species
         else:
@@ -4758,7 +4757,8 @@ def get_trop_burden(spec='O3', wd=None, a_m=None, t_p=None,
     if not isinstance(t_p, np.ndarray):
         t_p = get_GC_output(wd, vars=[TimeInTropVar], trop_limit=trop_limit)
     if isinstance(arr, type(None)):
-        arr = get_GC_output(wd, vars=['IJ_AVG_S__' + spec], trop_limit=trop_limit)
+        arr = get_GC_output(
+            wd, vars=['IJ_AVG_S__' + spec], trop_limit=trop_limit)
     logging.debug('Shape of arrays: ar={}, t_p={}, a_m={}'.format(
         *[i.shape for i in (arr, t_p, a_m)]))
     # v/v * (mass total of air (kg)/ 1E3 (converted kg to g)) = moles of tracer
@@ -5122,6 +5122,7 @@ def get_reactants_and_products4tagged_fam(fam='LOx', KPP_output_mech=None,
                 if a__ != b_[n]:
                     print(a__, b_[n])
     # Only consider reaction that include family in the products
+
     def fam_in_rxn(input):
         return (fam in input)
     rtn_vars = ['react', 'prod', 'KPP input react']
@@ -5193,6 +5194,7 @@ def KPP_eqn_file_species(folder=None, filename=None, debug=False):
             if debug:
                 print(num2read_line_from)
     # Process extracted lines to dict of names and descriptions...
+
     def strip_line(line_):
         try:
             name, descrip = line_.strip().split('= IGNORE;')
@@ -5294,6 +5296,7 @@ def split_KPP_rxn_str_into_chunks(rxn, KPP_line_max=43, debug=False):
     """ Split a rxn str so that it is not longer than KPP max line length """
     print(rxn)
     # sub-function to cut strings to last " +"
+
     def return_string_in_parts_ending_with_plus(input):
         """ return string upto last ' +'  in string """
         # find the last ' + ' in string
@@ -5923,7 +5926,6 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90',
     return dict(list(zip(tag_l, fam_l)))
 
 
-
 def get_tags_in_rxn_numbers(rxn_nums=[], RR_dict=None,
                             filename='gckpp_Monitor.F90', Mechanism='Halogens', wd=None,
                             debug=False):
@@ -6005,5 +6007,3 @@ def get_oxidative_release4specs(filename='gckpp_Monitor.F90',
                 print(rxn_str)
                 RR_rxn_dummies += [key_]
     return RR_rxn_dummies
-
-

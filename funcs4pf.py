@@ -344,7 +344,7 @@ def get_pf_headers(file, debug=False):
     with open(file, 'r') as f:
         Lines = [i for i in f]
         names = Lines[0].strip().split()
-        points = [i.strip().split()[0] for i in Lines[1:] ]
+        points = [i.strip().split()[0] for i in Lines[1:]]
 #         reader = csv.reader(f, delimiter=' ', skipinitialspace=True)
 #         for row in f:
 #             if row[0] != 'POINT':
@@ -393,7 +393,7 @@ def pf_csv2pandas(file=None, vars=None, epoch=False, r_vars=False,
         # Convert to pandas array
         df = pd.read_csv(f, header=None, skiprows=1,
                          delim_whitespace=True, names=names,
-                         dtype={'HHMM': str,'YYYYMMDD': str, 'POINT': object}
+                         dtype={'HHMM': str, 'YYYYMMDD': str, 'POINT': object}
                          )
         # Convert strings to datetime using pandas mapping
         df = DF_YYYYMMDD_HHMM_2_dt(df, rmvars=None, epoch=epoch)
