@@ -7,7 +7,7 @@ import time
 import glob
 import pandas as pd
 import sys
-from . import AC_tools as AC
+import AC_tools as AC
 
 
 def main(filename=None, LAT_var='LAT', LON_var='LON',

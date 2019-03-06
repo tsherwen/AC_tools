@@ -51,12 +51,12 @@ from datetime import datetime as datetime_
 # The below imports need to be updated,
 # imports should be specific and in individual functions
 # import tms modules with shared functions
-from .funcs4core import *
-from .funcs4generic import *
-from .funcs4time import *
-from .funcs4pf import *
-from .funcs_vars import *
-from .Scripts.bpch2netCDF import convert_to_netCDF
+from funcs4core import *
+from funcs4generic import *
+from funcs4time import *
+from funcs4pf import *
+from funcs_vars import *
+from Scripts.bpch2netCDF import convert_to_netCDF
 
 
 def get_surface_area(res=None, wd=None, debug=False):
@@ -506,7 +506,7 @@ def get_HEMCO_output(wd=None, files=None, filename=None, vars=None,
     if not wd == None:
         fname = os.path.join(wd, "hemco.nc")
         if not os.path.isfile(fname):
-            from .bpch2netCDF import hemco_to_netCDF
+            from bpch2netCDF import hemco_to_netCDF
             hemco_to_netCDF(wd, hemco_file_list=files)
             pass
 
@@ -636,7 +636,7 @@ def get_GC_output(wd, vars=None, species=None, category=None, r_cubes=False,
         import os.path
         fname = os.path.join(wd, 'ctm.nc')
         if not os.path.isfile(fname):
-            from .bpch2netCDF import convert_to_netCDF
+            from bpch2netCDF import convert_to_netCDF
             convert_to_netCDF(wd)
 
         logging.debug("Opening netCDF file {fname}".format(fname=fname))
@@ -897,7 +897,7 @@ def get_gc_res(wd, filename='ctm.nc'):
     # create NetCDf if not created.
     fname = wd + '/'+filename
     if not os.path.isfile(fname):
-        from .bpch2netCDF import convert_to_netCDF
+        from bpch2netCDF import convert_to_netCDF
         convert_to_netCDF(wd, filename=filename)
 
     # "open" NetCDF + extract time
@@ -1373,7 +1373,7 @@ def get_gc_datetime(wd=None, spec='O3', cat='IJ-AVG-$',
     # Create NetCDf if not created.
     fname = wd + '/'+filename
     if not os.path.isfile(fname):
-        from .bpch2netCDF import convert_to_netCDF
+        from bpch2netCDF import convert_to_netCDF
         convert_to_netCDF(wd)
     # "open" NetCDF + extract time
     with Dataset(fname, 'r') as rootgrp:
@@ -4178,7 +4178,7 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
     -------
     """
     logging.info('process_bpch_files_in_dir2NetCDF called for:', locals())
-    from .bpch2netCDF import convert_to_netCDF
+    from bpch2netCDF import convert_to_netCDF
     import os
     import sys
     import time

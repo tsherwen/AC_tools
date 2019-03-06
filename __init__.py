@@ -1,13 +1,13 @@
 # compatibility with both python 2 and 3
 from __future__ import print_function
-from . funcs4plotting import *
-from . funcs_vars import *
-from . funcs4time import *
-from . funcs4pf import *
-from . funcs4generic import *
-from . funcs4core import *
-from . funcs4GEOSC import *
-from . funcs4GEOSC_nc import *
+from  funcs4plotting import *
+from  funcs_vars import *
+from  funcs4time import *
+from  funcs4pf import *
+from  funcs4generic import *
+from  funcs4core import *
+from  funcs4GEOSC import *
+from  funcs4GEOSC_nc import *
 import numpy as np
 """
 AC_tools is a module of functions started by Tomas, and contributed to by others in the Evans' group, and hopefully maintained by the Group.

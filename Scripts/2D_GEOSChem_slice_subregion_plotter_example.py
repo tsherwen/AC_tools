@@ -9,7 +9,7 @@ NOTES
     by just updating passed variables/plotting function called. 
 """
 
-from . import AC_tools as AC
+import AC_tools as AC
 import numpy as np
 import matplotlib.pyplot as plt
 

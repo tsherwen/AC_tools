@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import sys
-from . import AC_tools as AC
+import AC_tools as AC
 """
 Example processing of SMVGEAR prod/loss tags for GEOS-Chem diganotic (ND65). A variety
 of functions for working with KPP/SMVGEAR tags are in AC_tools  

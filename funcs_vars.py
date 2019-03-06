@@ -28,7 +28,7 @@ import numpy as np
 # the below import needs to be updated,
 # imports should be specific and in individual functions
 # import tms modules with shared functions
-from . funcs4core import *
+from  funcs4core import *
 
 
 def pf_var(input, ver='3.0', ntracers=85, fill_var_with_zeroes=False):

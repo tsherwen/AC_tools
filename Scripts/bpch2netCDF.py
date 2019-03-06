@@ -81,9 +81,9 @@ def hemco_to_netCDF(folder, hemco_file_list=None, remake=False):
 
     """
     if __package__ is None:
-        from .bpch2netCDF import get_folder
+        from bpch2netCDF import get_folder
     else:
-        from .bpch2netCDF import get_folder
+        from bpch2netCDF import get_folder
     folder = get_folder(folder)
     output_file = os.path.join(folder, 'hemco.nc')
 
@@ -157,9 +157,9 @@ def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None,
     import os
     # Check if file already exists and warn about remaking
     if __package__ is None:
-        from .bpch2netCDF import get_folder
+        from bpch2netCDF import get_folder
     else:
-        from .bpch2netCDF import get_folder
+        from bpch2netCDF import get_folder
     folder = get_folder(folder)
     output_file = os.path.join(folder, filename)
 

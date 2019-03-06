@@ -17,10 +17,10 @@ import logging
 import numpy as np
 # The below list to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
-from . funcs4core import *
-from . funcs4generic import *
-from . funcs4time import *
-from . funcs_vars import *
+from  funcs4core import *
+from  funcs4generic import *
+from  funcs4time import *
+from  funcs_vars import *
 # Time
 import datetime as datetime
 

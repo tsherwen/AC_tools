@@ -1,4 +1,4 @@
-from ..funcs4core import *
+from .funcs4core import *
 import logging
 import pytest
 import numpy as np

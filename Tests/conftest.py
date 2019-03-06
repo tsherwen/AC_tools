@@ -30,6 +30,6 @@ def pytest_configure():
         pytest.exit("Not running in the Tests folder!")
 
     # Make sure the data is downloaded
-    from ..Scripts import get_data_files
+    from .Scripts import get_data_files
 
     return
