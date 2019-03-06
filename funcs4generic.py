@@ -100,7 +100,7 @@ def get_xy(Lon, Lat, lon_edges, lat_edges, debug=False):
             print(('Lat, lon outside of x,y range.  Assigning -1 for', Lon, Lat))
         return -1, -1
     else:
-        #print Lon, Lat, gridindx, gridindy
+        # print Lon, Lat, gridindx, gridindy
         return gridindx[0], gridindy[0]
 
 
@@ -205,7 +205,6 @@ def obs2grid(glon=None, glat=None, galt=None, nest='high res global',
         vars = get_xy(lon,  lat, glon, glat)
         indices_list += [vars]
     return indices_list
-
 
 
 def sort_sites_by_lat(sites):
@@ -1124,7 +1123,7 @@ def mask_all_but(region='All', M_all=False, saizlopez=False,
         elif case == 20:  # 'Ocn. 50S-50N'
             mask = np.ma.mask_or(lat2lat_2D_unmasked(lowerlat=-50,
                                                      higherlat=50, res=res),
-                                                     ocean_unmasked(res=res)[..., 0])
+                                 ocean_unmasked(res=res)[..., 0])
         elif case == 21:
             mask = get_north_sea_unmasked(res=res)
         elif case == 25:
@@ -1192,7 +1191,7 @@ def mask_all_but(region='All', M_all=False, saizlopez=False,
         elif case == 20:
             mask = np.ma.mask_or(lat2lat_2D_unmasked(lowerlat=-50,
                                                      higherlat=50, res=res),
-                                                     ocean_unmasked(res=res)[..., 0])
+                                 ocean_unmasked(res=res)[..., 0])
         elif case == 21:
             mask = get_north_sea_unmasked(res=res)
         elif case == 22:
@@ -1212,7 +1211,7 @@ def mask_all_but(region='All', M_all=False, saizlopez=False,
         elif case == 28:
             mask = np.ma.mask_or(lat2lat_2D_unmasked(lowerlat=50,
                                                      higherlat=80, res=res),
-                                                     land_unmasked(res=res)[..., 0])
+                                 land_unmasked(res=res)[..., 0])
         elif case == 29:  # Alps
             # Alps mask
             lowerlat = 43

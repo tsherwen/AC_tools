@@ -356,7 +356,7 @@ def map_plot(arr, return_m=False, grid=False, centre=False, cmap=None,
 #            lvls = [ format % (i) for i in lvls ]
         cb.set_ticklabels(lvls)  # , format=format )
 
-        #logging.info(tick_locs, lvls, [ type(i) for i in tick_locs, lvls ])
+        # logging.info(tick_locs, lvls, [ type(i) for i in tick_locs, lvls ])
         #logging.info(cb.get_clim(), title, format)
 
 # Set number of ticks
@@ -394,7 +394,6 @@ def map_plot(arr, return_m=False, grid=False, centre=False, cmap=None,
     if return_m:
         return_l += [m]
     return return_l
-
 
 
 def plot_map(arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=False,
@@ -753,7 +752,7 @@ def plot_map(arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fal
             cb.set_ticks(np.array(tick_locs))
             cb.set_ticklabels(lvls)
 
-        #logging.info(tick_locs, lvls, [ type(i) for i in tick_locs, lvls ])
+        # logging.info(tick_locs, lvls, [ type(i) for i in tick_locs, lvls ])
         #logging.info(cb.get_clim(), title, format)
 
 # Set number of ticks
@@ -1849,7 +1848,6 @@ def timeseries_daily_plot(fig, ax,  dates, data, pos=1, posn=1,
                  linestyle='dashed') for i in bs]
 
 
-
 def timeseries_month_plot(ax, dates, data, f_size=20, pos=0, posn=1,
                           title=None, legend=False, everyother=7*24,  x_nticks=12,
                           window=False, label=None, ylabel=None, loc='upper left',
@@ -1917,7 +1915,6 @@ def timeseries_month_plot(ax, dates, data, f_size=20, pos=0, posn=1,
         plt.ylabel(ylabel, fontsize=f_size*.75)
     if legend:
         plt.legend(fontsize=f_size*.75, loc=loc)
-
 
 
 def north_pole_surface_plot(arr, return_m=False, grid=True, centre=False,
@@ -2942,7 +2939,8 @@ def plot_specs_zonal_change_annual2pdf(Vars, res='4x5', dpi=160,
             arr = Vars[n, ...].mean(axis=0).mean(axis=-1)*scale
 
         if set_window:
-            arr = arr[..., get_gc_lat(lat_0, res=res)                      : get_gc_lat(lat_1, res=res), :]
+            arr = arr[..., get_gc_lat(lat_0, res=res)
+                                      : get_gc_lat(lat_1, res=res), :]
 
         # plot up spatial surface change
         zonal_plot(arr, fig, ax=ax, title=None, debug=debug, tropics=False,
@@ -4131,8 +4129,8 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, upper=1,
             cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
                 'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=lower,
                                                     b=upper), cmap(np.linspace(lower,
-                                                    upper, npoints))
-                                                    )
+                                                                               upper, npoints))
+            )
             logging.debug('maintain scale for vars: {}'.format(
                 *[str(float(i)) for i in list([eq_range, act_range, vmin,
                                                vmax, abs(vmin), abs(
@@ -4143,9 +4141,9 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, upper=1,
     # Regular index to compute the colors
     reg_index = np.hstack([np.linspace(start, start_center, 128,
                                        endpoint=False),
-                                       np.linspace(start_center, stop, 129,
+                           np.linspace(start_center, stop, 129,
                                        endpoint=True)]
-                                       )
+                          )
 
     # Shifted index to match the data
     shift_index = np.hstack([np.linspace(0.0, midpoint, 128, endpoint=False),
@@ -4431,7 +4429,7 @@ def get_colormap(arr,  center_zero=True, minval=0.15, maxval=0.95,
         lvls, lvls_diff = get_human_readable_gradations(vmax=fixcb[1],
                                                         vmin=fixcb[0], nticks=nticks,
                                                         rtn_lvls_diff=True,
-                                             sigfig_rounding_on_cb=sigfig_rounding_on_cb
+                                                        sigfig_rounding_on_cb=sigfig_rounding_on_cb
                                                         )
 
         # increase maximum value in color by 5% of level diff
@@ -4488,13 +4486,13 @@ def get_colormap(arr,  center_zero=True, minval=0.15, maxval=0.95,
         cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
             'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=0,
                                                 b=maxval-minval, ), cmap(np.linspace(0,
-                                                maxval-minval, npoints)))
+                                                                                     maxval-minval, npoints)))
     if (positive and ('gnuplot2' in cb)) or (negative and ('CMRmap' in cb)):
         #    if positive and ( 'CMRmap' in cb ):
         cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
             'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval,
                                                 b=maxval), cmap(np.linspace(minval,
-                                                maxval, npoints)))
+                                                                            maxval, npoints)))
 
     # --- divergent
     if ((not positive) and (not negative)) or divergent:
@@ -4666,7 +4664,6 @@ def get_human_readable_gradations(lvls=None, vmax=10, vmin=0,
 #    sigfig_rounding_on_cb_ticks = sig_figs_needed
 
     # significant figure ( sig. fig. ) rounding func.
-
 
     def round_to_n(x, n): return round(x, -int(floor(log10(x))) + (n - 1))
 #    round_to_n = lambda x, n: get_sigfig(x,n)
@@ -4859,7 +4856,6 @@ def set_bp_style(bp, color='k', linewidth=1.5, facecolor='none',
     setp(bp['medians'][:], color=color, linewidth=linewidth)
     [box.set(facecolor=facecolor) for box in bp['boxes']]
     setp(bp['medians'][:], color=color, linewidth=linewidth)
-
 
 
 def get_CB_color_cycle():

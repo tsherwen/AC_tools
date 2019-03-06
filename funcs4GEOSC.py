@@ -3814,7 +3814,7 @@ def get_avg_trop_conc_of_X(spec='O3', wd=None, s_area=None, res='4x5',
     elif units == 'molec/cm3':
         arr = convert_v_v_2_molec_cm3(arr, a_m=a_m, vol=vol, mols=mols, wd=wd)
     else:
-        print ('unit ({}) conversion not setup'.format(units))
+        print('unit ({}) conversion not setup'.format(units))
         sys.exit()
     # Average over time
     if annual_mean:
