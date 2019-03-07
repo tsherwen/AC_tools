@@ -1237,7 +1237,7 @@ def get_STRAT_TROP_exchange_from_geos_log(fn=None, ver='3.0',
     logging.info('get_STRAT_TROP_exchange_from_geos_log called for: '.format(
         fn))
     # --- Open the file
-    file_ = open(fn, 'rb')
+    file_ = open(fn, 'r')
     # Read in just the TROP-STRAT exchange section
     start_line = 'Strat-Trop Exchange'
     end_line = '================'
@@ -4035,7 +4035,7 @@ def get_dict_of_tracers2planeflight_IDs(wd=None):
     tracer_num = []
     mwt_l = []
     # Open file and read the lines with tracer infomation
-    with open(wd+filename, 'rb') as file_:
+    with open(wd+filename, 'r') as file_:
         # Loop lines in file
         for line_ in file_:
             # Get header
@@ -5074,7 +5074,7 @@ def KPP_eqn_file_headers(folder=None, filename=None):
     """ Get headers from KPP *.eqn file """
     # ----open file and loop by line
     header_lines = []
-    with open(folder+filename, 'rb') as file_:
+    with open(folder+filename, 'r') as file_:
         for line in file_:
             header_lines += [line]
             if (line.strip() == '}'):
@@ -5170,7 +5170,7 @@ def KPP_eqn_file_species(folder=None, filename=None, debug=False):
     import pandas as pd
     import numpy as np
     # ----open file and loop by line
-    with open(folder+filename, 'rb') as file_:
+    with open(folder+filename, 'r') as file_:
         specs = []
         num2read_line_from = 999999
         species_is_not_active = False
@@ -5223,7 +5223,7 @@ def get_dicts_of_KPP_eqn_file_reactions(folder=None, filename=None,
     # Local vars
     rxt_funcs = 'HET', 'PHOTOL', 'GCARR', '  GC'
     # loop lines in file
-    with open(folder+filename, 'rb') as file_:
+    with open(folder+filename, 'r') as file_:
         rxns_dict = {}
         for rxns in ('Gas-phase', 'Heterogeneous', 'Photolysis',):
             #        for rxns in ('Gas-phase',):

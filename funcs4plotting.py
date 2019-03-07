@@ -259,7 +259,8 @@ def map_plot(arr, return_m=False, grid=False, centre=False, cmap=None,
 
         # Setup Colormap
         cmap, fixcb_buffered = get_colormap(np.array(fixcb_),
-                                            nticks=nticks, fixcb=fixcb_, buffer_cmap_upper=True)
+                                            nticks=nticks, fixcb=fixcb_,
+                                            buffer_cmap_upper=True)
         # Update colormap with buffer
         cmap = get_colormap(arr=np.array([fixcb_buffered[0],
                                           fixcb_buffered[1]]))
@@ -568,7 +569,8 @@ def plot_map(arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fal
 
     # ---- Setup map ("m") using Basemap
     m = get_basemap(lat=lat, lon=lon, resolution=resolution, res=res,
-                    everyother=everyother, interval=interval, f_size=f_size, ylabel=ylabel,
+                    everyother=everyother, interval=interval, f_size=f_size,
+                    ylabel=ylabel,
                     xlabel=xlabel, drawcountries=drawcountries)
     # Process data to grid
     x, y = np.meshgrid(*m(lon, lat))
@@ -597,7 +599,8 @@ def plot_map(arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fal
 
         # Setup Colormap
         cmap, fixcb_buffered = get_colormap(np.array(fixcb_),
-                                            nticks=nticks, fixcb=fixcb_, buffer_cmap_upper=True)
+                                            nticks=nticks, fixcb=fixcb_,
+                                            buffer_cmap_upper=True)
         # Update colormap with buffer
         cmap = get_colormap(arr=np.array(
             [fixcb_buffered[0], fixcb_buffered[1]]))
@@ -1972,7 +1975,9 @@ def north_pole_surface_plot(arr, return_m=False, grid=True, centre=False,
     # Printing for debuggin?
     debug_ptr = [len(i) for i in (x, y, lat, lon)]
     debug_ptr += [[i.min(), i.mean(), i.max(), i.shape] for i in (arr,
-                                                                  arr[:, get_gc_lat(boundinglat, res=res):])]
+                                                                  arr[:,
+                                                                  get_gc_lat(boundinglat,
+                                                                   res=res):])]
     if debug:
         print((2, 'len:', debug_ptr))
 
@@ -2944,7 +2949,8 @@ def plot_specs_zonal_change_annual2pdf(Vars, res='4x5', dpi=160,
 
         # plot up spatial surface change
         zonal_plot(arr, fig, ax=ax, title=None, debug=debug, tropics=False,
-                   units=units, f_size=f_size, c_off=37, no_cb=True, lat_0=lat_0, lat_1=lat_1,
+                   units=units, f_size=f_size, c_off=37, no_cb=True, lat_0=lat_0,
+                   lat_1=lat_1,
                    set_window=set_window, fixcb=fixcb, extend=extend, window=True,
                    lower_limited=True, res=res, mask_invalids=mask_invalids, cmap=cmap)
 
