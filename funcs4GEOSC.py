@@ -5090,16 +5090,17 @@ def get_reactants_and_products4tagged_fam(fam='LOx', KPP_output_mech=None,
     if isinstance(KPP_output_mech, type(None)):
         KPP_output_mech = get_dict_of_KPP_mech(wd=folder)
     # Make a DataFrame from the dictionary
-    df = pd.DataFrame(KPP_output_mech.values(), index=KPP_output_mech.keys())
-    df.columns = ['rxn str']
+    s = pd.Series( KPP_output_mech )
+    df = pd.DataFrame()
+    df['rxn str'] = s
 #    df.index = df.index - 1 # Adjust Fortran numbering in output to Pythonic #
     # Split apart reaction str to give products and reactants
 
     def extract_products(input):
-        return input.split(' --> ')[-1].strip()
+        return str(input).split(' --> ')[-1].strip()
 
     def extract_reactants(input):
-        return input.split(' --> ')[0].strip()
+        return str(input).split(' --> ')[0].strip()
     df['prod'] = df['rxn str'].map(extract_products)
     df['react'] = df['rxn str'].map(extract_reactants)
     # Make the formating the same as in input files
