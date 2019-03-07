@@ -67,7 +67,7 @@ def update_Planeflight_files(wd=None, num_tracers=103, verbose=True):
     # --- Loop existing files and extract data
     dfs = []
     for n_file, file in enumerate(files):
-        with open(file, 'rb') as file_:
+        with open(file, 'r') as file_:
             # loop variables
             data_from_line_num = 9999
             data = []
@@ -377,7 +377,7 @@ def pf_csv2pandas(file=None, vars=None, epoch=False, r_vars=False,
     (pd.DataFrame)
     """
     # Open file
-    with open(file, 'rb') as f:
+    with open(file, 'r') as f:
         logging.debug(f)
 
         # Label 1st column ( + LOC ) if names not in vars

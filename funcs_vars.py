@@ -886,7 +886,7 @@ class species:
         species_filename = os.path.dirname(__file__) + "/Species.csv"
 
         try:
-            species_file = open(species_filename, 'rb')
+            species_file = open(species_filename, 'r')
         except IOError:
             print("Error: Species.csv does not appear to exist.")
         species_csv = csv.reader(species_file)
@@ -1017,7 +1017,7 @@ def rxn_dict_from_smvlog(wd, PHOTOPROCESS=None, ver='1.7',
     fn = 'smv2.log'
     if debug:
         print((wd+'/'+fn))
-    file_ = open(wd+'/'+fn, 'rb')
+    file_ = open(wd+'/'+fn, 'r')
     readrxn = False
     for row in file_:
         row = row.split()
@@ -1091,7 +1091,7 @@ def rxns_in_pl(wd, spec='LOX', debug=False):
     """
 
     fn = 'smv2.log'
-    file_ = open(wd+'/'+fn, 'rb')
+    file_ = open(wd+'/'+fn, 'r')
     if debug:
         print(file_)
     readrxn = False
@@ -1321,7 +1321,7 @@ def p_l_species_input_geos(wd, ver='1.7', rm_multiple_tagged_rxs=False, debug=Fa
 
     if debug:
         print(('p_l_species_input_geos called using : ', wd, fn))
-    file_ = open(fn, 'rb')
+    file_ = open(fn, 'r')
 
     # Read in just the prod loss section
     strs_in_1st_line = 'Number', 'of', 'P/L', 'families'
@@ -1377,7 +1377,7 @@ def tags_from_smvlog(wd):  # , spec='LOX' ):
     will make it redundent and therefore this is not being maintained.
     """
     fn = 'smv2.log'
-    file_ = open(wd+'/'+fn, 'rb')
+    file_ = open(wd+'/'+fn, 'r')
     readrxn = False
     for row in file_:
         row = row.split()
@@ -1410,7 +1410,7 @@ def PDs_from_smvlog(wd, spec='LOX'):
     will make it redundent and therefore this is not being maintained.
     """
     fn = 'smv2.log'
-    file_ = open(wd+'/'+fn, 'rb')
+    file_ = open(wd+'/'+fn, 'r')
     readrxn = False
     leniency = 0
     entries_in_title = ['Families', 'for', 'prod', 'or', 'loss', 'output:']
