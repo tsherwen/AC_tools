@@ -254,6 +254,7 @@ def GetInst1hrDataset(FileStr='GEOSChem.inst1hr.*', wd=None):
 def GetStateMetDataset(FileStr='GEOSChem.StateMet.*', wd=None):
     """
     Wrapper to get NetCDF StateMet output as a Dataset
+
     Parameters
     ----------
     wd (str): Specify the wd to get the results from a run.
@@ -269,6 +270,7 @@ def GetStateMetDataset(FileStr='GEOSChem.StateMet.*', wd=None):
 def GetProdLossDataset(FileStr='GEOSChem.ProdLoss.*', wd=None):
     """
     Wrapper to get NetCDF ProdLoss output as a Dataset
+
     Parameters
     ----------
     wd (str): Specify the wd to get the results from a run.
@@ -284,6 +286,7 @@ def GetProdLossDataset(FileStr='GEOSChem.ProdLoss.*', wd=None):
 def GetJValuesDataset(FileStr='GEOSChem.JValues.*', wd=None):
     """
     Wrapper to get NetCDF photolysis rates (Jvalues) output as a Dataset
+
     Parameters
     ----------
     wd (str): Specify the wd to get the results from a run.
@@ -294,3 +297,36 @@ def GetJValuesDataset(FileStr='GEOSChem.JValues.*', wd=None):
     (dataset)
     """
     return GetGEOSChemFilesAsDataset(FileStr=FileStr, wd=wd)
+
+
+def Convert_PyGChem_Iris_DataSet2COARDS_NetCDF(ds=None, transpose_dims=True):
+    """
+    Convert a PyChem/Iris dataset into a COARDS compliant xr.dataset/NetCDF
+
+    Parameters
+    ----------
+    ds (dataset): input Dataset object
+    transpose_dims (boolean): transpose the dimension order?
+
+    Returns
+    -------
+    (dataset)
+    """
+    # PyGChem NetCDF (via iris backend ordering)
+    PyGChem_Iris_order = ('time', 'longitude', 'latitude', 'dim3')
+    # Make sure the Datasets are using the correct names
+    rename_dims = {
+    'dim3': 'lev', 'latitude': 'lat', 'longitude': 'lon',
+    'model_level_number':'lev'
+    }
+    for CoordVar in ds.coords:
+        try:
+            ds = ds.rename(name_dict={CoordVar: rename_dims[CoordVar]})
+        except KeyError:
+            print('Not renamed {} as not in Dataset'.format(CoordVar))
+    # Update the ordering to follow COARDS
+    if transpose_dims:
+        COARDS_order = ('time', 'lev', 'lat', 'lon')
+        # Transpose to ordering
+        ds = ds.transpose(*COARDS_order)
+    return ds
