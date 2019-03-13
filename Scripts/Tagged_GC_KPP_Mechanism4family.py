@@ -45,8 +45,8 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
 
     Notes
     -----
-    The script below assumes this workflow:
-     (1a) Make sure formatting is uniforming .eqn file (if not do step 1b)
+     - The script below assumes this workflow:
+     (1a) Make sure formatting is uniform in the *.eqn file (if not do step 1b)
      ( check this by seeing if diff between EXISTING_MECH_???.eqn current .eqn)
      (1b) Over write the .eqn in the mechanism directory with the new .eqn file
      (2) Compile the via build_mechanism.sh script (or "kpp gckpp.kpp")
@@ -57,6 +57,9 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
      (7) Run the model with the compilie executable inc. P/L tags
      (6) P/L ouput can then be analysed by standard approaches
      ( AC_tools contains some functions that can automate this too )
+     -  Please see the GEOS-Chem wiki for more info. on Prod-loss tagging
+     http://wiki.seas.harvard.edu/geos-chem/index.php/FlexChem
+     - Please note that you may need to update "MAX_FAMILIES" in kpp (as on the wiki)
     """
     import re
     # ---- Local settings
@@ -98,7 +101,7 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
     # (Uniform formatting required for parsing - this step may not be required)
     if print_formatted_KPP_file:
         AC.print_out_dfs2KPP_eqn_file(headers=headers, species_df=species_df,
-                                      rxn_dicts=rxn_dicts, 
+                                      rxn_dicts=rxn_dicts,
                                       extr_str='EXISTING_MECH_{}'.format(mechanism)
                                       )
 
@@ -118,7 +121,7 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
     # Get tagged reactions (as a dictionary)
     fam = 'LOx'
     df_fam = AC.get_reactants_and_products4tagged_fam(folder=folder,
-                                                      KPP_output_mech=KPP_output_mech, 
+                                                      KPP_output_mech=KPP_output_mech,
                                                       fam=fam)
     # Loop reaction indexes for LOx family
     for n_key_, key_ in enumerate(rxn_dicts.keys()):
@@ -209,7 +212,7 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
 
     # --- Print out updated KPP .eqn file (with tags)
     AC.print_out_dfs2KPP_eqn_file(headers=headers, species_df=species_df,
-                                  rxn_dicts=rxn_dicts, 
+                                  rxn_dicts=rxn_dicts,
                                   extr_str='TAGGED_MECH_{}'.format(mechanism))
 
     # --- Save out the tags and the reactions tagged
