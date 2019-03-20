@@ -299,6 +299,22 @@ def GetJValuesDataset(FileStr='GEOSChem.JValues.*', wd=None):
     return GetGEOSChemFilesAsDataset(FileStr=FileStr, wd=wd)
 
 
+def GetHEMCODiagnostics_AsDataset(FileStr='HEMCO_diagnostics.*', wd=None):
+    """
+    Wrapper to get NetCDF photolysis rates (Jvalues) output as a Dataset
+
+    Parameters
+    ----------
+    wd (str): Specify the wd to get the results from a run.
+    FileStr (str): a str for file format with wildcards (?, *)
+
+    Returns
+    -------
+    (dataset)
+    """
+    return GetGEOSChemFilesAsDataset(FileStr=FileStr, wd=wd)
+
+
 def Convert_PyGChem_Iris_DataSet2COARDS_NetCDF(ds=None, transpose_dims=True):
     """
     Convert a PyChem/Iris dataset into a COARDS compliant xr.dataset/NetCDF
