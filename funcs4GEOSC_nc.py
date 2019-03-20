@@ -301,7 +301,7 @@ def GetJValuesDataset(FileStr='GEOSChem.JValues.*', wd=None):
 
 def GetHEMCODiagnostics_AsDataset(FileStr='HEMCO_diagnostics.*', wd=None):
     """
-    Wrapper to get NetCDF photolysis rates (Jvalues) output as a Dataset
+    Wrapper to get HEMCO diagnostics NetCDF output as a Dataset
 
     Parameters
     ----------
@@ -346,3 +346,163 @@ def Convert_PyGChem_Iris_DataSet2COARDS_NetCDF(ds=None, transpose_dims=True):
         # Transpose to ordering
         ds = ds.transpose(*COARDS_order)
     return ds
+
+
+def Convert_HEMCO_ds2Gg_per_yr( ds, vars2convert=None, var_species_dict=None,
+                          Output_freq='End', verbose=False, debug=False):
+    """
+    Convert emissions in HEMCO dataset to mass/unit time
+
+    vars2convert (list), NetCDF vairable names to convert
+    var_species_dict (dict), dictionary to map variables names to chemical species
+    Output_freq (str), output frequency dataset made from HEMCO NetCDF file output
+
+    """
+    # Get chemical species for each variable name
+    var_species = {}
+    for var in vars2convert:
+        try:
+            var_species[var] = var_species_dict[var]
+        except:
+#            if verbose:
+            PrtStr = "WARNING - using variable name '{}' as chemical species!"
+            print( PrtStr.format( var) )
+            var_species[var] = var
+
+    # Get equivalent unit for chemical species (e.g. I, Br, Cl, N, et c)
+    ref_specs = {}
+    for var in vars2convert:
+        ref_specs[var] = AC.get_ref_spec( var_species[var] )
+    # Loop dataset by variable
+    for var_n, var_ in enumerate(vars2convert):
+        # extract var arr
+        arr = ds[var_].values
+        # --- Adjust units to be in kg/gridbox
+        # remove area units
+        if unit_dict[var_] == 'kg/m2/':
+            arr = arr * ds['AREA']
+        elif unit_dict[var_] == 'kg/m2/s':
+            arr = arr * ds['AREA']
+            # now remove seconds
+            if Output_freq == 'Hourly':
+                arr = arr*60.*60.
+            elif Output_freq == 'Daily':
+                arr = arr*60.*60.*24.
+            elif Output_freq == 'Weekly':
+                arr = arr*60.*60.*24.*(365./52.)
+            elif Output_freq == 'Monthly':
+                arr = arr*60.*60.*24.*(365./12.)
+            else:
+                print('WARNING: ({}) output convert. unknown'.format(
+                    Output_freq))
+                sys.exit()
+        elif unit_dict[var_] == 'kg':
+            pass
+        else:
+            print('WARNING: unit convert. ({}) unknown'.format(unit_dict[var_]))
+            sys.exit()
+        # --- convert to Gg species
+        # get spec name for output variable
+        spec = var_species[var_]
+        # Get equivalent unit for species (e.g. I, Br, Cl, N, et c)
+        ref_spec = ref_specs[var_]
+        # get stiochiometry of ref_spec in species
+        stioch = AC.spec_stoich(spec, ref_spec=ref_spec)
+        RMM_spec = AC.species_mass(spec)
+        RMM_ref_spec = AC.species_mass(ref_spec)
+        # update values in array
+        arr = arr / RMM_spec * RMM_ref_spec * stioch
+        # (from kg=>g (*1E3) to g=>Gg (/1E9))
+        arr = arr*1E3 / 1E9
+        if set(ref_specs) == 1:
+            units = '(Gg {})'.format(ref_spec)
+        else:
+            units = '(Gg X)'
+        if debug:
+            print(arr.shape)
+        # reassign arrary
+        ds[var_].values = arr
+        ds[var_].units = units
+    return ds
+
+
+def GetSummaryStatsOnHEMCOds_in_Gg_per_yr( ds, vars2use=None ):
+    """
+    Get summary statistics on dataframe of data
+    """
+    # master list to hold values
+    master_l = []
+
+    # loop by species
+    for var_n, var_ in enumerate(vars2use):
+
+        # sub list to hold calculated values
+        sub_l = []
+        headers = []
+
+        # --- process data to summary statistics
+        sum_over_lat_lon = arr.sum(axis=-1).sum(axis=-1).copy()
+
+        # If monthly... process useful summary stats...
+        Monthly_Output_freqs = 'Monthly', 'End'
+        if Output_freq in Monthly_Output_freqs:
+            if Output_freq == 'End':
+                print(('!'*100, 'WARNING: End output assumed to monthly!'))
+
+            # Add a monthly total
+            sub_l += [sum_over_lat_lon.mean(axis=0)]
+            headers += ['Mon. avg {}'.format(units)]
+
+            # Add a monthly max
+            sub_l += [sum_over_lat_lon.max(axis=0)]
+            headers += ['Mon. max {}'.format(units)]
+
+            # Add a monthly min
+            sub_l += [sum_over_lat_lon.min(axis=0)]
+            headers += ['Mon. max {}'.format(units)]
+
+            # Annual equi.
+            sub_l += [arr.sum() / len(arr[:, 0, 0])*12]
+            headers += ['Ann. equiv. {}'.format(units)]
+
+            # Annual equi.
+            sub_l += [arr.sum() / len(arr[:, 0, 0])*12/1E3]
+            header_ = 'Ann. equiv. (Tg {})'.format(ref_spec)
+            if len(set(ref_specs)) > 1:
+                header_ = 'Ann. equiv. (Tg X)'.format(ref_spec)
+            headers += [header_]
+
+        # If daily?!
+        elif Output_freq == 'Daily':
+
+            # Add a monthly total
+            sub_l += [sum_over_lat_lon.mean(axis=0)]
+            headers += ['Daily avg {}'.format(units)]
+
+            # Annual equi.
+            sub_l += [arr.sum() / len(arr[:, 0, 0])*365.]
+            headers += ['Ann. equiv. {}'.format(units)]
+
+            # Annual equi.
+            sub_l += [arr.sum() / len(arr[:, 0, 0])*365./1E3]
+            header_ = ['Ann. equiv. (Tg {})'.format(ref_spec)]
+            if len(set(ref_specs)) > 1:
+                header_ = 'Ann. equiv. (Tg X)'.format(ref_spec)
+            headers += [header_]
+
+        else:
+            prt_str = 'WARNING: no processing setup for {} output'
+            print(prt_str.format(Output_freq))
+            sys.exit()
+
+        # save to master list
+        master_l += [sub_l]
+
+    # Make into a DataFrame
+    df = pd.DataFrame(master_l)
+    df.columns = headers
+    df.index = variables
+    if verbose:
+        print(df)
+    return df
+
