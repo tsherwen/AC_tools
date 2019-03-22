@@ -368,20 +368,23 @@ def Convert_HEMCO_ds2Gg_per_yr( ds, vars2convert=None, var_species_dict=None,
             PrtStr = "WARNING - using variable name '{}' as chemical species!"
             print( PrtStr.format( var) )
             var_species[var] = var
+    # Print assumption about end units.
+    if Output_freq == 'End':
+        print( "WARNING - Assuming Output frequnecy ('End') is monthly")
 
     # Get equivalent unit for chemical species (e.g. I, Br, Cl, N, et c)
     ref_specs = {}
     for var in vars2convert:
-        ref_specs[var] = AC.get_ref_spec( var_species[var] )
+        ref_specs[var] = get_ref_spec( var_species[var] )
     # Loop dataset by variable
     for var_n, var_ in enumerate(vars2convert):
         # extract var arr
         arr = ds[var_].values
         # --- Adjust units to be in kg/gridbox
         # remove area units
-        if unit_dict[var_] == 'kg/m2/':
+        if ds[var_].units == 'kg/m2/':
             arr = arr * ds['AREA']
-        elif unit_dict[var_] == 'kg/m2/s':
+        elif ds[var_].units == 'kg/m2/s':
             arr = arr * ds['AREA']
             # now remove seconds
             if Output_freq == 'Hourly':
@@ -390,7 +393,7 @@ def Convert_HEMCO_ds2Gg_per_yr( ds, vars2convert=None, var_species_dict=None,
                 arr = arr*60.*60.*24.
             elif Output_freq == 'Weekly':
                 arr = arr*60.*60.*24.*(365./52.)
-            elif Output_freq == 'Monthly':
+            elif (Output_freq == 'Monthly') or (Output_freq == 'End'):
                 arr = arr*60.*60.*24.*(365./12.)
             else:
                 print('WARNING: ({}) output convert. unknown'.format(
@@ -407,9 +410,9 @@ def Convert_HEMCO_ds2Gg_per_yr( ds, vars2convert=None, var_species_dict=None,
         # Get equivalent unit for species (e.g. I, Br, Cl, N, et c)
         ref_spec = ref_specs[var_]
         # get stiochiometry of ref_spec in species
-        stioch = AC.spec_stoich(spec, ref_spec=ref_spec)
-        RMM_spec = AC.species_mass(spec)
-        RMM_ref_spec = AC.species_mass(ref_spec)
+        stioch = spec_stoich(spec, ref_spec=ref_spec)
+        RMM_spec = species_mass(spec)
+        RMM_ref_spec = species_mass(ref_spec)
         # update values in array
         arr = arr / RMM_spec * RMM_ref_spec * stioch
         # (from kg=>g (*1E3) to g=>Gg (/1E9))
@@ -422,7 +425,10 @@ def Convert_HEMCO_ds2Gg_per_yr( ds, vars2convert=None, var_species_dict=None,
             print(arr.shape)
         # reassign arrary
         ds[var_].values = arr
-        ds[var_].units = units
+        # Update units too
+        attrs = ds[var_].attrs
+        attrs['units'] = units
+        ds[var_].attrs = attrs
     return ds
 
 
