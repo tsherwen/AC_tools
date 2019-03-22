@@ -2566,5 +2566,17 @@ def get_ref_spec(spec='LIOx'):
         'SO4': 'S',
         'NIT': 'N',
         'NH4': 'N',
+        'ISOP': 'C',
+        'NO': 'N',
+        # include halogens
+        'HOI': 'I',
+        'I2': 'I',
+        'CH3I': 'I',
+        'CH3IT': 'I',  # Vestigle spec from v10 (is CH3I)...
+        'CH2I2': 'I',
+        'CH2IBr': 'I',
+        'CH2ICl': 'I',
+        'CHBr3': 'Br',
+        'CH2Br2': 'Br',
     }
     return d[spec]

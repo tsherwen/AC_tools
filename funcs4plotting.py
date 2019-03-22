@@ -4491,14 +4491,19 @@ def get_colormap(arr,  center_zero=True, minval=0.15, maxval=0.95,
     if (negative and ('gnuplot2' in cb)) or (positive and ('CMRmap' in cb)):
         cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
             'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=0,
-                                                b=maxval-minval, ), cmap(np.linspace(0,
-                                                                                     maxval-minval, npoints)))
+                                                b=maxval-minval, ),
+                                                cmap(np.linspace(0,
+                                                maxval-minval,
+                                                npoints)))
+
     if (positive and ('gnuplot2' in cb)) or (negative and ('CMRmap' in cb)):
         #    if positive and ( 'CMRmap' in cb ):
         cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
             'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval,
-                                                b=maxval), cmap(np.linspace(minval,
-                                                                            maxval, npoints)))
+                                                b=maxval),
+                                                cmap(np.linspace(minval,
+                                                maxval,  npoints))
+                                                )
 
     # --- divergent
     if ((not positive) and (not negative)) or divergent:
