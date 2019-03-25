@@ -342,7 +342,11 @@ def Convert_PyGChem_Iris_DataSet2COARDS_NetCDF(ds=None, transpose_dims=True):
             print('Not renamed {} as not in Dataset'.format(CoordVar))
     # Update the ordering to follow COARDS
     if transpose_dims:
-        COARDS_order = ('time', 'lev', 'lat', 'lon')
+        CoordVars = [ i for i in ds.coords ]
+        if 'time' in CoordVars:
+            COARDS_order = ('time', 'lev', 'lat', 'lon')
+        else:
+            COARDS_order = ('lev', 'lat', 'lon')
         # Transpose to ordering
         ds = ds.transpose(*COARDS_order)
     return ds
