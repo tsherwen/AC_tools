@@ -1633,28 +1633,47 @@ def monthly_plot(ax, data, f_size=20, pos=0, posn=1, lw=1, ls='-', color=None,
     """
     Plot up seaonal (monthly ) data.
 
-    NOTES:
-     - Requires data, and dates in numpy ararry form.
-     - Dates must be as datetime.datetime objects.
-    """
+    Parameters
+    ----------
+    ax (axis object): matplotlib axis object to plot onto
+    data (nd.array): numpy array of data to plot
+    pos (int): position number of subplot
+    posn (int): number of subplots being plotted
+    title (str): title string for plot
+    subtitle (str): subtitle string for plot (insert in plot)
+    ls (str):  linestyle to use
+    color (str): colour for line
+    xrotation (float): rotation of x axis ticks
+    ylabel (boolean): label y axis
+    xlabel (boolean): label x axis
+    label (str): label for line
+    title_loc_y (int): y axis position for title str
+    plt_txt_x (float): x axis position for subtitle str
+    plt_txt_y (float): y axis position for subtitle str
+    plot_Q1_Q3 (boolean): plot quartiles on for data?
+    low (np.array): array of low extents to plot as shaded region
+    high (np.array): array of high extents to plot as shaded region
 
+    Returns
+    -------
+    (colormap)
+
+    Notes
+    -----
+    """
     # setup color list if not provided
     if isinstance(color, type(None)):
         color = color_list(posn)[pos]
-
     # if this is a window plot, then reduce text size
     if window:
         f_size = int(f_size/2)
-
     # Plot up provide monthly data
     plt.plot(np.arange(1, len(data)+1), data, color=color, lw=lw, ls=ls,
              label=label)
-
-    # Also add 5th  and  95th %ile
+    # Also add 5th and 95th %ile (or what was provided as "low" and "high")
     if plot_Q1_Q3:  # Plot quartiles as shaded area?
         ax.fill_between(np.arange(1, len(data)+1), low, high, alpha=0.2,
                         color=color)
-
     # Beautify
     ax.set_xticklabels([i.strftime("%b")
                         for i in [datetime.datetime(2009, int(i), 0o1)
@@ -1664,7 +1683,6 @@ def monthly_plot(ax, data, f_size=20, pos=0, posn=1, lw=1, ls='-', color=None,
     if not xlabel:
         plt.tick_params(axis='x', which='both', bottom='on', top='off',
                         labelbottom='off')
-
     plt.xlim(0.5, 12.5)
     if ylabel != None:
         plt.ylabel(ylabel, fontsize=f_size)
@@ -1676,7 +1694,6 @@ def monthly_plot(ax, data, f_size=20, pos=0, posn=1, lw=1, ls='-', color=None,
         if not isinstance(subtitle, type(None)):
             plt.text(plt_txt_x, plt_txt_y, subtitle, ha='center',
                      va='center', transform=ax.transAxes, fontsize=f_size*.65)
-#    if pos==posn-1:
     if legend:
         plt.legend(loc=loc,  fontsize=int(f_size/1.5))
 
