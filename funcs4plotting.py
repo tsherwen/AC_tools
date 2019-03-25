@@ -1321,19 +1321,51 @@ def BASIC_diurnal_plot(fig=None, ax=None, dates=None, data=None, color='red',
 
 
 def BASIC_seasonal_plot(dates=None, data=None, ax=None,
-                        title=None, legend=False,  ylabel=None, loc='best', ncols=1,
-                        showmeans=False, boxplot=True, return_avgs=False,
+                        title=None, legend=False,  ylabel=None, loc='best',
+                        return_avgs=False,
                         plt_median=False, plot_Q1_Q3=False,
-                        ylim=None, xtickrotation=45, alt_text=None, alt_text_x=.925,
+                        xtickrotation=45, alt_text=None, alt_text_x=.925,
                         alt_text_y=.925, xlabel=True, rm_yticks=False, log=False,
                         pcent1=25, pcent2=75, color='red', lw=1, ls='-', label=None,
                         debug=False):
-    """ Plot up a basic seasonal plot - adapted from AC_tools """
+    """
+    Plot up a basic seasonal plot - adapted from AC_tools
+    monthly_plot
+
+    Parameters
+    ----------
+    dates (nd.array): numpy array of datetime.datetime objects
+    data (nd.array): numpy array of data to plot
+    loc (str): best location to put legend plot
+    legend (boolean): Add a legend to the plot
+    ylabel (str): label for y axis
+    xlabel (boolean): label x axis
+    return_avgs (boolean): return a list of the monthly averages
+    plot_Q1_Q3 (boolean): plot quartiles on for data?
+    title (str): title string for plot
+    alt_text (str): subtitle string for plot (insert in plot)
+    alt_text_x (float): x axis position for subtitle str
+    alt_text_y (float): y axis position for subtitle str
+    xtickrotation (float): rotation of x axis ticks
+    rm_yticks (boolean): remove the y axis ticks
+    log (boolean): set the y scale to be logarithmic
+    ls (str): matplotlibe linestyle to use
+    lw (int): linewidth to use
+    color (str): colour for line
+    label (str): label for line
+    pcent1 (int): lower percentile to use (e.g. 25) for shaded region
+    pcent2 (int): higher percentile to use (e.g. 75) for shaded region
+    debug (boolean): print debuging statements?
+
+    Returns
+    -------
+    (None or nd.array)
+    """
     if debug:
         print((list(locals().keys()), ax))
-    # get months
+    # setup data + dates as a DataFrame
     df = pd.DataFrame(data, index=dates)
-    # Force use of a standard year
+    # Force use of a standard year and make sure dates are in order
     df['months'] = [i.month for i in dt64_2_dt(df.index.values)]
     df.sort_values(by='months', ascending=True, inplace=True)
 #    months = list(range(1, 13))
@@ -1346,13 +1378,13 @@ def BASIC_seasonal_plot(dates=None, data=None, ax=None,
     months = list(sorted(monthly.groups.keys()))
     monthly = [monthly.get_group(i) for i in months]
 #    [ df[df.index.month==i]  for i in months ]
-    # remove nans (just from columns!) to allow for percentile calc.
+    # Remove nans (just from columns!) to allow for percentile calc.
     monthly = [i.dropna(axis=1).values for i in monthly]
     data_nan = [i.flatten() for i in monthly]
     # Plot up median
     medians = [np.nanpercentile(i, 50, axis=0) for i in data_nan]
     plt.plot(months, medians, color=color, lw=lw, ls=ls, label=label)
-    # define an axis if one isn't given
+    # Define an axis variable if one isn't given
     if isinstance(ax, type(None)):
         ax = plt.gca()
     # Plot quartiles as shaded area?
@@ -1379,14 +1411,12 @@ def BASIC_seasonal_plot(dates=None, data=None, ax=None,
         plt.legend(loc=loc)  # fontsize=f_size*.75, loc=loc )
     if not isinstance(title, type(None)):
         plt.title(title)
-#    if not isinstance( ylabel, type(None) ):
     if ylabel:
         plt.ylabel(ylabel)
-#        , fontsize=f_size*0.75 ) # Why is this x0.75?
     else:
         if rm_yticks:
             ax.tick_params(axis='y', which='both', labelleft='off')
-    # Log scale?
+    # Logarithmic scale?
     if log:
         ax.set_yscale('log')
     else:
@@ -1631,7 +1661,7 @@ def monthly_plot(ax, data, f_size=20, pos=0, posn=1, lw=1, ls='-', color=None,
                  title_loc_y=1.09, plt_txt_x=0.5, plt_txt_y=1.05,
                  plot_Q1_Q3=False, low=None, high=None, loc='upper right'):
     """
-    Plot up seaonal (monthly ) data.
+    Plot up seaonal (monthly) data.
 
     Parameters
     ----------
