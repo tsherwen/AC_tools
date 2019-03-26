@@ -72,7 +72,8 @@ def GetGEOSChemFilesAsDataset(FileStr='GEOSChem.SpeciesConc.*.nc4', wd=None,
 def GetTropBurdenInGg(ds=None, spec=None, SpecVar=None, StateMet=None, wd=None,
                       TropLevelVar='Met_TropLev', AirMassVar='Met_AD', AvgOverTime=False,
                       SumSpatially=True, RmTroposphere=True, use_time_in_trop=False,
-                      TropMask=None, SpeciesConcPrefix='SpeciesConc_', TimeInTropVar='N/A',
+                      TropMask=None, SpeciesConcPrefix='SpeciesConc_',
+                      TimeInTropVar='N/A',
                       ):
     """
     Get Tropospheric burden for a/all species in dataset
@@ -164,6 +165,55 @@ def GetTropBurdenInGg(ds=None, spec=None, SpecVar=None, StateMet=None, wd=None,
         return dsL.to_array().to_pandas()
     else:
         return dsL
+
+def plot_up_surface_changes_between2runs( ds_dict=None, levs=[1], specs=[],
+        BASE='', NEW='', prefix='IJ_AVG_S__' ):
+    """
+    Compare BASE and NEW datasets for given species using GCPy
+    """
+    import gcpy
+    # Species to plot
+    vars2use = [prefix+i for i in specs]
+    unit=None
+    PDFfilenameStr = 'Oi_surface_change_{}_vs_{}_lev_{:0<2}'
+    # Set datasets to use and  Just include the variables to plot in the dataset
+    title1 = BASE
+    title2 = NEW
+    ds1 = ds_dict[ BASE ][ vars2use ].copy()
+    ds2 = ds_dict[ NEW ][ vars2use ].copy()
+    # Average over time
+    print( ds1, ds2 )
+    ds1 = ds1.mean(dim='time')
+    ds2 = ds2.mean(dim='time')
+    # Remove vestigial coordinates.
+    # (e.g. the time_0 coord... what is this?)
+    vars2drop = ['time_0']
+    dsL = [ds1,ds2]
+    for var2drop in vars2drop:
+        for n, ds in enumerate(dsL):
+            CoordVars = [ i for i in ds.coords ]
+            if var2drop in CoordVars:
+                ds = ds.drop(var2drop)
+                dsL[n] = ds
+    ds1, ds2 = dsL
+    # Update dimension names
+    if update_PyGChem_format2COARDS:
+        ds1 = AC.Convert_PyGChem_Iris_DataSet2COARDS_NetCDF(ds=ds1)
+        ds2 = AC.Convert_PyGChem_Iris_DataSet2COARDS_NetCDF(ds=ds2)
+    # Now plot this using the compare_single_level script
+    for lev in leves:
+        # Just select surface
+        ds1 = ds1.isel(lev=lev)
+        ds2 = ds2.isel(lev=lev)
+        # Make sure the units are present (xarray loses these after some actions)
+        for var_ in vars2use:
+            ds1[var_].attrs = dsD[title1][var_].attrs
+            ds2[var_].attrs = dsD[title2][var_].attrs
+        # Plot and save through GCPy
+        PDFfilename = PDFfilenameStr.format( BASE, NEW, lev )
+        gcpy.compare_single_level( ds1, title1, ds2, title2, varlist=vars2use,
+                 ilev=0, pdfname=PDFfilename+'.pdf',)
+
 
 
 def Create4DMask4TropLevel(StateMet=None,
