@@ -208,6 +208,13 @@ def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None,
         bpch_data = datasets.load(bpch_files)
         # Save the netCDF file
         datasets.save(bpch_data, output_file)
+    elif backend == 'xbpch':
+        import xbpch
+        # Load all the files into memory (as xarray dataset object)
+        ds = xbpch.open_mfbpchdataset(bpch_files)
+        # save through xarray dataset object
+        ds.to_netcdf(folder+filename,
+                        unlimited_dims={'time_counter': True})
     elif backend == 'iris':
         #    iris.fileformats.netcdf.save(data, output_file)
         print('WARNING NetCDF made by iris is non CF-compliant')
