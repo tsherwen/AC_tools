@@ -4225,7 +4225,7 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
             for year in list(sorted(set(df.index.year))):
                 # select files for given year
                 df_year = df[df.index.year == year]
-                for month in list(sorted(set(df_year.index.month))):
+                for month in list(sorted(set(df_year['month'].values))):
                     # select files for given month (within year)
                     df_month_tmp = df_year[df_year.index.month == month]
                     bpch_file_list = df_month_tmp['filenames'].values.tolist()
@@ -4243,9 +4243,9 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
             for year in list(sorted(set(df.index.year))):
                 # select files for given year
                 df_year = df[df.index.year == year]
-                for week in list(sorted(set(df_year.weekofyear))):
+                for week in list(sorted(set(df_year['woy'].values))):
                     # select files for given month (within year)
-                    df_week_tmp = df_year[df_year.index.month == week]
+                    df_week_tmp = df_year[df_year.index.week == week]
                     bpch_file_list = df_week_tmp['filenames'].values.tolist()
                     # add the month to the filename
                     filename4month = filename.split('.nc')[0]
