@@ -4263,7 +4263,7 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
                     gc.collect()
         # Re-combine the split files into one file
         if mk_single_NetCDF_file:
-            ncfiles = glob.glob(folder+'ts_ctm_*.nc')
+            ncfiles = list(sorted(glob.glob(folder+'ts_ctm_*.nc')))
             # open files with xarray
             ds_l = [xr.open_dataset(i) for i in ncfiles]
             # make sure the time dimension is unlimitetd

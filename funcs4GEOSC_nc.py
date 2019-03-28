@@ -194,7 +194,7 @@ def plot_up_surface_changes_between2runs( ds_dict=None, levs=[1], specs=[],
     # Species to plot
     vars2use = [prefix+i for i in specs]
     unit=None
-    PDFfilenameStr = 'Oi_surface_change_{}_vs_{}_lev_{:0<2}'
+    PDFfilenameStr = 'Oi_surface_change_{}_vs_{}_lev_{:0>2}'
     # Set datasets to use and  Just include the variables to plot in the dataset
     title1 = BASE
     title2 = NEW
