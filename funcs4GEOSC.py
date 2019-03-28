@@ -4182,6 +4182,7 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
     import os
     import sys
     import time
+    import gc
     # Get folder from command line.
     if isinstance(folder, type(None)):
         folder = sys.argv[1]
@@ -4238,6 +4239,8 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
                     convert_to_netCDF(folder=folder, filename=filename4month,
                                       bpch_file_list=bpch_file_list,
                                       bpch_file_type=bpch_file_type)
+                    # run garbage collection
+                    gc.collect()
         # Make files by week of year?
         elif mk_weekly_NetCDF_files:
             for year in list(sorted(set(df.index.year))):
@@ -4256,6 +4259,8 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
                     convert_to_netCDF(folder=folder, filename=filename4week,
                                       bpch_file_list=bpch_file_list,
                                       bpch_file_type=bpch_file_type)
+                    # run garbage collection
+                    gc.collect()
         # Re-combine the split files into one file
         if mk_single_NetCDF_file:
             ncfiles = glob.glob(folder+'ts_ctm_*.nc')
