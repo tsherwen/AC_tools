@@ -4231,7 +4231,7 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
                     bpch_file_list = df_month_tmp['filenames'].values.tolist()
                     # add the month to the filename
                     filename4month = filename.split('.nc')[0]
-                    filename4month += '_{}{:0>2}'.format(year, month)
+                    filename4month += '_{}_{:0>2}.nc'.format(year, month)
                     if verbose:
                         print((filename4month, df_month_tmp.shape))
                     # Convert to NetCDF all files to a single NetCDF
@@ -4248,12 +4248,12 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
                     df_week_tmp = df_year[df_year.index.week == week]
                     bpch_file_list = df_week_tmp['filenames'].values.tolist()
                     # add the month to the filename
-                    filename4month = filename.split('.nc')[0]
-                    filename4month += '_{}{:0>2}.nc'.format(year, week)
+                    filename4week = filename.split('.nc')[0]
+                    filename4week += '_{}_WOY_{:0>2}.nc'.format(year, week)
                     if verbose:
-                        print((filename4month, df_week_tmp.shape))
+                        print((filename4week, df_week_tmp.shape))
                     # Convert to NetCDF all files to a single NetCDF
-                    convert_to_netCDF(folder=folder, filename=filename4month,
+                    convert_to_netCDF(folder=folder, filename=filename4week,
                                       bpch_file_list=bpch_file_list,
                                       bpch_file_type=bpch_file_type)
         # Re-combine the split files into one file
