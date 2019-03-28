@@ -167,9 +167,28 @@ def GetTropBurdenInGg(ds=None, spec=None, SpecVar=None, StateMet=None, wd=None,
         return dsL
 
 def plot_up_surface_changes_between2runs( ds_dict=None, levs=[1], specs=[],
-        BASE='', NEW='', prefix='IJ_AVG_S__' ):
+        BASE='', NEW='', prefix='IJ_AVG_S__', update_PyGChem_format2COARDS=False ):
     """
     Compare BASE and NEW datasets for given species using GCPy
+
+    Parameters
+    ----------
+    wd (str): Specify the wd to get the results from a run.
+    BASE (str): name of the dataset (key) in ds_dict to have as the reference for changes
+    NEW (str): name of the dataset (key) in ds_dict to compare against BASE
+    specs (list): list of the names of the species to plot
+    ds_dict (dict): dictionary of xr.datasets objects
+    update_PyGChem_format2COARDS (boolean): update the dataset names to be COARDS?
+    prefix (str): category string that proceeds all variable names of specs
+    levs (list): levels to plot spatial changes for
+
+    Returns
+    -------
+    (xr.dataset or pandas.DataFrame)
+
+    Notes
+    -----
+
     """
     import gcpy
     # Species to plot
@@ -198,22 +217,21 @@ def plot_up_surface_changes_between2runs( ds_dict=None, levs=[1], specs=[],
     ds1, ds2 = dsL
     # Update dimension names
     if update_PyGChem_format2COARDS:
-        ds1 = AC.Convert_PyGChem_Iris_DataSet2COARDS_NetCDF(ds=ds1)
-        ds2 = AC.Convert_PyGChem_Iris_DataSet2COARDS_NetCDF(ds=ds2)
+        ds1 = Convert_PyGChem_Iris_DataSet2COARDS_NetCDF(ds=ds1)
+        ds2 = Convert_PyGChem_Iris_DataSet2COARDS_NetCDF(ds=ds2)
     # Now plot this using the compare_single_level script
-    for lev in leves:
-        # Just select surface
+    for lev in levs:
+        # Just select surface (default) or lev in list provided
         ds1 = ds1.isel(lev=lev)
         ds2 = ds2.isel(lev=lev)
         # Make sure the units are present (xarray loses these after some actions)
         for var_ in vars2use:
-            ds1[var_].attrs = dsD[title1][var_].attrs
-            ds2[var_].attrs = dsD[title2][var_].attrs
+            ds1[var_].attrs = ds_dict[title1][var_].attrs
+            ds2[var_].attrs = ds_dict[title2][var_].attrs
         # Plot and save through GCPy
         PDFfilename = PDFfilenameStr.format( BASE, NEW, lev )
         gcpy.compare_single_level( ds1, title1, ds2, title2, varlist=vars2use,
                  ilev=0, pdfname=PDFfilename+'.pdf',)
-
 
 
 def Create4DMask4TropLevel(StateMet=None,

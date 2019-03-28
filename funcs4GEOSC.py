@@ -5056,8 +5056,8 @@ def print_out_dfs2KPP_eqn_file(species_df=None, headers=None,
                 print(rxn, KPP_line_max)
                 # Just split substrings ? (NO, must split by reactant)
 #                 frac_of_max = len( rxn ) / KPP_line_max
-#                 nchunks = AC.myround( frac_of_max, base=1, round_up=True )
-#                 sub_strs = AC.chunks(l=rxn, n=int(KPP_line_max)-2 )
+#                 nchunks = myround( frac_of_max, base=1, round_up=True )
+#                 sub_strs = chunks(l=rxn, n=int(KPP_line_max)-2 )
                 sub_strs = split_KPP_rxn_str_into_chunks(rxn)
                 # loop sub strings
                 for n, sub_str in enumerate(sub_strs):
