@@ -1142,7 +1142,7 @@ def plot_up_diurnal_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
             tmp_df = dfs[key_]
             tmp_df = tmp_df[tmp_df['Season'] == season_]
             data_ = tmp_df[spec]
-            dates_ = tmp_df.index.to_datetime().values
+            dates_ = pd.to_datetime( tmp_df.index.values )
             # See if color is set in color_dict
             try:
                 color = color_dict[key_]
