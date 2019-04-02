@@ -4199,12 +4199,12 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
         if verbose:
             print(('No files found in wd:{}'.format(folder)))
         sys.exit()
-    # split off file names
+    # Split off file names
     filenames = [i.split('/')[-1] for i in files]
     df['filenames'] = filenames
     # Convert files on bulk or make files by month/week?
     if mk_monthly_NetCDF_files or mk_weekly_NetCDF_files:
-        # get times of model out in file
+        # Get times of model out in file
         if bpch_file_type == "*ts*bpch*":
             filename_format = 'ts%Y%m%d.bpch'
         elif bpch_file_type == "*tra*avg*":
@@ -4216,7 +4216,7 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
         else:
             print('NO CASE FOR {}'.format(bpch_file_type))
             sys.exit()
-        # now extract start times of files
+        # Now extract start times of files
         intial_ts = [time.strptime(i, filename_format) for i in filenames]
         df.index = time2datetime(intial_ts)
         df['month'] = df.index.month
@@ -4224,13 +4224,13 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
         # Make files by month?
         if mk_monthly_NetCDF_files:
             for year in list(sorted(set(df.index.year))):
-                # select files for given year
+                # Select files for given year
                 df_year = df[df.index.year == year]
                 for month in list(sorted(set(df_year['month'].values))):
-                    # select files for given month (within year)
+                    # Select files for given month (within year)
                     df_month_tmp = df_year[df_year.index.month == month]
                     bpch_file_list = df_month_tmp['filenames'].values.tolist()
-                    # add the month to the filename
+                    # Add the month to the filename
                     filename4month = filename.split('.nc')[0]
                     filename4month += '_{}_{:0>2}.nc'.format(year, month)
                     if verbose:
@@ -4239,7 +4239,7 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
                     convert_to_netCDF(folder=folder, filename=filename4month,
                                       bpch_file_list=bpch_file_list,
                                       bpch_file_type=bpch_file_type)
-                    # run garbage collection
+                    # Run garbage collection
                     gc.collect()
         # Make files by week of year?
         elif mk_weekly_NetCDF_files:
@@ -4247,10 +4247,10 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
                 # select files for given year
                 df_year = df[df.index.year == year]
                 for week in list(sorted(set(df_year['woy'].values))):
-                    # select files for given month (within year)
+                    # Select files for given month (within year)
                     df_week_tmp = df_year[df_year.index.week == week]
                     bpch_file_list = df_week_tmp['filenames'].values.tolist()
-                    # add the month to the filename
+                    # Add the month to the filename
                     filename4week = filename.split('.nc')[0]
                     filename4week += '_{}_WOY_{:0>2}.nc'.format(year, week)
                     if verbose:
@@ -4264,13 +4264,16 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
         # Re-combine the split files into one file
         if mk_single_NetCDF_file:
             ncfiles = list(sorted(glob.glob(folder+'ts_ctm_*.nc')))
-            # open files with xarray
-            ds_l = [xr.open_dataset(i) for i in ncfiles]
-            # make sure the time dimension is unlimitetd
-            ds = xr.concat(ds_l, dim='time')
-            # now save the combined file
+            # Open files with xarray
+#            ds_l = [xr.open_dataset(i) for i in ncfiles]
+            # Make sure the time dimension is unlimitetd
+#            ds = xr.concat(ds_l, dim='time')
+            ds = xr.open_mfdataset(ncfiles, concat_dim='time' )
+            # Now save the combined file
             ds.to_netcdf(folder+filename,
                          unlimited_dims={'time_counter': True})
+            # Remove from memory
+            del ds
             # TODO: Now delete monthly files?
     # Convert files on bulk
     elif mk_single_NetCDF_file:
