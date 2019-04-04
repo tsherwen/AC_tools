@@ -4544,7 +4544,9 @@ def get_model_run_stats(wd=None, file_type='*geos.log*', debug=False):
 def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
                                      REF2=None, REF_wd=None, res='4x5', trop_limit=True,
                                      save2csv=True, prefix='GC_', run_names=None,
-                                     debug=False):
+                                     extra_burden_specs=['NIT', 'NITs'],
+                                     extra_surface_specs=['NIT', 'NITs'],
+                                    debug=False):
     """
     Get various stats on a set of runs in a dictionary ({name: location})
 
@@ -4557,13 +4559,15 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     REF1 (str): name of (2nd) run in dictionary to to % change calculations from
     prefix (str):  string to include as a prefix in saved csv's filename
     extra_str (str):  string to include as a suffx in saved csv's filename
-    res (str): reolusiotn of model run (e.g. 4x5)
     save2csv (boolean): save dataframe as a csv file
     trop_limit (boolean): limit analysis to the troposphere?
+    extra_burden_specs (list): list of extra species to give trop. burden stats on
+    extra_surface_specs (list): list of extra species to give surface conc. stats on
+    res (str): resolution of the modul output (e.g. 4x5, 2x2.5, 0.125x0.125)
 
     Returns
     -------
-    (colormap)
+    (pd.DataFrame)
 
     Notes
     -----
@@ -4598,58 +4602,46 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     # ---- Now build analysis in pd.DataFrame
 
     # ---- Tropospheric burdens?
-    # Get tropospheric burden for run
+    # -- Get tropospheric burden for run
     varname = 'O3 burden ({})'.format(mass_unit)
-    ars = [get_O3_burden(i, t_p=t_p).sum() for i in wds]
+    ars = [get_O3_burden(i, t_p=t_p, res=res).sum() for i in wds]
     df = pd.DataFrame(ars, columns=[varname], index=run_names)
 
-    # Get NO2 burden
+    # Get other core species
+    core_burden_specs = [
+    'NO', 'NO2', 'N2O5'
+    ]
+    # Loop and add core species.
+    for spec in core_burden_specs+extra_burden_specs:
+        varname = '{} burden ({})'.format(spec, mass_unit)
+        ref_spec = get_ref_spec( spec )
+        # get arrrays
+        ars = [get_trop_burden(spec=spec, t_p=t_p, wd=i, all_data=False, res=res).sum()
+                               for i in wds]
+        # convert to N equivalent
+        ars = [i/species_mass(spec)*species_mass(ref_spec) for i in ars]
+        df[varname] = ars
+
+    # - Now add familes...
+    # Get NOx burden
     NO2_varname = 'NO2 burden ({})'.format(mass_unit)
-    ars = [get_trop_burden(spec='NO2', t_p=t_p, wd=i, all_data=False).sum()
-           for i in wds]
-    # convert to N equivalent
-    ars = [i/species_mass('NO2')*species_mass('N') for i in ars]
-    df[NO2_varname] = ars
-
-    # Get NO burden
     NO_varname = 'NO burden ({})'.format(mass_unit)
-    ars = [get_trop_burden(spec='NO', t_p=t_p, wd=i, all_data=False).sum()
-           for i in wds]
-    # convert to N equivalent
-    ars = [i/species_mass('NO')*species_mass('N') for i in ars]
-    df[NO_varname] = ars
-
-    # Combine NO and NO2 to get NOx burden
     NOx_varname = 'NOx burden ({})'.format(mass_unit)
-    df[NOx_varname] = df[NO2_varname] + df[NO_varname]
-
-    # Get NIT burden
-    NIT_varname = 'NIT burden ({})'.format(mass_unit)
-    ars = [get_trop_burden(spec='NIT', t_p=t_p, wd=i, all_data=False).sum()
-           for i in wds]
-    # convert to N equivalent
-    ars = [i/species_mass('NIT')*species_mass('N') for i in ars]
-    df[NIT_varname] = ars
-
-    # Get NITs burden
-    NITs_varname = 'NITs burden ({})'.format(mass_unit)
-    ars = [get_trop_burden(spec='NITs', t_p=t_p, wd=i, all_data=False).sum()
-           for i in wds]
-    # convert to N equivalent
-    ars = [i/species_mass('NITs')*species_mass('N') for i in ars]
-    df[NITs_varname] = ars
+    try:
+        df[NOx_varname] = df[NO2_varname] + df[NO_varname]
+    except KeyError:
+        if debug:
+            print( 'NOx family not added for trop. df columns:', list(df.columns) )
 
     # sum NIT+NITs
+    NIT_varname = 'NIT burden ({})'.format(mass_unit)
+    NITs_varname = 'NITs burden ({})'.format(mass_unit)
     varname = 'NIT+NITs burden ({})'.format(mass_unit)
-    df[varname] = df[NITs_varname] + df[NIT_varname]
-
-    # Get N2O5 burden
-    NITs_varname = 'N2O5 burden ({})'.format(mass_unit)
-    ars = [get_trop_burden(spec='N2O5', t_p=t_p, wd=i,  all_data=False).sum()
-           for i in wds]
-    # convert to N equivalent
-    ars = [i/species_mass('N2O5')*species_mass('N') for i in ars]
-    df[NITs_varname] = ars
+    try:
+        df[varname] = df[NITs_varname] + df[NIT_varname]
+    except KeyError:
+        if debug:
+            print( 'NIT+NITs family not added for surface. df columns:', list(df.columns))
 
     # Scale units
     for col_ in df.columns:
@@ -4657,32 +4649,30 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
             df.loc[:, col_] = df.loc[:, col_].values/mass_scale
 
     # ---- Surface concentrations?
-    # Surface ozone
-    O3_sur_varname = 'O3 surface ({})'.format(ppbv_unit)
-    ars = [get_avg_surface_conc_of_X(spec='O3', wd=i, s_area=s_area)
+    core_surface_specs = [
+    'O3', 'NO', 'NO2', 'N2O5'
+    ]
+    for spec in core_surface_specs+extra_surface_specs:
+        #
+        units, scale = tra_unit( spec, scale=True )
+        # Surface ozone
+        varname = '{} surface ({})'.format(spec, units)
+        ars = [get_avg_surface_conc_of_X(spec=spec, wd=i, s_area=s_area, res=res)
            for i in wds]
-    df[O3_sur_varname] = ars
+        df[varname] = ars
 
-    # Surface NOx
-    NO_sur_varname = 'NO surface ({})'.format(ppbv_unit)
-    ars = [get_avg_surface_conc_of_X(spec='NO', wd=i, s_area=s_area)
-           for i in wds]
-    df[NO_sur_varname] = ars
+    # Surface NOx (note: NO units are pptv, NO2 is ppbv)
+    NO_sur_varname = 'NO surface ({})'.format(pptv_unit)
     NO2_sur_varname = 'NO2 surface ({})'.format(ppbv_unit)
-    ars = [get_avg_surface_conc_of_X(spec='NO2', wd=i, s_area=s_area)
-           for i in wds]
-    df[NO2_sur_varname] = ars
     NOx_sur_varname = 'NOx surface ({})'.format(ppbv_unit)
-    df[NOx_sur_varname] = df[NO2_sur_varname] + df[NO_sur_varname]
-
-    # Surface N2O5
-    N2O5_sur_varname = 'N2O5 surface ({})'.format(pptv_unit)
-    ars = [get_avg_surface_conc_of_X(spec='N2O5', wd=i, s_area=s_area)
-           for i in wds]
-    df[N2O5_sur_varname] = ars
+    try:
+        df[NOx_sur_varname] = df[NO2_sur_varname] + (df[NO_sur_varname]*1E3)
+    except KeyError:
+        if debug:
+            print( 'NOx family not added for surface. df columns:', list(df.columns) )
 
     # ---- OH concentrations?
-    # first process the files to have different names for the different years
+    # First process the files to have different names for the different years
     try:
         OH_global_varname = 'Global mean OH'
         ars = [get_OH_mean(wd=i) for i in wds]
@@ -4703,9 +4693,9 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
 
     # ---- Scale units
     for col_ in df.columns:
-        if 'ppbv' in col_:
+        if 'ppb' in col_:
             df.loc[:, col_] = df.loc[:, col_].values*ppbv_scale
-        if 'pptv' in col_:
+        if 'ppt' in col_:
             df.loc[:, col_] = df.loc[:, col_].values*pptv_scale
 
     # ---- Processing and save?
@@ -4728,8 +4718,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     # Save csv to disk
     csv_filename = '{}_summary_statistics{}.csv'.format(prefix, extra_str)
     df.to_csv(csv_filename)
-
-    # return the DataFrame too
+    # Return the DataFrame too
     return df
 
 
@@ -4793,7 +4782,7 @@ def get_trop_burden(spec='O3', wd=None, a_m=None, t_p=None,
 
 def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None,
                   trop_limit=True, all_data=False, annual_mean=True,
-                  debug=False):
+                   res='4x5', debug=False):
     """ Wrapper of 'get_trop_burden' to get tropospheric ozone burden """
     # ---  Local vars.
     # (	all_data == ( annual_mean == False ) )
@@ -4803,13 +4792,14 @@ def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None,
     if trop_limit:
         total_atmos = True
     # --- just call existing function
-    return get_trop_burden(wd=wd, total_atmos=False, all_data=all_data,
+    return get_trop_burden(wd=wd, total_atmos=False, all_data=all_data,res=res,
                            trop_limit=trop_limit, spec=spec, a_m=a_m, t_p=t_p, arr=O3_arr,
                            debug=debug)
 
+
 # -------------- Smvgear input/output file Processing
-
-
+# NOTE: this is now redundent as GEOS-Chem uses KPP going forward. procssing/parsing
+#       scripts are  also present in AC_tools for KPP.
 def prt_Prod_Loss_list4input_geos(spec_list=None, prefix_list=None, start_num=1):
     """
     Print to screen lines to be inserted into input.geos to track prod/loss of species

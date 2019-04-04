@@ -2563,11 +2563,16 @@ def get_ref_spec(spec='LIOx'):
         'I': 'I',
         'Iy': 'I',
         'IxOy': 'I',
+        # core species
         'SO4': 'S',
         'NIT': 'N',
+        'NITs': 'N',
         'NH4': 'N',
         'ISOP': 'C',
         'NO': 'N',
+        'NO2': 'N',
+        'N2O5': 'N',
+        'O3': 'O3',
         # include halogens
         'HOI': 'I',
         'I2': 'I',
@@ -2578,5 +2583,9 @@ def get_ref_spec(spec='LIOx'):
         'CH2ICl': 'I',
         'CHBr3': 'Br',
         'CH2Br2': 'Br',
+        'CH3Br': 'Br',
+        'CH2Cl2': 'Cl',
+        'CHCl3': 'Cl',
+        'CH3Cl': 'Cl',
     }
     return d[spec]
