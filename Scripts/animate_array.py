@@ -72,7 +72,7 @@ def extract_data_dates(spec='O3', file=None, dates_variable='time',
     import datetime
 
 #    # <= Kludge: convert to tracer name used in NetCDF for extraction
-    from AC.funcs_vars import what_species_am_i
+    from AC.variables import what_species_am_i
     pspec = what_species_am_i(input=spec, ver=ver, invert=True, debug=debug)
 
     with Dataset(file, 'r') as rootgrp:
@@ -138,7 +138,7 @@ def get_data_dates(spec='O3', dates_variable='time',
 
     """
     import numpy as np
-    from AC.funcs4core import get_dir
+    from AC.core import get_dir
 
     # Set Directory ( comment out if using different earth0 user )
     wd = get_dir('npwd')
@@ -187,8 +187,8 @@ def get_data_dates(spec='O3', dates_variable='time',
 def get_run_info(spec='O3', res='0.25x0.3125', region='EU', fname='',
                  scale=1, pcent=False, ClearFlo_unit=False):
     """ get descriptive variables for run period ( e.g. res ) """
-    from AC.funcs4core import get_latlonalt4res
-    from AC.funcs_vars import tra_unit, latex_spec_name
+    from AC.core import get_latlonalt4res
+    from AC.variables import tra_unit, latex_spec_name
 
     # Set variables (e.g. res) or automation of variable setting here
 #    res = get_run_descriptors()
@@ -236,14 +236,14 @@ def setup_figure_ascetics(dates, f_size=10, title=None, cmap=None,
 #    earth0 = 'Linux-3.0.101-0.47.52-default-x86_64-with-SuSE-11-x86_64'
     earth0 = 'Linux-3.0.101-0.47.71-default-x86_64-with-SuSE-11-x86_64'
     if platform.platform() == earth0:
-        from funcs4plotting_special import add_logos_NCAS_york_bottom
+        from plotting_special import add_logos_NCAS_york_bottom
 
         # add title and logos for NCAS/NERC
         fig = add_logos_NCAS_york_bottom(fig)
         fig.suptitle(title, fontsize=f_size*2, x=.55, y=.95)
 
     # Add colorbar
-    from funcs4plotting_special import mk_cb
+    from plotting_special import mk_cb
     mk_cb(fig, units=units, left=0.925, bottom=0.2, width=0.015, height=0.6,
           cmap=cmap, vmin=fixcb_buffered[0], vmax=fixcb_buffered[1],
           f_size=f_size, format=format, norm=cnorm, extend=extend,)
@@ -259,7 +259,7 @@ def setup_plot2animate(arr, fig=None, ax=None, lat=None, lon=None,
                        cnorm=None, lvls=None, fixcb=None, positive=None,
                        nticks=10, sigfig_rounding_on_cb=2, debug=False):
 
-    from funcs4plotting_special import get_basemap, get_colormap, \
+    from plotting_special import get_basemap, get_colormap, \
         get_human_readable_gradations
 
     # --- settings

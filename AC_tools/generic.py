@@ -24,8 +24,8 @@ from math import radians, sin, cos, asin, sqrt, pi, atan2
 # The below imports need to be updated,
 # imports should be specific and in individual functions
 # import tms modules with shared functions
-from . funcs4core import *
-from . funcs_vars import *
+from . core import *
+from . variables import *
 
 
 def chunks(l, n):
@@ -438,7 +438,7 @@ def ocean_unmasked(res='4x5', debug=False):
      - NEEDS UPDATE
     """
 
-    from .funcs4GEOSC import get_land_map
+    from .GEOSChem import get_land_map
     if debug:
         print(('ocean_mask called for: ', res))
 
@@ -453,7 +453,7 @@ def land_unmasked(res='4x5', debug=False):
     """
     Get land mask from GEOS-Chem LWI ( at given resolution)
     """
-    from .funcs4GEOSC import get_land_map  # Kludge, use GEOS-Chem LWI
+    from .GEOSChem import get_land_map  # Kludge, use GEOS-Chem LWI
 
     # Create a np.ma mask
     if debug:
@@ -1664,7 +1664,7 @@ def get_2D_nighttime_mask4date_pd(date=None, ncfile=None, res='4x5',
     import ephem
     from ephem import AlwaysUpError, NeverUpError
     # And functions in other AC_tools modules
-    from .funcs4time import add_days, add_hrs
+    from .AC_time import add_days, add_hrs
     logging.info('get_2D_nighttime_mask4date_pd called for {}'.format(date))
 
     # Profile function...
@@ -1851,7 +1851,7 @@ def get_2D_solartime_array4_date(date=None, ncfile=None, res='4x5',
     import ephem
     from ephem import AlwaysUpError, NeverUpError
     # And functions in other AC_tools modules
-    from .funcs4time import add_days, add_hrs
+    from .AC_time import add_days, add_hrs
     logging.info('get_2D_solartime_array4_dates called for {}'.format(date))
 
     # Profile function...
@@ -1950,11 +1950,11 @@ def save_2D_arrays_to_3DNetCDF(ars=None, dates=None, res='4x5', lons=None,
     Notes
     -----
      - needs updating to take non-standard reoslutions
-     (e.g. those in funcs_vars)
+     (e.g. those in variables)
 
     """
     logging.info('save_2D_arrays_to_3DNetCDF called')
-    from .funcs4time import unix_time, dt64_2_dt
+    from .AC_time import unix_time, dt64_2_dt
     print((locals()))
 
     # ---  Settings

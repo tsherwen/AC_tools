@@ -34,11 +34,11 @@ import time
 # The below imports need to be updated,
 # imports should be specific and in individual functions
 # import tms modules with shared functions
-from .funcs4core import *
-from .funcs4generic import *
-from .funcs4time import *
-from .funcs4pf import *
-from .funcs_vars import *
+from .core import *
+from .generic import *
+from .AC_time import *
+from .planeflight import *
+from .variables import *
 #from .Scripts.bpch2netCDF import convert_to_netCDF
 
 

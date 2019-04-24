@@ -4,8 +4,12 @@ import pytest
 import os
 #import urllib.parse, urllib.error
 # temporality restore urllib2 as urllib not installed
-from urllib import urlopen
-import urllib2
+try:
+    import urllib2
+    from urllib import urlopen
+#except ModuleNotFoundError:
+except ImportError:
+    import urllib.request, urllib.error, urllib.parse
 
 slow = pytest.mark.skipif(
     not pytest.config.getoption("--slow"),

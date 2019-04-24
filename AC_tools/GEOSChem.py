@@ -51,12 +51,12 @@ from datetime import datetime as datetime_
 # The below imports need to be updated,
 # imports should be specific and in individual functions
 # import tms modules with shared functions
-from .funcs4core import *
-from .funcs4generic import *
-from .funcs4time import *
-from .funcs4pf import *
-from .funcs_vars import *
-from .Scripts.bpch2netCDF import convert_to_netCDF
+from .core import *
+from .generic import *
+from .AC_time import *
+from .planeflight import *
+from .variables import *
+from .bpch2netCDF import convert_to_netCDF
 
 
 def get_surface_area(res=None, wd=None, debug=False):

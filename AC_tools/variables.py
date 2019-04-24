@@ -28,7 +28,7 @@ import numpy as np
 # the below import needs to be updated,
 # imports should be specific and in individual functions
 # import tms modules with shared functions
-from . funcs4core import *
+from . core import *
 
 
 def pf_var(input, ver='3.0', ntracers=85, fill_var_with_zeroes=False):
@@ -49,7 +49,7 @@ def pf_var(input, ver='3.0', ntracers=85, fill_var_with_zeroes=False):
     Notes
     -----
      - UPDATED NEEDED: MORE DETAILED DESCRIPT.
-     - Why is this function not in funcs4pf?
+     - Why is this function not in planeflight?
 
     """
     # planeflight variable lists

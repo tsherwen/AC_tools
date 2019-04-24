@@ -5,9 +5,12 @@
 import pytest
 import logging
 import os
+import AC_tools as AC
 # temporality restore urllib2 as urllib not installed
-#import urllib.request, urllib.error, urllib.parse
-import urllib2
+try:
+    import urllib2
+except ModuleNotFoundError:
+    import urllib.request, urllib.error, urllib.parse
 
 #FORMAT = "[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"
 FORMAT = "%(filename)s:%(lineno)s - %(funcName)s() : %(message)s"
@@ -30,6 +33,7 @@ def pytest_configure():
         pytest.exit("Not running in the Tests folder!")
 
     # Make sure the data is downloaded
-    from ..Scripts import get_data_files
+#    from ..Scripts import get_data_files
+#    from AC_tools import get_data_files
 
     return

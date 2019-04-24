@@ -1,4 +1,4 @@
-from ..funcs4plotting import *
+from ..plotting import *
 import logging
 import pytest
 import os
@@ -19,7 +19,7 @@ if not os.path.exists(out_dir):
 
 @pytest.fixture()
 def test_data():
-    from ..funcs4GEOSC import get_GC_output
+    from ..GEOSChem import get_GC_output
     test_data = get_GC_output(wd, species='O3')
     return test_data
 

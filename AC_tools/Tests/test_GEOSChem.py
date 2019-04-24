@@ -1,4 +1,4 @@
-from ..funcs4GEOSC import *
+from ..GEOSChem import *
 import logging
 import pytest
 
