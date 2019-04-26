@@ -471,8 +471,8 @@ def Convert_HEMCO_ds2Gg_per_yr( ds, vars2convert=None, var_species_dict=None,
                 print('WARNING: ({}) output convert. unknown'.format(
                     Output_freq))
                 sys.exit()
-        elif unit_dict[var_] == 'kg':
-            pass
+        elif ds[var_].units  == 'kg':
+            pass # units are already in kg .
         else:
             print('WARNING: unit convert. ({}) unknown'.format(unit_dict[var_]))
             sys.exit()
