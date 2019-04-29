@@ -263,7 +263,7 @@ def get_latlonalt4res(res=None, centre=True, hPa=False, nest=None,
         res = '4x5'
     if isinstance(wd, type(None)):
         AC_tools_dir = os.path.dirname(__file__)
-        dwd = os.path.join(AC_tools_dir, 'data/LM')
+        dwd = os.path.join(AC_tools_dir, '/../data/LM')
         dir_dict = {
             '4x5': 'LANDMAP_LWI_ctm',
             '2x2.5': 'LANDMAP_LWI_ctm_2x25',

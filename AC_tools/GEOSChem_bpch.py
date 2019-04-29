@@ -95,7 +95,7 @@ def get_surface_area(res=None, wd=None, debug=False):
         import inspect
         filename = inspect.getframeinfo(inspect.currentframe()).filename
         path = os.path.dirname(os.path.abspath(filename))
-        dwd = path+'/data/LM/'
+        dwd = path+'/../data/LM/'
         logging.debug("dwd = " + str(dwd))
         # Choose the correct directory for a given resolution
         dir = {
@@ -3657,7 +3657,8 @@ def convert_molec_cm3_s_2_g_X_s(ars=None, specs=None, ref_spec=None,
     # only consider troposphere ( update this to use mask4troposphere )
     if rm_strat:
         ars = mask4troposphere(ars,  t_ps=t_ps, wd=wd, trop_limit=trop_limit,
-                               use_time_in_trop=use_time_in_trop, multiply_method=multiply_method)
+                               use_time_in_trop=use_time_in_trop,
+                               multiply_method=multiply_method)
     if debug:
         logging.debug([(i.sum(), i.shape) for i in ars])
         logging.debug([(i.sum(), i.shape)

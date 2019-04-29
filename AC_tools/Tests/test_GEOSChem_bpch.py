@@ -1,8 +1,8 @@
-from ..GEOSChem import *
+from ..GEOSChem_bpch import *
 import logging
 import pytest
 
-wd = '../data'
+wd = '../../data'
 
 slow = pytest.mark.skipif(
     not pytest.config.getoption("--slow"),

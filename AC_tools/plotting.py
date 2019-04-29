@@ -35,7 +35,8 @@ from . variables import *
 from . generic import *
 from . AC_time import *
 from . planeflight import *
-from . GEOSChem import *  # wd2ctms, get_gc_res
+from . GEOSChem_bpch import *  # wd2ctms, get_gc_res
+from . GEOSChem_nc import *  # wd2ctms, get_gc_res
 # math
 from math import log10, floor
 import numpy as np

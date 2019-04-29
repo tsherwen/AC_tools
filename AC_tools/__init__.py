@@ -6,7 +6,7 @@ from . AC_time import *
 from . planeflight import *
 from . generic import *
 from . core import *
-from . GEOSChem import *
+from . GEOSChem_bpch import *
 from . GEOSChem_nc import *
 import numpy as np
 """
