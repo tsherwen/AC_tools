@@ -12,17 +12,7 @@ simply aims to contain functionality outside the remit of the
 more specialised community packages (e.g PyGChem_, xbpch_, and 
 gcpy_) and use the existing Python stack (e.g. dask_, xarray_, 
 pandas_). `Pull Requests are 
-welcome! <https://github.com/darothen/xbpch/pulls>`_
-
-
-Usage
-------------
-
-Example analysis code for using AC_tools is available in the 
-scripts folder.
-
-For more infomation, please visit the wiki: https://github.com/tsherwen/AC_tools/wiki
-
+welcome! <https://github.com/tsherwen/AC_tools/pulls>`_
 
 Installation
 ------------
@@ -52,12 +42,25 @@ An exmample would be importing NetCDF files or converting ctm.bpch files from a 
     folder = '<folder containing GEOS-Chem output>'
     # Get the atmospheric ozone burden in Gg O3 as a np.array
     array = AC.get_O3_burden(folder)
-    burden = array.sum()
-    print( "The ozone burden: {burden}".format(burden=burden))
-    # Get CO v/v as a np.array
-    array = AC.get_GC_output(wd=folder, vars=['IJ_AVG_S__O3'])
+    print( "The ozone burden is: {burden}".format(burden=array.sum()))
+    # Get surface area for resolution 
+    s_area = get_surface_area(res)[..., 0]  # m2 land map
+    # Get global average surface CO 
+    spec = 'CO'
+    array = AC.get_GC_output(wd=folder, vars=['IJ_AVG_S__{}'.format(spec)])
+    ratio = AC.get_2D_arr_weighted_by_X(array, res='4x5', s_area=s_area) 
+    print( "The global average surface mixing ratio of {spec} (ppbv) is: {ratio}".format(spec=spec, ratio=ratio*1E9))
     
     
+Usage
+------------
+
+Example analysis code for using AC_tools is available in the 
+scripts folder. 
+
+For more infomation, please visit the AC_tools_wiki_.
+
+
 License
 -------
 
@@ -80,3 +83,4 @@ Contact
 .. _gcpy: https://github.com/geoschem/gcpy
 .. _PyGChem: https://github.com/benbovy/PyGChem
 .. _xbpch: https://github.com/darothen/xbpch
+.. _AC_tools_wiki: https://github.com/tsherwen/AC_tools/wiki
