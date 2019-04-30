@@ -7,6 +7,20 @@ Notes
 These functions are specifically for GEOS-Chem versions v11-1g and later. They have been tested on v11-2d-R1,v11-2d-R2, v11-2d-R3, v12.0, v12.1, v12.2., v12.3 ...
 
 """
+import os
+import sys
+import glob
+import pandas as pd
+import xarray as xr
+import re
+from netCDF4 import Dataset
+import numpy as np
+import math
+import time
+import calendar
+import datetime as datetime
+from datetime import datetime as datetime_
+
 
 def get_fam_prod_loss_for_tagged_mechanism(wd=None, fam='LOx', ref_spec='O3',
                                            tags=None, RR_dict=None, Data_rc=None,

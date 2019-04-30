@@ -35,7 +35,8 @@ from . variables import *
 from . generic import *
 from . AC_time import *
 from . planeflight import *
-from . GEOSChem import *  # wd2ctms, get_gc_res
+from . GEOSChem_nc import *
+from . GEOSChem_bpch import *
 # math
 from math import log10, floor
 import numpy as np
@@ -881,7 +882,7 @@ def BASIC_diurnal_plot(fig=None, ax=None, dates=None, data=None, color='red',
         ax.fill_between(index, avgs, Q1_data, alpha=alpha, facecolor=color)
     # Label xticks on axis (if 24 plots, just label every 3rd)
     if update_xticks:
-        if index < 6:
+        if len(index) < 6:
             ax.set_xticks(index)
             ax.set_xticklabels(time_labels)
         else:

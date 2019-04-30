@@ -1,11 +1,11 @@
 """
 
-Functions for KPP input/output file Processing
+Functions for SMVGEAR input/output file Processing
 
 Notes
 -------
-These functions are specifically for GEOS-Chem versions v11-1g and later. They have been tested on v11-2d-R1,v11-2d-R2, v11-2d-R3, v12.0, v12.1, v12.2., v12.3 ...
-
+ - These functions are specifically for GEOS-Chem versions prior to v11-01.
+ - They are no longer maintained, as KPP is default ODE solve for GEOS-Chem now
 """
 import os
 import sys

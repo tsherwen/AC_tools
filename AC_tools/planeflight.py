@@ -13,7 +13,6 @@ import csv
 import glob
 import pandas as pd
 import logging
-# Math
 import numpy as np
 # The below list to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
