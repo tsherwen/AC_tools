@@ -1228,6 +1228,8 @@ def get_loc(loc=None, rtn_dict=False, debug=False):
         'NEEM': (-51.12, 77.75, 2484),
         'Welgegund': (26.939311,  -26.570146, 1480),
         'WEL': (26.939311,  -26.570146, 1480),  # abrev. Welgegund
+        'WEL-W': (26.939311-1.5,  -26.570146, 1480),  # abrev. Welgegund
+        'WEL-SW': (26.939311-1.5,  -26.570146-1.5, 1480),  # abrev. Welgegund
         'Botsalano': (25.75, -25.54, 1420),
         'BOT': (25.75, -25.54, 1420),  # abrev. Botsalano
         'Marikana': (27.48, -25.70, 1170),
