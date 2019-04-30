@@ -160,7 +160,7 @@ def add_days(sourcedate, days_):
     """
     Incremental increase of  datetime by given days
     """
-    sourcedate += datetime.timedelta(days=days_)
+    sourcedate += datetime.timedelta(days=float(days_))
     return sourcedate
 
 
@@ -170,7 +170,7 @@ def add_hrs(sourcedate, hrs_, debug=False):
     """
     if debug:
         print((sourcedate, hrs_))
-    sourcedate += datetime.timedelta(hours=hrs_)
+    sourcedate += datetime.timedelta(hours=float(hrs_))
     return sourcedate
 
 
@@ -178,7 +178,7 @@ def add_minutes(sourcedate, min_, debug=False):
     """
     Incremental increase of datetime by given minutes
     """
-    sourcedate += datetime.timedelta(minutes=min_)
+    sourcedate += datetime.timedelta(minutes=float(min_))
     return sourcedate
 
 
@@ -186,7 +186,7 @@ def add_secs(sourcedate, secs_, debug=False):
     """
     Incremental increase of datetime by given seconds
     """
-    sourcedate += datetime.timedelta(seconds=secs_)
+    sourcedate += datetime.timedelta(seconds=float(secs_))
     return sourcedate
 
 
