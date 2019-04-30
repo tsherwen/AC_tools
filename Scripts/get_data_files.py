@@ -5,12 +5,16 @@ external source (currently apache server at York)
 
 import os
 # temporality restore urllib2 (as default urllib not working)
-#from urllib.request import urlopen
-#from urllib.error import HTTPError
 #import urllib
 #import urllib2
-from urllib import urlopen
-from urllib2 import HTTPError
+try:
+    from urllib import urlopen
+    from urllib2 import HTTPError
+#except ModuleNotFoundError:
+except ImportError:
+    from urllib.request import urlopen
+    from urllib.error import HTTPError
+
 import logging
 
 # Set up logging only if running as a script.

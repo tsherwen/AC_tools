@@ -34,11 +34,11 @@ import time
 # The below imports need to be updated,
 # imports should be specific and in individual functions
 # import tms modules with shared functions
-from .funcs4core import *
-from .funcs4generic import *
-from .funcs4time import *
-from .funcs4pf import *
-from .funcs_vars import *
+from .core import *
+from .generic import *
+from .AC_time import *
+from .planeflight import *
+from .variables import *
 #from .Scripts.bpch2netCDF import convert_to_netCDF
 
 
@@ -471,8 +471,8 @@ def Convert_HEMCO_ds2Gg_per_yr( ds, vars2convert=None, var_species_dict=None,
                 print('WARNING: ({}) output convert. unknown'.format(
                     Output_freq))
                 sys.exit()
-        elif unit_dict[var_] == 'kg':
-            pass
+        elif ds[var_].units  == 'kg':
+            pass # units are already in kg .
         else:
             print('WARNING: unit convert. ({}) unknown'.format(unit_dict[var_]))
             sys.exit()

@@ -13,14 +13,13 @@ import csv
 import glob
 import pandas as pd
 import logging
-# Math
 import numpy as np
 # The below list to be updated, imports should be specific and in individual functions
 # import tms modules with shared functions
-from . funcs4core import *
-from . funcs4generic import *
-from . funcs4time import *
-from . funcs_vars import *
+from . core import *
+from . generic import *
+from . AC_time import *
+from . variables import *
 # Time
 import datetime as datetime
 

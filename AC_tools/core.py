@@ -15,6 +15,7 @@ import platform
 import sys
 import logging
 import os
+import inspect
 from math import log10, floor
 import math
 
@@ -56,6 +57,23 @@ def get_dir(input, loc='earth0'):
         if user in tms_users:
             d = {
                 'rwd': home + 'data/all_model_simulations/iodine_runs/',
+                'dwd': home + 'data/',
+                'fwd': home + 'labbook/Python_progs/d_fast-J_JX/data/',
+                'lwd': home + 'labbook/',
+                'npwd': home + 'data/np_arrs/',
+                'tpwd': home + 'labbook/Python_progs/',
+                'ppwd': home + 'labbook/plots_images/'
+            }
+            d = d[input]
+        else:
+            d = home
+
+    # Viking setup
+    if 'viking' in host:
+        home = '/users/{}/scratch/'.format(user)
+        if user in tms_users:
+            d = {
+                'rwd': home + '/GC/rundirs/',
                 'dwd': home + 'data/',
                 'fwd': home + 'labbook/Python_progs/d_fast-J_JX/data/',
                 'lwd': home + 'labbook/',
@@ -262,8 +280,11 @@ def get_latlonalt4res(res=None, centre=True, hPa=False, nest=None,
         logging.warning("No resolution specified. Assuming 4x5!")
         res = '4x5'
     if isinstance(wd, type(None)):
+        # Get AC_tools location, then set example data folder location
+#        this_filename = inspect.getframeinfo(inspect.currentframe()).filename
+#        path = os.path.dirname(os.path.abspath(this_filename))
         AC_tools_dir = os.path.dirname(__file__)
-        dwd = os.path.join(AC_tools_dir, 'data/LM')
+        dwd = AC_tools_dir + '/../data/LM/'
         dir_dict = {
             '4x5': 'LANDMAP_LWI_ctm',
             '2x2.5': 'LANDMAP_LWI_ctm_2x25',
