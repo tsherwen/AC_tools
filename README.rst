@@ -11,8 +11,8 @@ found to be useful for work in atmospheric chemistry and now
 simply aims to contain functionality outside the remit of the 
 more specialised community packages (e.g PyGChem_, xbpch_, and 
 gcpy_) and use the existing Python stack (e.g. dask_, xarray_, 
-pandas_). (`Pull Requests are 
-welcome! <https://github.com/darothen/xbpch/pulls>`_)
+pandas_). `Pull Requests are 
+welcome! <https://github.com/darothen/xbpch/pulls>`_
 
 
 Usage
@@ -68,7 +68,7 @@ This work is licensed under a permissive MIT License.
 Contact
 -------
 
-`Daniel Rothenberg`_ - darothen@mit.edu
+`Tomas Sherwen`_ - tomas.sherwen@york.ac.uk
 
 .. _`Tomas Sherwen`: http://github.com/tsherwen
 .. _conda: http://conda.pydata.org/docs/
