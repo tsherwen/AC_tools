@@ -11,7 +11,8 @@ found to be useful for work in atmospheric chemistry and now
 simply aims to contain functionality outside the remit of the 
 more specialised community packages (e.g PyGChem_, xbpch_, and 
 gcpy_) and use the existing Python stack (e.g. dask_, xarray_, 
-pandas_). 
+pandas_). (`Pull Requests are 
+welcome! <https://github.com/darothen/xbpch/pulls>`_)
 
 
 Usage
@@ -40,7 +41,7 @@ or, you can install via pip directly from git::
 Quick Start
 -----------
 
-Functions within **AC_Tools** that can be important and used for various tasks for handling model output and observations. 
+Functions within **AC_Tools** can be used for various tasks for handling model output and observations. 
 
 An exmample would be importing NetCDF files or converting ctm.bpch files from a directory of GEOS-Chem_ output (with ``tracerinfo.dat`` and ``diaginfo.dat`` files). 
 
@@ -75,7 +76,7 @@ Contact
 .. _licensed: LICENSE
 .. _GEOS-Chem: http://www.geos-chem.org
 .. _xarray: http://xarray.pydata.org/
-.. _pandas:https://pandas.pydata.org/
+.. _pandas: https://pandas.pydata.org/
 .. _gcpy: https://github.com/geoschem/gcpy
 .. _PyGChem: https://github.com/benbovy/PyGChem
 .. _xbpch: https://github.com/darothen/xbpch
