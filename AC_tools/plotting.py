@@ -672,14 +672,14 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, f_size=10,
         ax.set_title(title, fontsize=f_size*1.5)
 
 
-def plot_up_diurnal_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
+def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
                               dfs=None, color_dict={'Obs.': 'k', 'Model': 'r'},
                               stat2plot='50%',
                               dpi=320, plt_legend=True, units=None,
                               show_plot=False, save_plot=False, verbose=False,
                               debug=False):
     """
-    Plot up mulitplot of diurnal cycle by "season" for given dict of DataFrames
+    Plot up mulitplot of diel cycle by "season" for given dict of DataFrames
 
     Parameters
     -------
@@ -758,7 +758,7 @@ def plot_up_diurnal_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
             if plt_legend and (n_key == len(list(dfs.keys()))-1):
                 legend = True
             # Plot up
-            BASIC_diurnal_plot(fig=fig, ax=ax, data=data_, units=units,
+            BASIC_diel_plot(fig=fig, ax=ax, data=data_, units=units,
                                dates=dates_, label=key_, title='{}'.format(
                                    season_),
                                plt_xlabel=plt_xlabel, plt_ylabel=plt_ylabel,
@@ -767,26 +767,26 @@ def plot_up_diurnal_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
             del tmp_df
 
     # --- Now show / save  if requested
-    suptitle = "Diurnal of {} in '{}'"
+    suptitle = "diel of {} in '{}'"
     fig.suptitle(suptitle.format(latex_spec_name(spec), sub_str))
-    png_filename = 'Seasonal_diurnal_{}_{}.png'.format(sub_str, spec)
+    png_filename = 'Seasonal_diel_{}_{}.png'.format(sub_str, spec)
     if save_plot:
         plt.savefig(png_filename, dpi=dpi)
     if show_plot:
         plt.show()
 
 
-def BASIC_diurnal_plot(fig=None, ax=None, dates=None, data=None, color='red',
+def BASIC_diel_plot(fig=None, ax=None, dates=None, data=None, color='red',
                        title=None, label=None, plt_legend=None, plt_xlabel=True,
                        plt_ylabel=True, show_plt=False, plot_pcent_change_from_max=False,
                        units='ppbv', spec='O3', alt_text=None, loc='best',
-                       filename2save='diurnal_plot.png', save_plt=False, show_plot=False,
+                       filename2save='diel_plot.png', save_plt=False, show_plot=False,
                        stat2plot='50%', alpha=0.3, time_resolution_str="%H",
                        add_quartiles2plot=True, return_avgs=True, ls='-', ncol=1,
                        xlabel='Hour of day (UTC)', debug=False, lw=2,
                        force_repeat_of_first_hour_as_last_hour=False, update_xticks=True):
     """
-    Creates a diurnal plot for given data and dates
+    Creates a diel plot for given data and dates
 
     Parameters
     -------
@@ -817,7 +817,7 @@ def BASIC_diurnal_plot(fig=None, ax=None, dates=None, data=None, color='red',
     -------
     (None)
     """
-    prt_str = 'BASIC_diurnal_plot called for {} (data.shape={})'
+    prt_str = 'BASIC_diel_plot called for {} (data.shape={})'
     if debug:
         print((prt_str.format(spec, data.shape)))
     import matplotlib
