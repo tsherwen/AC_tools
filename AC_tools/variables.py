@@ -1140,12 +1140,15 @@ def get_loc(loc=None, rtn_dict=False, debug=False):
         'CVO': (-24.871, 16.848,  0),  # Cape Verde ID
         'CVO1': (-24.871, 16.848,  0),  # Cape Verde ID
         'CVO (N)': (-24.871, 16.848+4,  0),  # Cape Verde (N)
+        'CVO (N) 2x2.5': (-24.871, 16.848+2,  0),  # Cape Verde (N)
         'CVO2': (-24.871, 16.848+4,  0),  # Cape Verde (N)
         'CVO (NNW)': (-24.871, 16.848+8.,  0),  # Cape Verde (NNW)
         'CVO3': (-24.871, 16.848+8.,  0),  # Cape Verde (NNW)
         'CVO (NW)': (-24.871-4, 16.848+4.,  0),  # Cape Verde (NW)
+        'CVO (NW) 2x2.5': (-24.871-2, 16.848+2.,  0),  # Cape Verde (NW)
         'CVO4': (-24.871-4, 16.848+4.,  0),  # Cape Verde (NW)
         'CVO (W)': (-24.871-4, 16.848,  0),  # Cape Verde (W)
+        'CVO (W) 2x2.5': (-24.871-2, 16.848,  0),  # Cape Verde (W)
         'CVO5': (-24.871-4, 16.848,  0),  # Cape Verde (W)
         'CVO (S)': (-24.871, 16.848-4,  0),  # Cape Verde (S)
         'CVO6': (-24.871, 16.848-4,  0),  # Cape Verde (S)
