@@ -1,5 +1,6 @@
 # compatibility with both python 2 and 3
 from __future__ import print_function
+from . plotting_REDUNDENT import *
 from . plotting import *
 from . variables import *
 from . AC_time import *
