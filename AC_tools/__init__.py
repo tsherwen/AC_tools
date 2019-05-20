@@ -8,6 +8,7 @@ from . generic import *
 from . GEOSChem_bpch import *
 from . GEOSChem_nc import *
 from . KPP import *
+from . mask import *
 from . planeflight import *
 from . plotting_REDUNDENT import *
 from . plotting import *
