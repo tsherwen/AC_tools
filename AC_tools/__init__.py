@@ -1,15 +1,19 @@
 # compatibility with both python 2 and 3
 from __future__ import print_function
-from . plotting_REDUNDENT import *
-from . plotting import *
-from . variables import *
+import numpy as np
+# AC_tools modules
 from . AC_time import *
-from . planeflight import *
-from . generic import *
 from . core import *
+from . generic import *
 from . GEOSChem_bpch import *
 from . GEOSChem_nc import *
-import numpy as np
+from . KPP import *
+from . planeflight import *
+from . plotting_REDUNDENT import *
+from . plotting import *
+from . SMVGEAR import *
+from . variables import *
+
 """
 AC_tools is a module of functions started by Tomas, and contributed to by others in the Evans' group, and hopefully maintained by the Group.
 To access the help, from python or ipython, type help(AC_tools) to get general help
