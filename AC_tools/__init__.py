@@ -1,6 +1,7 @@
 # compatibility with both python 2 and 3
 from __future__ import print_function
 import numpy as np
+import sys
 # AC_tools modules
 from . AC_time import *
 from . core import *

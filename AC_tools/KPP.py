@@ -1,3 +1,6 @@
+from __future__ import print_function
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 """
 
 Functions for KPP input/output file Processing
@@ -214,7 +217,7 @@ def print_out_dfs2KPP_eqn_file(species_df=None, headers=None,
                 print(ptr_str.format(*ptr_vars), file=a)
             else:
                 print(rxn, KPP_line_max)
-                # Just split substrings ? (NO, must split by reactant)
+                # Just split substrings ? (NO, must split by reactant)
 #                 frac_of_max = len( rxn ) / KPP_line_max
 #                 nchunks = myround( frac_of_max, base=1, round_up=True )
 #                 sub_strs = chunks(l=rxn, n=int(KPP_line_max)-2 )
@@ -1165,7 +1168,7 @@ def get_oxidative_release4specs(filename='gckpp_Monitor.F90',
     # Loop species
     RR_rxn_dummies = []
     for spec in specs:
-        # loop reactions
+        # Loop reactions
         for key_ in RR_dict:
             rxn_str = RR_dict[key_]
             # species in reaction?
