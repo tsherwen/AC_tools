@@ -8,8 +8,8 @@ import os
 #import urllib
 #import urllib2
 try:
-    from urllib import urlopen
-    from urllib2 import HTTPError
+    from urllib.request import urlopen
+    from urllib.error import HTTPError
 #except ModuleNotFoundError:
 except ImportError:
     from urllib.request import urlopen

@@ -28,7 +28,7 @@ except:  # Otherwise use path below
 # set day_to_use by adjusting range
 years_to_use, months_to_use = ['2005'], ['05', '06', '07']
 days_to_use = ["{0:0>2}".format(i) for i in range(1, 31, 1)]
-print(years_to_use, months_to_use, days_to_use)
+print((years_to_use, months_to_use, days_to_use))
 
 # Which locations? (where 10 = 1000 Hpa, 08 = 800 Hpa etc ... ) (must be in list form)
 # e.g. locations=['TX1','LA1'] # must be as a list of strings
@@ -51,7 +51,7 @@ ver = '3.0'
 wd = wd + '/plane_flight_logs/plane.log.*'
 #wd = wd+ '/plane.log.*'
 print(wd)
-print(sorted(glob.glob(wd)))
+print((sorted(glob.glob(wd))))
 
 # Asectics
 fontsize = 10

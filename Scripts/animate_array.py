@@ -83,8 +83,8 @@ def extract_data_dates(spec='O3', file=None, dates_variable='time',
         # Return data as an array
 #        arr = np.ma.array( rootgrp.variables[ pspec ]   )
         arr = np.array(rootgrp.variables[pspec])
-        print(rootgrp.variables[pspec])
-        print(np.array(rootgrp.variables[pspec]))
+        print((rootgrp.variables[pspec]))
+        print((np.array(rootgrp.variables[pspec])))
 
         # get dates
         dates = np.ma.array(rootgrp.variables[dates_variable])
@@ -105,11 +105,11 @@ def extract_data_dates(spec='O3', file=None, dates_variable='time',
     if debug:
         print([i.shape for i in (arr, dates)])
 
-        print(edate, sdate, dates[0])
+        print((edate, sdate, dates[0]))
         print([type(i) for i in (edate, sdate, dates[0])])
 
-        print(dates > sdate)
-        print(dates < edate)
+        print((dates > sdate))
+        print((dates < edate))
 
     # Limit to given dates ( e.g. 1st month 2005)
     if limit_by_dates:
@@ -266,8 +266,8 @@ def setup_plot2animate(arr, fig=None, ax=None, lat=None, lon=None,
     plt.ioff()  # turn off interactive plotting
     global specplt
 
-    print(3, 'detail on output: ', [[np.ma.min(i), np.ma.max(i),
-                                     np.ma.mean(i), type(i), i.shape] for i in [arr]])
+    print((3, 'detail on output: ', [[np.ma.min(i), np.ma.max(i),
+                                     np.ma.mean(i), type(i), i.shape] for i in [arr]]))
 
     # Setup basemap
     m = get_basemap(lat=lat, lon=lon, resolution=resolution, res=res,
@@ -313,8 +313,8 @@ def setup_plot2animate(arr, fig=None, ax=None, lat=None, lon=None,
 
     if debug:
         print([len(i) for i in (lat, lon, x, y)])
-        print(arr.shape, type(arr))
-        print(arr.shape, type(arr))
+        print((arr.shape, type(arr)))
+        print((arr.shape, type(arr)))
 
     return cmap, specplt, lvls, cnorm, m, fixcb, fixcb_buffered
 
@@ -331,8 +331,8 @@ def animate_array(arr, dates, specplt, spec='O3', min_change=0.5,
     # Function to loop frame and save to animation
     def plotgc(i):
         global specplt
-        print(i, 'for {} @ model time of {} @  real time of {}'.format(spec,
-                                                                       dates[i], time.strftime('%Y %m %d %H:%M:%S')))
+        print((i, 'for {} @ model time of {} @  real time of {}'.format(spec,
+                                                                       dates[i], time.strftime('%Y %m %d %H:%M:%S'))))
         if contour:
             # Remove previous plot data, but retain basemap....
             for c in specplt.collections:
@@ -360,7 +360,7 @@ def animate_array(arr, dates, specplt, spec='O3', min_change=0.5,
     # Save
     ani.save(wd + fname, 'ffmpeg', fps=24, extra_args=['-vcodec',
                                                        'libx264', '-pix_fmt', 'yuv420p'])
-    print('Video saved & Closed as/at: ', fname)
+    print(('Video saved & Closed as/at: ', fname))
 
     # Clean memory
 #    gc.collect()

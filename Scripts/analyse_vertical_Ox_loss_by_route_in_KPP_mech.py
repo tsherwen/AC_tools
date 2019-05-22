@@ -8,7 +8,7 @@ This is an example script to use AC_tools KPP mechanism parsing/tagging function
 python AC_tools/Scripts/analyse_vertical_Ox_loss_by_route_in_KPP_mech.py <working directory with NetCDF of GEOS-Chem output>
 
 """
-import AC_tools as AC
+from . import AC_tools as AC
 import numpy as np
 import sys
 import matplotlib.pyplot as plt
@@ -75,11 +75,11 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3', region=None,
     RR_dict = AC.get_dict_of_KPP_mech(wd=CODE_wd,
                                       GC_version=Data_rc['GC_version'], Mechanism=Mechanism)
     if debug:
-        print(len(RR_dict), [RR_dict[i] for i in RR_dict.keys()[:5]])
+        print((len(RR_dict), [RR_dict[i] for i in list(RR_dict.keys())[:5]]))
     # Get tags for family
     tags_dict = AC.get_tags4_family(fam=fam, wd=CODE_wd, RR_dict=RR_dict)
     tags = list(sorted(tags_dict.values()))
-    tags2_rxn_num = {v: k for k, v in tags_dict.items()}
+    tags2_rxn_num = {v: k for k, v in list(tags_dict.items())}
     if debug:
         print(tags)
     # Get stiochiometry of reactions for family
@@ -93,7 +93,7 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3', region=None,
     # Combine to a single array
     arr = np.array(ars)
     if debug:
-        print(arr.shape)
+        print((arr.shape))
     # --- Split reactions by family
     # Get families for tags
     fam_dict = AC.get_Ox_family_tag_based_on_reactants(fam=fam, tags=tags_dict,
@@ -103,28 +103,28 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3', region=None,
     # Get indices of array for family.
     sorted_fam_names = list(sorted(set(fam_dict.values())))
     if debug:
-        print sorted_fam_names, len(sorted_fam_names)
+        print(sorted_fam_names, len(sorted_fam_names))
     sorted_fam_names = [
         'Photolysis', 'HO$_{\\rm x}$', 'NO$_{\\rm x}$',
         'Chlorine', 'Cl+Br', 'Bromine', 'Br+I', 'Cl+I', 'Iodine',
     ]
     if debug:
-        print(sorted_fam_names, len(sorted_fam_names))
+        print((sorted_fam_names, len(sorted_fam_names)))
     fam_tag = [fam_dict[i] for i in tags]
     fam_ars = []
     for fam_ in sorted_fam_names:
         # get indices for routes of family
         fam_ind = [n for n, i in enumerate(fam_tag) if (i == fam_)]
         if debug:
-            print(fam_ind, len(fam_ind))
+            print((fam_ind, len(fam_ind)))
         # Select these ...
         fam_ars += [arr[fam_ind, ...]]
     # Recombine and sum by family...
     if debug:
-        print([i.shape for i in fam_ars], len(fam_ars))
+        print(([i.shape for i in fam_ars], len(fam_ars)))
     arr = np.array([i.sum(axis=0) for i in fam_ars])
     if debug:
-        print(arr.shape)
+        print((arr.shape))
     # --- Plot up as a stack-plot...
     # normalise to total and conver to % (*100)
     arr = (arr / arr.sum(axis=0)) * 100
@@ -137,9 +137,9 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3', region=None,
     # Plot by family
     for n, label in enumerate(sorted_fam_names):
         # print out some summary stats
-        print n, label, arr[:n, 0].sum(axis=0), arr[:n+1, 0].sum(axis=0),
-        print arr[:n, :].sum(), arr[:n+1, :].sum()
-        print [i.shape for i in Data_rc['alt'], arr]
+        print(n, label, arr[:n, 0].sum(axis=0), arr[:n+1, 0].sum(axis=0), end=' ')
+        print(arr[:n, :].sum(), arr[:n+1, :].sum())
+        print([i.shape for i in (Data_rc['alt'], arr)])
         # fill between X and Y.
         plt.fill_betweenx(Data_rc['alt'], arr[:n, :].sum(axis=0),
                           arr[:n+1, :].sum(axis=0),
@@ -150,7 +150,7 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3', region=None,
                  lw=Var_rc['lw'],)
     # Beautify the plot
     plt.xlim(0, 100)
-    xlabel = u'% of total O$_{\\rm x}$ loss'
+    xlabel = '% of total O$_{\\rm x}$ loss'
     plt.xlabel(xlabel, fontsize=Var_rc['f_size']*.75)
     plt.yticks(fontsize=Var_rc['f_size']*.75)
     plt.xticks(fontsize=Var_rc['f_size']*.75)
@@ -204,11 +204,11 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3', region=None,
     RR_dict = AC.get_dict_of_KPP_mech(wd=CODE_wd,
                                       GC_version=Data_rc['GC_version'], Mechanism=Mechanism)
     if debug:
-        print(len(RR_dict), [RR_dict[i] for i in RR_dict.keys()[:5]])
+        print((len(RR_dict), [RR_dict[i] for i in list(RR_dict.keys())[:5]]))
     # Get tags for family
     tags_dict = AC.get_tags4_family(fam=fam, wd=CODE_wd, RR_dict=RR_dict)
     tags = list(sorted(tags_dict.values()))
-    tags2_rxn_num = {v: k for k, v in tags_dict.items()}
+    tags2_rxn_num = {v: k for k, v in list(tags_dict.items())}
     if debug:
         print(tags)
     # Get stiochiometry of reactions for family
@@ -248,20 +248,20 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3', region=None,
     df = pd.DataFrame(dict_)
     # Sort the data and have a look...
     df = df.sort_values('Total flux', ascending=False)
-    print df.head()
+    print(df.head())
     # Sort values again and save...
     df = df.sort_values(['Family', 'Total flux'], ascending=False)
-    print df.head()
+    print(df.head())
     df.to_csv('test_Ox.csv')
     # Now select the most important routes
     df_sum = pd.DataFrame()
     grp = df[['Family', 'Total flux']].groupby('Family')
     total = grp.sum().sum()
     # Print the contribution by family to screen
-    print(grp.sum() / total * 100)
+    print((grp.sum() / total * 100))
     # Print the contribution of all the halogen routes
     hal_LOx = (grp.sum().T[halogen_fams].sum().sum() / total * 100).values[0]
-    print('Total contribution of halogens is: {:.2f} %'.format(hal_LOx))
+    print(('Total contribution of halogens is: {:.2f} %'.format(hal_LOx)))
 
 
 def func_settings(wd=None, filename=None, full_vertical_grid=True):

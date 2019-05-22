@@ -40,7 +40,7 @@ def main(filename=None, LAT_var='LAT', LON_var='LON',
     for specific locations and times in the model. 
     - The deafult settting is for hourly output.
     """
-    print('filename:{}'.format(filename))
+    print(('filename:{}'.format(filename)))
     # ---  Local settings
     # file of locations? (from 1st argument of command line)
     if isinstance(filename, type(None)):

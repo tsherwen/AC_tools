@@ -21,7 +21,7 @@ def main():
     # --- Local settings hardwired here...
     fam = 'Cly'  # Family to plot
     # print species in family for reference...
-    print(AC.GC_var(fam))
+    print((AC.GC_var(fam)))
 
     # --- Get working directory etc from command line (as a dictionary object)
     # (1st argument is fil directory with folder, 2nd is filename)
@@ -35,17 +35,17 @@ def main():
 
     # --- Process data (add and extra processing of data here... )
     # take average over time
-    print(arr.shape)
+    print((arr.shape))
     arr = arr.mean(axis=-1)
     # Select surface values
-    print(arr.shape)
+    print((arr.shape))
     arr = arr[..., 0]
     # convert to pptv
     arr = arr*1E12
     units = 'pptv'
 
     # --- Plot up data...
-    print(arr.shape)
+    print((arr.shape))
     #  - Plot a (very) simple plot ...
 #    AC.map_plot( arr.T, res=Data_rc['res'] )
     #  - plot a slightly better plot...

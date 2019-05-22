@@ -40,7 +40,7 @@ def main(trop_limit=True, res='4x5',  debug=False):
         print('WARNING! - attempting to process just tagged reactions')
         detail_zip = list(zip(rxnstr_l, list(zip(nums, tags))))
         untagged = [n for n, i in enumerate(tags) if (len(i) < 1)]
-        print('Untagged reactions: ', [detail_zip[i] for i in untagged])
+        print(('Untagged reactions: ', [detail_zip[i] for i in untagged]))
         tags = [i for n, i in enumerate(tags) if (n not in untagged)]
         tags = [i[0] for i in tags]  # just consider first tag
 #        tags.pop( tags.index('LR71') )  # rm tag for ClOO loss...

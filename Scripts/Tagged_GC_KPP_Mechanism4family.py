@@ -12,13 +12,13 @@ Notes
 
 """
 # Compatibility with both python 2 and 3
-from __future__ import print_function
+
 # Import modules used within the script
 import numpy as np
 import pandas as pd
 import xarray as xr
 from netCDF4 import Dataset
-import AC_tools as AC
+from . import AC_tools as AC
 import matplotlib.pyplot as plt
 import datetime as datetime
 import glob
@@ -158,7 +158,7 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
     fams = 'BrSAL', 'CH3Br', 'CH3Cl', 'CH2Cl2', 'CHCl3', '0.150IBr', 'ClNO2',
     fams += 'HOBr',
     for fam in fams:
-        for key_ in rxn_dicts.keys():
+        for key_ in list(rxn_dicts.keys()):
             df_tmp = rxn_dicts[key_]
             for ix in df_tmp.index:
                 # retrive the reaction string and check if the family is in it
@@ -191,7 +191,7 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
 
     # --- Add the species to the species_df
     # number of reactions tagged
-    alltags = [tagged_rxns[i]['tag'] for i in tagged_rxns.keys()]
+    alltags = [tagged_rxns[i]['tag'] for i in list(tagged_rxns.keys())]
     tags = list(sorted(set(alltags)))
     ptr_str = '# of rxns tagged = {} (of which unique = {})'
     if verbose:
