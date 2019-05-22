@@ -103,9 +103,10 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-# temp. files
+# temp. or backup files
 *.~
 *#*
+*.bak
 
 # outputed or input files files
 *.nc
