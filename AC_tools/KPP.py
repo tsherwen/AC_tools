@@ -27,6 +27,8 @@ import logging
 
 # AC_tools imports
 from . generic import myround
+from .GEOSChem_bpch import *
+from .GEOSChem_nc import *
 
 
 def get_fam_prod_loss_for_tagged_mechanism(wd=None, fam='LOx', ref_spec='O3',

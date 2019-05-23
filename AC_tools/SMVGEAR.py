@@ -23,6 +23,10 @@ import calendar
 import datetime as datetime
 from datetime import datetime as datetime_
 
+# AC_tools imports
+from .GEOSChem_bpch import *
+from .GEOSChem_nc import *
+
 
 # -------------- Smvgear input/output file Processing
 # NOTE: this is now redundent as GEOS-Chem uses KPP going forward. procssing/parsing

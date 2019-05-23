@@ -8,7 +8,7 @@ This is an example script to use AC_tools KPP mechanism parsing/tagging function
 python AC_tools/Scripts/analyse_vertical_Ox_loss_by_route_in_KPP_mech.py <working directory with NetCDF of GEOS-Chem output>
 
 """
-from . import AC_tools as AC
+import AC_tools as AC
 import numpy as np
 import sys
 import matplotlib.pyplot as plt
@@ -33,7 +33,8 @@ def main():
 
 def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3', region=None,
                                     wd=None, Mechanism='Halogens', rm_strat=False,
-                                    weight_by_num_molecules=True, verbose=True, debug=False):
+                                    weight_by_num_molecules=True, CODE_wd=None,
+                                    verbose=True, debug=False):
     """
     Plot vertical odd oxygen (Ox) loss via route (chemical family)
 
@@ -43,6 +44,7 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3', region=None,
     ref_spec (str): reference species to normalise to
     region (str): region to consider (by masking all but this location)
     wd (str): working directory ("wd") of model output
+    CODE_wd (str): root of code directory containing the tagged KPP mechanism
     Mechanism (str): name of the KPP mechanism (and folder) of model output
     weight_by_num_molecules (boolean): weight grid boxes by number of molecules
     rm_strat (boolean): (fractionally) replace values in statosphere with zeros
@@ -62,7 +64,10 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3', region=None,
     # assume name and location of code directory
     wd = Var_rc['wd']
     assert os.path.exists(wd), 'working directory not found @: {}'.format(wd)
-    CODE_wd = '{}/../code/KPP/{}/'.format(wd, Mechanism)
+    if isinstance(CODE_wd, type(None)):
+        CODE_wd = '{}/../code/KPP/{}/'.format(wd, Mechanism)
+    else:
+        CODE_wd = CODE_wd + '/KPP/{}/'.format(Mechanism)
     assert os.path.exists(CODE_wd), 'code directory not found @: ' + CODE_wd
     # plot up as % contribution to vertical Ox loss?
     plt_normalised_by_vertical = True
@@ -73,7 +78,8 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3', region=None,
     # --- Get information KPP mechanism (inc. tags for families, rxn. strs)
     # Reaction dictionary
     RR_dict = AC.get_dict_of_KPP_mech(wd=CODE_wd,
-                                      GC_version=Data_rc['GC_version'], Mechanism=Mechanism)
+                                      GC_version=Data_rc['GC_version'],
+                                      Mechanism=Mechanism)
     if debug:
         print((len(RR_dict), [RR_dict[i] for i in list(RR_dict.keys())[:5]]))
     # Get tags for family
@@ -84,12 +90,16 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3', region=None,
         print(tags)
     # Get stiochiometry of reactions for family
     RR_dict_fam_stioch = AC.get_stioch_for_family_reactions(fam=fam,
-                                                            RR_dict=RR_dict, Mechanism=Mechanism)
+                                                            RR_dict=RR_dict,
+                                                            Mechanism=Mechanism)
     # --- Get data for Ox loss for famiy
     ars = AC.get_fam_prod_loss_for_tagged_mechanism(RR_dict=RR_dict, wd=wd,
-                                                    Var_rc=Var_rc, Data_rc=Data_rc, fam=fam, ref_spec=ref_spec, tags=tags,
-                                                    tags2_rxn_num=tags2_rxn_num, RR_dict_fam_stioch=RR_dict_fam_stioch,
-                                                    weight_by_num_molecules=weight_by_num_molecules, rm_strat=rm_strat)
+                                                    Var_rc=Var_rc, Data_rc=Data_rc,
+                                                    fam=fam, ref_spec=ref_spec, tags=tags,
+                                                    tags2_rxn_num=tags2_rxn_num,
+                                                    RR_dict_fam_stioch=RR_dict_fam_stioch,
+                                          weight_by_num_molecules=weight_by_num_molecules,
+                                                    rm_strat=rm_strat)
     # Combine to a single array
     arr = np.array(ars)
     if debug:
@@ -97,7 +107,8 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3', region=None,
     # --- Split reactions by family
     # Get families for tags
     fam_dict = AC.get_Ox_family_tag_based_on_reactants(fam=fam, tags=tags_dict,
-                                                       RR_dict=RR_dict, GC_version=Data_rc['GC_version'])
+                                                       RR_dict=RR_dict,
+                                                       GC_version=Data_rc['GC_version'])
     if debug:
         print(fam_dict)
     # Get indices of array for family.
@@ -168,7 +179,8 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3', region=None,
 
 
 def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3', region=None,
-                           rm_strat=True, Mechanism='Halogens', verbose=True, debug=False):
+                           rm_strat=True, Mechanism='Halogens', verbose=True,
+                           debug=False):
     """
     Build an Ox budget table like table 4 in Sherwen et al 2016b
 
@@ -202,7 +214,8 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3', region=None,
                                     wd=wd)
     # Get reaction dictionary
     RR_dict = AC.get_dict_of_KPP_mech(wd=CODE_wd,
-                                      GC_version=Data_rc['GC_version'], Mechanism=Mechanism)
+                                      GC_version=Data_rc['GC_version'],
+                                      Mechanism=Mechanism)
     if debug:
         print((len(RR_dict), [RR_dict[i] for i in list(RR_dict.keys())[:5]]))
     # Get tags for family
@@ -213,16 +226,20 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3', region=None,
         print(tags)
     # Get stiochiometry of reactions for family
     RR_dict_fam_stioch = AC.get_stioch_for_family_reactions(fam=fam,
-                                                            RR_dict=RR_dict, Mechanism=Mechanism)
+                                                            RR_dict=RR_dict,
+                                                            Mechanism=Mechanism)
     # --- Extract data for Ox loss for family from model
     ars = AC.get_fam_prod_loss_for_tagged_mechanism(RR_dict=RR_dict,
                                                     tags=tags, rm_strat=rm_strat,
-                                                    Var_rc=Var_rc, Data_rc=Data_rc, wd=wd, fam=fam, ref_spec=ref_spec,
-                                                    tags2_rxn_num=tags2_rxn_num, RR_dict_fam_stioch=RR_dict_fam_stioch,
+                                                    Var_rc=Var_rc, Data_rc=Data_rc, wd=wd,
+                                                    fam=fam, ref_spec=ref_spec,
+                                                    tags2_rxn_num=tags2_rxn_num,
+                                                    RR_dict_fam_stioch=RR_dict_fam_stioch,
                                                     weight_by_num_molecules=False)
     # Get families that tags belong to
     fam_dict = AC.get_Ox_family_tag_based_on_reactants(fam=fam, tags=tags_dict,
-                                                       RR_dict=RR_dict, GC_version=Data_rc['GC_version'])
+                                                       RR_dict=RR_dict,
+                                                       GC_version=Data_rc['GC_version'])
     # Get indices of array for family.
 #    sorted_fam_names = list(sorted(set(fam_dict.values())))
     sorted_fam_names = ['Photolysis', 'HO$_{\\rm x}$', 'NO$_{\\rm x}$']
