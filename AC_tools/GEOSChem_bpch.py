@@ -3195,7 +3195,7 @@ def fam_data_extractor4ts_bpch_files(spec='NOy', wd=None,
         return data, units
 
 
-def convert_spec_v_v_2_ugm3(spec=None, data=None, explicitly_caculate=False,
+def convert_spec_v_v_2_ugm3(spec=None, data=None, explicitly_calc=False,
                             press=None, T=None):
     """
     Convert mixing ratio (v/v) to ug m^-3
@@ -3213,7 +3213,7 @@ def convert_spec_v_v_2_ugm3(spec=None, data=None, explicitly_caculate=False,
     """
     logging.info('convert_spec_v_v_2_ugm3 called for spec={}'.format(spec))
     # Get Air density
-    if explicitly_caculate:
+    if explicitly_calc:
         # calculate using provide pressions
         assert_str = 'variable ({}) needed to explicitly caculate!'
         assert not isinstance(press, type(None)), assert_str.format('press')
@@ -3337,7 +3337,7 @@ def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None,
 
 def convert_v_v_2_molec_cm3(arr=None, wd=None, vol=None, a_m=None,
                             mols=None, res='4x5', trop_limit=True,
-                            explicitly_caculate=True, debug=False):
+                            explicitly_calc=True, debug=False):
     """
     Converts mixing ratio (v/v) into number density (molec/cm3).
 
@@ -3348,6 +3348,7 @@ def convert_v_v_2_molec_cm3(arr=None, wd=None, vol=None, a_m=None,
     mols (array): array of molecule number density
     trop_limit (boolean): limit output to "chemical troposphere" (level 38 )
     res (str): resolution of the model input (e.g. 4x5, 2x2.5 )
+    explicitly_calc (boolean): Explicitly calculate the air mass
 
     Returns
     -------
@@ -3359,7 +3360,7 @@ def convert_v_v_2_molec_cm3(arr=None, wd=None, vol=None, a_m=None,
     arguements or are extracted online (from provided wd )
     """
     logging.info('convert_v_v_2_molec_cm3 called for res={}'.format(res))
-    if explicitly_caculate:
+    if explicitly_calc:
         # Get volume ( cm^3  )
         if not isinstance(vol, np.ndarray):
             vol = get_volume_np(wd=wd, res=res, trop_limit=trop_limit,
@@ -3397,7 +3398,7 @@ def convert_v_v_2_molec_cm3(arr=None, wd=None, vol=None, a_m=None,
 
 def convert_molec_cm3_2_v_v(arr=None, wd=None, vol=None, a_m=None,
                             mols=None, res='4x5', trop_limit=True, press=None, T=None,
-                            explicitly_caculate=False, debug=False):
+                            explicitly_calc=False, debug=False):
     """
     Covnerts number density (molec/cm3) into mixing ratio (v/v).
 
@@ -3421,7 +3422,7 @@ def convert_molec_cm3_2_v_v(arr=None, wd=None, vol=None, a_m=None,
     """
     logging.info('convert_molec_cm3_2_v_v called for res={}'.format(res))
     # Get Air density
-    if explicitly_caculate:
+    if explicitly_calc:
         # calculate using provide pressions
         assert_str = '{} needed to explicitly caculate!'
         assert not isinstance(press, type(None)), assert_str.format('press')
