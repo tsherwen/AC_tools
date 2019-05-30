@@ -31,12 +31,12 @@ from .GEOSChem_bpch import *
 from .GEOSChem_nc import *
 
 
-def get_fam_prod_loss_for_tagged_mechanism(wd=None, fam='LOx', ref_spec='O3',
+def get_fam_prod_loss4tagged_mech(wd=None, fam='LOx', ref_spec='O3',
                                            tags=None, RR_dict=None, Data_rc=None,
                                            Var_rc=None, tags2_rxn_num=None,
                                            RR_dict_fam_stioch=None, region=None,
                                            rm_strat=False,
-                                           weight_by_num_molecules=False, verbose=True,
+                                           weight_by_molecs=False, verbose=True,
                                            debug=False):
     """
     Extract prod/loss for family from wd and code directory
@@ -50,7 +50,7 @@ def get_fam_prod_loss_for_tagged_mechanism(wd=None, fam='LOx', ref_spec='O3',
     debug, verbose (bool): switches to turn on/set verbosity of output to screen
     RR_dict (dict): dictionary of KPP rxn. mechanism (from get_dict_of_KPP_mech)
     RR_dict_fam_stioch (dict): dictionary of stoichiometries for
-        get_stioch_for_family_reactions
+        get_stioch4family_rxns
     tags2_rxn_num (dict): dicionary mapping tags to reaction numbers
     tags (list): list of prod/loss tags to extract
     Var_rc (dict): dictionary containing variables for working directory ('wd')
@@ -58,7 +58,7 @@ def get_fam_prod_loss_for_tagged_mechanism(wd=None, fam='LOx', ref_spec='O3',
     Data_rc (dict): dictionary containing model data
         (made by AC_tools' get_shared_data_as_dict function )
     rm_strat (boolean): (fractionally) replace values in statosphere with zeros
-    weight_by_num_molecules (boolean): weight grid boxes by number of molecules
+    weight_by_molecs (boolean): weight grid boxes by number of molecules
 
     Returns
     -------
@@ -75,7 +75,7 @@ def get_fam_prod_loss_for_tagged_mechanism(wd=None, fam='LOx', ref_spec='O3',
     if isinstance(tags2_rxn_num, type(None)):
         tags2_rxn_num = {v: k for k, v in tags_dict.items()}
     if isinstance(RR_dict_fam_stioch, type(None)):
-        RR_dict_fam_stioch = get_stioch_for_family_reactions(
+        RR_dict_fam_stioch = get_stioch4family_rxns(
             fam=fam, RR_dict=RR_dict, Mechanism=Mechanism)
     # --- Get data
     # get prod/loss arrays
@@ -136,7 +136,7 @@ def get_fam_prod_loss_for_tagged_mechanism(wd=None, fam='LOx', ref_spec='O3',
         print('NOT SETUP!!!')
         sys.exit()
     else:
-        if weight_by_num_molecules:
+        if weight_by_molecs:
             ars = [molec_weighted_avg(i, weight_lon=True, res=Data_rc['res'],
                                       weight_lat=True, wd=Var_rc['wd'],
                                       trop_limit=Var_rc['trop_limit'],
@@ -628,7 +628,7 @@ def split_combined_KPP_eqns(list_in):
 # (funcs still do use funcs from elsewhere)
 
 
-def get_stioch_for_family_reactions(fam='LOx', filename='gckpp_Monitor.F90',
+def get_stioch4family_rxns(fam='LOx', filename='gckpp_Monitor.F90',
                                     Mechanism='Halogens', RR_dict=None, wd=None,
                                     debug=False):
     """
@@ -679,7 +679,7 @@ def get_stioch_for_family_reactions(fam='LOx', filename='gckpp_Monitor.F90',
     return dict(list(zip(tagged_rxns, tagged_rxn_stioch)))
 
 
-def get_tags4_family(fam='LOx', filename='gckpp_Monitor.F90',
+def get_tags4family(fam='LOx', filename='gckpp_Monitor.F90',
                      Mechanism='Halogens', tag_prefix='PT', RR_dict=None, wd=None,
                      get_one_tag_per_fam=True, debug=False):
     """
@@ -932,7 +932,7 @@ def get_dictionary_of_tagged_reactions(filename='globchem.eqn',
     return dict(list(zip(tags_l, rxn_l)))
 
 
-def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90',
+def get_Ox_fam_based_on_reactants(filename='gckpp_Monitor.F90',
                                          Mechanism='Halogens', wd=None,  fam='LOx',
                                          tag_prefix='PT',
                                          tags=None, RR_hv_dict=None, RR_dict=None,
@@ -963,7 +963,7 @@ def get_Ox_family_tag_based_on_reactants(filename='gckpp_Monitor.F90',
 #            Mechanism=Mechanism, wd=wd)
     # Get tags for reaction unless already provided
     if isinstance(tags, type(None)):
-        tags = get_tags4_family(wd=wd, fam=fam, filename=filename,
+        tags = get_tags4family(wd=wd, fam=fam, filename=filename,
                                 Mechanism=Mechanism, tag_prefix=tag_prefix,
                                 RR_dict=RR_dict)
     # --- Extra local variables
