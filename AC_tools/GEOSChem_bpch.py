@@ -4659,8 +4659,12 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
         PL_l = [ [i.sum() for i in l] for l in PL_l ]
         POxLOx = np.array(PL_l)
         # Add to dataframe
-        df['Ox loss (Tg)'] = POxLOx[:,0]
-        df['Ox prod. (Tg)'] = POxLOx[:,1]
+        LOx_varname = 'Ox loss (Tg)'
+        POx_varname = 'Ox prod. (Tg)'
+        Net_Ox_varname = 'Net Ox (Tg)'
+        df[POx_varname] = POxLOx[:,0]
+        df[LOx_varname] = POxLOx[:,1]
+        df[Net_Ox_varname] = df[POx_varname] - df[LOx_varname]
     except:
         pass
 
