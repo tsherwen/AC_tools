@@ -4548,7 +4548,8 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
                                      save2csv=True, prefix='GC_', run_names=None,
                                      extra_burden_specs=['NIT', 'NITs'],
                                      extra_surface_specs=['NIT', 'NITs'],
-                                    debug=False):
+                                     GC_version='v11-02d',
+                                     debug=False):
     """
     Get various stats on a set of runs in a dictionary ({name: location})
 
@@ -4579,10 +4580,10 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     if isinstance(run_names, type(None)):
         run_names = sorted(run_dict.keys())
     wds = [run_dict[i] for i in run_names]
-    # mass unit scaling
+    # Mass unit scaling
     mass_scale = 1E3
     mass_unit = 'Tg'
-    # v/v scaling?
+    # mixing ratio (v/v) scaling?
     ppbv_unit = 'ppbv'
     ppbv_scale = 1E9
     pptv_unit = 'pptv'
@@ -4590,21 +4591,21 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     # Get shared variables from a single model run
     if isinstance(REF_wd, type(None)):
         REF_wd = wds[0]
-    # get time in the troposphere diagnostic
+    # Get time in the troposphere diagnostic (for splitting off data above tropopause)
     t_p = get_GC_output(wd=REF_wd, vars=[u'TIME_TPS__TIMETROP'],
                         trop_limit=True)
     # Temperature
     K = get_GC_output(wd=REF_wd, vars=[u'DAO_3D_S__TMPU'], trop_limit=True)
-    # airmass
+    # Airmass within grid boxes
     a_m = get_air_mass_np(wd=REF_wd, trop_limit=True)
-    # Surface area?
+    # Surface area
     s_area = get_surface_area(res)[..., 0]  # m2 land map
-
-    # ----  ----  ----  ----  ----  ----  ----
-    # ---- Now build analysis in pd.DataFrame
-
-    # ---- Tropospheric burdens?
-    # -- Get tropospheric burden for run
+    # volume
+    vol = get_volume_np(wd=REF_wd, res=res)
+    #
+    # --- Now add analysis values into a pd.DataFrame
+    # -- Tropospheric burdens?
+    # Get tropospheric burden for run
     varname = 'O3 burden ({})'.format(mass_unit)
     ars = [get_O3_burden(i, t_p=t_p, res=res).sum() for i in wds]
     df = pd.DataFrame(ars, columns=[varname], index=run_names)
@@ -4635,7 +4636,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
         if debug:
             print( 'NOx family not added for trop. df columns:', list(df.columns) )
 
-    # sum NIT+NITs
+    # Sum the aerosol nitrates (NIT+NITs)
     NIT_varname = 'NIT burden ({})'.format(mass_unit)
     NITs_varname = 'NITs burden ({})'.format(mass_unit)
     varname = 'NIT+NITs burden ({})'.format(mass_unit)
@@ -4650,7 +4651,20 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
         if 'Tg' in col_:
             df.loc[:, col_] = df.loc[:, col_].values/mass_scale
 
-    # ---- Surface concentrations?
+    # Add ozone (+fast cycling specs.) production (POx) and loss (LOx) for simulation
+    try:
+        PL_l = [get_POxLOx(wd=wd, t_p=t_p, vol=vol, GC_version=GC_version, debug=debug)
+                           for wd in wds]
+        # Unpack data
+        PL_l = [ [i.sum() for i in l] for l in PL_l ]
+        POxLOx = np.array(PL_l)
+        # Add to dataframe
+        df['Ox loss (Tg)'] = POxLOx[:,0]
+        df['Ox prod. (Tg)'] = POxLOx[:,1]
+    except:
+        pass
+
+    # - Surface concentrations?
     core_surface_specs = [
     'O3', 'NO', 'NO2', 'N2O5'
     ]
@@ -4673,7 +4687,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
         if debug:
             print( 'NOx family not added for surface. df columns:', list(df.columns) )
 
-    # ---- OH concentrations?
+    # - OH concentrations?
     # First process the files to have different names for the different years
     try:
         OH_global_varname = 'Global mean OH'
@@ -4682,7 +4696,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     except:
         print('Unable to add OH values - please check the file directory! ')
 
-    # ---- CH4 concentrations?
+    # - CH4 concentrations?
     try:
         CH4_lifetime_varname = 'CH4 lifetime (yr)'
         ars = [get_CH4_lifetime(wd=i, use_OH_from_geos_log=False, K=K,
@@ -4693,14 +4707,14 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     except:
         print('Unable to add CH4 lifetimes - please check the file directory! ')
 
-    # ---- Scale units
+    # - Scale units
     for col_ in df.columns:
         if 'ppb' in col_:
             df.loc[:, col_] = df.loc[:, col_].values*ppbv_scale
         if 'ppt' in col_:
             df.loc[:, col_] = df.loc[:, col_].values*pptv_scale
 
-    # ---- Processing and save?
+    # - Processing and save?
     # Calculate % change from base case for each variable
     if not isinstance(REF1, type(None)):
         for col_ in df.columns:
@@ -4787,7 +4801,7 @@ def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None,
                    res='4x5', debug=False):
     """ Wrapper of 'get_trop_burden' to get tropospheric ozone burden """
     # ---  Local vars.
-    # (	all_data == ( annual_mean == False ) )
+    # (all_data == ( annual_mean == False ) )
     if not annual_mean:
         all_data = True
     # ( total_atmos == trop_limit )
@@ -4800,5 +4814,55 @@ def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None,
 
 
 
+#
+# -------- below function is redundant.
+#
+def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None,
+                           Iodine=False, I=False, IO=False, months=None, years=None,
+                           wd=None,
+                           year_eq=True, month_eq=False, spec=None, res='4x5',
+                           debug=False):
+    """
+    Convert species/tag prod/loss from "molec/cm3/s" to "Gg (Ox) yr^-1".
 
+    !!! This is redundent. use convert_molec_cm3_s_2_g_X_s instead. !!!
+    ( temporarily here for get_POxLOx )
+
+    NOTES:
+     - This function was originally used to process diagnostic outputs from PORL-L$
+     - Alterate Output term apart from Ox are possible ( e.g. I, mass ... )
+        Just stipulate input species
+     - Output can also be requested on a monthly basis
+        ( set  month_eq=True,  and year_eq=False )
+    """
+    if debug:
+        print(' molec_cm3_s_2_Gg_Ox_np  called')
+    if not isinstance(vol, np.ndarray):
+        vol = get_volume_np(wd=wd, res=res)
+        print('WARNING: extracting volume online - inefficent')
+    # --- Process conversion
+    if (Iodine):
+        if debug:
+            print((rxn, arr.shape, vol.shape))
+        #  [molec/cm3/s] => * vol / moles * RAM *I in species / 1E9
+        arr = (arr * vol[:, :, :38, :]) / constants('AVG') * (127.) / 1E9 * \
+            spec_stoich(rxn, I=I, IO=IO)
+    else:  # ELSE return Gg X yr^-s ( ASSUMING UNITY OF TAG! )
+        if (rxn == 'CH4'):
+            RMM = species_mass(rxn)
+        else:
+            RMM = species_mass('O3')
+        # Return mass in terms of species provide ( if given )
+        if not isinstance(spec, type(None)):
+            RMM = species_mass(spec)
+        arr = (arr * vol[:, :, :38, :]) / constants('AVG') * RMM / 1E9
+    # --- Process time from /s to ????
+    if year_eq:  # convert /second to / year
+        arr = arr * 60*60*24*365
+    if month_eq:
+        day_adjust = d_adjust(months, years)
+        arr = arr * day_adjust
+    if debug:
+        print(('arr', arr.shape, 'vol', vol.shape))
+    return arr
 
