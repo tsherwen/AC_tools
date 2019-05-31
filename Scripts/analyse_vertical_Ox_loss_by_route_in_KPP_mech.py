@@ -17,7 +17,7 @@ from netCDF4 import Dataset
 import os
 
 
-def main():
+def main( wd=None, CODE_wd=None ):
     """
     Driver for analysis of LOx via KPP in GEOS-Chem
 
@@ -25,98 +25,17 @@ def main():
     -----
      - comment/uncommet functions as required
     """
+    # Manually let locations of Ox loss here
+    root = '/users/ts551/scratch/GC/'
+    CODE_wd = root+'/Code/Code.v11-02_Cl_v3_0/'
+    wd = root+'rundirs/GC_v11_2d_plus_Clv3/geosfp_4x5_tropchem_Cl.v3_0.1year.2016.tagged/'
+    Mechanism = 'Tropchem'
+    # Get all the necessary data as as a dictionary object
+    Ox_loss_dict = AC.get_Ox_loss_dicts(wd=wd, CODE_wd=CODE_wd, Mechanism=Mechanism)
     # Plot vertical odd oxygen (Ox) loss via route (chemical family)
-#    plot_vertical_fam_loss_by_route()
+    plot_vertical_fam_loss_by_route(Ox_loss_dict=Ox_loss_dict, Mechanism=Mechanism)
     # Analyse odd oxygen (Ox) loss budget via route (chemical family)
-    calc_fam_loss_by_route()
-
-
-
-def get_Ox_loss_dicts(fam='LOx', ref_spec='O3',
-                                    wd=None, Mechanism='Halogens', rm_strat=False,
-                                    weight_by_molecs=True, CODE_wd=None,
-                                    full_vertical_grid=True,
-                                    dpi=320, suffix='',
-                                    save_plot=True, show_plot=False,
-                                    verbose=True, debug=False):
-    """
-    Get Ox data and variables as a dictionary
-
-    Parameters
-    -------
-    fam (str): tagged family to track (already compiled in KPP mechanism)
-    ref_spec (str): reference species to normalise to
-    wd (str): working directory ("wd") of model output
-    CODE_wd (str): root of code directory containing the tagged KPP mechanism
-    Mechanism (str): name of the KPP mechanism (and folder) of model output
-    weight_by_molecs (boolean): weight grid boxes by number of molecules
-    rm_strat (boolean): (fractionally) replace values in statosphere with zeros
-    debug, verbose (bool): switches to turn on/set verbosity of output to screen
-    full_vertical_grid (bool): use the full vertical grid for analysis
-
-    Returns
-    -------
-    (None)
-
-    Notes
-    -----
-
-    """
-    # - Get key model variables, model settings, etc
-    # Get locations of model output/core
-    Var_rc, Data_rc = func_settings(full_vertical_grid=True, wd=wd)
-    wd = Var_rc['wd']
-    assert os.path.exists(wd), 'working directory not found @: {}'.format(wd)
-    CODE_wd = '/{}/KPP/{}/'.format(CODE_wd, Mechanism)
-    assert os.path.exists(CODE_wd), 'code directory not found @: ' + CODE_wd
-    # Get data variables shared for
-    full_vertical_grid = False
-    Var_rc, Data_rc = func_settings(full_vertical_grid=full_vertical_grid,
-                                    wd=wd)
-    # Get reaction dictionary
-    RR_dict = AC.get_dict_of_KPP_mech(wd=CODE_wd,
-                                      GC_version=Data_rc['GC_version'],
-                                      Mechanism=Mechanism)
-    if debug:
-        print((len(RR_dict), [RR_dict[i] for i in list(RR_dict.keys())[:5]]))
-    # Get tags for family
-    tags_dict = AC.get_tags4family(fam=fam, wd=CODE_wd, RR_dict=RR_dict)
-    tags = list(sorted(tags_dict.values()))
-    tags2_rxn_num = {v: k for k, v in list(tags_dict.items())}
-    if debug:
-        print(tags)
-    # Get stiochiometry of reactions for family
-    RR_dict_fam_stioch = AC.get_stioch4family_rxns(fam=fam,
-                                                            RR_dict=RR_dict,
-                                                            Mechanism=Mechanism)
-    # - Extract data for Ox loss for family from model
-    ars = AC.get_fam_prod_loss4tagged_mech(RR_dict=RR_dict,
-                                                    tags=tags, rm_strat=rm_strat,
-                                                    Var_rc=Var_rc, Data_rc=Data_rc, wd=wd,
-                                                    fam=fam, ref_spec=ref_spec,
-                                                    tags2_rxn_num=tags2_rxn_num,
-                                                    RR_dict_fam_stioch=RR_dict_fam_stioch,
-                                                    weight_by_molecs=weight_by_molecs)
-    # Get dictionary of families that a tag belongs to
-    fam_dict = AC.get_Ox_fam_based_on_reactants(fam=fam, tags=tags_dict,
-                                                       RR_dict=RR_dict,
-                                                       GC_version=Data_rc['GC_version'])
-    # Get indices of array for family.
-    sorted_fam_names = ['Photolysis', 'HO$_{\\rm x}$', 'NO$_{\\rm x}$']
-    halogen_fams = ['Chlorine', 'Cl+Br', 'Bromine', 'Br+I', 'Cl+I', 'Iodine', ]
-    sorted_fam_names += halogen_fams
-    # - Place all variables/data of share us into a dictionary and return this
-    d = {
-    'sorted_fam_names': sorted_fam_names,
-    'fam_dict' : fam_dict,
-    'ars' : ars,
-    'RR_dict_fam_stioch': RR_dict_fam_stioch,
-    'RR_dict': RR_dict,
-    'tags2_rxn_num': tags2_rxn_num,
-    'tags': tags,
-    'tags_dict': tags_dict,
-    }
-    return d
+    calc_fam_loss_by_route(Ox_loss_dict=Ox_loss_dict, Mechanism=Mechanism)
 
 
 def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3',
@@ -124,8 +43,8 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3',
                                     weight_by_molecs=True, CODE_wd=None,
                                     full_vertical_grid=True, dpi=320, suffix='',
                                     save_plot=True, show_plot=False,
-                                    limit_plotted_alititude=True,
-                                    Ox_loss_d=None,
+                                    limit_plotted_alititude=True, lw=16,
+                                    Ox_loss_dict=None, fontsize=10, cmap=plt.cm.jet,
                                     verbose=True, debug=False):
     """
     Plot vertical odd oxygen (Ox) loss via route (chemical family)
@@ -144,7 +63,7 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3',
     limit_plotted_alititude (bool): limit the plotted vertical extend to troposphere
     suffix (str): suffix in filename for saved plot
     dpi (int): resolution to use for saved image (dots per square inch)
-    Ox_loss_d (dict), dictionary of Ox loss variables and data (from get_Ox_loss_dicts)
+    Ox_loss_dict (dict), dictionary of Ox loss variables/data (from get_Ox_loss_dicts)
 
     Returns
     -------
@@ -155,21 +74,23 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3',
      - AC_tools includes equivlent functions for smvgear mechanisms
     """
     # - Local variables/ Plot extraction / Settings
-    is isinstance(Ox_loss_d, type(None)):
-        Ox_loss_d = get_Ox_loss_dicts(wd=wd, CODE_wd=CODE_wd, fam=fam, ref_spec=ref_spec,
-                                      Mechanism=Mechanism, rm_strat=rm_strat,
-                                      weight_by_molecs=weight_by_molecs,
-                                      full_vertical_grid=full_vertical_grid,
-                                      )
+    if isinstance(Ox_loss_dict, type(None)):
+        Ox_loss_dict = AC.get_Ox_loss_dicts(wd=wd, CODE_wd=CODE_wd, fam=fam,
+                                           ref_spec=ref_spec,
+                                           Mechanism=Mechanism, rm_strat=rm_strat,
+                                           weight_by_molecs=weight_by_molecs,
+                                           full_vertical_grid=full_vertical_grid,
+                                           )
     # extract variables from data/variable dictionary
-    sorted_fam_names = d['sorted_fam_names']
-    fam_dict = d['fam_dict']
-    ars = d['ars']
-    RR_dict_fam_stioch = d['RR_dict_fam_stioch']
-    RR_dict = d['RR_dict']
-    tags2_rxn_num = d['tags2_rxn_num']
-    tags = d['tags']
-    tags_dict = d['tags_dict']
+    sorted_fam_names = Ox_loss_dict['sorted_fam_names']
+    fam_dict = Ox_loss_dict['fam_dict']
+    ars = Ox_loss_dict['ars']
+    RR_dict_fam_stioch = Ox_loss_dict['RR_dict_fam_stioch']
+    RR_dict = Ox_loss_dict['RR_dict']
+    tags2_rxn_num = Ox_loss_dict['tags2_rxn_num']
+    tags = Ox_loss_dict['tags']
+    tags_dict = Ox_loss_dict['tags_dict']
+    Data_rc = Ox_loss_dict['Data_rc']
     # Combine to a single array
     arr = np.array(ars)
     if debug:
@@ -196,7 +117,7 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3',
     # Add zeros array to beginning (for stack/area plot )
     arr_ = np.vstack((np.zeros((1, arr.shape[-1])), arr))
     # Setup figure
-    fig, ax = plt.subplots(figsize=(9, 6), dpi=Var_rc['dpi'], \
+    fig, ax = plt.subplots(figsize=(9, 6), dpi=dpi, \
                            facecolor='w', edgecolor='w')
     # Plot by family
     for n, label in enumerate(sorted_fam_names):
@@ -208,22 +129,22 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3',
         # Fill between X
         plt.fill_betweenx(Data_rc['alt'], arr[:n, :].sum(axis=0),
                           arr[:n+1, :].sum(axis=0),
-                          color=Var_rc['cmap'](1.*n/len(sorted_fam_names)))
+                          color=cmap(1.*n/len(sorted_fam_names)))
         # Plot the line too
         plt.plot(arr[:n, :].sum(axis=0), Data_rc['alt'], label=label,
-                 color=Var_rc['cmap'](1.*n/len(sorted_fam_names)), alpha=0,
-                 lw=Var_rc['lw'],)
+                 color=cmap(1.*n/len(sorted_fam_names)), alpha=0,
+                 lw=lw,)
     # Beautify the plot
     plt.xlim(0, 100)
     xlabel = '% of total O$_{\\rm x}$ loss'
-    plt.xlabel(xlabel, fontsize=Var_rc['f_size']*.75)
-    plt.yticks(fontsize=Var_rc['f_size']*.75)
-    plt.xticks(fontsize=Var_rc['f_size']*.75)
-    plt.ylabel('Altitude (km)', fontsize=Var_rc['f_size']*.75)
-    leg = plt.legend(loc='upper center', fontsize=Var_rc['f_size'])
+    plt.xlabel(xlabel, fontsize=fontsize*.75)
+    plt.yticks(fontsize=fontsize*.75)
+    plt.xticks(fontsize=fontsize*.75)
+    plt.ylabel('Altitude (km)', fontsize=fontsize*.75)
+    leg = plt.legend(loc='upper center', fontsize=fontsize)
     # Update lengnd line sizes ( + update line sizes)
     for legobj in leg.legendHandles:
-        legobj.set_linewidth(Var_rc['lw']/2)
+        legobj.set_linewidth(lw/2)
         legobj.set_alpha(1)
     plt.ylim(Data_rc['alt'][0], Data_rc['alt'][-1])
     # Limit plot y axis to 12km?
@@ -231,14 +152,16 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3',
         plt.ylim(Data_rc['alt'][0], 12)
     # Show plot or save?
     if save_plot:
-        plt.savefig('Ox_vertical_loss_plot_{}'.format(suffix), dpi=dpi)
+        filename = 'Ox_loss_plot_by_vertical_{}_{}'.format(Mechanism, suffix)
+        plt.savefig(filename, dpi=dpi)
     if show_plot:
         plt.show()
 
 
 def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
-                           rm_strat=True, Mechanism='Halogens', verbose=True,
-                           debug=False):
+                           rm_strat=True, Mechanism='Halogens', Ox_loss_dict=None,
+                           weight_by_molecs=False, full_vertical_grid=False,
+                           CODE_wd=None, verbose=True, debug=False):
     """
     Build an Ox budget table like table 4 in Sherwen et al 2016b
 
@@ -247,7 +170,12 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
     fam (str): tagged family to track (already compiled in KPP mechanism)
     ref_spec (str): reference species to normalise to
     wd (str): working directory ("wd") of model output
+    CODE_wd (str): root of code directory containing the tagged KPP mechanism
     rm_strat (boolean): (fractionally) replace values in statosphere with zeros
+    Ox_loss_dict (dict), dictionary of Ox loss variables/data (from get_Ox_loss_dicts)
+    Mechanism (str): name of the KPP mechanism (and folder) of model output
+    weight_by_molecs (boolean): weight grid boxes by number of molecules
+    full_vertical_grid (bool): use the full vertical grid for analysis
     debug, verbose (bool): switches to turn on/set verbosity of output to screen
 
     Returns
@@ -259,25 +187,26 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
      - AC_tools includes equivlent functions for smvgear mechanisms
     """
     # - Local variables/ Plot extraction / Settings
-    is isinstance(Ox_loss_d, type(None)):
-        Ox_loss_d = get_Ox_loss_dicts(wd=wd, CODE_wd=CODE_wd, fam=fam, ref_spec=ref_spec,
-                                      Mechanism=Mechanism, rm_strat=rm_strat,
-                                      weight_by_molecs=weight_by_molecs,
-                                      full_vertical_grid=full_vertical_grid,
-                                      )
-    # extract variables from data/variable dictionary
-    fam_dict = d['fam_dict']
-    ars = d['ars']
-    RR_dict_fam_stioch = d['RR_dict_fam_stioch']
-    RR_dict = d['RR_dict']
-    tags2_rxn_num = d['tags2_rxn_num']
-    tags = d['tags']
-    tags_dict = d['tags_dict']
-
+    if isinstance(Ox_loss_dict, type(None)):
+        Ox_loss_dict = AC.get_Ox_loss_dicts(wd=wd, CODE_wd=CODE_wd, fam=fam,
+                                            ref_spec=ref_spec,
+                                            Mechanism=Mechanism, rm_strat=rm_strat,
+                                            weight_by_molecs=weight_by_molecs,
+                                            full_vertical_grid=full_vertical_grid,
+                                            )
+    # Extract variables from data/variable dictionary
+    fam_dict = Ox_loss_dict['fam_dict']
+    ars = Ox_loss_dict['ars']
+    RR_dict_fam_stioch = Ox_loss_dict['RR_dict_fam_stioch']
+    RR_dict = Ox_loss_dict['RR_dict']
+    tags2_rxn_num = Ox_loss_dict['tags2_rxn_num']
+    tags = Ox_loss_dict['tags']
+    tags_dict = Ox_loss_dict['tags_dict']
+    halogen_fams = Ox_loss_dict['halogen_fams']
     # --- Do analysis on model output
-    # sum the total mass fluxes for each reaction
+    # Sum the total mass fluxes for each reaction
     ars = [i.sum() for i in ars]
-    # Sum all the routes
+    # Sum all the Ox loss routes
     total = np.array(ars).sum()
     # Create a dictionary of values of interest
     dict_ = {
@@ -293,11 +222,13 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
     df = pd.DataFrame(dict_)
     # Sort the data and have a look...
     df = df.sort_values('Total flux', ascending=False)
-    print(df.head())
+    if debug:
+        print(df.head())
     # Sort values again and save...
     df = df.sort_values(['Family', 'Total flux'], ascending=False)
-    print(df.head())
-    df.to_csv('test_Ox.csv')
+    if debug:
+        print(df.head())
+    df.to_csv('Ox_loss_budget_by_rxn_for_{}_mechanism.csv'.format(Mechanism))
     # Now select the most important routes
     df_sum = pd.DataFrame()
     grp = df[['Family', 'Total flux']].groupby('Family')
@@ -306,33 +237,8 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
     print((grp.sum() / total * 100))
     # Print the contribution of all the halogen routes
     hal_LOx = (grp.sum().T[halogen_fams].sum().sum() / total * 100).values[0]
-    print(('Total contribution of halogens is: {:.2f} %'.format(hal_LOx)))
-
-
-def func_settings(wd=None, filename=None, full_vertical_grid=True):
-    """ Function to store generic/shared variables/data """
-    # - I/O settings
-    # Setup dictionary.
-    Var_rc = AC.get_default_variable_dict(
-        full_vertical_grid=full_vertical_grid)
-    # Add plotting settings to variable dictionary object ("Var_rc")
-    Var_rc['cmap'] = plt.cm.jet
-    Var_rc['f_size'] = 10
-    Var_rc['dpi'] = 320
-    Var_rc['dpi'] = 160
-    Var_rc['lw'] = 16
-    Var_rc['limit_vertical_dim'] = True
-    if not isinstance(wd, type(None)):
-        Var_rc['wd'] = wd
-    # - Data settings (list variables to extract... )
-    var_list = [
-        'generic_4x5_wd', 'months', 'years', 'datetimes', 'output_freq',
-        'output_vertical_grid', 's_area', 'vol', 't_ps', 'n_air', 'molecs',
-        'alt'
-    ]
-    Data_rc = AC.get_shared_data_as_dict(Var_rc=Var_rc, var_list=var_list)
-    # Return dictionaries
-    return Var_rc, Data_rc
+    if verbose:
+        print(('Total contribution of halogens is: {:.2f} %'.format(hal_LOx)))
 
 
 if __name__ == "__main__":

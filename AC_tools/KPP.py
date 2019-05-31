@@ -1178,3 +1178,98 @@ def get_oxidative_release4specs(filename='gckpp_Monitor.F90',
                 print(rxn_str)
                 RR_rxn_dummies += [key_]
     return RR_rxn_dummies
+
+
+def get_Ox_loss_dicts(fam='LOx', ref_spec='O3',
+                      wd=None, Mechanism='Halogens', rm_strat=False,
+                      weight_by_molecs=True, CODE_wd=None,
+                      dpi=320, suffix='', full_vertical_grid=False,
+                      save_plot=True, show_plot=False,
+                      verbose=True, debug=False):
+    """
+    Get Ox loss data and variables as a dictionary (rxn. by rxn.)
+
+    Parameters
+    -------
+    fam (str): tagged family to track (already compiled in KPP mechanism)
+    ref_spec (str): reference species to normalise to
+    wd (str): working directory ("wd") of model output
+    CODE_wd (str): root of code directory containing the tagged KPP mechanism
+    Mechanism (str): name of the KPP mechanism (and folder) of model output
+    weight_by_molecs (boolean): weight grid boxes by number of molecules
+    rm_strat (boolean): (fractionally) replace values in statosphere with zeros
+    debug, verbose (bool): switches to turn on/set verbosity of output to screen
+    full_vertical_grid (bool): use the full vertical grid for analysis
+
+    Returns
+    -------
+    (None)
+
+    Notes
+    -----
+
+    """
+    # - Get key model variables, model settings, etc
+    # Setup dictionary for shared variables
+    Var_rc = get_default_variable_dict(full_vertical_grid=full_vertical_grid)
+    # Get locations of model output/core
+    assert os.path.exists(wd), 'working directory not found @: {}'.format(wd)
+    CODE_wd = '/{}/KPP/{}/'.format(CODE_wd, Mechanism)
+    assert os.path.exists(CODE_wd), 'code directory not found @: ' + CODE_wd
+    # Use provided working directory
+    if not isinstance(wd, type(None)):
+        Var_rc['wd'] = wd
+    # Setup dictionary for shared data
+    var_list = [
+        'generic_4x5_wd', 'months', 'years', 'datetimes', 'output_freq',
+        'output_vertical_grid', 's_area', 'vol', 't_ps', 'n_air', 'molecs',
+        'alt'
+    ]
+    Data_rc = get_shared_data_as_dict(Var_rc=Var_rc, var_list=var_list)
+    # Get reaction dictionary
+    RR_dict = get_dict_of_KPP_mech(wd=CODE_wd,
+                                   GC_version=Data_rc['GC_version'],
+                                   Mechanism=Mechanism)
+    if debug:
+        print((len(RR_dict), [RR_dict[i] for i in list(RR_dict.keys())[:5]]))
+    # Get tags for family
+    tags_dict = get_tags4family(fam=fam, wd=CODE_wd, RR_dict=RR_dict)
+    tags = list(sorted(tags_dict.values()))
+    tags2_rxn_num = {v: k for k, v in list(tags_dict.items())}
+    if debug:
+        print(tags)
+    # Get stiochiometry of reactions for family
+    RR_dict_fam_stioch = get_stioch4family_rxns(fam=fam,
+                                                RR_dict=RR_dict,
+                                                Mechanism=Mechanism)
+    # - Extract data for Ox loss for family from model
+    ars = get_fam_prod_loss4tagged_mech(RR_dict=RR_dict,
+                                        tags=tags, rm_strat=rm_strat,
+                                        Var_rc=Var_rc, Data_rc=Data_rc, wd=wd,
+                                        fam=fam, ref_spec=ref_spec,
+                                        tags2_rxn_num=tags2_rxn_num,
+                                        RR_dict_fam_stioch=RR_dict_fam_stioch,
+                                        weight_by_molecs=weight_by_molecs)
+    # Get dictionary of families that a tag belongs to
+    fam_dict = get_Ox_fam_based_on_reactants(fam=fam, tags=tags_dict,
+                                             RR_dict=RR_dict,
+                                             GC_version=Data_rc['GC_version'])
+    # Get indices of array for family.
+    sorted_fam_names = ['Photolysis', 'HO$_{\\rm x}$', 'NO$_{\\rm x}$']
+    halogen_fams = ['Chlorine', 'Cl+Br', 'Bromine', 'Br+I', 'Cl+I', 'Iodine', ]
+    sorted_fam_names += halogen_fams
+    # - Place all variables/data of share us into a dictionary and return this
+    d = {
+    'sorted_fam_names': sorted_fam_names,
+    'fam_dict' : fam_dict,
+    'ars' : ars,
+    'RR_dict_fam_stioch': RR_dict_fam_stioch,
+    'RR_dict': RR_dict,
+    'tags2_rxn_num': tags2_rxn_num,
+    'tags': tags,
+    'tags_dict': tags_dict,
+    'Data_rc': Data_rc,
+    'Var_rc': Var_rc,
+    'halogen_fams': halogen_fams,
+    }
+    return d
