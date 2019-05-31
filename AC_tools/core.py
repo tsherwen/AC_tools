@@ -131,7 +131,7 @@ def get_gc_lat(lat, res='4x5', wd=None, filename='ctm.nc', debug=False):
     wd (str): the directory to search for file in
     filename (Str): name of NetCDF file (e.g. ctm.nc or ts_ctm.nc)
     res (str): the resolution if wd not given (e.g. '4x5' )
-    debug (boolean): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
 
     Returns
     -------
@@ -152,7 +152,7 @@ def get_gc_lon(lon, res='4x5', wd=None, filename='ctm.nc', debug=False):
     wd (str): the directory to search for file in
     filename (Str): name of NetCDF file (e.g. ctm.nc or ts_ctm.nc)
     res (str): the resolution if wd not given (e.g. '4x5' )
-    debug (boolean): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
 
     Returns
     -------
@@ -171,11 +171,11 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False,
 
     Parameters
     ----------
-    invert (boolean): invert dictionary keys and values
-    trop_limit (boolean): limit 4D arrays to troposphere
-    r_dims (boolean): return dicionary of dimensions
-    just2D (boolean): just return horizontal dimensions
-    debug (boolean): legacy debug option, replaced by python logging
+    invert (bool): invert dictionary keys and values
+    trop_limit (bool): limit 4D arrays to troposphere
+    r_dims (bool): return dicionary of dimensions
+    just2D (bool): just return horizontal dimensions
+    debug (bool): legacy debug option, replaced by python logging
     add_n_time_dims (int): number of time dimensions to add
 
     Returns
@@ -254,14 +254,14 @@ def get_latlonalt4res(res=None, centre=True, hPa=False, nest=None,
     ----------
     wd (str): Specify the wd to get the results from a run.
     res (str): the resolution if wd not given (e.g. '4x5' )
-    debug (boolean): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
     lon_var, lat_var (str): variables names for lon and lat in the NetCDF
     lon_bounds, lat_bounds (str): variables names for lon and lat bounds in the NetCDF
     filename (str): name of NetCDF to use
     dtype (type): type for which data is return as, e.g. np.float64
     nest (str): manual override for retruned variables - vestigle?
-    hPa (boolean): return altitudes in units of hPa, instead of km
-    full_vertical_grid (boolean): use full vertical grid or reduced (47 vs. 72)
+    hPa (bool): return altitudes in units of hPa, instead of km
+    full_vertical_grid (bool): use full vertical grid or reduced (47 vs. 72)
 
     Returns
     -------
@@ -462,8 +462,8 @@ def hPa_to_Km(input, reverse=False, debug=False):
     Parameters
     ----------
     input (list): list of values (float) to convert
-    reverse (boolean): Set "reverse" to True to convert Km to hPa
-    debug (boolean): legacy debug option, replaced by python logging
+    reverse (bool): Set "reverse" to True to convert Km to hPa
+    debug (bool): legacy debug option, replaced by python logging
 
     Returns
     -------
@@ -589,8 +589,8 @@ def gchemgrid(input=None, rtn_dict=False, debug=False):
 
     Parameters
     ----------
-    rtn_dict (boolean): return the lookup dictionary instead
-    debug (boolean): legacy debug option, replaced by python logging
+    rtn_dict (bool): return the lookup dictionary instead
+    debug (bool): legacy debug option, replaced by python logging
 
     Returns
     -------

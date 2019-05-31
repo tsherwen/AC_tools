@@ -118,7 +118,7 @@ def YYYYMMDD_HHMM_2_datetime(str1=None, str2=None, conbined=False,
 
     ARGUEMENTS:
      - list of strings of dates (str1) and times (str2)
-     - cobined (boolean): if True, then a single list of strings is provided
+     - cobined (bool): if True, then a single list of strings is provided
      - shared functionality with "DF_YYYYMMDD_HHMM_2_dt" ?
     """
     # combined as one string
@@ -298,7 +298,7 @@ def num2month(input=None, reverse=False, rtn_dict=False):
     Convert number (1-12) to abbreviated name of month
 
     ARGUMENTS:
-     - reverse (boolean): invert dictionary if reverse==True.
+     - reverse (bool): invert dictionary if reverse==True.
      - input is either a 3 character month string or an integer 1=>12
     """
     d = {
@@ -421,7 +421,7 @@ def get_nighttime_values(dates=None, data=None, select_nighttime=True,
 
     def is_daytime(input, daybreak=daybreak, dayend=dayend):
         """
-        Takes datetime.datetime and retruns True (boolean) if daytime
+        Takes datetime.datetime and retruns True (bool) if daytime
         """
         daytime = False
         # after daybreak

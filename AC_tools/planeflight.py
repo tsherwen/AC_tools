@@ -124,7 +124,7 @@ def prt_PlaneFlight_files(df=None, LAT_var='LAT', LON_var='LON',
     LAT_var, LON_var, PRESS_var (str): name for pressure(HPa),lat and lon in df
     Date_var (str): column name of df containing datetime (UTC) variables
     Username (str): name of the programme's user
-    Extra_spacings (boolean): add extra spacing? (needed for large amounts of
+    Extra_spacings (bool): add extra spacing? (needed for large amounts of
         output, like nested grids)
     slist (list): list of tracers/species to output
 
@@ -225,7 +225,7 @@ def prt_PlaneFlight_files_v12_plus(df=None, LAT_var='LAT', LON_var='LON',
     LAT_var, LON_var, PRESS_var (str): name for pressure(HPa),lat and lon in df
     Date_var (str): column name of df containing datetime (UTC) variables
     Username (str): name of the programme's user
-    Extra_spacings (boolean): add extra spacing? (needed for large amounts of
+    Extra_spacings (bool): add extra spacing? (needed for large amounts of
         output, like nested grids)
     slist (list): list of tracers/species to output
 
@@ -331,7 +331,7 @@ def get_pf_headers(file, debug=False):
     Parameters
     -------
     file (str): filename to open
-    debug (boolean): debug the function?
+    debug (bool): debug the function?
 
     Returns
     -------
@@ -368,8 +368,8 @@ def pf_csv2pandas(file=None, vars=None, epoch=False, r_vars=False,
     -------
     file (str): file name (inc. directory)
     vars (list): vars to extract
-    epoch (boolean):
-    r_vars (boolean): return list of vars
+    epoch (bool):
+    r_vars (bool): return list of vars
 
     Returns
     -------

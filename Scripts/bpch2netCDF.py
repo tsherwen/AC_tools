@@ -43,7 +43,7 @@ def convert_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None,
     folder (str): specify the folder you want to use - defaults to cwd
     filename (str):  specific the netCDF filename you want to use
     bpch_file_list (list): list the bpch files you want to use
-    remake (boolean): Overwrite any old files (default=False)
+    remake (bool): Overwrite any old files (default=False)
 
     Notes
     -----
@@ -77,7 +77,7 @@ def hemco_to_netCDF(folder, hemco_file_list=None, remake=False):
 
     Parameters
     ----------
-    remake (boolean): overwrite existing NetCDF file
+    remake (bool): overwrite existing NetCDF file
 
     """
     if __package__ is None:
@@ -145,10 +145,10 @@ def bpch_to_netCDF(folder=None, filename='ctm.nc', bpch_file_list=None,
     folder (str): working directory for data files
     filename (str): name to give created NetCDF
     bpch_file_list (list): list of files to convert
-    remake (boolean): overwrite existing NetCDF file
+    remake (bool): overwrite existing NetCDF file
     filetype (str): string with wildcards to match filenames
     ( e.g. *ctm.bpch*, trac_avg.*, or *ts*bpch* )
-    verbose (boolean): print (minor) logging to screen
+    verbose (bool): print (minor) logging to screen
 
     Returns
     -------

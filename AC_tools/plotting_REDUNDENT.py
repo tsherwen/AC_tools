@@ -123,40 +123,40 @@ def plot_map(arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fal
     arr (np.array): input (2D) array
     case (str or int): case for type of plot (vestigle: use log=True of False (default))
     cmap (str): force colormap selection by providing name
-    centre (boolean): use centre points of lon/lat grid points for mapping data surface
-    drawcountries (boolean): add countries to basemap?
-    debug (boolean): legacy debug option, replaced by python logging
-    degrade_resolution (boolean): reduce resolution of underlay map detail
-    discrete_cmap (boolean): use a discrete instead of conitunous colorbar map
+    centre (bool): use centre points of lon/lat grid points for mapping data surface
+    drawcountries (bool): add countries to basemap?
+    debug (bool): legacy debug option, replaced by python logging
+    degrade_resolution (bool): reduce resolution of underlay map detail
+    discrete_cmap (bool): use a discrete instead of conitunous colorbar map
     everyother (int): use "everyother" axis tick (e.g. 3=use every 3rd)
     f_size (float): fontsise
     fixcb (np.array): minimium and maximum to fix colourbar
     fixcb_buffered (array): minimium and maximum to fix colourbar, with buffer space
     format (str): format string for colorbar formating
-    grid (boolean): apply a grid over surface plot?
+    grid (bool): apply a grid over surface plot?
     extend (str): colorbar format settings ( 'both', 'min', 'both' ... )
     interval (int): x/y tick interval in degrees lat/lon (default=15)
     lvls (list): manually provide levels for colorbar
-    log (boolean): use a log scale for the plot and colorbar
-    no_cb (boolean): include a coloubar?
+    log (bool): use a log scale for the plot and colorbar
+    no_cb (bool): include a coloubar?
     norm (norm object): normalisation to use for colourbar and array
     nticks (int): number of ticks on colorbar
-    mask_invalids (boolean): mask invalid numbers (to allow saving to PDF)
+    mask_invalids (bool): mask invalid numbers (to allow saving to PDF)
     res (str): GEOS-Chem output configuration resolution ( '4x5' etc... )
     resolution (str): basemasp resolution settings ( 'c' = coarse, 'f' = fine ...  )
     rotatecbunits (str): orientation of colourbar units
-    shrink (boolean): colorbar size settings ( fractional shrink )
-    set_window (boolean): set the limits of the plotted data (lon_0, lon_1, lat_0, lat_1)
+    shrink (bool): colorbar size settings ( fractional shrink )
+    set_window (bool): set the limits of the plotted data (lon_0, lon_1, lat_0, lat_1)
     (for nested boundary conditions )
     sigfig_rounding_on_cb (int): significant figure rounding to use for colourbar
-    set_cb_ticks (boolean): mannually set colorbar ticks? (vestigle)
+    set_cb_ticks (bool): mannually set colorbar ticks? (vestigle)
     title (str): plot title (deafult is ==None, therefore no title)
-    tight_layout (boolean): use use tight lyaout for figure
-    ylabel, xlabel (boolean): label x/y axis?
+    tight_layout (bool): use use tight lyaout for figure
+    ylabel, xlabel (bool): label x/y axis?
     units (str): units of given data for plot title
-    verbose (boolean): legacy debug option, replaced by python logging
+    verbose (bool): legacy debug option, replaced by python logging
     wd (str): Specify the wd to get the results from a run.
-    window (boolean): use window plot settings (fewer axis labels/resolution of map)
+    window (bool): use window plot settings (fewer axis labels/resolution of map)
     Returns
     -------
     optionally returns basemap (return_m==True) and colorbar (no_cb!=True) object
@@ -512,26 +512,26 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None,
 
     Parameters
     -------
-    hPa_labels (boolean): include labels for hPa on axis?
+    hPa_labels (bool): include labels for hPa on axis?
     plt_txt_x, plt_txt_y (float): ordinal locations for alt text
-    ancillary (boolean): add ancillary labels etc. to plot
+    ancillary (bool): add ancillary labels etc. to plot
     label (str): label to use for line / legend.
     c_off (int): index to plot model levels too (e.g. 37 for trop. )
     xlimit (float): value to limit x axis to (e.g. 100 ppbv)
     c_l (list):colors to use (index by n )
     uints (str): units to use for axis labels
-    obs (boolean): overide plot settings with those for observations.
-    err_bar (boolean): apply bar to show quartile range of plots
-    stddev (boolean): as above (see err_bar)
+    obs (bool): overide plot settings with those for observations.
+    err_bar (bool): apply bar to show quartile range of plots
+    stddev (bool): as above (see err_bar)
     color (str/color instance): color for plotted line
     f_size (float): fontsise
-    tropics (boolean): mask for tropics?
+    tropics (bool): mask for tropics?
     title (str): title for plot
     subtitle (str): subtitle for plot (e.g. location)
     n (int): number of plot within window plot figure
     fig (figure instance): fig. to use
     ax (axis instance): axis to use
-    ylabel, xlabel (boolean): include axis labels for plot?
+    ylabel, xlabel (bool): include axis labels for plot?
 
 
     Returns
@@ -638,13 +638,13 @@ def monthly_plot(ax, data, f_size=20, pos=0, posn=1, lw=1, ls='-', color=None,
     ls (str):  linestyle to use
     color (str): colour for line
     xrotation (float): rotation of x axis ticks
-    ylabel (boolean): label y axis
-    xlabel (boolean): label x axis
+    ylabel (bool): label y axis
+    xlabel (bool): label x axis
     label (str): label for line
     title_loc_y (int): y axis position for title str
     plt_txt_x (float): x axis position for subtitle str
     plt_txt_y (float): y axis position for subtitle str
-    plot_Q1_Q3 (boolean): plot quartiles on for data?
+    plot_Q1_Q3 (bool): plot quartiles on for data?
     low (np.array): array of low extents to plot as shaded region
     high (np.array): array of high extents to plot as shaded region
 
@@ -708,7 +708,7 @@ def timeseries_seasonal_plot(ax, dates, data, f_size=20, pos=0, posn=1,
     ax (axis object): axis to plot onto
     dates (np.array): array of dates (as  datetime.datetime objects)
     data (np.array): 1D array of data
-    plot_Q1_Q3 (boolean): plot up quartiles on timeseries plot
+    plot_Q1_Q3 (bool): plot up quartiles on timeseries plot
 
     Returns
     -------
@@ -1440,12 +1440,12 @@ def plot_specs_poles_change_monthly2pdf(specs=None, arr=None, res='4x5',
     boundinglat (int):
     format (str): formayt of axis labels
     dlist (list): list of dates (datetimes)
-    no_dstr (boolean): date string in output filename ("no date string")
+    no_dstr (bool): date string in output filename ("no date string")
     f_size (float): fontsise
     savetitle (str): string to add to filename of PDF
     units (str): units label for colorbar
-    pcent (boolean): setup the plot as if the input values were %
-    diff (boolean): setup the plot as if the input values were a difference
+    pcent (bool): setup the plot as if the input values were %
+    diff (bool): setup the plot as if the input values were a difference
     boundinglat (int): latitude to show poles until.
     perspective (str): looking at north or south pole?
     extend (str): colorbar format settings ( 'both', 'min', 'both' ... )

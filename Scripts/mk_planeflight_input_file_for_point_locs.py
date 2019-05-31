@@ -27,7 +27,7 @@ def main(filename=None, LAT_var='LAT', LON_var='LON',
     loc_var (str): name for (e.g. plane name), could be more than one. 
     LAT_var, LON_var, PRESS_var (str): name for pressure(HPa),lat and lon in df
     Username (str): name of the programme's user
-    Extra_spacings (boolean): add extra spacing? (needed for large amounts of 
+    Extra_spacings (bool): add extra spacing? (needed for large amounts of 
         output, like nested grids)
     Notes
     -----

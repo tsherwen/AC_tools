@@ -178,7 +178,7 @@ def plot_up_surface_changes_between2runs( ds_dict=None, levs=[1], specs=[],
     NEW (str): name of the dataset (key) in ds_dict to compare against BASE
     specs (list): list of the names of the species to plot
     ds_dict (dict): dictionary of xr.datasets objects
-    update_PyGChem_format2COARDS (boolean): update the dataset names to be COARDS?
+    update_PyGChem_format2COARDS (bool): update the dataset names to be COARDS?
     prefix (str): category string that proceeds all variable names of specs
     levs (list): levels to plot spatial changes for
 
@@ -390,7 +390,7 @@ def Convert_PyGChem_Iris_DataSet2COARDS_NetCDF(ds=None, transpose_dims=True):
     Parameters
     ----------
     ds (dataset): input Dataset object
-    transpose_dims (boolean): transpose the dimension order?
+    transpose_dims (bool): transpose the dimension order?
 
     Returns
     -------

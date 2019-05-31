@@ -545,7 +545,7 @@ def get_2D_solartime_array4_date(date=None, ncfile=None, res='4x5',
     Parameters
     -------
     date (datetime): date to use (UTC)
-    mask_daytime (boolean): mask daytime instead of nightime
+    mask_daytime (bool): mask daytime instead of nightime
     ncfile (str): location to netCDF file - not implemented...
     res (str): resolution, if using resolutions listed in get_latlonalt4res
     lons (array): array of longditudes (optional)
@@ -787,8 +787,8 @@ def interpolate_sparse_grid2value(Y_CORDS=None, X_CORDS=None,
     XY (array): array of values with shape (X_CORDS, Y_CORDS)
     buffer_CORDS (int): number of units of X_CORDS and Y_CORDS to interpolate
         around (great this value, greater the cost.)
-    verbose (boolean): print out extra infomation
-    debug (boolean): print out debugging infomation
+    verbose (bool): print out extra infomation
+    debug (bool): print out debugging infomation
 
     Returns
     -------

@@ -40,7 +40,7 @@ def pf_var(input, ver='3.0', ntracers=85, fill_var_with_zeroes=False):
     input (string): tracer name to convert from GEOS-Chem to pf nomenclature
     ver (string): version number of halogen code (atop of GEOS-Chem)
     ntracers (integer): number of tracers in a given version of GEOSchem
-    fill_var_with_zeroes (boolean): fill tracer name with zeroes (e.g.'1'=='001')
+    fill_var_with_zeroes (bool): fill tracer name with zeroes (e.g.'1'=='001')
 
     Returns
     -------
@@ -234,7 +234,7 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, ver='1.7',
     ----------
     wd (string): the wd to get the results from a run
     res (string): the resolution if wd not given ( e.g. '4x5')
-    invert (boolean): invert dictionary keys and values
+    invert (bool): invert dictionary keys and values
     debug = False (legacy debug, replaced by logging)
     V_9_2, V_9_2_C = redundent oiption swicthes for previous GEOS-Chem versions
     special_case = overide seclected species dictionary
@@ -302,8 +302,8 @@ def num2spec(num=69, rtn_dict=False, invert=False, ver='1.7'):
     ----------
     ver (str): Specify the wd to get the results from a run.
     num (int): the resolution if wd not given (e.g. '4x5' )
-    rtn_dict (boolean): legacy debug option, replaced by python logging
-    invert (boolean): uses spec as the keys in the dictionary
+    rtn_dict (bool): legacy debug option, replaced by python logging
+    invert (bool): uses spec as the keys in the dictionary
 
     Returns
     -------
@@ -446,8 +446,8 @@ def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
     ref_spec (str): species which number of spec equiv. in is being sought
     wd (str): Specify the wd to get the results from a run.
     res (str): the resolution if wd not given (e.g. '4x5' )
-    debug (boolean): legacy debug option, replaced by python logging
-    IO, I, NO, OH, N, C, Br, Cl, S (boolean): reference species to use (defualt = I)
+    debug (bool): legacy debug option, replaced by python logging
+    IO, I, NO, OH, N, C, Br, Cl, S (bool): reference species to use (defualt = I)
 
     Returns
     -------
@@ -653,11 +653,11 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,
     x (str): species/tracer/variable name
     adjustment (float): adjustment to give unit (+,- value etc )
     scale (float): scaling factor for unit
-    adjust (boolean): set==True to adjust input.geos unit values to adjusted values
-    global_unit (boolean): set units to globally relevent ones
-    IUPAC_unit (boolean): set units to IUPAC uints
-    ClearFlo_unit (boolean): set units to those used in the ClearFlo campaign
-    debug (boolean): legacy debug option, replaced by python logging
+    adjust (bool): set==True to adjust input.geos unit values to adjusted values
+    global_unit (bool): set units to globally relevent ones
+    IUPAC_unit (bool): set units to IUPAC uints
+    ClearFlo_unit (bool): set units to those used in the ClearFlo campaign
+    debug (bool): legacy debug option, replaced by python logging
 
     Returns
     -------
@@ -949,7 +949,7 @@ def constants(input_x, rtn_dict=False):
     Parameters
     ----------
     input_x (str): name of contant of interest
-    rtn_dict (boolean): retrun complete dictionary instead of single value
+    rtn_dict (bool): retrun complete dictionary instead of single value
 
     Returns
     -------

@@ -102,9 +102,9 @@ def rxn_dict_from_smvlog(wd, PHOTOPROCESS=None, ver='1.7',
     Parameters
     ----------
     wd (str): Specify the wd to get the results from a run.
-    debug (boolean): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
     PHOTOPROCESS (int): smvgear index of 1st photochemical reaction
-    LaTeX (boolean): convert species to LaTeX style formatting
+    LaTeX (bool): convert species to LaTeX style formatting
     ver (str): The GEOS-Chem halogen version that is being used
 
     Returns
@@ -188,7 +188,7 @@ def rxns_in_pl(wd, spec='LOX', debug=False):
     Parameters
     ----------
     wd (str): Specify the wd to get the results from a run.
-    debug (boolean): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
     spec (str): prod-loss variable name (from input.geos)
 
     Returns
@@ -247,7 +247,7 @@ def rxn4pl(pls, wd='example/example', rdict=None, reduce_size=True,
     ----------
     wd (str): Specify the wd to get the results from a run.
     ver (str): The GEOS-Chem halogen version that is being used
-    debug (boolean): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
     spec (str): prod-loss variable name (from input.geos)
     rdict (dict): dictionary of prod-loss reaction (made by rxn_dict_from_smvlog)
 
@@ -298,12 +298,12 @@ def get_indicies_4_fam(tags, fam=False, IO_BrOx2=False, rtnspecs=False,
     Parameters
     ----------
     tags (list): list of tags(str) from globchem.dat
-    fam (boolean): also return which family the tag belongs to
-    IO_BrOx2 (boolean): include an addtion tracer for XO+XO reactions?
-    Include_Chlorine (boolean): include an extra tracer for ClO+XO
+    fam (bool): also return which family the tag belongs to
+    IO_BrOx2 (bool): include an addtion tracer for XO+XO reactions?
+    Include_Chlorine (bool): include an extra tracer for ClO+XO
     NOy_as_HOx (Boolean): include NOy losses in HOx family.
-    debug (boolean): legacy debug option, replaced by python logging
-    rtnspecs(boolean): return tags as part of function output
+    debug (bool): legacy debug option, replaced by python logging
+    rtnspecs(bool): return tags as part of function output
 
     Returns
     -------
@@ -375,7 +375,7 @@ def get_p_l_tags(rxns, debug=False):
     Parameters
     ----------
     rxns (list): list of rxn numbers(int) from smvgear
-    debug (boolean): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
 
     Returns
     -------
@@ -411,9 +411,9 @@ def p_l_species_input_geos(wd, ver='1.7', rm_multiple_tagged_rxs=False, debug=Fa
     Parameters
     ----------
     wd (str): Specify the wd to get the results from a run.
-    debug (boolean): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
     ver (str): The GEOS-Chem halogen version that is being used
-    rm_multiple_tagged_rxs(boolean): only return one tag per rxn.
+    rm_multiple_tagged_rxs(bool): only return one tag per rxn.
 
     Returns
     -------

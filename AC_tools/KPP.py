@@ -57,8 +57,8 @@ def get_fam_prod_loss4tagged_mech(wd=None, fam='LOx', ref_spec='O3',
         ( made by AC_tools' get_default_variable_dict function)
     Data_rc (dict): dictionary containing model data
         (made by AC_tools' get_shared_data_as_dict function )
-    rm_strat (boolean): (fractionally) replace values in statosphere with zeros
-    weight_by_molecs (boolean): weight grid boxes by number of molecules
+    rm_strat (bool): (fractionally) replace values in statosphere with zeros
+    weight_by_molecs (bool): weight grid boxes by number of molecules
 
     Returns
     -------
@@ -1196,8 +1196,8 @@ def get_Ox_loss_dicts(fam='LOx', ref_spec='O3',
     wd (str): working directory ("wd") of model output
     CODE_wd (str): root of code directory containing the tagged KPP mechanism
     Mechanism (str): name of the KPP mechanism (and folder) of model output
-    weight_by_molecs (boolean): weight grid boxes by number of molecules
-    rm_strat (boolean): (fractionally) replace values in statosphere with zeros
+    weight_by_molecs (bool): weight grid boxes by number of molecules
+    rm_strat (bool): (fractionally) replace values in statosphere with zeros
     debug, verbose (bool): switches to turn on/set verbosity of output to screen
     full_vertical_grid (bool): use the full vertical grid for analysis
 

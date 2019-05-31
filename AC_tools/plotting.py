@@ -69,42 +69,42 @@ def map_plot(arr, return_m=False, grid=False, centre=False, cmap=None,
     arr (np.array): input (2D) array
     case (str or int): case for type of plot (vestigle: use log=True of False (default))
     cmap (str): force colormap selection by providing name
-    centre (boolean): use centre points of lon/lat grid points for mapping data surface
-    drawcountries (boolean): add countries to basemap?
-    debug (boolean): legacy debug option, replaced by python logging
-    degrade_resolution (boolean): reduce resolution of underlay map detail
-    discrete_cmap (boolean): use a discrete instead of conitunous colorbar map
+    centre (bool): use centre points of lon/lat grid points for mapping data surface
+    drawcountries (bool): add countries to basemap?
+    debug (bool): legacy debug option, replaced by python logging
+    degrade_resolution (bool): reduce resolution of underlay map detail
+    discrete_cmap (bool): use a discrete instead of conitunous colorbar map
     everyother (int): use "everyother" axis tick (e.g. 3=use every 3rd)
     f_size (float): fontsise
     fixcb (np.array): minimium and maximum to fix colourbar
     fixcb_buffered (array): minimium and maximum to fix colourbar, with buffer space
     format (str): format string for colorbar formating
-    grid (boolean): apply a grid over surface plot?
+    grid (bool): apply a grid over surface plot?
     extend (str): colorbar format settings ( 'both', 'min', 'both' ... )
     interval (int): x/y tick interval in multiples of 15 degrees lat/lon
     lvls (list): manually provide levels for colorbar
-    log (boolean): use a log scale for the plot and colorbar
-    no_cb (boolean): include a coloubar?
+    log (bool): use a log scale for the plot and colorbar
+    no_cb (bool): include a coloubar?
     norm (norm object): normalisation to use for colourbar and array
     nticks (int): number of ticks on colorbar
-    mask_invalids (boolean): mask invalid numbers (to allow saving to PDF)
+    mask_invalids (bool): mask invalid numbers (to allow saving to PDF)
     res (str): GEOS-Chem output configuration resolution ( '4x5' etc... )
     resolution (str): basemasp resolution settings ( 'c' = coarse, 'f' = fine ...  )
     rotatecbunits (str): orientation of colourbar units
-    shrink (boolean): colorbar size settings ( fractional shrink )
-    set_window (boolean): set the limits of the plotted data (lon_0, lon_1, lat_0, lat_1)
+    shrink (bool): colorbar size settings ( fractional shrink )
+    set_window (bool): set the limits of the plotted data (lon_0, lon_1, lat_0, lat_1)
     (for nested boundary conditions )
     sigfig_rounding_on_cb (int): significant figure rounding to use for colourbar
-    set_cb_ticks (boolean): mannually set colorbar ticks? (vestigle)
+    set_cb_ticks (bool): mannually set colorbar ticks? (vestigle)
     title (str): plot title (deafult is ==None, therefore no title)
-    tight_layout (boolean): use use tight lyaout for figure
-    ylabel, xlabel (boolean): label x/y axis?
+    tight_layout (bool): use use tight lyaout for figure
+    ylabel, xlabel (bool): label x/y axis?
     units (str): units of given data for plot title
-    verbose (boolean): legacy debug option, replaced by python logging
+    verbose (bool): legacy debug option, replaced by python logging
     wd (str): Specify the wd to get the results from a run.
-    window (boolean): use window plot settings (fewer axis labels/resolution of map)
-    axis_titles (boolean): title X and y axis? (lat and lon)
-    split_title_if_too_long (boolean): split the title over multiple lines
+    window (bool): use window plot settings (fewer axis labels/resolution of map)
+    axis_titles (bool): title X and y axis? (lat and lon)
+    split_title_if_too_long (bool): split the title over multiple lines
 
     Returns
     -------
@@ -424,7 +424,7 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, f_size=10,
     ax (axis instance): axis object to use
     c_off (int): integer cutoff for chemical troposphere
     cmap (str): force colormap selection by providing name
-    debug (boolean): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
     f_size (float): font size
     fixcb (np.array): minimium and maximum to fix colourbar
     fixcb_buffered (array): minimium and maximum to fix colourbar, with buffer space
@@ -433,23 +433,23 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, f_size=10,
     extend (str): colorbar format settings ( 'both', 'min', 'both' ... )
     interval (int): x/y tick interval in multiples of 15 degrees lat/lon
     lvls (list): manually provide levels for colorbar
-    log (boolean): use a log scale for the plot and colorbar
-    no_cb (boolean): include a coloubar?
+    log (bool): use a log scale for the plot and colorbar
+    no_cb (bool): include a coloubar?
     norm (norm object): normalisation to use for colourbar and array
     nticks (int): number of ticks on colorbar
-    mask_invalids (boolean): mask invalid numbers (to allow saving to PDF)
+    mask_invalids (bool): mask invalid numbers (to allow saving to PDF)
     res (str): GEOS-Chem output configuration resolution ( '4x5' etc... )
     rotatecbunits (str): orientation of colourbar units
-    shrink (boolean): colorbar size settings ( fractional shrink )
-    set_window (boolean): set the limits of the plotted data (lat_0, lat_1)
+    shrink (bool): colorbar size settings ( fractional shrink )
+    set_window (bool): set the limits of the plotted data (lat_0, lat_1)
     (for nested boundary conditions or subregion plots -)
     sigfig_rounding_on_cb (int): significant figure rounding to use for colourbar
     title (str): plot title (deafult is ==None, therefore no title)
-    ylabel, xlabel (boolean): label x/y axis?
+    ylabel, xlabel (bool): label x/y axis?
     units (str): units of given data for plot title
-    verbose (boolean): legacy debug option, replaced by python logging
+    verbose (bool): legacy debug option, replaced by python logging
     wd (str): Specify the wd to get the results from a run.
-    window (boolean): use window plot settings (fewer axis labels/resolution of map)
+    window (bool): use window plot settings (fewer axis labels/resolution of map)
 
     Notes
     -----
@@ -691,8 +691,8 @@ def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
     sub_str (str): for plotting
     stat2plot (str): stat (e.g. mean or medium) to use for main line
     color_dict (dictionary): with colors assign
-    show_plot (boolean)
-    save_plot (boolean)
+    show_plot (bool)
+    save_plot (bool)
 
     """
     import seaborn as sns
@@ -799,7 +799,7 @@ def BASIC_diel_plot(fig=None, ax=None, dates=None, data=None, color='red',
     label (str): label for input data
     units (str): unites to label
     time_resolution_str (str): time string to reduce dataframe by
-    legend (boolean): add a legend?
+    legend (bool): add a legend?
     title (str): title for plot
     color (str/hex etc): color for line
     f_size (float): fontsize
@@ -809,8 +809,8 @@ def BASIC_diel_plot(fig=None, ax=None, dates=None, data=None, color='red',
     pos, posn (int): vestigle(!) location indices for window plots
     ylim (list): min and max y axis limit
     lw (str): linewidth
-    return_avgs (boolean): return a list of the average values plotted
-    save_plt, show_plot (boolean): show or save plots?
+    return_avgs (bool): return a list of the average values plotted
+    save_plt, show_plot (bool): show or save plots?
     xlabel (str): label for x axis
 
     Returns
@@ -942,25 +942,25 @@ def BASIC_seasonal_plot(dates=None, data=None, ax=None,
     dates (nd.array): numpy array of datetime.datetime objects
     data (nd.array): numpy array of data to plot
     loc (str): best location to put legend plot
-    legend (boolean): Add a legend to the plot
+    legend (bool): Add a legend to the plot
     ylabel (str): label for y axis
-    xlabel (boolean): label x axis
-    return_avgs (boolean): return a list of the monthly averages
-    plot_Q1_Q3 (boolean): plot quartiles on for data?
+    xlabel (bool): label x axis
+    return_avgs (bool): return a list of the monthly averages
+    plot_Q1_Q3 (bool): plot quartiles on for data?
     title (str): title string for plot
     alt_text (str): subtitle string for plot (insert in plot)
     alt_text_x (float): x axis position for subtitle str
     alt_text_y (float): y axis position for subtitle str
     xtickrotation (float): rotation of x axis ticks
-    rm_yticks (boolean): remove the y axis ticks
-    log (boolean): set the y scale to be logarithmic
+    rm_yticks (bool): remove the y axis ticks
+    log (bool): set the y scale to be logarithmic
     ls (str): matplotlibe linestyle to use
     lw (int): linewidth to use
     color (str): colour for line
     label (str): label for line
     pcent1 (int): lower percentile to use (e.g. 25) for shaded region
     pcent2 (int): higher percentile to use (e.g. 75) for shaded region
-    debug (boolean): print debuging statements?
+    debug (bool): print debuging statements?
 
     Returns
     -------
@@ -1054,7 +1054,7 @@ def binned_boxplots_by_altitude(df=None, fig=None, ax=None, dataset_name=None,
     color (str): color for boxplot
     title (str): title for plot?
     widths (float): width of boxplots
-    ylabel, xlabel (boolean): include axis labels for plot?
+    ylabel, xlabel (bool): include axis labels for plot?
 
     Returns
     -------
@@ -1205,40 +1205,40 @@ def plot_spatial_figure(arr, fixcb=None, sigfig_rounding_on_cb=2,
     arr (np.array): input (2D) array
     case (str or int): case for type of plot (vestigle: use log=True of False (default))
     cmap (str): force colormap selection by providing name
-    centre (boolean): use centre points of lon/lat grid points for mapping data surface
-    drawcountries (boolean): add countries to basemap?
-    debug (boolean): legacy debug option, replaced by python logging
-    degrade_resolution (boolean): reduce resolution of underlay map detail
-    discrete_cmap (boolean): use a discrete instead of conitunous colorbar map
+    centre (bool): use centre points of lon/lat grid points for mapping data surface
+    drawcountries (bool): add countries to basemap?
+    debug (bool): legacy debug option, replaced by python logging
+    degrade_resolution (bool): reduce resolution of underlay map detail
+    discrete_cmap (bool): use a discrete instead of conitunous colorbar map
     everyother (int): use "everyother" axis tick (e.g. 3=use every 3rd)
     f_size (float): fontsise
     fixcb (np.array): minimium and maximum to fix colourbar
     fixcb_buffered (array): minimium and maximum to fix colourbar, with buffer space
     format (str): format string for colorbar formating
-    grid (boolean): apply a grid over surface plot?
+    grid (bool): apply a grid over surface plot?
     extend (str): colorbar format settings ( 'both', 'min', 'both' ... )
     interval (int): x/y tick interval in multiples of 15 degrees lat/lon
     lvls (list): manually provide levels for colorbar
-    log (boolean): use a log scale for the plot and colorbar
-    no_cb (boolean): include a coloubar?
+    log (bool): use a log scale for the plot and colorbar
+    no_cb (bool): include a coloubar?
     norm (norm object): normalisation to use for colourbar and array
     nticks (int): number of ticks on colorbar
-    mask_invalids (boolean): mask invalid numbers (to allow saving to PDF)
+    mask_invalids (bool): mask invalid numbers (to allow saving to PDF)
     res (str): GEOS-Chem output configuration resolution ( '4x5' etc... )
     resolution (str): basemasp resolution settings ( 'c' = coarse, 'f' = fine ...  )
     rotatecbunits (str): orientation of colourbar units
-    shrink (boolean): colorbar size settings ( fractional shrink )
-    set_window (boolean): set the limits of the plotted data (lon_0, lon_1, lat_0, lat_1)
+    shrink (bool): colorbar size settings ( fractional shrink )
+    set_window (bool): set the limits of the plotted data (lon_0, lon_1, lat_0, lat_1)
     (for nested boundary conditions )
     sigfig_rounding_on_cb (int): significant figure rounding to use for colourbar
-    set_cb_ticks (boolean): mannually set colorbar ticks? (vestigle)
+    set_cb_ticks (bool): mannually set colorbar ticks? (vestigle)
     title (str): plot title (deafult is ==None, therefore no title)
-    tight_layout (boolean): use use tight lyaout for figure
-    ylabel, xlabel (boolean): label x/y axis?
+    tight_layout (bool): use use tight lyaout for figure
+    ylabel, xlabel (bool): label x/y axis?
     units (str): units of given data for plot title
-    verbose (boolean): legacy debug option, replaced by python logging
+    verbose (bool): legacy debug option, replaced by python logging
     wd (str): Specify the wd to get the results from a run.
-    window (boolean): use window plot settings (fewer axis labels/resolution of map)
+    window (bool): use window plot settings (fewer axis labels/resolution of map)
 
     Returns
     -------
@@ -1830,7 +1830,7 @@ def Trendline(ax, X, Y, order=1, intervals=700, f_size=20, color='blue',
     f_size (float): font size
     color (str): color of line
     lw (float): line width of plotted trendline
-    debug (boolean): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
 
     Returns
     -------
@@ -2087,7 +2087,7 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,
     nticks (int): number of ticks on colorbar
     extend (str): colorbar format settings ( 'both', 'min', 'both' ... )
     norm (norm object): normalisation to use for colourbar
-    log (boolean): use log scale for colorbar
+    log (bool): use log scale for colorbar
     format (str): format string for colorbar tick formating
     cmap (str): colormap instance
     vmin, vmax (float): miminium and maximum of colorbar
@@ -2095,9 +2095,9 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,
     sigfig_rounding_on_cb (int): significant figure rounding to use for colourbar
     lvls (list): manually provide levels for colorbar
     boundaries (list):  manually provide levels for discrete colorbar
-    discrete_cmap (boolean): use a discrete instead of conitunous colorbar map
-    verbose (boolean): legacy debug option, replaced by python logging
-    debug (boolean): legacy debug option, replaced by python logging
+    discrete_cmap (bool): use a discrete instead of conitunous colorbar map
+    verbose (bool): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
 
     Returns
     -------
@@ -2294,20 +2294,20 @@ def get_colormap(arr,  center_zero=True, minval=0.15, maxval=0.95,
     Parameters
     ----------
     arr (array): array of values to assess colourbar from
-    center_zero (boolean): make sure (divergent) colorbar centered around zero
+    center_zero (bool): make sure (divergent) colorbar centered around zero
     minval, maxval (float): values to restrict 'gnuplot2' to
     npoints (int): number of points in colormap
     cb (str): name of colorbar string
-    maintain_scaling (boolean): maintain scaling for range in color change
-    negative (boolean): force colormap to be sequential negative (==True)
-    positive (boolean): force colormap to be sequential positive (==True)
-    divergent (boolean): force colormap to be divergent (==True)
+    maintain_scaling (bool): maintain scaling for range in color change
+    negative (bool): force colormap to be sequential negative (==True)
+    positive (bool): force colormap to be sequential positive (==True)
+    divergent (bool): force colormap to be divergent (==True)
     sigfig_rounding_on_cb (int): number of sig. figs. to round colourbar ticks
-    buffer_cmap_upper (boolean): make sure colorbar has space for maxiumium val.
+    buffer_cmap_upper (bool): make sure colorbar has space for maxiumium val.
     fixcb (array): lower and upper values to fix colourmap to.
     nticks (int): number of ticks to use for colorbar
-    verbose (boolean): legacy debug option, replaced by python logging
-    debug (boolean): legacy debug option, replaced by python logging
+    verbose (bool): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
 
     Returns
     -------
@@ -2730,7 +2730,7 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=F
     title (str): plot title
     location (str): String of directory to save output
     extensions (list):  List of strings of file extensions. (e.g. ['png'])
-    tight (boolean): use tight layout - redundent?
+    tight (bool): use tight layout - redundent?
 
     Returns
     -------

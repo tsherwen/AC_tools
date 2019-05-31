@@ -32,12 +32,12 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
 
     Parameters
     -------
-    print_formatted_KPP_file (boolean): Save the uniformly formated .eqn file
+    print_formatted_KPP_file (bool): Save the uniformly formated .eqn file
     folder (str): folder of GEOS-Chem code directory
     mechanism (str): mechanism to create tag files for ?
     GC_version (str): version of GEOS-Chem (e.g. v11-2)
-    debug (boolean): print out extra infomation for debugging
-    verbose (boolean): print out extra information during processing
+    debug (bool): print out extra infomation for debugging
+    verbose (bool): print out extra information during processing
 
     Returns
     -------

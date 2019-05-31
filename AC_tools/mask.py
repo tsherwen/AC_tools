@@ -241,14 +241,14 @@ def mask_3D(hPa, sect, MBL=True, res='4x5', extra_mask=None,
     -------
     sect (Str): section of the atmosphere of interest (e.g. MBL, UT...)
     hPa (array): array for pressures ( in hPa)
-    MBL (boolean): apply a mask for the marine boundary layer
+    MBL (bool): apply a mask for the marine boundary layer
     res (str): the resolution of required output/input arrays (e.g. '4x5' )
-    use_multiply_method (boolean): Create arrays of ones and zeros
-    trop_limit (boolean): limit 3D arrays to troposphere
-    debug (boolean): legacy debug option, replaced by python logging
-    verbose (boolean): legacy debug option, replaced by python logging
+    use_multiply_method (bool): Create arrays of ones and zeros
+    trop_limit (bool): limit 3D arrays to troposphere
+    debug (bool): legacy debug option, replaced by python logging
+    verbose (bool): legacy debug option, replaced by python logging
     extra_mask (str): name of additional region (e.g. ocean) to mask
-    M_all (boolean): apply oceanic masking to all regions
+    M_all (bool): apply oceanic masking to all regions
 
     Returns
     -------
@@ -589,14 +589,14 @@ def mask_all_but(region='All', M_all=False, saizlopez=False,
     Parameters
     -------
     res (str): the resolution if wd not given (e.g. '4x5' )
-    M_all (boolean): maask all marine areas?
-    saizlopez (boolean): use tropics definition from Saiz-Lopez er al 2014
-    trop_limit (boolean): limit 4D arrays to troposphere
+    M_all (bool): maask all marine areas?
+    saizlopez (bool): use tropics definition from Saiz-Lopez er al 2014
+    trop_limit (bool): limit 4D arrays to troposphere
     mask2D/mask3D/mask4D(booolean): ensure mask returned is 2D/3D/4D
-    use_multiply_method (boolean): return array of ones, that can be mulitpled
+    use_multiply_method (bool): return array of ones, that can be mulitpled
     through an array to set data to zero
-    verbose (boolean): legacy debug option, replaced by python logging
-    debug (boolean): legacy debug option, replaced by python logging
+    verbose (bool): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
     loc (str): location
     lon, lat (float): lat/lon locations to leave nearest grid box unmasked
 
@@ -1136,7 +1136,7 @@ def get_2D_nighttime_mask4date_pd(date=None, ncfile=None, res='4x5',
     Parameters
     -------
     date (datetime): date to use (UTC)
-    mask_daytime (boolean): mask daytime instead of nightime
+    mask_daytime (bool): mask daytime instead of nightime
     ncfile (str): location to netCDF file - not implemented...
     res (str): resolution, if using resolutions listed in get_latlonalt4res
     buffer_hours (float/int): number of hours to buffer subrise/sunset with

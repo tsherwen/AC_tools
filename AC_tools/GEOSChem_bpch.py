@@ -67,7 +67,7 @@ def get_surface_area(res=None, wd=None, debug=False):
     ----------
     wd (str): Specify the wd to get the results from a run.
     res (str): the resolution if wd not given (e.g. '4x5' )
-    debug (boolean): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
 
     Returns
     -------
@@ -192,8 +192,8 @@ def get_land_map(res='4x5', date=None, wd=None, rtn_ds=False,
     res (str): resolution of model to get land map for
     wd (str): directory contain file with LWI
     date (datetime.datetime): date to nearest point to (method=nearest)
-    rtn_ds (boolean): return the output as a xr.Dataset
-    average_over_time (boolean): Average over time (no time dim. returned)
+    rtn_ds (bool): return the output as a xr.Dataset
+    average_over_time (bool): Average over time (no time dim. returned)
 
     Returns
     -------
@@ -271,9 +271,9 @@ def get_air_mass_np(wd=None, times=None, trop_limit=True, AirMassVar='BXHGHT_S__
     Parameters
     -------
     wd (str): Specify the wd to get the results from a run.
-    trop_limit (boolean): limit 4D arrays to troposphere
+    trop_limit (bool): limit 4D arrays to troposphere
     times (list): list of times to extract model for - vestigial
-    debug (boolean): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
 
     Returns
     -------
@@ -295,7 +295,7 @@ def get_OH_mean(wd, debug=False, file_type='*geos*log*'):
     Parameters
     -------
     wd (str): directory containing log file files
-    debug (boolean): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
 
     Returns
     -------
@@ -353,7 +353,7 @@ def get_CH4_mean(wd, rtn_global_mean=True, rtn_avg_3D_concs=False,
     Parameters
     -------
     wd (str): directory containing log files
-    debug (boolean): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
     res (str): resolution of model in directory provided
 
     Returns
@@ -398,7 +398,7 @@ def get_OH_HO2(t_p=None, a_m=None, vol=None,
     Parameters
     -------
     wd (str): working directory containing files to use
-    debug (boolean): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
     res (str): resolution of model in directory provided
 
     Returns
@@ -563,15 +563,15 @@ def get_GC_output(wd, vars=None, species=None, category=None, r_cubes=False,
      ( alterately provide a single species and category through named input variables )
     species (str): species/tracer/variable (gamap) name
     category (str): diagnostic category (gamap) name
-    r_cubes (boolean): To return Iris Cubes, set to True
-    r_res (boolean): To return resolution of model NetCDF set to True
-    r_list (boolean): To return data as list of arrays rather than a single array
+    r_cubes (bool): To return Iris Cubes, set to True
+    r_res (bool): To return resolution of model NetCDF set to True
+    r_list (bool): To return data as list of arrays rather than a single array
     restore_zero_scaling(Boolean): restores scale to ctm.bpch standard (e.g. v/v not pptv)
-    trop_limit(boolean): limit to "chemical troposphere" (level 38 of model)
+    trop_limit(bool): limit to "chemical troposphere" (level 38 of model)
     dtype (type): type of variable to be returned
-    use_NetCDF(boolean): set==True to use NetCDF rather than iris cube of output
-    verbose (boolean): legacy debug option, replaced by python logging
-    debug (boolean): legacy debug option, replaced by python logging
+    use_NetCDF(bool): set==True to use NetCDF rather than iris cube of output
+    verbose (bool): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
 
     Returns
     -------
@@ -925,7 +925,7 @@ def calc_surface_area_in_grid(res='1x1', lon_e=None, lat_e=None,
     Parameters
     -------
     res (str): the resolution if wd not given (e.g. '4x5' )
-    debug (boolean): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
     lon_c (array): centres of longitude boxes
     lat_c (array): centres of latitude boxes
     lon_e (array): edges of longitude boxes
@@ -1354,7 +1354,7 @@ def get_gc_datetime(wd=None, spec='O3', cat='IJ-AVG-$',
     Parameters
     ----------
     cat (str): GAMAP species category
-    debug (boolean): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
     filename (Str): name of NetCDF file (e.g. ctm.nc or ts_ctm.nc)
     spec (str): species/tracer/variable name
     ver (str): The GEOS-Chem halogen version that is being used
@@ -1583,7 +1583,7 @@ def get_CH4_lifetime(wd=None, res='4x5',
 
     Parameters
     -------
-    trop_limit (boolean): limit 4D arrays to troposphere
+    trop_limit (bool): limit 4D arrays to troposphere
     wd (str): the directory to search for file CTM output file in
     vol (array): volumne contained in each grid box (cm^-3)
     years, months (list): list of years and months in model output file
@@ -1592,20 +1592,20 @@ def get_CH4_lifetime(wd=None, res='4x5',
     K (array), array of temperature in degrees (K)
     t_ps (array), array of time each grid box has spent in the troposphere
     t_lvl (array), array of tropopause level
-    masktrop (boolean), mask the stratosphere from from the arrays?
-    include_Cl_ox (boolean), include loss of CH4 from CL (as-well as OH)?
+    masktrop (bool), mask the stratosphere from from the arrays?
+    include_Cl_ox (bool), include loss of CH4 from CL (as-well as OH)?
     a_m (np.array): 4D array of air mass
     n_air (array): number desnity of air
     LCH4_Cl (array): Rate of loss of CH4 vs. Cl (NOTE: not currently used)
-    use_OH_from_geos_log (boolean), use the value for OH from the geos.log file?
+    use_OH_from_geos_log (bool), use the value for OH from the geos.log file?
     ClVar (str), Variable name in NetCDF file for Cl concentration
-    average_value  (boolean), get a mass weighted average value?
+    average_value  (bool), get a mass weighted average value?
     OHVar (str), Variable name in NetCDF file for OH concentration
     TimeInTropVar (str), Variable name in NetCDF file for time in troposphere
     RateCl_CH4Var (str), Variable name in NetCDF file for Cl+CH4 rate
     TropLevelVar (str), Variable name in NetCDF file for tropopause level
-    debug (boolean): legacy debug option, replaced by python logging
-    verbose (boolean): print verbose output?
+    debug (bool): legacy debug option, replaced by python logging
+    verbose (bool): print verbose output?
 
     Returns
     -------
@@ -1899,14 +1899,14 @@ def spec_dep(wd=None, spec='O3', s_area=None, months=None,
 
     Parameters
     ----------
-    trop_limit (boolean): limit 4D arrays to troposphere
+    trop_limit (bool): limit 4D arrays to troposphere
     wd (str): the directory to search for file ctm output file in
     vol (array): volumne contained in each grid box (cm^-3)
     years, months (list): list of years and months in model output file
     res (str): GEOS-Chem output configuration resolution ( '4x5' etc... )
     spec (str): species/tracer/variable name
-    Iodine (boolean): Return in terms of unit iodine mass
-    debug (boolean): legacy debug option, replaced by python logging
+    Iodine (bool): Return in terms of unit iodine mass
+    debug (bool): legacy debug option, replaced by python logging
     output_freq (str): output step of model e.g.  monthly, daily, weekly
 
     Returns
@@ -1954,10 +1954,10 @@ def molec_cm2_s_2_Gg_Ox_np(arr, spec='O3', s_area=None,
     -------
     spec (str): species/tracer/variable name
     s_area (array): 2D array of surface area of grid box (m^2)
-    Iodine (boolean): return in units of iodine mass?
+    Iodine (bool): return in units of iodine mass?
     res (str): the resolution if wd not given (e.g. '4x5' )
-    year_eq (boolean): convert into year equivilents?
-    debug (boolean): legacy debug option, replaced by python logging
+    year_eq (bool): convert into year equivilents?
+    debug (bool): legacy debug option, replaced by python logging
 
     Returns
     -------
@@ -2005,7 +2005,7 @@ def get_DU_mean(spec='O3', s_area=None, a_m=None, t_p=None, O3_arr=None, wd=None
     t_p (ndarray): time in the troposphere diganostic ( float values 0 to 1 )
     res (str): resolution of the model input (e.g. 4x5, 2x2.5 )
     s_area (ndarray): Surface array (array of values in metres)
-    area_weight (boolean): weight by area of grid box?
+    area_weight (bool): weight by area of grid box?
     O3_arr (ndarray): array of mixing ratio (v/v), e.g. ozone
 
     Returns
@@ -2062,7 +2062,7 @@ def get_POxLOx(ctms=None, vol=None, all_data=False, t_p=None, ver='1.6',
     vol (array): volume contained in each grid box (cm^-3)
     res (str): GEOS-Chem output configuration resolution ( '4x5' etc... )
     ver (str): The GEOS-Chem halogen version that is being used
-    all_data(boolean): return the full data (instead of two single numbers)
+    all_data(bool): return the full data (instead of two single numbers)
     GC_version (str): GEOS-Chem version (e.g. v11-01 or v10-01)
 
     Returns
@@ -2126,10 +2126,10 @@ def get_wet_dep(months=None, years=None, vol=None,
     ver (str): GEOSChem version with halogens (default = 3.0), ignore if not using halogen code
     s_area (array): 4D Surface area array (m2)
     vol (array): volumne of grid boxes
-    trop_limit (boolean): limit output to "chemical troposphere" (level 38 )
-    Iodine (boolean): return in terms of mass of iodine
+    trop_limit (bool): limit output to "chemical troposphere" (level 38 )
+    Iodine (bool): return in terms of mass of iodine
     scale (int): scaleing to use (e.g. 1E9 = Gg )
-    sep_rxn (boolean): return list of arrays by "reaction"/process
+    sep_rxn (bool): return list of arrays by "reaction"/process
     res (str): resolution of the model input (e.g. 4x5, 2x2.5 )
     output_freq (str): e.g. monthly, daily, weekly...
 
@@ -2218,18 +2218,18 @@ def molec_weighted_avg(arr, wd=None, vol=None, t_p=None,
 
     Parameters
     -------
-    weight_lat, weight_lon (boolean): weight over latitude or longitude
-    annual_mean (boolean): average the time axis?
+    weight_lat, weight_lon (bool): weight over latitude or longitude
+    annual_mean (bool): average the time axis?
     n_air (array): number desnity of air
     molecs (array): number of molecules in air
     vol (array): volumne of grid boxes
-    trop_limit (boolean): limit output to "chemical troposphere" (level 38 )
+    trop_limit (bool): limit output to "chemical troposphere" (level 38 )
     res (str): resolution of the model input (e.g. 4x5, 2x2.5 )
     t_p (array): taime in the troposphere diganostic ( float values 0 to 1 )
     - definition of troposphere to use?
-    use_time_in_trop (boolean): time a given box is in the troposphere
+    use_time_in_trop (bool): time a given box is in the troposphere
         ( if use_time_in_trop=False, the level of the troposphere is used )
-     multiply_method (boolean): use a multiplication method, rather than masking for
+     multiply_method (bool): use a multiplication method, rather than masking for
         the arrays (aka set stratosphere to have zero values)
     LON_axis, LAT_axis (float): Index of longitudinal or latitudinal
 
@@ -2352,7 +2352,7 @@ def convert_v_v2ngm3(arr, wd=None, spec='AERI', trop_limit=True,
     spec (str): species/tracer/variable name
     a_m (np.array): 4D array of air mass
     vol (array): volume contained in each grid box (cm^-3)
-    trop_limit (boolean): limit 4D arrays to troposphere
+    trop_limit (bool): limit 4D arrays to troposphere
     res (str): the resolution if wd not given (e.g. '4x5' )
 
     Returns
@@ -2389,7 +2389,7 @@ def convert_v_v2ugm3(arr, wd=None, spec='AERI', trop_limit=True,
     spec (str): species/tracer/variable name
     a_m (np.array): 4D array of air mass
     vol (array): volume contained in each grid box (cm^-3)
-    trop_limit (boolean): limit 4D arrays to troposphere
+    trop_limit (bool): limit 4D arrays to troposphere
     res (str): the resolution if wd not given (e.g. '4x5' )
 
     Returns
@@ -2541,15 +2541,15 @@ def fam_data_extractor(wd=None, fam=None, trop_limit=True, ver='3.0',
     fam (str): "family" to extract ( e.g. NOy, NOx, POx, CH4 loss rate, ... )
     a_m (array): array of air mass
     vol (array): volumne of grid boxes
-    trop_limit (boolean): limit output to "chemical troposphere" (level 38 )
+    trop_limit (bool): limit output to "chemical troposphere" (level 38 )
     res (str): resolution of the model input (e.g. 4x5, 2x2.5 )
-    rtn_specs (boolean): return list of species extracted?
+    rtn_specs (bool): return list of species extracted?
     t_ps (array): time in the troposphere diganostic ( float values 0 to 1 )
     title (str): run title, ignore if not using halogen code
     ver (str): GEOSChem version with halogens (default = 3.0), ignore if not using halogen code
 
     definition of troposphere to use?
-        - use_time_in_trop (boolean): time a given box is in the troposphere
+        - use_time_in_trop (bool): time a given box is in the troposphere
         ( if use_time_in_trop=False, the level of the troposphere is used )
          - use a multiplication method, rather than masking for the arrays
          (aka set stratosphere to have zero values)
@@ -3265,8 +3265,8 @@ def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None,
     wd (str): the directory to search for file in
     stioch4fam (list): list of
     filename (str): name of NetCDF file to extract from
-    rtn_units (boolean): return units
-    rtn_ctm_units (boolean): return "ctm_units" (e.g. ppbC, instead of ppb)
+    rtn_units (bool): return units
+    rtn_ctm_units (bool): return "ctm_units" (e.g. ppbC, instead of ppb)
     LON (float): londitude in units of degrees East
     LAT (float): londitude in units of degrees North
     LON_int (int): (Optional) londitude index of degrees East
@@ -3346,9 +3346,9 @@ def convert_v_v_2_molec_cm3(arr=None, wd=None, vol=None, a_m=None,
     arr (array): arrray input
     a_m (array): array of air mass
     mols (array): array of molecule number density
-    trop_limit (boolean): limit output to "chemical troposphere" (level 38 )
+    trop_limit (bool): limit output to "chemical troposphere" (level 38 )
     res (str): resolution of the model input (e.g. 4x5, 2x2.5 )
-    explicitly_calc (boolean): Explicitly calculate the air mass
+    explicitly_calc (bool): Explicitly calculate the air mass
 
     Returns
     -------
@@ -3407,7 +3407,7 @@ def convert_molec_cm3_2_v_v(arr=None, wd=None, vol=None, a_m=None,
     arr (array): arrray input
     a_m (array): array of air mass
     mols (array): array of molecule number density
-    trop_limit (boolean): limit output to "chemical troposphere" (level 38 )
+    trop_limit (bool): limit output to "chemical troposphere" (level 38 )
     res (str): resolution of the model input (e.g. 4x5, 2x2.5 )
     press (array): pressure in hPa
 
@@ -3465,13 +3465,13 @@ def mask4troposphere(ars=[], wd=None, t_ps=None, trop_limit=False,
      - t_ps: time in the troposphere diganostic ( float values 0 to 1 )
      - t_lvl: the model grid box level of the troposphere
      - trop_limit: limit output to "chemical troposphere" (level 38 )
-     ( (boolean) options for this include using
+     ( (bool) options for this include using
      - multiply_method
      - definition of troposphere to use?
-        - use_time_in_trop (boolean): time a given box is in the troposphere
+        - use_time_in_trop (bool): time a given box is in the troposphere
         ( if use_time_in_trop=False, the level of the troposphere is used )
-     - conbine_ars (boolean): return arrays as a single array?
-     - month_eq (boolean): convert units to monthly equiivlents.
+     - conbine_ars (bool): return arrays as a single array?
+     - month_eq (bool): convert units to monthly equiivlents.
      - res: resolution of the model input (e.g. 4x5, 2x2.5 )
 
     Returns
@@ -3608,11 +3608,11 @@ def convert_molec_cm3_s_2_g_X_s(ars=None, specs=None, ref_spec=None,
     specs (list): species (Prod loss variaables from input.geos)
     months (list) and years (list): list of integer values for
     t_ps (array): time in the troposphere diganostic ( float values 0 to 1 )
-    trop_limit (boolean): limit output to "chemical troposphere" (level 38 )
-    rm_strat (boolean): mask out stratosphere
-     ( (boolean) options for this include using multiply_method and use_time_in_trop )
-    conbine_ars (boolean): return arrays as a single array?
-    month_eq (boolean): convert units to monthly equiivlents.
+    trop_limit (bool): limit output to "chemical troposphere" (level 38 )
+    rm_strat (bool): mask out stratosphere
+     ( (bool) options for this include using multiply_method and use_time_in_trop )
+    conbine_ars (bool): return arrays as a single array?
+    month_eq (bool): convert units to monthly equiivlents.
     limit_Prod_loss_dim_to (int): level to cut off arrays at
      (38 in <v10, 59 in >=v11-1)
 
@@ -3747,7 +3747,7 @@ def get_2D_arr_weighted_by_X(arr, spec=None, res='4x5', print_values=False,
     ----------
     arr (array): 2D array to average weighted by 2nd'y array (s_area)
     res (str): the resolution if wd not given (e.g. '4x5' )
-    print_values (boolean): print calculated values
+    print_values (bool): print calculated values
     s_area (array): array of areas of grid boxes (could be any variable)
     spec (str): species/tracer/variable name
 
@@ -3838,7 +3838,7 @@ def get_default_variable_dict(wd=None,
 
     Parameters
     ----
-    full_vertical_grid (boolean): usings all levels of grid (e.g. 72 or 47)
+    full_vertical_grid (bool): usings all levels of grid (e.g. 72 or 47)
     wd (str): Specify the wd to get the results from a run.
 
     Returns
@@ -3900,7 +3900,7 @@ def get_shared_data_as_dict(Var_rc=None, var_list=[],
     Var_rc (dict): dictionary containing variables for working directory ('wd')
     Data_rc (dict): dictionary containing model data (default intiallised empty)
     var_list (list): list of names (strings) of variables to extract
-    full_vertical_grid (boolean): usings all levels of grid (e.g. 72 or 47)
+    full_vertical_grid (bool): usings all levels of grid (e.g. 72 or 47)
 
     Returns
     ----
@@ -4073,8 +4073,8 @@ def process_to_X_per_s(spec=None, ars=None, tags=None, ref_spec=None,
     ----
     Var_rc (dict): dictionary containing variables for working directory ('wd')
     var_list (list): list of names (strings) of variables to extract
-    summate_altitudes (boolean): sum over altitude dimension
-    summate_routes (boolean): sum all "routes" (all of arrays provided)
+    summate_altitudes (bool): sum over altitude dimension
+    summate_routes (bool): sum all "routes" (all of arrays provided)
     Data_rc (dict): Data dictionary object (contains details on model data)
     Var_rc (dict): Variable dictionary object (contains analysis variabl deatail)
 
@@ -4125,7 +4125,7 @@ def concvert_df_VOC_C2v(df=None, verbose=True):
     Parameters
     -------
     df (dataframe): pd dataframe containing timeseries data (tracers as columns)
-    verbose (boolean): print verbose output?
+    verbose (bool): print verbose output?
 
     Returns
     -------
@@ -4164,13 +4164,13 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
     -------
     bpch_file_type (str): str of standard file (wildcard) str with file naming structure
     filename (str): name of NetCDF file to make
-    verbose (boolean): print verbose output?
+    verbose (bool): print verbose output?
     folder (str): directory address for folder contain files
     ext_str (str): extra str to inc. in monthly filenames
     file_prefix (str): prefox str to use for monthly split files
-    split_by_month (boolean): split new NetCDF file by month? (post making file)
-    mk_monthly_NetCDF_files (boolean): make a NetCDF per month of files
-    mk_weekly_NetCDF_files (boolean): make a NetCDF per week of files
+    split_by_month (bool): split new NetCDF file by month? (post making file)
+    mk_monthly_NetCDF_files (bool): make a NetCDF per month of files
+    mk_weekly_NetCDF_files (bool): make a NetCDF per week of files
 
     Returns
     -------
@@ -4334,7 +4334,7 @@ def get_Lightning_NOx_source(Var_rc=None, Data_rc=None, debug=False):
     -------
     Var_rc (dict): dictionary of variables (inc. working dir and filenname)
     Data_rc (dict): dictionary of variables (inc. res)
-    debug (boolean): legacy debug option, replaced by python logging
+    debug (bool): legacy debug option, replaced by python logging
 
     Returns
     -------
@@ -4561,8 +4561,8 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     REF1 (str): name of (2nd) run in dictionary to to % change calculations from
     prefix (str):  string to include as a prefix in saved csv's filename
     extra_str (str):  string to include as a suffx in saved csv's filename
-    save2csv (boolean): save dataframe as a csv file
-    trop_limit (boolean): limit analysis to the troposphere?
+    save2csv (bool): save dataframe as a csv file
+    trop_limit (bool): limit analysis to the troposphere?
     extra_burden_specs (list): list of extra species to give trop. burden stats on
     extra_surface_specs (list): list of extra species to give surface conc. stats on
     res (str): resolution of the modul output (e.g. 4x5, 2x2.5, 0.125x0.125)
@@ -4735,12 +4735,12 @@ def get_trop_burden(spec='O3', wd=None, a_m=None, t_p=None,
     Parameters
     ----------
     a_m (np.array): 4D array of air mass
-    all_data (boolean): return complete 4D array
-    debug (boolean): legacy debug option, replaced by python logging
+    all_data (bool): return complete 4D array
+    debug (bool): legacy debug option, replaced by python logging
     res (str): the resolution if wd not given (e.g. '4x5' )
     t_p (np.array): fractional time a grid box has spent in tropospehre
-    trop_limit (boolean): limit 4D arrays to troposphere
-    total_atmos (boolean): return whole atmosphere or just troposphere?
+    trop_limit (bool): limit 4D arrays to troposphere
+    total_atmos (bool): return whole atmosphere or just troposphere?
     spec (str): species/tracer/variable name
     wd (str): Specify the wd to get the results from a run.
     arr (np.array): array of v/v for species
