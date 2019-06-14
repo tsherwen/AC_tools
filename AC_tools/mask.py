@@ -21,12 +21,102 @@ import datetime as datetime
 # math
 from math import radians, sin, cos, asin, sqrt, pi, atan2
 
+import geopandas
+from rasterio import features
+from affine import Affine
+
+
 # The below imports need to be updated,
 # imports should be specific and in individual functions
 # import tms modules with shared functions
 from . core import *
 from . variables import *
 
+
+def add_raster_of_country2ds(ds, country='South Africa', set_all_regions2one=True,
+        dpi=320):
+    """
+    Add raster outline of country to spatial dataset
+    """
+    # Get shapes for country
+    shapes = get_shapes4country(country=country)
+    # Add country's states as a layer
+    ds['states'] = rasterize(shapes, ds.coords)
+    # Test plot of this?
+    if test_plot:
+        fig = plt.figure(figsize=(10, 6))
+#        ax = fig.add_subplot()
+        ax = fig.add_subplot(111, projection=ccrs.PlateCarree(), aspect='auto')
+        ds['states'].plot.imshow(x='lon', y='lat', ax=ax, transform=ccrs.PlateCarree())
+#        ds['states'].plot()
+        # Beautify
+        ax.coastlines()
+        ax.set_global()
+        # save
+        savename = 'spatial_plot_of_shapes4country_{}'.format(country)
+        savename = rm_spaces_and_chars_from_str(savename)
+        plt.savefig(savename+'.png', dpi=dpi)
+    # set all the regions (e.g. counties/states) in a country to 1
+    if set_all_regions2one:
+        print('All sub units of country have different values >0')
+        print('TODO: set to unity')
+    return ds
+
+
+def get_shapes4country(country='South Africa')
+    """
+    Get shapes (polygons) for country from Natural earth
+
+    NOTES
+     - data credit    http://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-admin-1-states-provinces/
+    """
+    #location of data
+    URL = "http://www.naturalearthdata.com/downloads/10m-cultural-vectors"
+    URL += "/10m-admin-1-states-provinces/"
+    # Shapefiles locally?
+    # TODO - update to download automatically and store in AC_tools' data directory
+#    shapefiles = 'ne_10m_admin_1_states_provinces_lakes'
+    shapefiles = 'ne_10m_admin_1_states_provinces'
+    folder = '/mnt/lustre/users/ts551/labbook/Python_progs/'
+    folder += '/AC_tools/data/shapefiles/{}'.format(shapefiles,shapefiles)
+    states = geopandas.read_file(folder)
+    # Just select state of interest
+    choosen_states = states.query("admin == '{}'".format(country))
+    choosen_states = choosen_states.reset_index(drop=True)
+    # Get the shapes
+    shapes = zip(choosen_states.geometry, range(len(choosen_states)))
+
+
+def transform_from_latlon(lat, lon):
+    """
+    Tranform from latitude and longitude
+    NOTES:
+     - credit - Shoyer https://gist.github.com/shoyer/0eb96fa8ab683ef078eb
+    """
+    from affine import Affine
+    lat = np.asarray(lat)
+    lon = np.asarray(lon)
+    trans = Affine.translation(lon[0], lat[0])
+    scale = Affine.scale(lon[1] - lon[0], lat[1] - lat[0])
+    return trans * scale
+
+
+def rasterize(shapes, coords, fill=np.nan, **kwargs):
+    """
+    Rasterize a list of (geometry, fill_value) tuples onto the given
+    xray coordinates. This only works for 1d latitude and longitude
+    arrays.
+
+    NOTES:
+     - credit - Shoyer https://gist.github.com/shoyer/0eb96fa8ab683ef078eb
+    """
+    from rasterio import features
+    transform = transform_from_latlon(coords['lat'], coords['lon'])
+    out_shape = (len(coords['lat']), len(coords['lon']))
+    raster = features.rasterize(shapes, out_shape=out_shape,
+                                fill=fill, transform=transform,
+                                dtype=float, **kwargs)
+    return xr.DataArray(raster, coords=coords, dims=('lat', 'lon'))
 
 
 def ocean_unmasked(res='4x5', debug=False):
