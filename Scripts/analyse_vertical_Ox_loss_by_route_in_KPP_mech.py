@@ -230,7 +230,6 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
         print(df.head())
     df.to_csv('Ox_loss_budget_by_rxn_for_{}_mechanism.csv'.format(Mechanism))
     # Now select the most important routes
-    df_sum = pd.DataFrame()
     grp = df[['Family', 'Total flux']].groupby('Family')
     total = grp.sum().sum()
     # Print the contribution by family to screen
@@ -239,6 +238,17 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
     hal_LOx = (grp.sum().T[halogen_fams].sum().sum() / total * 100).values[0]
     if verbose:
         print(('Total contribution of halogens is: {:.2f} %'.format(hal_LOx)))
+    # Add Halogen total and general total to DataFrame
+    dfFam = grp.sum().T
+    dfFam['Total'] =dfFam.sum().sum()
+    dfFam['Halogens'] = dfFam[halogen_fams].sum().sum()
+    # Update units to Tg O3
+    dfFam = dfFam.T /1E12
+    # return dictionaries of LOx by reaction or by family (in Tg O3)
+    if rtn_by_rxn:
+        return df /1E12
+    if rtn_by_fam:
+        return dfFam
 
 
 if __name__ == "__main__":
