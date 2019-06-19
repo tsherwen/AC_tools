@@ -63,7 +63,7 @@ def add_raster_of_country2ds(ds, country='South Africa', set_all_regions2one=Tru
     return ds
 
 
-def get_shapes4country(country='South Africa')
+def get_shapes4country(country='South Africa'):
     """
     Get shapes (polygons) for country from Natural earth
 
