@@ -46,6 +46,36 @@ import scipy
 #from option_d import test_cm as cmd
 
 
+def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson(),
+                   save_plot=True, show_plot=False, savename=None, title=None,
+                   LatVar='lat', LonVar='lon', dpi=320):
+    """
+    Plot up a quick spatial plot of data using cartopy
+    """
+    # Use the 1st data variable if not variable given
+    if isinstance(var2plot, type(None)):
+        print('WARNING: No variable to plot was set (var2plot), trying 1st data_var')
+        var2plot = list(ds.data_vars)[0]
+    # Setup figure and axis and plot
+    fig = plt.figure(figsize=(10, 6))
+    ax = fig.add_subplot(111, projection=projection, aspect='auto')
+    ds[var2plot].plot.imshow(x=LonVar, y=LatVar, ax=ax, transform=ccrs.PlateCarree())
+    # Beautify
+    ax.coastlines()
+    ax.set_global()
+    # Add a generic title if one is not provided
+    if isinstance(title, type(None)):
+        plt.title('Spatial plot of {}'.format(var2plot))
+    # save the plot?
+    if save_plot:
+        if isinstance( savename, type(None)):
+            savename = 'spatial_plot_{}_{}'.format(var2plot, extra_str)
+        savename = rm_spaces_and_chars_from_str(savename)
+        plt.savefig(savename+'.png', dpi=dpi)
+    if show_plot:
+        plt.show()
+
+
 def map_plot(arr, return_m=False, grid=False, centre=False, cmap=None,
              no_cb=False, cb=None, rotatecbunits='horizontal', fixcb=None, nticks=10,
              mask_invalids=False,
