@@ -14,17 +14,23 @@ NOTE(S):
 import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
-from pandas import DataFrame
+import pandas as pd
+import xarray as xr
 # time
 import time
 import datetime as datetime
 # math
 from math import radians, sin, cos, asin, sqrt, pi, atan2
-
-import geopandas
-from rasterio import features
+# geopands and rasterio are not back compatibly with python 2, so only try and import
+try:
+    import geopandas
+except ImportError:
+    print('failed to import geopandas')
+try:
+    from rasterio import features
+except ImportError:
+    print('failed to import rasterio')
 from affine import Affine
-
 
 # The below imports need to be updated,
 # imports should be specific and in individual functions
@@ -33,8 +39,77 @@ from . core import *
 from . variables import *
 
 
+def get_country_mask(country='South Africa', res='2x2.5'):
+    """
+    Get a mask (1s) for a given country at the requested resolution
+    """
+    # Get AC_tools location, then set example data folder location
+    import os
+    import xarray as xr
+    import inspect
+    filename = inspect.getframeinfo(inspect.currentframe()).filename
+    path = os.path.dirname(os.path.abspath(filename))
+    folder = path+'/data/LM/LANDMAP_LWI_ctm_0125x0125/'
+    # Get coords from LWI 0.125x0.125 data and remove the time dimension
+    ds = xr.open_dataset(folder+'ctm.nc')
+    ds = ds.mean(dim='time')
+    # Add a raster mask for a country
+    ds = AC.add_raster_of_country2ds(ds, test_plot=True, country=country)
+    # Only include states in the assignment
+    ds = ds[['states']]
+    # rrgrid to coarser resolution (e.g. 2x2.5)
+    ds = regrid2coarse_res(ds, res=res)
+    return ds
+
+
+def regrid2coarse_res(dsA, res='2x2.5'):
+    """
+    Regrid a high resolution dataset to a lower resolution (e.g. 2x2.5)
+    """
+    import xesmf as xe
+    # Hard code this for now
+    grid2use = {
+    '2x2.5':'2x2.5_deg_centre_GEOSChem',
+    '4x5':'4x5_deg_centre_GEOSChem',
+    }[res]
+    # Get dictionary of grid coordinates
+    grids = grids4reses()
+    # Create a dataset to re-grid into
+    ds_out = xr.Dataset({
+        # 'time': ( ['time'], dsA['time'] ),
+        'lat': (['lat'], grids[grid2use]['lat']),
+        'lon': (['lon'], grids[grid2use]['lon']),
+    })
+    # Create a regidder (to be reused )
+    regridder = xe.Regridder(dsA, ds_out, 'bilinear', reuse_weights=True)
+    # loop and regrid variables
+    ds_l = []
+    vars2regrid = dsA.data_vars
+    for var2use in vars2regrid:
+        # create a dataset to re-grid into
+        ds_out = xr.Dataset({
+            'lat': (['lat'], grids[grid2use]['lat']),
+            'lon': (['lon'], grids[grid2use]['lon']),
+        })
+        # get a DataArray
+        dr = dsA[var2use]
+        # build regridder
+        dr_out = regridder(dr)
+        # Important note: Extra dimensions must be on the left, i.e. (time, lev, lat, lon) is correct but (lat, lon, time, lev) would not work. Most data sets should have (lat, lon) on the right (being the fastest changing dimension in the memory). If not, use DataArray.transpose or numpy.transpose to preprocess the data.
+        # exactly the same as input
+#        xr.testing.assert_identical(dr_out['time'], dsA['time'])
+        # save variable
+        ds_l += [dr_out]
+    ds = xr.Dataset()
+    for n, var2use in enumerate(vars2regrid):
+        ds[var2use] = ds_l[n]
+    # clean up and return dataset
+    regridder.clean_weight_file()
+    return ds
+
+
 def add_raster_of_country2ds(ds, country='South Africa', set_all_regions2one=True,
-        dpi=320):
+        test_plot=False, dpi=320):
     """
     Add raster outline of country to spatial dataset
     """
@@ -44,22 +119,15 @@ def add_raster_of_country2ds(ds, country='South Africa', set_all_regions2one=Tru
     ds['states'] = rasterize(shapes, ds.coords)
     # Test plot of this?
     if test_plot:
-        fig = plt.figure(figsize=(10, 6))
-#        ax = fig.add_subplot()
-        ax = fig.add_subplot(111, projection=ccrs.PlateCarree(), aspect='auto')
-        ds['states'].plot.imshow(x='lon', y='lat', ax=ax, transform=ccrs.PlateCarree())
-#        ds['states'].plot()
-        # Beautify
-        ax.coastlines()
-        ax.set_global()
-        # save
+        from . plotting import quick_map_plot
         savename = 'spatial_plot_of_shapes4country_{}'.format(country)
-        savename = rm_spaces_and_chars_from_str(savename)
-        plt.savefig(savename+'.png', dpi=dpi)
+        quick_map_plot(ds, var2plot='states', savename=savename)
+
     # set all the regions (e.g. counties/states) in a country to 1
     if set_all_regions2one:
-        print('All sub units of country have different values >0')
-        print('TODO: set to unity')
+        arr = ds['states'].values
+        arr[np.where(~np.isnan(arr))] = 1
+        ds['states'].values =  arr
     return ds
 
 
@@ -75,8 +143,8 @@ def get_shapes4country(country='South Africa'):
     URL += "/10m-admin-1-states-provinces/"
     # Shapefiles locally?
     # TODO - update to download automatically and store in AC_tools' data directory
-#    shapefiles = 'ne_10m_admin_1_states_provinces_lakes'
-    shapefiles = 'ne_10m_admin_1_states_provinces'
+    shapefiles = 'ne_10m_admin_1_states_provinces_lakes'
+#    shapefiles = 'ne_10m_admin_1_states_provinces'
     folder = '/mnt/lustre/users/ts551/labbook/Python_progs/'
     folder += '/AC_tools/data/shapefiles/{}'.format(shapefiles,shapefiles)
     states = geopandas.read_file(folder)
@@ -85,6 +153,7 @@ def get_shapes4country(country='South Africa'):
     choosen_states = choosen_states.reset_index(drop=True)
     # Get the shapes
     shapes = zip(choosen_states.geometry, range(len(choosen_states)))
+    return shapes
 
 
 def transform_from_latlon(lat, lon):
