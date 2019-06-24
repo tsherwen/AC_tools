@@ -64,6 +64,8 @@ def GetGEOSChemFilesAsDataset(FileStr='GEOSChem.SpeciesConc.*.nc4', wd=None,
     # Get files
     files = glob.glob(wd+FileStr)
     assert len(files) >= 1, 'No files found matching-{}'.format(wd+FileStr)
+    # Sort the files based on their name (which contains a regular datastring)
+    files = list(sorted(files))
     # open all of these files as single Dataset
     ds = xr.open_mfdataset(files)
     return ds

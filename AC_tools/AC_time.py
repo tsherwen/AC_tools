@@ -192,14 +192,13 @@ def add_secs(sourcedate, secs_, debug=False):
 
 def d_adjust(months=None, years=None):
     """
-    Get adjustment values to convert an array of per second to per month
+    Get number of seconds in a specific month for a year
     """
     # Get months and years if not given
     if not isinstance(months, list):
         months = list(range(1, 13))
     if not isinstance(years, list):
         years = [2009] * len(months)
-
     # ajust to months ( => min => hours => days => months )
     ars = []
     for i, m_ in enumerate(months):

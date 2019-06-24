@@ -213,11 +213,11 @@ def get_land_map(res='4x5', date=None, wd=None, rtn_ds=False,
     dwd = path+'/data/LM/'
     # choose the right directory for the data
     dir = {
-        '4x5': 'LANDMAP_LWI_ctm',
+        '4x5': 'LANDMAP_LWI_ctm_4x5',
         '2x2.5': 'LANDMAP_LWI_ctm_2x25',
         '0.5x0.666': 'LANDMAP_LWI_ctm_05x0666',
         '0.25x0.3125': 'LANDMAP_LWI_ctm_025x03125',
-        '0.125x0.125': 'TEMP_NASA_Nature_run',
+        '0.125x0.125': 'LANDMAP_LWI_ctm_0125x0125',
     }[res]
     land_dir = dwd + dir
     if debug:
