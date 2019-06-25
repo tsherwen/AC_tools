@@ -1940,7 +1940,7 @@ def spec_dep(wd=None, spec='O3', s_area=None, months=None,
         years = get_gc_years(wd=wd, set_=False)
     # Adjust time dimension (to per month)
     if output_freq == 'Monthly':
-        day_adjust = d_adjust(months, years)
+        day_adjust = secs_in_month(months, years)
         arr = np.multiply(arr, day_adjust)
     return arr
 
@@ -2197,7 +2197,7 @@ def get_wet_dep(months=None, years=None, vol=None,
         dep_w[n] = dep_w[n]*spec_stoich(spec, ref_spec=ref_spec)
     # Adjust to monthly values...
     if output_freq == 'Monthly':
-        m_adjust = d_adjust(months, years)  # => Gg / month
+        m_adjust = secs_in_month(months, years)  # => Gg / month
         dep_w = [m_adjust * i for i in dep_w]
     # List wet dep rxns, concat. and sum of rxns ( and convert to Gg )
     if sep_rxn:
@@ -3652,7 +3652,7 @@ def convert_molec_cm3_s_2_g_X_s(ars=None, specs=None, ref_spec=None,
         arr = arr / constants('AVG') * species_mass(ref_spec)
         # to / yr
         if month_eq:
-            day_adjust = d_adjust(months, years)
+            day_adjust = secs_in_month(months, years)
             ars[n] = arr * day_adjust
     logging.debug([(i.sum(), i.shape) for i in ars])
     # only consider troposphere ( update this to use mask4troposphere )
@@ -4864,7 +4864,7 @@ def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None,
     if year_eq:  # convert /second to / year
         arr = arr * 60*60*24*365
     if month_eq:
-        day_adjust = d_adjust(months, years)
+        day_adjust = secs_in_month(months, years)
         arr = arr * day_adjust
     if debug:
         print(('arr', arr.shape, 'vol', vol.shape))

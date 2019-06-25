@@ -190,20 +190,21 @@ def add_secs(sourcedate, secs_, debug=False):
     return sourcedate
 
 
-def d_adjust(months=None, years=None):
+def secs_in_month(months=None, years=None):
     """
-    Get number of seconds in a specific month for a year
+    Get number of seconds in a specific month for a specific year (default=2009)
     """
-    # Get months and years if not given
+    # Get generica months and year (2009) if not given
     if not isinstance(months, list):
         months = list(range(1, 13))
     if not isinstance(years, list):
         years = [2009] * len(months)
-    # ajust to months ( => min => hours => days => months )
+    # Get number of seconds in specific month in year
+    # conversion: sec => min => hours => days => months
     ars = []
     for i, m_ in enumerate(months):
         ars += [60*60*24*calendar.monthrange(int(years[i]), int(m_))[1]]
-    # return as a np.array
+    # Return as a np.array
     return np.array(ars)
 
 
