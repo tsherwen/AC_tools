@@ -883,6 +883,55 @@ def prt_families4rxns_to_input_to_PROD_LOSS_globchem_spec(fam='LOx',
         print((pstr.format(rxn, rxn)))
 
 
+def get_KKP_mech_from_eqn_file_as_dicts(folder=None, Mechanism='Tropchem',
+                                        filename=None):
+    """
+    Get KPP mechanism as a dictionary of dictionaries
+    """
+    # Set the filename if not provided
+    if isinstance(filename, type(None)):
+        filename = '{}.eqn'.format(Mechanism)
+    # Get dictionaries of all reactions
+    print('get_KKP_mech_from_eqn_file_as_dicts', folder, filename)
+    rxn_dicts = get_dicts_of_KPP_eqn_file_reactions(folder=folder, filename=filename)
+    # Process rxns to be in dictionaries of DataFrames
+    # (with extra diagnostic columns, inc. reactants, products, metadata,...)
+    rxn_dicts = process_KPP_rxn_dicts2DataFrames(rxn_dicts=rxn_dicts)
+    # Update the numbering of DataFrame indexes...
+    Gas_dict = rxn_dicts['Gas-phase']
+    Het_dict = rxn_dicts['Heterogeneous']
+    Hv_dict = rxn_dicts['Photolysis']
+    # Update index start points
+    Het_dict.index = Het_dict.index + Gas_dict.shape[0]
+    Hv_dict.index = Hv_dict.index + Gas_dict.shape[0] + Het_dict.shape[0]
+    rxn_dicts['Heterogeneous'] = Het_dict
+    rxn_dicts['Photolysis'] = Hv_dict
+    # Return  dictionary of dictionaries
+    return rxn_dicts
+
+
+def get_KKP_mech_from_eqn_file_as_df(folder=None, Mechanism='Tropchem',
+                                        filename=None):
+    """
+    Get KPP mechanism as a pandas DataFrame
+    """
+    # Set the filename if not provided
+    if isinstance(filename, type(None)):
+        filename = '{}.eqn'.format(Mechanism)
+    print('get_KKP_mech_from_eqn_file_as_df', folder, filename)
+    # Get dictionary of dictionaries
+    dicts = get_KKP_mech_from_eqn_file_as_dicts(folder=folder, Mechanism=Mechanism,
+                                                filename=filename)
+    # Add a flag for reaction type
+    for key in dicts.keys():
+        df = dicts[key]
+        df['Type'] = key
+        dicts[key] = df
+    # combine into a single data frame
+    df = pd.concat([dicts[i] for i in dicts.keys()], join='outer')
+    return df
+
+
 def get_dictionary_of_tagged_reactions(filename='globchem.eqn',
                                        Mechanism='Halogens', wd=None):
     """
@@ -933,11 +982,11 @@ def get_dictionary_of_tagged_reactions(filename='globchem.eqn',
 
 
 def get_Ox_fam_based_on_reactants(filename='gckpp_Monitor.F90',
-                                         Mechanism='Halogens', wd=None,  fam='LOx',
-                                         tag_prefix='PT',
-                                         tags=None, RR_hv_dict=None, RR_dict=None,
-                                         GC_version='v11-01',
-                                         debug=False):
+                                  Mechanism='Halogens', wd=None,  fam='LOx',
+                                  tag_prefix='PT',
+                                  tags=None, input_KPP_mech=None, RR_dict=None,
+                                  GC_version='v11-01',
+                                  debug=False):
     """
     Get Ox famiy of reaction tag using KPP reaction string.
 
@@ -958,9 +1007,8 @@ def get_Ox_fam_based_on_reactants(filename='gckpp_Monitor.F90',
     if isinstance(RR_dict, type(None)):
         RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism,
                                        filename=filename, wd=wd)
-#    if isinstance(RR_hv_dict, type(None)):
-#        RR_hv_dict = get_dictionary_of_tagged_reactions(filename='globchem.eqn',
-#            Mechanism=Mechanism, wd=wd)
+    if isinstance(input_KPP_mech, type(None)):
+        input_KPP_mech = get_KKP_mech_from_eqn_file_as_df(Mechanism=Mechanism, folder=wd)
     # Get tags for reaction unless already provided
     if isinstance(tags, type(None)):
         tags = get_tags4family(wd=wd, fam=fam, filename=filename,
@@ -981,10 +1029,20 @@ def get_Ox_fam_based_on_reactants(filename='gckpp_Monitor.F90',
         'LIMO2'
     ]
     # Get list of tagged hv reactions
-#    all_rxns = sorted(RR_hv_dict.keys())
-#    hv_rxns_tags = [ i for i in all_rxns if ( 'hv' in RR_hv_dict[i])]
-    all_rxns = sorted(RR_dict.keys())
-    hv_rxns_tags = [i for i in all_rxns if ('hv' in RR_dict[i])]
+#    all_rxns = sorted(RR_dict.keys())
+#    all_rxns = sorted(RR_hv_dict.keys()) # This also give the same list as above line
+#     hv_rxns_tags = []
+#     for rxn_ in all_rxns:
+#         rxn_str = input_KPP_mech.loc[input_KPP_mech.index == rxn_,:]['rxn_str'].values[0]
+#         if ('hv' in rxn_str):
+#             hv_rxns_tags += [rxn_]
+#         else:
+#             pass
+    hv_rxns = input_KPP_mech.loc[ input_KPP_mech['Type'] =='Photolysis', :]
+    hv_rxns = hv_rxns.index.astype(list)
+
+    # The below line will not work as "hv" not in rxn strings in gckpp_Monitor.F90
+#    hv_rxns_tags = [i for i in all_rxns if ('hv' in RR_dict[i])]
     # Loop tagged reactions and assign family
     tagged_rxns = sorted(tags.keys())
     fam_l = []
@@ -1026,7 +1084,7 @@ def get_Ox_fam_based_on_reactants(filename='gckpp_Monitor.F90',
 #        print (tags[rxn_][1:] in hv_rxns_tags), tags[rxn_][1:], hv_rxns_tags
 #        print RR_dict[rxn_]
         # hv reaction?
-        if (tags[rxn_][1:] in hv_rxns_tags):
+        if (rxn_ in hv_rxns):
             hv_is_reactant = True
         # HOx reaction?
         if any([(i in reactant_str) for i in HOx]):
@@ -1252,7 +1310,8 @@ def get_Ox_loss_dicts(fam='LOx', ref_spec='O3',
                                         weight_by_molecs=weight_by_molecs)
     # Get dictionary of families that a tag belongs to
     fam_dict = get_Ox_fam_based_on_reactants(fam=fam, tags=tags_dict,
-                                             RR_dict=RR_dict,
+                                             RR_dict=RR_dict, wd=CODE_wd,
+                                             Mechanism=Mechanism,
                                              GC_version=Data_rc['GC_version'])
     # Get indices of array for family.
     sorted_fam_names = ['Photolysis', 'HO$_{\\rm x}$', 'NO$_{\\rm x}$']
