@@ -4153,9 +4153,9 @@ def concvert_df_VOC_C2v(df=None, verbose=True):
 def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
                                      filename='ctm.nc',
                                      folder=None, ext_str='_TEST_', file_prefix='ctm_',
-                                     split_by_month=False, mk_single_NetCDF_file=True,
-                                     mk_monthly_NetCDF_files=False,
-                                     mk_weekly_NetCDF_files=False,
+                                     split_by_month=False, mk_single_file=True,
+                                     mk_monthly_files=False,
+                                     mk_weekly_files=False,
                                      verbose=True):
     """
     Wrapper function to process ctm bpch files in folder to NetCDF file(s)
@@ -4169,8 +4169,8 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
     ext_str (str): extra str to inc. in monthly filenames
     file_prefix (str): prefox str to use for monthly split files
     split_by_month (bool): split new NetCDF file by month? (post making file)
-    mk_monthly_NetCDF_files (bool): make a NetCDF per month of files
-    mk_weekly_NetCDF_files (bool): make a NetCDF per week of files
+    mk_monthly_files (bool): make a NetCDF per month of files
+    mk_weekly_files (bool): make a NetCDF per week of files
 
     Returns
     -------
@@ -4205,7 +4205,7 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
     filenames = [i.split('/')[-1] for i in files]
     df['filenames'] = filenames
     # Convert files on bulk or make files by month/week?
-    if mk_monthly_NetCDF_files or mk_weekly_NetCDF_files:
+    if mk_monthly_files or mk_weekly_files:
         # Get times of model out in file
         if bpch_file_type == "*ts*bpch*":
             filename_format = 'ts%Y%m%d.bpch'
@@ -4224,7 +4224,7 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
         df['month'] = df.index.month
         df['woy'] = df.index.weekofyear
         # Make files by month?
-        if mk_monthly_NetCDF_files:
+        if mk_monthly_files:
             for year in list(sorted(set(df.index.year))):
                 # Select files for given year
                 df_year = df[df.index.year == year]
@@ -4244,7 +4244,7 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
                     # Run garbage collection
                     gc.collect()
         # Make files by week of year?
-        elif mk_weekly_NetCDF_files:
+        elif mk_weekly_files:
             for year in list(sorted(set(df.index.year))):
                 # select files for given year
                 df_year = df[df.index.year == year]
@@ -4264,7 +4264,7 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
                     # run garbage collection
                     gc.collect()
         # Re-combine the split files into one file
-        if mk_single_NetCDF_file:
+        if mk_single_file:
             ncfiles = list(sorted(glob.glob(folder+'ts_ctm_*.nc')))
             # Open files with xarray
 #            ds_l = [xr.open_dataset(i) for i in ncfiles]
@@ -4278,7 +4278,7 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
             del ds
             # TODO: Now delete monthly files?
     # Convert files on bulk
-    elif mk_single_NetCDF_file:
+    elif mk_single_file:
         print('WARNING - all files being convert to single NetCDF in one go!')
         # Convert to NetCDF all files to a single NetCDF
         convert_to_netCDF(folder=folder, filename=filename,
