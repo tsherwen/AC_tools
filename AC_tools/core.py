@@ -299,7 +299,7 @@ def get_latlonalt4res(res=None, centre=True, hPa=False, nest=None,
             # Temporary inclusion of local 0.083x0.083 file.
             '0.083x0.083': 'LANDMAP_LWI_ctm_0083x0083', \
             # Temporary inclusion of NASA nature run file
-            '0.125x0.125': 'TEMP_NASA_Nature_run',
+            '0.125x0.125': 'LANDMAP_LWI_ctm_0125x0125',
         }
         try:
             dir = dir_dict[res]

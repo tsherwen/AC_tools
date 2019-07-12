@@ -43,9 +43,9 @@ def test_get_gc_res():
     return
 
 
-def test_get_land_map():
+def test_get_LWI_map():
     # Test specifying wd
-    arr = get_land_map(wd=wd)
+    arr = get_LWI_map(wd=wd)
     assert isinstance(arr, np.ndarray), 'Land map not a numpy array.'
     assert (len(arr.shape) == 3), 'Land map has too many dimensions.'
     return

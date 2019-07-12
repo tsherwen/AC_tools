@@ -99,10 +99,11 @@ def get_surface_area(res=None, wd=None, debug=False):
         logging.debug("dwd = " + str(dwd))
         # Choose the correct directory for a given resolution
         dir = {
-            '4x5': 'LANDMAP_LWI_ctm',
+            '4x5': 'LANDMAP_LWI_ctm_4x5',
             '2x2.5': 'LANDMAP_LWI_ctm_2x25',
             '0.5x0.666': 'LANDMAP_LWI_ctm_05x0666',
             '0.25x0.3125': 'LANDMAP_LWI_ctm_025x03125',
+            '0.125x0.125': 'LANDMAP_LWI_ctm_0125x0125',
         }[res]
         fd = dwd + dir
 
@@ -116,7 +117,6 @@ def get_surface_area(res=None, wd=None, debug=False):
     except:
         logging.error("Could not get the surface area!")
         raise ValueError("Could not find the surface area")
-
     return s_area
 
 
