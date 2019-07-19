@@ -1010,11 +1010,56 @@ def get_vars_from_line_printed_in_txt_file(filename=None, folder=None,
         logging.info(err_str)
 
 
+def mk_spatial_dataset_from_longform_df(df=None, LatVar='lat', LonVar='lon',
+                                        unstack=True, attrs={},
+                                        VarName='New_Variable' ):
+    """
+    Make a xr.dataset from a provided 2D array
+
+    Parameters
+    ----------
+    df (pd.DataFrame): dataframe containing coordinates and data
+    VarName (str): name of the variable that holds the data in the df
+    unstack (bool): convert table/long form data into a 2D format
+    attrs (dict): attributes to add to the variable (e.g. units)
+    LatVar, LonVar (str): variables names for lat and lon in df
+
+    Returns
+    -------
+    (xr.dataset)
+    """
+    # Get coordinate values
+    lons = df[LonVar].values
+    lats = df[LatVar].values
+    data = df[VarName].values
+    # Convert the dataset from long to 2D form
+    if unstack:
+        df = pd.DataFrame(data, index=[lats, lons]).unstack()
+    # Get coordinate values
+    lons4ds = list(df.columns.levels[1])
+    lats4ds = list(df.index)
+    # Extract the 2D data
+    arr = df.values
+    # Now make a dataset
+    ds = xr.Dataset(data_vars={VarName: (['lat', 'lon', ], arr)},
+                    coords={'lat': lats4ds, 'lon': lons4ds,}
+                    )
+    # Set the attributes for the new variable
+    ds[VarName].attrs = attrs
+    # Add the coordinate standard information
+    ds.lat.attrs = {"axis":'Y', 'long_name': "latitude", "standard_name": "latitude"}
+    ds.lon.attrs = {"axis":'X','long_name': "longitude","standard_name": "longitude",}
+    # Add core attributes
+    return ds
+
+
 def rm_spaces_and_chars_from_str(input_str, remove_slashes=True,
                                  replace_brackets=True, replace_quotes=True,
                                  replace_dots=True,
                                  remove_plus=True, swap_pcent=True, replace_braces=True):
-    """ remove the spaces and extra vars from strings """
+    """
+    Remove the spaces and species characters from strings
+    """
     input_str = input_str.replace(' ', '_')
     if replace_brackets:
         input_str = input_str.replace('(', '_')

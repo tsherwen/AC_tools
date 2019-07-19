@@ -62,6 +62,81 @@ def get_country_mask(country='South Africa', res='2x2.5'):
     return ds
 
 
+def add_raster_of_oceans2ds(ds, featurecla='ocean', set_all_regions2one=False,
+        test_plot=False, dpi=320):
+    """
+    Add raster outline of country to spatial dataset
+    """
+    # Get shapes for country
+    shapes = get_shapes4oceans(featurecla=featurecla)
+    # Add country's states as a layer
+    ds[featurecla] = AC.rasterize(shapes, ds.coords)
+    # Test plot of this?
+    if test_plot:
+        from . plotting import quick_map_plot
+        savename = 'spatial_plot_of_shapes4oceans_{}'.format(featurecla)
+        quick_map_plot(ds, var2plot=featurecla, savename=savename)
+    # set all the regions (e.g. counties/states) in a country to 1
+    if set_all_regions2one:
+        arr = ds[featurecla].values
+        arr[np.where(~np.isnan(arr))] = 1
+        ds[featurecla].values =  arr
+    return ds
+
+
+def get_shapes4oceans(featurecla='ocean', rtn_group=False):
+    """
+    Get shapes (polygons) for oceans from Natural earth
+
+    NOTES
+    -------
+     - data credit: NaturalEarth     https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/physical/ne_10m_geography_marine_polys.zip
+    """
+    #location of data
+    URL = "http://www.naturalearthdata.com/downloads/10m-physical-labels/"
+    URL += "/10m-ocean/"
+    # Shapefiles locally?
+    # TODO - update to download automatically and store in AC_tools' data directory
+#    shapefiles = 'ne_10m_ocean'
+    shapefiles = 'ne_10m_geography_marine_polys'
+    folder = '/mnt/lustre/users/ts551/labbook/Python_progs/'
+    folder += '/AC_tools/data/shapefiles/{}'.format(shapefiles,shapefiles)
+    group = geopandas.read_file(folder)
+    # Just select state of interest
+    choosen_group = group.query("featurecla == '{}'".format(featurecla))
+    choosen_group = choosen_group.reset_index(drop=True)
+    # Get the shapes
+    shapes = zip(choosen_group.geometry, range(len(choosen_group)))
+    if rtn_group:
+        return choosen_group
+    else:
+        return shapes
+
+
+def add_loc_ocean2df(df=None, LatVar='lat', LonVar='lon'):
+    """
+    Add the ocean of a location to dataframe
+    """
+    from geopandas.tools import sjoin
+    # Get the shapes for the ocean
+    featurecla='ocean'
+    group = get_shapes4oceans(rtn_group=True, featurecla=featurecla)
+    # Turn the dataframe into a geopandas dataframe
+    gdf = geopandas.GeoDataFrame(
+        df, geometry=geopandas.points_from_xy(df[LonVar], df[LatVar]))
+    # Work out if any of the points are within the polygons
+    pointInPolys = sjoin(gdf, group, how='left')
+    # Check how many were assigned to a region
+    Nnew = float(pointInPolys['name'].dropna().shape[0])
+    N = float(df.shape[0])
+    if N != Nnew:
+        pstr = 'WARNING: Only {:.2f}% assigned ({} of {})'
+        print( pstr.format( (Nnew/N)*100, int(Nnew), int(N)) )
+    # Add the ocean assingnment back into the orginal dataframe
+    df[featurecla] = pointInPolys['name'].values
+    return df
+
+
 def regrid2coarse_res(dsA, res='2x2.5'):
     """
     Regrid a high resolution dataset to a lower resolution (e.g. 2x2.5)

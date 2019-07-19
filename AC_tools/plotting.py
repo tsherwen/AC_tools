@@ -76,6 +76,66 @@ def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson(),
         plt.show()
 
 
+def plt_df_X_vs_Y(df=None, x_var='', y_var='', x_label=None, y_label=None,
+                  ax=None, fig=None, color=None, plt_all_values=True,
+                  alpha=0.5,
+                  plot_ODR=True, plot_121=True, save_plot=False, dpi=320):
+    """
+    Make an generic X vs. Y plot from a dataframe
+
+    Parameters
+    -------
+    df (pd.DataFrame): a dataframe containing the x_var and y_var data
+    x_var, y_var (str): names of the variables to plot for X and Y
+    x_label, y_label (str): labels of the variables being plotted
+
+    Notes
+    -------
+    """
+    # Setup an figure and axis if not provided
+    if isinstance(fig, type(None)):
+        fig = plt.figure(dpi=dpi, facecolor='w', edgecolor='k')
+    if isinstance(ax, type(None)):
+        ax = fig.add_subplot(111)
+    # Get values to plot
+    X = df[x_var].values
+    Y = df[y_var].values
+    # Get the number of samples (N)
+    N = float(df.shape[0])
+    # get RMSE
+    RMSE = np.sqrt(((Y-X)**2).mean())
+    # add a 1:1 line
+    MinVal = min((min(X), min(Y)))
+    MaxVal = max((max(X), max(Y)))
+    x_121 = np.arange(MinVal-(MaxVal*0.1), MaxVal+(MaxVal*0.1))
+    ax.plot(x_121, x_121, alpha=0.5, color='k', ls='--')
+    # Add a line for the orthogonal distance regression
+    xvalues, Y_ODR = AC.get_linear_ODR(x=X, y=Y, xvalues=x_121,
+                                       return_model=False, maxit=10000)
+    ODRoutput = AC.get_linear_ODR(x=X, y=Y, xvalues=x_121,
+                                 return_model=True, maxit=10000)
+    print(param, ODRoutput.beta)
+    ax.plot(xvalues, Y_ODR, color=color)
+    # Beautify
+    # if no specific variables are given, then use the df variabel names
+    if isinstance(x_label, type(None)):
+        x_label = x_var
+    if isinstance(y_label, type(None)):
+        y_label = y_var
+    ax.set_xlabel(x_label)
+    ax.set_xlabel(y_label)
+    # Plot up all the data underneath as a scatter plot
+    if plt_all_values:
+        plt.scatter(X, Y, color=color, s=3, facecolor='none', alpha=alpha)
+    # Plot N value
+
+    # Save the plotted data as a .png?
+    if save_plot:
+        png_filename = 'X_vs_Y_{}_vs_{}'.format(x_var, y_var)
+        png_filename = AC.rm_spaces_and_chars_from_str(png_filename)
+        plt.savefig(png_filename, dpi=dpi)
+
+
 def map_plot(arr, return_m=False, grid=False, centre=False, cmap=None,
              no_cb=False, cb=None, rotatecbunits='horizontal', fixcb=None, nticks=10,
              mask_invalids=False,
@@ -1724,7 +1784,7 @@ def plot_lons_lats_spatial_on_map_CARTOPY(central_longitude=0,
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
     import cartopy.feature as cfeature
-    # --- Setup plot
+    # Setup plot
     if isinstance(fig, type(None)):
         fig = plt.figure(dpi=dpi, facecolor='w', edgecolor='k')
     if isinstance(ax, type(None)):
@@ -1733,9 +1793,7 @@ def plot_lons_lats_spatial_on_map_CARTOPY(central_longitude=0,
                              projection=projection(
                                  central_longitude=central_longitude)
                              )
-
-    # --- Plot
-
+    # Plot up
     # Add buffer region around plot
 #    ax.get_extent()
 #     plt.ylim( myround(lats.min()-buffer_degrees, 10, ),
@@ -1782,7 +1840,6 @@ def plot_lons_lats_spatial_on_map_CARTOPY(central_longitude=0,
     return ax
 
 
-# -------------- Plotting Ancillaries
 def color_list(length, cb='gist_rainbow'):
     """
     Create a list of colours to generate colors for plots contain multiple datasets
@@ -1911,7 +1968,8 @@ def greyoutstrat(fig,  arr, axn=[1, 1, 1], ax=None, cmap=plt.cm.bone_r,
     """
     Grey out stratosphere in existing zonal plot.
 
-    NOTES:
+    NOTES
+    -------
      - This is used to highlight tropospherically focused work. This function
      requires the array of "time in the troposphere" diagnostic (lon,lat, alt)
     """
@@ -1931,7 +1989,9 @@ def greyoutstrat(fig,  arr, axn=[1, 1, 1], ax=None, cmap=plt.cm.bone_r,
 
 def adjust_subplots(fig, left=None, bottom=None, right=None, top=None,
                     wspace=None, hspace=None):
-    """ Set subplot adjustment values for provided figure """
+    """
+    Set subplot adjustment values for provided figure
+    """
     # the left side of the subplots of the figure
     if isinstance(left, type(None)):
         left = 0.125
@@ -1959,19 +2019,16 @@ def mask_not_obs(loc='Denmark', res='4x5', debug=False):
     """
     provide a mask of all regions apart from the location given
     """
-
     # Start with all zeros
     arr = np.zeros(get_dims4res(res))
-
     # Get lats and lons of locations to keep...
     lats, lons = get_obs_loc(loc)
-
     # Unmask locations
     lats = [get_gc_lat(i, res=res) for i in lats]
     lons = [get_gc_lon(i, res=res) for i in lons]
     for n, lat in enumerate(lats):
         arr[lons[n], lat, :] = 1
-
+    # Return values
     return np.ma.not_equal(arr, 1)
 
 
@@ -2782,7 +2839,9 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=F
 
 def set_bp_style(bp, color='k', linewidth=1.5, facecolor='none',
                  debug=False):
-    """ Manually set properties of boxplot ("bp") """
+    """
+    Manually set properties of boxplot ("bp")
+    """
     from pylab import setp
     setp(bp['boxes'][:], color=color, linewidth=linewidth)
     setp(bp['caps'][:], color=color, linewidth=linewidth)
@@ -2856,7 +2915,7 @@ def shoot(lon, lat, azimuth, maxdist=None):
 
     Notes
     -----
-     - This is an external function, for original postin please see link below
+     - This is an external function, for original posting please see link below
 http://www.geophysique.be/2011/02/19/matplotlib-basemap-tutorial-08-shooting-great-circles/
      - Original javascript on http://williams.best.vwh.net/gccalc.htm
      - Translated to python by Thomas Lecocq
