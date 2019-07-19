@@ -97,6 +97,11 @@ def plt_df_X_vs_Y(df=None, x_var='', y_var='', x_label=None, y_label=None,
         fig = plt.figure(dpi=dpi, facecolor='w', edgecolor='k')
     if isinstance(ax, type(None)):
         ax = fig.add_subplot(111)
+    # if no specific variables are given, then use the df variabel names
+    if isinstance(x_label, type(None)):
+        x_label = x_var
+    if isinstance(y_label, type(None)):
+        y_label = y_var
     # Get values to plot
     X = df[x_var].values
     Y = df[y_var].values
@@ -110,18 +115,13 @@ def plt_df_X_vs_Y(df=None, x_var='', y_var='', x_label=None, y_label=None,
     x_121 = np.arange(MinVal-(MaxVal*0.1), MaxVal+(MaxVal*0.1))
     ax.plot(x_121, x_121, alpha=0.5, color='k', ls='--')
     # Add a line for the orthogonal distance regression
-    xvalues, Y_ODR = AC.get_linear_ODR(x=X, y=Y, xvalues=x_121,
+    xvalues, Y_ODR = get_linear_ODR(x=X, y=Y, xvalues=x_121,
                                        return_model=False, maxit=10000)
-    ODRoutput = AC.get_linear_ODR(x=X, y=Y, xvalues=x_121,
+    ODRoutput = get_linear_ODR(x=X, y=Y, xvalues=x_121,
                                  return_model=True, maxit=10000)
-    print(param, ODRoutput.beta)
-    ax.plot(xvalues, Y_ODR, color=color)
+    print(x_label, y_label, ODRoutput.beta)
+    ax.plot(xvalues, Y_ODR, color=color, label=y_label)
     # Beautify
-    # if no specific variables are given, then use the df variabel names
-    if isinstance(x_label, type(None)):
-        x_label = x_var
-    if isinstance(y_label, type(None)):
-        y_label = y_var
     ax.set_xlabel(x_label)
     ax.set_xlabel(y_label)
     # Plot up all the data underneath as a scatter plot
@@ -132,7 +132,7 @@ def plt_df_X_vs_Y(df=None, x_var='', y_var='', x_label=None, y_label=None,
     # Save the plotted data as a .png?
     if save_plot:
         png_filename = 'X_vs_Y_{}_vs_{}'.format(x_var, y_var)
-        png_filename = AC.rm_spaces_and_chars_from_str(png_filename)
+        png_filename = rm_spaces_and_chars_from_str(png_filename)
         plt.savefig(png_filename, dpi=dpi)
 
 
