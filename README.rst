@@ -1,4 +1,4 @@
-AC_tools - Atmospheric Chemistry (AC) tools
+AC_tools: Atmospheric Chemistry (AC) tools
 ======================================
 
 This module contains a functions and scripts used for 
