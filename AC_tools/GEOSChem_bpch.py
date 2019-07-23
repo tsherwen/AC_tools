@@ -181,7 +181,7 @@ def list_variables(wd=None):
     return
 
 
-def get_land_map(res='4x5', date=None, wd=None, rtn_ds=False,
+def get_LWI_map(res='4x5', date=None, wd=None, rtn_ds=False,
                  average_over_time=True, debug=False):
     """
     Return land, water, and ice indices (LWI ) from GEOS-Chem with integers
@@ -1777,7 +1777,7 @@ def get_LWI(lon, lat, res='4x5', date=None, debug=False):
     """ Return Land-Water-Ice (LWI) index for a given lon and lat """
     lat = get_gc_lat(lat, res=res)
     lon = get_gc_lon(lon, res=res)
-    LWI = get_land_map(res=res, date=date)
+    LWI = get_LWI_map(res=res, date=date)
     return LWI[lon, lat, 0]
 
 
@@ -1875,7 +1875,7 @@ def loc_is_water_grid_box(lat, lon, res='4x5'):
     """ Return Boolean for if grid box is water or not """
     # Load masked array, where all ocean is non-masked
     # ( Just look over oceans (use masked array) )
-    o_mask = np.ma.equal(get_land_map(res=res)[..., 0], 0)
+    o_mask = np.ma.equal(get_LWI_map(res=res)[..., 0], 0)
     # Loop Lat and Lon
     for n, l in enumerate(lat):
         glat, glon = get_gc_lat(l), get_gc_lon(lon[n])
