@@ -48,17 +48,37 @@ import scipy
 
 def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson(),
                    save_plot=True, show_plot=False, savename=None, title=None,
-                   LatVar='lat', LonVar='lon', dpi=320):
+                   LatVar='lat', LonVar='lon', fig=None, ax=None, dpi=320):
     """
     Plot up a quick spatial plot of data using cartopy
+
+    Parameters
+    -------
+    ds (xr.Dataset): dataset object holding data to plot
+    var2plot (str): variable to plot within the dataset
+    LatVar, LonVar (str): variables to use for latitude and longitude
+    save_plot (bool): save the plot as a .png ?
+    show_plot (bool): show the plot on screen
+    dpi (int): resolution to use for saved image (dots per square inch)
+    savename (str): name to use for png of saved .png
+    extra_str (str): extra string to append to save .png
+    projection (cartopy.crs obj.):  projection to use
+    fig (figure instance): matplotlib figure instance
+    ax (axis instance): axis object to use
+
+    Returns
+    -------
+    (None)
     """
     # Use the 1st data variable if not variable given
     if isinstance(var2plot, type(None)):
         print('WARNING: No variable to plot was set (var2plot), trying 1st data_var')
         var2plot = list(ds.data_vars)[0]
     # Setup figure and axis and plot
-    fig = plt.figure(figsize=(10, 6))
-    ax = fig.add_subplot(111, projection=projection, aspect='auto')
+    if isinstance(fig, type(None)):
+        fig = plt.figure(figsize=(10, 6))
+    if isinstance(ax, type(None)):
+        ax = fig.add_subplot(111, projection=projection, aspect='auto')
     ds[var2plot].plot.imshow(x=LonVar, y=LatVar, ax=ax, transform=ccrs.PlateCarree())
     # Beautify
     ax.coastlines()
@@ -88,9 +108,17 @@ def plt_df_X_vs_Y(df=None, x_var='', y_var='', x_label=None, y_label=None,
     df (pd.DataFrame): a dataframe containing the x_var and y_var data
     x_var, y_var (str): names of the variables to plot for X and Y
     x_label, y_label (str): labels of the variables being plotted
+    plot_ODR (bool): plot an orthogonal distance regression line of best fit
+    plot_121 (bool): Add a 1:1 line to the X vs. Y plot
+    save_plot (bool): save the plot as a .png ?
+    dpi (int): resolution to use for saved image (dots per square inch)
+    plt_all_values (bool): plot all the values as a scatter plot
+    color (str): colour for plotted scatter and regression line
+    alpha (float): transparency for plotted (scatter) points
 
-    Notes
+    Returns
     -------
+    (None)
     """
     # Setup an figure and axis if not provided
     if isinstance(fig, type(None)):
@@ -109,6 +137,9 @@ def plt_df_X_vs_Y(df=None, x_var='', y_var='', x_label=None, y_label=None,
     N = float(df.shape[0])
     # get RMSE
     RMSE = np.sqrt(((Y-X)**2).mean())
+    # Plot up all the data underneath as a scatter plot
+    if plt_all_values:
+        plt.scatter(X, Y, color=color, s=3, facecolor='none', alpha=alpha)
     # add a 1:1 line
     MinVal = min((min(X), min(Y)))
     MaxVal = max((max(X), max(Y)))
@@ -124,9 +155,6 @@ def plt_df_X_vs_Y(df=None, x_var='', y_var='', x_label=None, y_label=None,
     # Beautify
     ax.set_xlabel(x_label)
     ax.set_xlabel(y_label)
-    # Plot up all the data underneath as a scatter plot
-    if plt_all_values:
-        plt.scatter(X, Y, color=color, s=3, facecolor='none', alpha=alpha)
     # Plot N value
 
     # Save the plotted data as a .png?
@@ -1765,6 +1793,8 @@ def plot_lons_lats_spatial_on_map_CARTOPY(central_longitude=0,
     """
     Plot a list of lons and lats spatially on a map (using cartopy)
 
+    Parameters
+    -------
     projection (cartopy.crs obj.):  projection to use
     s (int): size of plot location point (lon, lat)
     lons, lats (np.array): list of locations (in decimal londitude and latitude)
