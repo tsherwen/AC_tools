@@ -80,7 +80,7 @@ def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson(),
     if isinstance(ax, type(None)):
         ax = fig.add_subplot(111, projection=projection, aspect='auto')
     ds[var2plot].plot.imshow(x=LonVar, y=LatVar, ax=ax, transform=ccrs.PlateCarree())
-    # Beautify
+    # Beautify the figure/plot
     ax.coastlines()
     ax.set_global()
     # Add a generic title if one is not provided
@@ -99,7 +99,8 @@ def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson(),
 def plt_df_X_vs_Y(df=None, x_var='', y_var='', x_label=None, y_label=None,
                   ax=None, fig=None, color=None, plt_all_values=True,
                   alpha=0.5,
-                  plot_ODR=True, plot_121=True, save_plot=False, dpi=320):
+                  plot_ODR=True, plot_121=True, save_plot=False, dpi=320,
+                  verbose=False):
     """
     Make an generic X vs. Y plot from a dataframe
 
@@ -139,20 +140,22 @@ def plt_df_X_vs_Y(df=None, x_var='', y_var='', x_label=None, y_label=None,
     RMSE = np.sqrt(((Y-X)**2).mean())
     # Plot up all the data underneath as a scatter plot
     if plt_all_values:
-        plt.scatter(X, Y, color=color, s=3, facecolor='none', alpha=alpha)
-    # add a 1:1 line
+        ax.scatter(X, Y, color=color, s=3, facecolor='none', alpha=alpha)
+    # Add a 1:1 line
     MinVal = min((min(X), min(Y)))
     MaxVal = max((max(X), max(Y)))
     x_121 = np.arange(MinVal-(MaxVal*0.1), MaxVal+(MaxVal*0.1))
-    ax.plot(x_121, x_121, alpha=0.5, color='k', ls='--')
+    if plot_121:
+        ax.plot(x_121, x_121, alpha=0.5, color='k', ls='--')
     # Add a line for the orthogonal distance regression
     xvalues, Y_ODR = get_linear_ODR(x=X, y=Y, xvalues=x_121,
                                        return_model=False, maxit=10000)
     ODRoutput = get_linear_ODR(x=X, y=Y, xvalues=x_121,
                                  return_model=True, maxit=10000)
-    print(x_label, y_label, ODRoutput.beta)
+    if verbose:
+        print(x_label, y_label, ODRoutput.beta)
     ax.plot(xvalues, Y_ODR, color=color, label=y_label)
-    # Beautify
+    # Beautify the figure/plot
     ax.set_xlabel(x_label)
     ax.set_xlabel(y_label)
     # Plot N value
@@ -162,6 +165,73 @@ def plt_df_X_vs_Y(df=None, x_var='', y_var='', x_label=None, y_label=None,
         png_filename = 'X_vs_Y_{}_vs_{}'.format(x_var, y_var)
         png_filename = rm_spaces_and_chars_from_str(png_filename)
         plt.savefig(png_filename, dpi=dpi)
+
+
+def plt_df_X_vs_Y_hexbin(x=None, y=None, c=None, xscale='linear', yscale='linear',
+                         gridsize=(150,150),
+                         fig=None, ax=None, xlimit=None, ylimit=None, dpi=320,
+                         xlabel=None, ylabel=None, clabel=None, cmap=None,
+                         vmin=None, vmax=None, save2png=False, show_plot=False,
+                         figsize=None, linewidths=0.15):
+    """
+    Make an generic X vs. Y plot from a dataframe
+
+    Parameters
+    -------
+    x, y, (np.array): data to plot as X and Y
+    xscale, yscale (str): 'log' or 'linear' scale to be used for axis?
+    xlabel, ylabel (str): labels for x and y data (e.g. for axis titles)
+    xlimit (tuple): limit the extent of the plotted x axis
+    ylimit (tuple): limit the extent of the plotted y axis
+    vmin, vmax (scalar): set the min and max values for colourbar/plotting of C
+    linewidths (float): line widths for the hexbins (decrease if overlap seen)
+    clabel (str): Label for the values that the X/Y points are coloured by
+    cmap (colormap object): colourmap to use for colouring in c
+    save2png (bool): save the resultant plot as a .png
+    show_plot (bool): Show the resulting plot of the screen
+    dpi (int): resolution of figure (dots per sq inch)
+    figsize (tuple): size of the plotted figure in dots per square inch
+
+    Returns
+    -------
+    (None)
+    """
+    # Setup an figure and axis if not provided
+    if isinstance(fig, type(None)):
+        fig = plt.figure(figsize=figsize, dpi=dpi, facecolor='w', edgecolor='k')
+    if isinstance(ax, type(None)):
+        ax = fig.add_subplot(111)
+    # Set the colourmap if it is not provided
+    if not isinstance(cmap, type(None)):
+        cmap = AC.get_colormap(x)
+    # Plot up the provided data
+    mappable = ax.hexbin(x, y, c, gridsize=gridsize, xscale=xscale,
+                         yscale=yscale, cmap=cmap,
+                         vmin=vmin, vmax=vmax, linewidths=linewidths
+                         )
+    # Limit X axis to provided values
+    if not isinstance(xlimit, type(None)):
+        ax.set_xlim( xlimit )
+    # Limit Y axis to provided values
+    if not isinstance(ylimit, type(None)):
+        ax.set_ylim( ylimit )
+    # Beautify the figure/plot
+    if not isinstance(ylabel, type(None)):
+        ax.set_ylabel( ylabel )
+    if not isinstance(xlabel, type(None)):
+        ax.set_xlabel( xlabel )
+    # Add a colourbar?
+    if not isinstance(c, type(None)):
+        plt.colorbar(mappable, label=clabel)
+    # Save?
+    if save2png:
+        png_filename = 'X_vs_Y_hexbin_{}_vs_{}'.format(xlabel, ylabel)
+        if not isinstance(c, type(None)):
+            png_filename += '_coloured_by_{}'.format(clabel)
+        png_filename = AC.rm_spaces_and_chars_from_str(png_filename)
+        plt.savefig(png_filename, dpi=dpi)
+    if show_plot:
+        plt.show()
 
 
 def map_plot(arr, return_m=False, grid=False, centre=False, cmap=None,

@@ -211,7 +211,7 @@ def get_LWI_map(res='4x5', date=None, wd=None, rtn_ds=False,
     filename = inspect.getframeinfo(inspect.currentframe()).filename
     path = os.path.dirname(os.path.abspath(filename))
     dwd = path+'/../data/LM/'
-    # choose the right directory for the data
+    # Choose the right directory for the data
     dir = {
         '4x5': 'LANDMAP_LWI_ctm_4x5',
         '2x2.5': 'LANDMAP_LWI_ctm_2x25',

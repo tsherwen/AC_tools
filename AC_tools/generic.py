@@ -659,19 +659,18 @@ def save_2D_arrays_to_3DNetCDF(ars=None, dates=None, res='4x5', lons=None,
 
     Returns
     -------
-    None
+    (None)
 
     Notes
     -----
      - needs updating to take non-standard reoslutions
      (e.g. those in variables)
-
     """
     logging.info('save_2D_arrays_to_3DNetCDF called')
     from .AC_time import unix_time, dt64_2_dt
     print((locals()))
 
-    # ---  Settings
+    # Local Settings
     ncfilename = '{}_{}.nc'.format(filename, res)
     # Get lons and lats...
     if any([isinstance(i, type(None)) for i in (lats, lons)]):
@@ -681,7 +680,7 @@ def save_2D_arrays_to_3DNetCDF(ars=None, dates=None, res='4x5', lons=None,
 #        print 'WARNING: non-standard lats/lons not implemented!!! - TODO. '
 #        sys.exit()
 
-    # --- Setup new file
+    # - Setup new file to save data to
     # write file
     logging.debug('setting up new NetCDF file: {}'.format(ncfilename))
     ncfile = Dataset(ncfilename, 'w', format='NETCDF4')
@@ -695,7 +694,7 @@ def save_2D_arrays_to_3DNetCDF(ars=None, dates=None, res='4x5', lons=None,
     lat = ncfile.createVariable('lat', 'f4', ('lat',))
     lon = ncfile.createVariable('lon', 'f4', ('lon',))
 
-    # --- Add meta data
+    # - Add meta data for coordinates
     # Assign units attributes to coordinate var data. This attaches a
     # text attribute to each of the coordinate variables, containing the
     # units.
@@ -714,7 +713,7 @@ def save_2D_arrays_to_3DNetCDF(ars=None, dates=None, res='4x5', lons=None,
     time.standard_name = 'Time'
     time.axis = "T"
 
-    # --- Set global variables
+    # - Set global variables
     if not isinstance(Description, type(None)):
         ncfile.Description = Description
     if not isinstance(Contact, type(None)):
@@ -726,7 +725,7 @@ def save_2D_arrays_to_3DNetCDF(ars=None, dates=None, res='4x5', lons=None,
     lon[:] = lons
     lat[:] = lats
 
-    # ---  Setup time dimension/variables (as epoch)
+    # - Setup time dimension/variables (as epoch)
     # Convert to Epoch time
     def format(x): return unix_time(x)
     df = pd.DataFrame({'Datetime': dates})
@@ -738,24 +737,22 @@ def save_2D_arrays_to_3DNetCDF(ars=None, dates=None, res='4x5', lons=None,
     # Assign to time variable
     time[:] = dates
 
-    # --- Create new NetCDF variable (as f8) with common dimensions
+    # - Create new NetCDF variable (as f8) with common dimensions
     # (e.g. 'f8' = 64-bit floating point, 'i8'=(64-bit singed integer) )
     ncfile.createVariable(varname, var_type, ('time', 'lat', 'lon'), )
     # Close NetCDF
     ncfile.close()
 
-    # --- Now open and add data in append mode
+    # - Now open and add data in append mode
     for n, date in enumerate(dt_dates):
-
+        # Print out debugging text to AC_tools.log
         if debug:
             fmtstr = "%Y%d%m %T"
             logging.debug('saving array date:{}'.format(date.strftime(fmtstr)))
             pcent = (float(n)+1)/float(len(dt_dates))*100
             logging.debug('array #: {} (% complete: {:.1f})'.format(n, pcent))
-
         # Open NetCDF in append mode
         ncfile = Dataset(ncfilename, 'a', format='NETCDF4')
-
         # Add data to array
         try:
             ncfile.variables[varname][n] = ars[n]
@@ -765,7 +762,6 @@ def save_2D_arrays_to_3DNetCDF(ars=None, dates=None, res='4x5', lons=None,
             print(err_msg)
             logging.info(err_msg)
             sys.exit()
-
     # Close NetCDF
     ncfile.close()
     if debug:
