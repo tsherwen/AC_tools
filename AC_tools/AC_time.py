@@ -5,16 +5,14 @@ Time processing functions for use with GEOS-Chem/Data analysis
 
 Use help(<name of function>) to get details on a particular function.
 
-NOTE(S):
+Notes
+-----
  - This module is underdevelopment vestigial/inefficient code is being removed/updated.
  - Where external code is used, credit is given.
 """
-# - Required modules:
 import logging
-# Math/Analysis
 import numpy as np
 import pandas as pd
-# Time
 import time
 import calendar
 import datetime as datetime
@@ -43,9 +41,13 @@ def dt64_2_dt(dt64):
     """
     Convert numpy.datetime64 to datetime.datetime (assuming UTC )
 
-    NOTES:
-     - ACTION NEEDED: Convert this to work as a lamdba function for
-        scalability
+    Parameters
+    -----
+    dt64 (numpy.datetime64): datetime to convert
+
+    Notes
+    -----
+     - TODO: Convert this to work as a lamdba function for scalability
     """
     ns = 1e-9  # number of seconds in a nanosecond
     return [datetime_.utcfromtimestamp(i.astype(int) * ns) for i in dt64]
@@ -54,11 +56,12 @@ def dt64_2_dt(dt64):
 def nonISOdate2ISO(ds):
     """
     Convert a non ISO date string to a ISO date string
-    NOTES:
-     - ds: date string
+
+    Parameters
+    -----
+    ds(str): date string
     """
     import re
-
     logging.info('nonISOdate2ISO called')
     regex = re.compile('(\d\d\d\d-\d-\d\d)')
     regexII = re.compile('(.*\s\d:.*)')
@@ -96,52 +99,59 @@ def nonISOdate2ISO(ds):
 
 def nearest(ts, s):
     """
-    Find nearest timestamp.
+    Find the nearest values (e.g. timestamp)
 
-    ARGUEMENTS:
-     - ts: point as object (float, int, timestamp) that nearset to which is being sought
-     - s: list of objects of the same type to be searched
-    NOTES:
-     - Credit: Raymond Hettinger  -
+    Parameters
+    -------
+    ts (float, int, timestamp): point as object  that nearset to which is being sought
+    s (list): list of objects of the same type to be searched
+
+    Returns
+    -------
+    (timestamp)
+
+    Notes
+    -------
+     - Credit: Raymond Hettinger
     http://stackoverflow.com/questions/8162379/python-locating-the-closest-timestamp
     """
     # Given a presorted list of timestamps:  s = sorted(index)
     i = bisect_left(s, ts)
-
     return min(s[max(0, i-1): i+2], key=lambda t: abs(ts - t))
 
 
-def YYYYMMDD_HHMM_2_datetime(str1=None, str2=None, conbined=False,
+def YYYYMMDD_HHMM_2_datetime(str1=None, str2=None, combined=False,
                              verbose=False, debug=False):
     """
     Mappable converter of strings to datetime.
 
-    ARGUEMENTS:
-     - list of strings of dates (str1) and times (str2)
-     - cobined (bool): if True, then a single list of strings is provided
-     - shared functionality with "DF_YYYYMMDD_HHMM_2_dt" ?
-    """
-    # combined as one string
-    if conbined:
-        dtime = str1
+    Parameters
+    -------
+    str1 (list): list of strings of times
+    str2 (list): list of strings of dates
+    combined (bool): if True, then a single list of strings is provided
+    debug (bool): print debugging options to screen
 
-        # translate from str to datetime
+    Returns
+    -------
+    (list)
+    """
+    # Combined as one string
+    if combined:
+        dtime = str1
+        # Translate from str to datetime
         dtime = [time.strptime(i, '%Y%m%d%H%M') for i in dtime]
         dtime = [datetime_.fromtimestamp(time.mktime(i)) for i in dtime]
-
-    # combine to one string
+    # Combine to one string
     else:
-
-        # make pandas dataframe
+        # Make pandas dataframe
         data = np.array([str1, str2])
         if debug:
             print((data.shape, data[:5, :], [type(i) for i in (str1, str2)]))
         df = pd.DataFrame(data=data.T, columns=['YYYYMMDD', 'HHMM'])
-
-        # convert to datetime
+        # Convert to datetime
         dtime = DF_YYYYMMDD_HHMM_2_dt(df=df)
         dtime = dtime.index
-
     return dtime
 
 
@@ -211,14 +221,19 @@ def secs_in_month(months=None, years=None):
 def get_dt4run(time_span='year', period=1, startyear=2005, endyear=2005,
                endhour=23, a=None, b=None):
     """
-    Get list of datetimes for a given range or between two provided
-    datetimes  ( "a" and "b" )
+    Make list of datetimes for a given range or between two datetimes
 
-    ARGUMENTS:
-     - time_span : string of time period (e.g. days)
-     - period: periodicty (1= 1 hour)
-     - endhour: last hour of datetime list
-     - first (startyear) and last year (endyear) requied
+    Parameters
+    -------
+    a, b (datetime.datetime): dates to create list of dates between (a=first date)
+    endhour (int): last hour to  use in list of dates
+    startyear, endyear (int): first and last year to output list of dates for
+    time_span (str): string of time period (e.g. days)
+    period (int): periodicity of returned list of dates (1= 1 hour)
+
+    Returns
+    -------
+    (list)
     """
     # Set dates
     if isinstance(a, type(None)):
@@ -235,7 +250,7 @@ def get_dt4run(time_span='year', period=1, startyear=2005, endyear=2005,
             endyear = 2006  # Kludge as Data ran from Feb to Feb
             b = datetime.datetime(endyear, 1, 31, endhour, 0)  # full year
 
-    # --- Make list of dates to view (hourly intervals between a and b )
+    # Make list of dates to view (hourly intervals between a and b)
     dates = dt_hrs_a2b(a, b)
     return dates
 
@@ -244,9 +259,14 @@ def dt_hrs_a2b(a, b, period=1, debug=False):
     """
     Returns list of hour spaced datetimes between two given datetimes
 
-    ARGUMENTS:
-     - two dates, one before (a) the other (b)
-     - periodicty (1= 1 hour)
+    Parameters
+    -------
+    a, b (datetime.datetime): dates to create list of dates between (a=first date)
+    period (int): periodicity of returned list of dates (1= 1 hour)
+
+    Returns
+    -------
+    (list)
     """
     dates = [a]
     if debug:
@@ -258,31 +278,31 @@ def dt_hrs_a2b(a, b, period=1, debug=False):
     return dates
 
 
-def normalise2dailymax(dates, data, debug=False):
-    """
-    Normalise data to daily maximiun.
-
-    ARGUMENTS:
-     - list of dates as datetime.datetime objects.
-     - list of of
-    """
-    logging.info('normalise2dailymax called')
-    if debug:
-        logging.debug([(type(i), i.shape) for i in (data, dates)])
-
-    # Get list of unique dates & remove mean from dates
-    dates = np.ma.array([datetime.datetime(*i.timetuple()[:3]) for i in dates])
-    idates = np.ma.array((sorted(set(dates))))
-
-    if debug:
-        logging.debug([(np.min(i), np.max(i), np.mean(i)) for i in [data]])
-    for s in idates:
-        #        print s, len(data[np.ma.where( dates == s) ]),  np.ma.max(data[np.ma.where( dates == s )] )
-        data[np.ma.where(dates == s)] = data[np.ma.where(
-            dates == s)] - np.ma.max(data[np.ma.where(dates == s)])
-    if debug:
-        logging.debug([(np.min(i), np.max(i), np.mean(i)) for i in [data]])
-    return data
+# def normalise2dailymax(dates, data, debug=False):
+#     """
+#     Normalise data to daily maximiun.
+#
+#     ARGUMENTS:
+#      - list of dates as datetime.datetime objects.
+#      - list of of
+#     """
+#     logging.info('normalise2dailymax called')
+#     if debug:
+#         logging.debug([(type(i), i.shape) for i in (data, dates)])
+#
+#     # Get list of unique dates & remove mean from dates
+#     dates = np.ma.array([datetime.datetime(*i.timetuple()[:3]) for i in dates])
+#     idates = np.ma.array((sorted(set(dates))))
+#
+#     if debug:
+#         logging.debug([(np.min(i), np.max(i), np.mean(i)) for i in [data]])
+#     for s in idates:
+#         #        print s, len(data[np.ma.where( dates == s) ]),  np.ma.max(data[np.ma.where( dates == s )] )
+#         data[np.ma.where(dates == s)] = data[np.ma.where(
+#             dates == s)] - np.ma.max(data[np.ma.where(dates == s)])
+#     if debug:
+#         logging.debug([(np.min(i), np.max(i), np.mean(i)) for i in [data]])
+#     return data
 
 
 def time2datetime(dates):
@@ -297,8 +317,13 @@ def num2month(input=None, reverse=False, rtn_dict=False):
     """
     Convert number (1-12) to abbreviated name of month
 
-    ARGUMENTS:
-     - reverse (bool): invert dictionary if reverse==True.
+    Parameters
+    -------
+    reverse (bool): invert dictionary if reverse==True.
+    rtn_dict (bool): return the entire dictionary instead of a value for a key
+
+    Notes
+    -------
      - input is either a 3 character month string or an integer 1=>12
     """
     d = {
@@ -325,50 +350,42 @@ def num2month(input=None, reverse=False, rtn_dict=False):
         return d[input]
 
 
-def DF_YYYYMMDD_HHMM_2_dt(df, date_header='YYYYMMDD',
-                          time_header='HHMM', rmvars=None, epoch=False,
-                          verbose=False, debug=False):
+def DF_YYYYMMDD_HHMM_2_dt(df, date_header='YYYYMMDD', time_header='HHMM',
+                          rmvars=None, epoch=False):
     """
     Convert times to datetime from time strings of HHMM and YYYYMMDD
 
-    ARGUMENTS:
-     - column titles for time (time_header) and date (date_header)
-     - rmvars: list of variables to remove from dataframe
+    Parameters
+    -------
+    df (pd.DataFrame): dataframe containing columns of datetimes in string format
+    time_header, date_header (str): column titles for time and date (?_header)
+    rmvars (list): list of variables to remove from dataframe
+    epoch (bool): return the values in terms of epoch (unix) time
 
-    NOTES:
-     - Use pandas DataFrame to allow for converting date and time strings
-    by mapped functions for speed.
+    Returns
+    -------
+    (pd.DataFrame)
     """
-
-    # --- Process time and dates
-    # Map integer to 4 char str
+    # Function to map integer to 4 char str
     def format(x): return '{:0>4}'.format(int(x))
-
     # Use mapped function for speed.
     df[time_header] = df[time_header].map(format)
-
     # Combine to make datetime.
     # ( go via integer for dates, to ensure no floating zeros appear )
     df['Datetime'] = df[date_header].astype(int).astype(str) + \
         df[time_header].astype(str)
     logging.debug('1st 10 dates: '.format(logging.debug(df['Datetime'][:10])))
     df['Datetime'] = pd.to_datetime(df['Datetime'], format='%Y%m%d%H%M')
-
-    # remove stated variables.
-#    if not isinstance(rmvars, list ):
-#        rmvars =['POINT','LAT', 'LON', 'PRESS', 'HHMM','YYYYMMDD'  ]
+    # Remove variables if list provided as "rmvars"
     if isinstance(rmvars, list):
         [df.drop(i, 1) for i in rmvars]
-
     # Convert to Epoch if requested
     if epoch:
         def format(x): return unix_time(x)
         df['Epoch'] = df['Datetime'].map(format).astype('i8')
         del df['Datetime']
-
     else:
         df.index = df['Datetime']
-
     return df
 
 
@@ -376,15 +393,17 @@ def unix_time(dt):
     """
     Convert datetime to Unix time.
 
-    ARGUMENTS:
-     - Single datetime object
+    Parameters
+    -------
+    dt (datetime.datetime): Single datetime object
 
-    NOTES:
-     - epoch = datetime.datetime(1970, 1, 1, 0, 0)
+    Notes
+    -------
+     - epoch is counted from a reference time of:
+    datetime.datetime(1970, 1, 1, 0, 0)
     """
     epoch = datetime.datetime.utcfromtimestamp(0)
     delta = dt - epoch
-#    return delta.total_seconds()
     return delta.days*86400+delta.seconds+delta.microseconds/1e6
 
 
@@ -392,9 +411,14 @@ def dt_days_a2b(a, b, period=1, debug=False):
     """
     Calculate days between two dattime.datetime format dates
 
-    ARGUMENTS:
-     - two dates, one before (a) the other (b)
-     - periodicty (1= 1day)
+    Parameters
+    -------
+    a, b (datetime.datetime): dates to create list of dates between (a=first date)
+    period (int): periodicity of returned list of dates (1= 1 hour)
+
+    Returns
+    -------
+    (list)
     """
     dates = [a]
     if debug:
@@ -418,7 +442,6 @@ def get_nighttime_values(dates=None, data=None, select_nighttime=True,
     print(df)
     df.columns = ['Datetime']
     # function to generate boolean for daytime
-
     def is_daytime(input, daybreak=daybreak, dayend=dayend):
         """
         Takes datetime.datetime and retruns True (bool) if daytime
@@ -433,12 +456,11 @@ def get_nighttime_values(dates=None, data=None, select_nighttime=True,
         return daytime
     df['ind'] = df.index.values
     df['daytime'] = df['Datetime'].map(is_daytime)
-    # just select nighttime or daytime
+    # Just select nighttime or daytime
     if select_nighttime:
         df = df[df['daytime'] == False]
     if select_daytime:  # select daytime
         df = df[df['daytime'] == True]
-
     # Select just indexed values
     data = np.array(data)[df['ind'].values, ...]
     dates = np.array(dates)[df['ind'].values]
@@ -453,75 +475,82 @@ def get_daily_maximum(dates=None, data=None):
     # Use dataframe to hold dates and name column datetime
     df = pd.DataFrame(np.array(dates))
     df.columns = ['Datetime']
-
     # Add column of index numbers to allow for later indexing...
     df['ind'] = df.index.values
-
     # Add column for days
     def convert_datetime2days(input):
         return datetime.datetime(*input.timetuple()[:3])
     df['days'] = df['Datetime'].map(convert_datetime2days)
 
-    # --- loop days
+    # - loop days
     daily_max_data = []
-    # make sure data is a numpy array
+    # Make sure data is a numpy array
     data = np.array(data)
     for day in sorted(set(df['days'])):
-
         print((day, df['days'][:5]))
-        # select data for day
+        # Select data for day
         a_day_ind = df[df['days'] == day]
-        # select data for day
+        # Select data for day
         a_day_data = data[a_day_ind['ind'].values, ...]
         print([i.shape for i in (a_day_data, a_day_ind, data)])
-        # get daily maximum
+        # Get daily maximum
         daily_max_data += [a_day_data.max(axis=0)]
-
     # Get average daily maximum
     avg_data = np.array(daily_max_data).mean(axis=0)
-
     return avg_data
 
 
-def get_8hr_rolling_mean(df):
+def get_8hr_rolling_mean(df, window=8):
     """
     Get 8 hour rolling mean of pandas dataframe/series.
 
     Parameters
     -------
-    df (DataFrame)
+    df (pd.DataFrame):
+    window (int): the window (hrs) over which to calculate mean (default=8 hrs)
 
     Returns
     -------
-    (DataFrame)
+    (pd.DataFrame)
     """
-
     # loop columns if Dataframe
     dfs = []
     try:
         for col in df.columns:
          # apply mean
-            dfs += [df[col].rolling(window=8, center=False).mean()]
-    # our just process values if Series
+            dfs += [df[col].rolling(window=window, center=False).mean()]
+    # Just process values if Series
     except AttributeError:
-        df = df.rolling(window=8, center=False).mean()
-
-    #  combine dataframes
+        df = df.rolling(window=window, center=False).mean()
+    # Combine dataframes
     if len(dfs) > 1:
         # concatenate
         df = pd.concat(dfs, axis=1)
-
     return df
 
 
 def solartime(observer, sun=None):
-    """ Get Solartime  for location of 'observer' relative to 'sun' """
+    """
+    Get Solartime  for location of 'observer' relative to 'sun'
+
+    Parameters
+    -------
+    observer (ephem observer object): Location of the observer
+    sun (ephem sun object): Which dun to use? (default: our sun)
+
+    Returns
+    -------
+    (float)
+
+    Notes
+    -------
+     - Credit: J.F. Sebastian
+    http://stackoverflow.com/questions/13314626/local-solar-time-function-from-utc-and-longitude
+    """
+    import ephem
     if isinstance(sun, type(None)):
         ephem.Sun()
-    # Astronomical math
-    import ephem
-    # Credit: J.F. Sebastian
-    # http://stackoverflow.com/questions/13314626/local-solar-time-function-from-utc-and-longitude
+    # Astronomical math - compute the angle between the sun and observe
     sun.compute(observer)
     # sidereal time == ra (right ascension) is the highest point (noon)
     hour_angle = observer.sidereal_time() - sun.ra
