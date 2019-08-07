@@ -1120,7 +1120,7 @@ def BASIC_seasonal_plot(dates=None, data=None, ax=None,
                         xtickrotation=45, alt_text=None, alt_text_x=.925,
                         alt_text_y=.925, xlabel=True, rm_yticks=False, log=False,
                         pcent1=25, pcent2=75, color='red', lw=1, ls='-', label=None,
-                        debug=False):
+                        ylim=None, debug=False):
     """
     Plot up a basic seasonal plot - adapted from AC_tools
     monthly_plot
@@ -1148,6 +1148,7 @@ def BASIC_seasonal_plot(dates=None, data=None, ax=None,
     label (str): label for line
     pcent1 (int): lower percentile to use (e.g. 25) for shaded region
     pcent2 (int): higher percentile to use (e.g. 75) for shaded region
+    ylim (tuple): set limit of the y axis (min, max)
     debug (bool): print debuging statements?
 
     Returns
@@ -1209,6 +1210,8 @@ def BASIC_seasonal_plot(dates=None, data=None, ax=None,
     else:
         if rm_yticks:
             ax.tick_params(axis='y', which='both', labelleft='off')
+    if not isinstance(ylim, type(None)):
+        plt.ylim(ylim)
     # Logarithmic scale?
     if log:
         ax.set_yscale('log')
@@ -1858,7 +1861,8 @@ def plot_lons_lats_spatial_on_map_CARTOPY(central_longitude=0,
                                           lats=None, lons=None, add_background_image=True,
                                           projection=ccrs.PlateCarree, fig=None, ax=None,
                                           marker='o', s=50, color='red', show_plot=False,
-                                          dpi=320,
+                                          dpi=320, label=None, alpha=1,
+                                          add_gridlines=True,
                                           buffer_degrees=20, add_detailed_map=False):
     """
     Plot a list of lons and lats spatially on a map (using cartopy)
@@ -1913,26 +1917,28 @@ def plot_lons_lats_spatial_on_map_CARTOPY(central_longitude=0,
     # Put a background image on for nice sea rendering.
     if add_background_image:
         ax.stock_img()
-        if add_detailed_map:
-            # Create a feature for States/Admin 1 regions at 1:50m
-            # from Natural Earth
-            states_provinces = cfeature.NaturalEarthFeature(
-                category='cultural',
-                name='admin_1_states_provinces_lines',
-                scale='50m',
-                facecolor='none')
-            ax.add_feature(cfeature.LAND)
-            ax.add_feature(cfeature.COASTLINE)
-            ax.add_feature(cfeature.BORDERS)
+    if add_detailed_map:
+        # Create a feature for States/Admin 1 regions at 1:50m
+        # from Natural Earth
+        states_provinces = cfeature.NaturalEarthFeature(
+            category='cultural',
+            name='admin_1_states_provinces_lines',
+            scale='50m',
+            facecolor='none')
+        ax.add_feature(cfeature.LAND)
+        ax.add_feature(cfeature.COASTLINE)
+        ax.add_feature(cfeature.BORDERS)
 #            ax.add_feature(states_provinces, edgecolor='gray')
     else:
         ax.coastlines(resolution='110m')
 #        ax.drawcountries() # not in cartopy
-    ax.gridlines()
+    # Include gridlines
+    if add_gridlines:
+        ax.gridlines()
 
     # Now scatter points on plot
-    ax.scatter(lons, lats, color=color, s=s, marker=marker,
-               transform=projection(), zorder=999)
+    ax.scatter(lons, lats, color=color, s=s, marker=marker,alpha=alpha,
+               transform=projection(), zorder=999, label=label)
 
     # return  ax (and show plot?)
     if show_plot:

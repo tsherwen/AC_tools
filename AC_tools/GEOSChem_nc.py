@@ -454,6 +454,8 @@ def convert_HEMCO_ds2Gg_per_yr( ds, vars2convert=None, var_species_dict=None,
         ref_specs[var] = get_ref_spec( var_species[var] )
     # Loop dataset by variable
     for var_n, var_ in enumerate(vars2convert):
+        if debug:
+            print('{:<2} {} '.format(var_n, var_))
         # extract var arr
         arr = ds[var_].values
         # --- Adjust units to be in kg/gridbox
@@ -478,7 +480,7 @@ def convert_HEMCO_ds2Gg_per_yr( ds, vars2convert=None, var_species_dict=None,
         elif ds[var_].units  == 'kg':
             pass # units are already in kg .
         else:
-            print('WARNING: unit convert. ({}) unknown'.format(unit_dict[var_]))
+            print('WARNING: unit convert. ({}) unknown'.format(ds[var_].units))
             sys.exit()
         # --- convert to Gg species
         # get spec name for output variable

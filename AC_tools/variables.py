@@ -1239,11 +1239,95 @@ def get_loc(loc=None, rtn_dict=False, debug=False):
         'MAR': (27.48, -25.70, 1170),  # abrev. Marikana
         'Elandsfontein': (29.42, -26.25, 1750),
         'ELA': (29.42, -26.25, 1750),  # abrev. Elandsfontein
+        # --- Global GAW sites
+        'ASK': (5.63, 23.27, 2710.0000000000005),
+        'BRW': (-156.6, 71.32, 10.999999999999746),
+        'CGO': (144.68, -40.68, 93.99999999999973),
+        'CMN': (10.7, 44.18, 2165.0),
+        'CPT': (18.48, -34.35, 229.99999999999997),
+#        'CVO': (-24.871, 16.848, 10.000000000000103), # Already present.
+        'JFJ': (7.987, 46.548, 3580.0),
+        'LAU': (169.67, -45.03, 369.99999999999983),
+        'MHD': (-9.9, 53.33, 4.999999999999905),
+        'MLO': (-155.578, 19.539, 3397.0),
+        'MNM': (153.981, 24.285, 7.999999999999767),
+        'NMY': (-8.25, -70.65, 41.99999999999969),
+        'SMO': (-170.565, -14.247, 77.00000000000001),
+        'SPO': (-24.8, -89.98, 2810.0),
+        'THD': (-124.15, 41.05, 119.99999999999997),
+        # --- NOAA
+        # https://www.esrl.noaa.gov/gmd/grad/antuv/Palmer.jsp
+        'Palmer Station' : (64.05, -64.767, 21.),
+        'PSA' : (64.05, -64.767, 21.),
+        # https://www.esrl.noaa.gov/gmd/dv/site/LEF.html
+        'Park Falls Wisconsin' : (-90.2732, 45.9451, 472.00),
+        'LEF' : (-90.2732, 45.9451, 472.00),
+        # https://www.esrl.noaa.gov/gmd/obop/mlo/aboutus/siteInformation/kumukahi.html
+        'Cape Kumukahi' : (-154.82, 19.54, 15.0),
+        'KUM' : (-154.82, 19.54, 15.0),
+        # https://www.esrl.noaa.gov/gmd/dv/site/NWR.html
+        # NOTE: altitude in the GAW NetCDF is differrent (680.7339159020077m)
+        'Niwot Ridge' : (-105.5864, 40.0531, 3523.00),
+        'NWR' : (-105.5864, 40.0531, 3523.00),
+        # https://gawsis.meteoswiss.ch/GAWSIS/#/search/station/stationReportDetails/487
+        'Alert' : (-62.3415260315, 82.4991455078, 210.),
+        'ALT' : (-62.3415260315, 82.4991455078, 210.),
+        # https://gawsis.meteoswiss.ch/GAWSIS/#/search/station/stationReportDetails/312
+        'Summit' : (-38.4799995422, 72.5800018311, 3238.),
+        'SUM' : (-38.4799995422, 72.5800018311, 3238.),
+        # https://www.esrl.noaa.gov/gmd/hats/stations/hfm.html
+        # https://gawsis.meteoswiss.ch/GAWSIS/#/search/station/stationReportDetails/173
+        # https://www.esrl.noaa.gov/gmd/dv/site/HFM.html
+        'Havard Forest' :  ( -72.3000030518, 42.9000015259, 340.),
+        'HFM' : ( -72.3000030518, 42.9000015259, 340.),
     }
     if rtn_dict:
         return loc_dict
     else:
         return loc_dict[loc]
+
+
+def site_code2name(code):
+    """
+    Get the full site name from a given code (e.g. GAW ID)
+    """
+    d = {
+    'CMN' : 'Monte Cimone',
+    'CGO' : 'Cape Grim',
+    'BRW' : 'Barrow',
+    'HFM' : 'Havard Forest',
+    'SUM' : 'Summit',
+    'NWR' : 'Niwot Ridge',
+    'KUM' : 'Cape Kumukahi',
+    'LAU' : 'Lauder',
+    'ASK' : 'Assekrem',
+    'JFJ' : 'Jungfraujoch',
+    'MHD' : 'Mace Head',
+    'MLO' : 'Mauna Loa',
+    'MNM' : 'Minamitorishima',
+    'NMY' : 'Neumayer',
+    'SMO' : 'Samoa',
+    'SPO' : 'South Pole',
+    'THD' : 'Trinidad Head',
+    'ALT' : 'Alert',
+    'CPT' : 'Cape Point',
+    'LEF' : 'Park Falls Wisconsin',
+    'PSA' : 'Palmer Station',
+    }
+    return d[code]
+
+
+def sort_locs_by_lat(sites):
+    """
+    Order given list of sties by their latitudes
+    """
+    # Get info
+    vars = [get_loc(s) for s in sites]  #  lon, lat, alt,
+    # Sort by lat, index orginal sites list and return
+    lats = [i[1] for i in vars]
+    slats = sorted(lats)[::-1]
+    return [sites[i] for i in [lats.index(ii) for ii in slats]]
+
 
 
 def GC_var(input_x=None, rtn_dict=False, debug=False):
