@@ -19,7 +19,7 @@ if not os.path.exists(out_dir):
 
 @pytest.fixture()
 def test_data():
-    from ..GEOSChem import get_GC_output
+    from ..GEOSChem_bpch import get_GC_output
     test_data = get_GC_output(wd, species='O3')
     return test_data
 

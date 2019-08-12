@@ -272,7 +272,7 @@ def ocean_unmasked(res='4x5', debug=False):
      - NEEDS UPDATE
     """
 
-    from .GEOSChem import get_LWI_map
+    from .GEOSChem_bpch import get_LWI_map
     if debug:
         print(('ocean_mask called for: ', res))
 
@@ -287,7 +287,7 @@ def land_unmasked(res='4x5', debug=False):
     """
     Get land mask from GEOS-Chem LWI ( at given resolution)
     """
-    from .GEOSChem import get_LWI_map  # Kludge, use GEOS-Chem LWI
+    from .GEOSChem_bpch import get_LWI_map  # Kludge, use GEOS-Chem LWI
 
     # Create a np.ma mask
     if debug:
