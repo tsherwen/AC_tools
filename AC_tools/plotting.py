@@ -861,34 +861,40 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, f_size=10,
 
 
 def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
-                              dfs=None, color_dict={'Obs.': 'k', 'Model': 'r'},
-                              stat2plot='50%',
-                              dpi=320, plt_legend=True, units=None,
-                              show_plot=False, save_plot=False, verbose=False,
-                              debug=False):
+                           dfs=None, color_dict={'Obs.': 'k', 'Model': 'r'},
+                           stat2plot='50%', title=None,
+                           dpi=320, plt_legend=True, units=None,
+                           show_plot=False, save_plot=False, verbose=False,
+                           debug=False):
     """
-    Plot up mulitplot of diel cycle by "season" for given dict of DataFrames
+    Plot up mulitplot of diel cycle by "season" for given dictionary of DataFrames
 
     Parameters
     -------
     spec (str): column name in DataFrame for spec to plot up
-    dfs (dictionary): of data and dates
-        data (array): numpy array of data
-        dates (np.array of datetime.datetime): dates to use for x axis
-    fig (fig instance)
-    sub_str (str): for plotting
+    dfs (dictionary): dictionary of DataFrames of data+dates (values)
+    fig (figure instance): figure to use for to plot subplots onto
+    sub_str (str): extra string to use in titles and names of saved files
     stat2plot (str): stat (e.g. mean or medium) to use for main line
-    color_dict (dictionary): with colors assign
-    show_plot (bool)
-    save_plot (bool)
+    color_dict (dictionary): dictionary of colors for keys in dictionary (dfs)
+    plt_legend (bool): Add a single legend to the figure
+    units (str): units of the provided data (used in plot labels)
+    show_plot (bool): display the plot to screen?
+    save_plot (bool): save the plot to disk
+    verbose (bool): print verbose statements to screen/error log
+    debug (bool): print debugging statements to screen/error log
+    dpi (scalar): resolution (in dots per square inch) to use when saving figure
 
+    Returns
+    -------
+    (None)
     """
     import seaborn as sns
     sns.set(color_codes=True)
     sns.set_context("paper", font_scale=0.75)
-    # ---Local variables
+    # Local variables
     seasons = ('DJF', 'MAM', 'JJA',  'SON')
-    # --- Split data by season
+    # Split data by season
     for key_ in list(dfs.keys()):
         # Now assign "Seasons"
         month_to_season_lu = np.array([
@@ -901,7 +907,7 @@ def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
         ])
         dfs[key_]['Season'] = month_to_season_lu[dfs[key_].index.month]
 
-    # --- Loop seasons & Plot
+    # - Loop seasons and Plot data
     # Setup figure and PDF
     if isinstance(fig, type(None)):
         fig = plt.figure(dpi=dpi)
@@ -916,7 +922,6 @@ def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
             ax = fig.add_subplot(2, 2, n_season+1, sharey=ax1)
         else:
             ax = ax1
-        title = season_
         plt_legend = False
         if (n_season+1) == len(seasons):
             plt_legend = True
@@ -929,34 +934,42 @@ def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
         if (n_season+1) in do_not_plt_ylabel_on_subplot:
             plt_ylabel = False
 
-        # --- Loop and plot dfs
+        # - Loop and plot DataFrames (dfs)
         for n_key, key_ in enumerate(dfs.keys()):
             # Date and dates? ( only select for season )
             tmp_df = dfs[key_]
             tmp_df = tmp_df[tmp_df['Season'] == season_]
             data_ = tmp_df[spec]
             dates_ = pd.to_datetime( tmp_df.index.values )
-            # See if color is set in color_dict
+            # See if color is set in dictionary (color_dict)
             try:
                 color = color_dict[key_]
             except KeyError:
                 color = None
-            # Add legend?
+            # Add a legend to plot?
             legend = False
             if plt_legend and (n_key == len(list(dfs.keys()))-1):
                 legend = True
-            # Plot up
+            # Plot up using the basic plotter function
             BASIC_diel_plot(fig=fig, ax=ax, data=data_, units=units,
-                               dates=dates_, label=key_, title='{}'.format(
-                                   season_),
+                               dates=dates_, label=key_, stat2plot=stat2plot,
+                               title='{}'.format(season_),
                                plt_xlabel=plt_xlabel, plt_ylabel=plt_ylabel,
                                color=color, spec=spec, plt_legend=legend)
-            # remove tmp data dictionary from memory...
+            # Remove tmp data dictionary from memory...
             del tmp_df
 
-    # --- Now show / save  if requested
-    suptitle = "diel of {} in '{}'"
-    fig.suptitle(suptitle.format(latex_spec_name(spec), sub_str))
+    # Show or save if requested (NOTE: default is not to save or show!)
+    if isinstance(title, type(None)):
+        suptitle = "diel of {} in '{}'"
+        # try and use a LaTeX form of the species name
+        try:
+            specname = latex_spec_name(spec)
+        except:
+            specname = spec
+        fig.suptitle(suptitle.format(specname, sub_str))
+    else:
+        fig.suptitle(title)
     png_filename = 'Seasonal_diel_{}_{}.png'.format(sub_str, spec)
     if save_plot:
         plt.savefig(png_filename, dpi=dpi)
