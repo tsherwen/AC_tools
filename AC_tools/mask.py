@@ -54,7 +54,7 @@ def get_country_mask(country='South Africa', res='2x2.5'):
     ds = xr.open_dataset(folder+'ctm.nc')
     ds = ds.mean(dim='time')
     # Add a raster mask for a country
-    ds = AC.add_raster_of_country2ds(ds, test_plot=True, country=country)
+    ds = add_raster_of_country2ds(ds, test_plot=True, country=country)
     # Only include states in the assignment
     ds = ds[['states']]
     # rrgrid to coarser resolution (e.g. 2x2.5)
@@ -70,7 +70,7 @@ def add_raster_of_oceans2ds(ds, featurecla='ocean', set_all_regions2one=False,
     # Get shapes for country
     shapes = get_shapes4oceans(featurecla=featurecla)
     # Add country's states as a layer
-    ds[featurecla] = AC.rasterize(shapes, ds.coords)
+    ds[featurecla] = rasterize(shapes, ds.coords)
     # Test plot of this?
     if test_plot:
         from . plotting import quick_map_plot

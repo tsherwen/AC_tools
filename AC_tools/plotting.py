@@ -203,7 +203,7 @@ def plt_df_X_vs_Y_hexbin(x=None, y=None, c=None, xscale='linear', yscale='linear
         ax = fig.add_subplot(111)
     # Set the colourmap if it is not provided
     if not isinstance(cmap, type(None)):
-        cmap = AC.get_colormap(x)
+        cmap = get_colormap(x)
     # Plot up the provided data
     mappable = ax.hexbin(x, y, c, gridsize=gridsize, xscale=xscale,
                          yscale=yscale, cmap=cmap,
@@ -228,7 +228,7 @@ def plt_df_X_vs_Y_hexbin(x=None, y=None, c=None, xscale='linear', yscale='linear
         png_filename = 'X_vs_Y_hexbin_{}_vs_{}'.format(xlabel, ylabel)
         if not isinstance(c, type(None)):
             png_filename += '_coloured_by_{}'.format(clabel)
-        png_filename = AC.rm_spaces_and_chars_from_str(png_filename)
+        png_filename = rm_spaces_and_chars_from_str(png_filename)
         plt.savefig(png_filename, dpi=dpi)
     if show_plot:
         plt.show()

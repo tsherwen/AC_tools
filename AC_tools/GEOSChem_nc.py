@@ -456,8 +456,13 @@ def convert_HEMCO_ds2Gg_per_yr( ds, vars2convert=None, var_species_dict=None,
     for var_n, var_ in enumerate(vars2convert):
         if debug:
             print('{:<2} {} '.format(var_n, var_))
-        # extract var arr
-        arr = ds[var_].values
+        # Extract the variable array
+        try:
+            arr = ds[var_].values
+        except KeyError:
+            print("WARNING: skipping variable '({})' as not in dataset".format(var_ ))
+            continue
+
         # --- Adjust units to be in kg/gridbox
         # remove area units
         if ds[var_].units == 'kg/m2/':
