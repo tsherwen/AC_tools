@@ -515,7 +515,7 @@ def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
         }
     elif S:
         d = {
-            'S': 1.0, 'SO4': 1.0, 'SO4s': 1.0, 'SO4S': 1.0, 'SO2': 1.0
+            'S': 1.0, 'SO4': 1.0, 'SO4s': 1.0, 'SO4S': 1.0, 'SO2': 1.0, 'DMS': 1.0,
         }
     elif N:
         d = {
@@ -1750,6 +1750,10 @@ def get_ref_spec(spec='LIOx'):
         'N2O5': 'N',
         'O3': 'O3',
         'SO2': 'S',
+        # Other VOCs
+        'ACET': 'C',
+        'ALD2': 'C',
+        'DMS' : 'S',
         # include halogens
         'HOI': 'I',
         'I2': 'I',

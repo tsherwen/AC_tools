@@ -451,7 +451,10 @@ def convert_HEMCO_ds2Gg_per_yr( ds, vars2convert=None, var_species_dict=None,
     # Get equivalent unit for chemical species (e.g. I, Br, Cl, N, et c)
     ref_specs = {}
     for var in vars2convert:
-        ref_specs[var] = get_ref_spec( var_species[var] )
+        try:
+            ref_specs[var] = get_ref_spec( var_species[var] )
+        except KeyError:
+            print("WARNING: Using '{}' as reference species for '{}'".format(var, var))
     # Loop dataset by variable
     for var_n, var_ in enumerate(vars2convert):
         if debug:
