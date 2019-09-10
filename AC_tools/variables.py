@@ -1771,4 +1771,10 @@ def get_ref_spec(spec='LIOx'):
         'HCl': 'Cl',
         'HBr': 'Br',
     }
-    return d[spec]
+    try:
+        return d[spec]
+    except KeyError:
+        pstr = "WARNING: Just returning provided species ('{}') as ref_spec"
+        print( pstr.format( spec ) )
+        return spec
+
