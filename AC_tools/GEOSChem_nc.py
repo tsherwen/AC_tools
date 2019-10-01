@@ -29,7 +29,7 @@ import numpy as np
 # Time
 import time
 #import calendar
-#import datetime as datetime
+import datetime as datetime
 #from datetime import datetime as datetime_
 # The below imports need to be updated,
 # imports should be specific and in individual functions
@@ -515,6 +515,82 @@ def convert_HEMCO_ds2Gg_per_yr( ds, vars2convert=None, var_species_dict=None,
         attrs = ds[var_].attrs
         attrs['units'] = units
         ds[var_].attrs = attrs
+    return ds
+
+
+def get_GEOSCF_as_ds_via_OPeNDAP(collection='chm_inst_1hr_g1440x721_p23',
+                             mode='fcast', date=None):
+    """
+    Get the GEOS Composition Forecast (GEOS-CF) as a xr.Dataset (using OPeNDAP)
+
+    Parameters
+    ----------
+    mode (str): retrieve the forecast (fcast) or assimilated fields (assim)
+    date (datetime.datetime): date to retrieve forecast from or assimilation for
+    collection (str): data collection to access (e.g. chm_inst_1hr_g1440x721_p23)
+
+    Returns
+    -------
+    (xr.dataset)
+
+    NOTES
+    ---
+     - default is to get the latest forecast for chemistry
+     - See documentation for details:
+    https://gmao.gsfc.nasa.gov/weather_prediction/GEOS-CF/
+     - Collections include:
+    chm_inst_1hr_g1440x721_p23
+    chm_tavg_1hr_g1440x721_v1
+    htf_inst_15mn_g1440x721_x1
+    met_inst_1hr_g1440x721_p23
+    met_tavg_1hr_g1440x721_x1
+    xgc_tavg_1hr_g1440x721_x1
+    """
+    # Root OPeNDAP directory
+    root_url = 'https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/{}/'.format(mode)
+    # Make up the complete URL for a forecast or assimilation field
+    if mode == 'fcast':
+        # Which date to use?
+        if isinstance(date, type(None)):
+            # Use the lastest file (default)
+            URL = '{}/{}.latest'.format( root_url, collection )
+        else:
+            # use a file specified by the user
+            correct_type = type(date) == datetime.datetime
+            assert correct_type, "'date' variable must be a datetime.datetime object"
+            # Use the lastest file (default)
+            dstr = date.strftime(format='%Y%m%d')
+            URL = '{}/{}/{}.{}_12z'.format( root_url, collection, collection, dstr )
+    elif mode == 'assim':
+        # Which date to use?
+#        if isinstance(datetime, type(None)):
+#            date = datetime.datetime( 2018, 1,  1 )
+#            print('WARNING: Using default date 4 GEOS-CF assim. date: {}'.format(date))
+            # Use a file specified by the user
+#        correct_type = type(date) == datetime.datetime
+#        assert correct_type, "'date' variable must be a datetime.datetime object""
+        # Use the lastest file (default)
+#        dstr = date.strftime(format='%Y%m%d')
+#            URL = '{}/{}/{}.{}_12z'.format( root_url, collection, collection, dstr )
+#        filename = 'GEOS-CF.v01.rpl.{}.{}.nc4'.format( collection, dstr )
+         # Format = runid.version.mode.collection.timestamp.nc4
+        # Example filenames - None of these work.
+        # 1
+        #filename = 'GEOS-CF.v01.rpl.htf_inst_15mn_g1440x721_x1. 20190101_0015z.nc4'
+        # 2
+#        filename = 'GEOS-CF.v01.fcst.chm_tavg_1hr_g1440x721_v1. 20190309_12z+20190314_0730z.nc4'
+        # 1 - Earth Science Data Types (ESDT)
+#        filename = 'CF01Rhtf_15mnI_g1440x720_X1'
+        # 2 - Earth Science Data Types (ESDT)
+#        filename = 'CF01Fchm_1hrT_g1440x721_V1'
+#        URL = '{}/{}/{}'.format( root_url, collection, filename )
+        # Just retrieve the entire dataset for now
+        URL = '{}/{}'.format( root_url, collection)
+    else:
+        print("WARNING: GEOS-CF mode provided ('{}') not known".format(mode))
+        sys.exit()
+    # opent he dataset via OPeNDAP and return
+    ds = xr.open_dataset( URL )
     return ds
 
 
