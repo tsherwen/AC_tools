@@ -25,11 +25,11 @@ from math import radians, sin, cos, asin, sqrt, pi, atan2
 try:
     import geopandas
 except ImportError:
-    print('failed to import geopandas')
+    print('WARNING: failed to import geopandas')
 try:
     from rasterio import features
 except ImportError:
-    print('failed to import rasterio')
+    print('WARNING: failed to import rasterio')
 from affine import Affine
 
 # The below imports need to be updated,
