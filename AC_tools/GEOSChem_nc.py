@@ -555,41 +555,19 @@ def get_GEOSCF_as_ds_via_OPeNDAP(collection='chm_inst_1hr_g1440x721_p23',
             # Use the lastest file (default)
             URL = '{}/{}.latest'.format( root_url, collection )
         else:
-            # use a file specified by the user
+            # Use a file specified in arguments
             correct_type = type(date) == datetime.datetime
             assert correct_type, "'date' variable must be a datetime.datetime object"
             # Use the lastest file (default)
             dstr = date.strftime(format='%Y%m%d')
             URL = '{}/{}/{}.{}_12z'.format( root_url, collection, collection, dstr )
     elif mode == 'assim':
-        # Which date to use?
-#        if isinstance(datetime, type(None)):
-#            date = datetime.datetime( 2018, 1,  1 )
-#            print('WARNING: Using default date 4 GEOS-CF assim. date: {}'.format(date))
-            # Use a file specified by the user
-#        correct_type = type(date) == datetime.datetime
-#        assert correct_type, "'date' variable must be a datetime.datetime object""
-        # Use the lastest file (default)
-#        dstr = date.strftime(format='%Y%m%d')
-#            URL = '{}/{}/{}.{}_12z'.format( root_url, collection, collection, dstr )
-#        filename = 'GEOS-CF.v01.rpl.{}.{}.nc4'.format( collection, dstr )
-         # Format = runid.version.mode.collection.timestamp.nc4
-        # Example filenames - None of these work.
-        # 1
-        #filename = 'GEOS-CF.v01.rpl.htf_inst_15mn_g1440x721_x1. 20190101_0015z.nc4'
-        # 2
-#        filename = 'GEOS-CF.v01.fcst.chm_tavg_1hr_g1440x721_v1. 20190309_12z+20190314_0730z.nc4'
-        # 1 - Earth Science Data Types (ESDT)
-#        filename = 'CF01Rhtf_15mnI_g1440x720_X1'
-        # 2 - Earth Science Data Types (ESDT)
-#        filename = 'CF01Fchm_1hrT_g1440x721_V1'
-#        URL = '{}/{}/{}'.format( root_url, collection, filename )
-        # Just retrieve the entire dataset for now
+        # Just retrieve an OPeNDAP pointer to the entire dataset for now
         URL = '{}/{}'.format( root_url, collection)
     else:
         print("WARNING: GEOS-CF mode provided ('{}') not known".format(mode))
         sys.exit()
-    # opent he dataset via OPeNDAP and return
+    # Open the dataset via OPeNDAP and return
     ds = xr.open_dataset( URL )
     return ds
 
