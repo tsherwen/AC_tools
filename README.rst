@@ -33,8 +33,34 @@ Quick Start
 
 Functions within **AC_Tools** can be used for various tasks for handling model output and observations. 
 
-An exmample would be importing NetCDF files or converting ctm.bpch files from a directory of GEOS-Chem_ output (with ``tracerinfo.dat`` and ``diaginfo.dat`` files). 
+An exmample would be importing NetCDF files or converting ctm.bpch files from a directory of GEOS-Chem_ output (with ``tracerinfo.dat`` and ``diaginfo.dat`` files). Or using GEOS-Chem_ NetCDf output to make a quick plot of surface ozone. 
 
+If using within a python3 environment and GEOS-Chem 
+
+.. code:: python
+
+    import AC_tools as AC
+    folder = '<folder containing GEOS-Chem output>'
+    # Get the GEOS-Chem NetCDF output as a xarray dataset object
+    # NOTE: this is just a wrapper of get_GEOSChem_files_as_ds, which can retrieve GEOS-Chem NetCDFs as a dataset
+    ds = AC.GetSpeciesConcDataset(wd=folder)
+    #  average over time
+    ds = ds.mean(dim='time')   
+    # select the surface
+    ds = ds.sel( lev=ds.lev[0] )      
+    # select ozone and do plot basic plot
+    spec = 'O3'
+#    ds['SpeciesConc_'+spec].plot() # very simple plot
+    AC.quick_map_plot( ds, var2plot='SpeciesConc_'+spec) # basic lat-lon plot
+    plt.show()
+    # Get global average surface CO 
+    spec = 'CO'
+    ratio = (ds['SpeciesConc_'+spec] * ds['AREA']).sum() / ds['AREA'].sum()
+    ratio = float(ratio.values) 
+    print( "The global average surface mixing ratio of {spec} (ppbv) is: {ratio}".format(spec=spec, ratio=ratio*1E9))
+
+
+If using within a python2 environment, the below example is a way of accessing GEOS-Chem data. The data is converted from bpch to NetCDF by defauly via a iris backend through PyGChem (using bpch2netCDF.py).
 
 .. code:: python
 
