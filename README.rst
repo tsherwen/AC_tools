@@ -44,20 +44,22 @@ If using within a python3 environment and GEOS-Chem
     # Get the GEOS-Chem NetCDF output as a xarray dataset object
     # NOTE: this is just a wrapper of get_GEOSChem_files_as_ds, which can retrieve GEOS-Chem NetCDFs as a dataset
     ds = AC.GetSpeciesConcDataset(wd=folder)
-    #  average over time
+    # Average dataset over time
     ds = ds.mean(dim='time')   
-    # select the surface
+    # Select the surface level
     ds = ds.sel( lev=ds.lev[0] )      
-    # select ozone and do plot basic plot
-    spec = 'O3'
-#    ds['SpeciesConc_'+spec].plot() # very simple plot
+    # Select ozone and do plot basic plot
+    spec = 'O3' 
+    #ds['SpeciesConc_'+spec].plot() # very simple plot
     AC.quick_map_plot( ds, var2plot='SpeciesConc_'+spec) # basic lat-lon plot
     plt.show()
     # Get global average surface CO 
     spec = 'CO'
     ratio = (ds['SpeciesConc_'+spec] * ds['AREA']).sum() / ds['AREA'].sum()
     ratio = float(ratio.values) 
-    print( "The global average surface mixing ratio of {spec} (ppbv) is: {ratio}".format(spec=spec, ratio=ratio*1E9))
+    # Make a formatted string and then print using this to screen
+    prt_str = "The global average surface mixing ratio of {spec} (ppbv) is: {ratio}" 
+    print(prt_str.format(spec=spec, ratio=ratio*1E9))
 
 
 If using within a python2 environment, the below example is a way of accessing GEOS-Chem data. The data is converted from bpch to NetCDF by defauly via a iris backend through PyGChem (using bpch2netCDF.py).
@@ -75,7 +77,9 @@ If using within a python2 environment, the below example is a way of accessing G
     spec = 'CO'
     array = AC.get_GC_output(wd=folder, vars=['IJ_AVG_S__{}'.format(spec)])
     ratio = AC.get_2D_arr_weighted_by_X(array, res='4x5', s_area=s_area) 
-    print( "The global average surface mixing ratio of {spec} (ppbv) is: {ratio}".format(spec=spec, ratio=ratio*1E9))
+    # Make a formatted string and then print using this to screen
+    prt_str = "The global average surface mixing ratio of {spec} (ppbv) is: {ratio}"
+    print( prt_str.format(spec=spec, ratio=ratio*1E9))
     
     
 Usage
