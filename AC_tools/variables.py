@@ -733,6 +733,10 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,
         'NIT/NOx': 'pptv', 'HNO3/NIT': 'pptv',
         #
         'Cl-': 'pptv',
+        # PM
+        'PM10': '$\mu$g m$^{-3}$', 'PM2.5': '$\mu$g m$^{-3}$',
+        'PM2.5(dust)':'$\mu$g m$^{-3}$',  'PM':'$\mu$g m$^{-3}$',
+
     }
     try:
         units = tra_unit[x]
@@ -853,6 +857,7 @@ def get_unit_scaling(units, scaleby=1):
         'K', 'm/s', 'unitless', 'kg', 'm', 'm2', 'kg/m2/s', 'molec/cm2/s',
         'mol/cm3/s',  'kg/s', 'hPa', 'atoms C/cm2/s', 'kg S', 'mb', 'atoms C/cm2/s',
         'molec/cm3', 'v/v', 'cm/s', 's-1', 'molec/m3', 'W/m2', 'unitless',
+        '$\mu$g m$^{-3}$',
     )
     # parts per trillion
     if any([(units == i) for i in ('pptv', 'pptC', 'ppt')]):
@@ -1068,6 +1073,8 @@ def latex_spec_name(input_x, debug=False):
         'NIT/NOx': 'NIT/NO$_{\\rm x}$', 'HNO3/NIT': 'HNO$_3$/NIT',
         # Add pseudo species
         'Cl-': 'Cl$^{-}$',
+        # Extra sub species from GEOS-CF
+        'PM2.5(dust)': 'PM$_{2.5}$(dust)',
     }
     return spec_dict[input_x]
 
