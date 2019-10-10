@@ -735,8 +735,14 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,
         'Cl-': 'pptv',
         # PM
         'PM10': '$\mu$g m$^{-3}$', 'PM2.5': '$\mu$g m$^{-3}$',
-        'PM2.5(dust)':'$\mu$g m$^{-3}$',  'PM':'$\mu$g m$^{-3}$',
-
+        'PM2.5(dust)':'$\mu$g m$^{-3}$',
+        'PM2.5(SO4)': '$\mu$g m$^{-3}$',
+        'PM2.5(NIT)': '$\mu$g m$^{-3}$',
+        'PM2.5(SOA)': '$\mu$g m$^{-3}$',
+        'PM2.5(SSA)': '$\mu$g m$^{-3}$',
+        'PM2.5(BC)': '$\mu$g m$^{-3}$',
+        'PM2.5(OC)': '$\mu$g m$^{-3}$',
+        'PM':'$\mu$g m$^{-3}$',
     }
     try:
         units = tra_unit[x]
@@ -1075,6 +1081,12 @@ def latex_spec_name(input_x, debug=False):
         'Cl-': 'Cl$^{-}$',
         # Extra sub species from GEOS-CF
         'PM2.5(dust)': 'PM$_{2.5}$(dust)',
+        'PM2.5(SO4)': 'PM$_{2.5}$(SO${_4}{^{2-}}$)',
+        'PM2.5(NIT)': 'PM$_{2.5}$(NO${_3}{^-}$)',
+        'PM2.5(SOA)': 'PM$_{2.5}$(SOA)',
+        'PM2.5(SSA)': 'PM$_{2.5}$(SSA)',
+        'PM2.5(BC)': 'PM$_{2.5}$(BC)',
+        'PM2.5(OC))': 'PM$_{2.5}$(OC)',
     }
     return spec_dict[input_x]
 
