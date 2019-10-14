@@ -1,10 +1,10 @@
 """
-Downlaod the example and reference (e.g. for land area) files from an
-external source (currently apache server at York)
+Download the example/reference data files for AC_tools from an external source
 """
 
 import os
-# temporality restore urllib2 (as default urllib not working)
+import logging
+# temporarily restore urllib2 (as default urllib not working)
 #import urllib
 #import urllib2
 try:
@@ -15,9 +15,7 @@ except ImportError:
     from urllib.request import urlopen
     from urllib.error import HTTPError
 
-import logging
-
-# Set up logging only if running as a script.
+# Set up logging only if running as a script
 if __name__ == '__main__':
     FORMAT = "%(levelname)8s - %(message)s   @---> %(filename)s:%(lineno)s  %(funcName)s()"
     logging.basicConfig(filename='AC_tools.log', filemode='w', level=logging.DEBUG,
@@ -43,6 +41,7 @@ file_list = [
     "LM/LANDMAP_LWI_ctm_05x0666/ctm.nc",
     "LM/LANDMAP_LWI_ctm_2x25/ctm.nc",
     "LM/LANDMAP_LWI_ctm_0125x0125/ctm.nc",
+    "GEOS_ChemSpecies_fullchem_v0.1.0.csv"
 ]
 
 
@@ -63,7 +62,7 @@ def main():
             download_file(new_filename, file_url)
 
         else:
-            # If file exists make sure it is the correct size.
+            # If file exists make sure it is the correct size
             url_size = int(urlopen(file_url).info()['Content-Length'])
             file_size = int(os.stat(new_filename).st_size)
             if not url_size == file_size:
@@ -88,7 +87,8 @@ def download_file(new_filename, file_url):
     try:
         new_file = open(new_filename, 'wb')
         logging.debug("downloading from {url}".format(url=file_url))
-        print("Downloading file. This might take some time.")
+        prt_str = "Downloading file ({}), which may take some time."
+        print( prt_str.format(new_filename) )
         file_data = urlopen(file_url).read()
         new_file.write(file_data)
         print("Download complete.")
@@ -105,5 +105,5 @@ def download_file(new_filename, file_url):
         logging.error("Failed to download {url}".format(url=file_url))
 
 
-# Run weather as script or as import
+# Run whether as script or as import
 main()

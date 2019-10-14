@@ -881,45 +881,122 @@ class species:
     """
     Class for holding infomation about chemical speices.
 
-    NOTES:
-     -  the class is build from a csv file (species.csv) in the git Repository.
+    Notes
+    -----
+     - the class is build from a csv file (species.csv) in the git Repository.
+     - This file was build using the table of Species in GEOS-Chem on the wiki linked
+     below. It was updated on
+    http://wiki.seas.harvard.edu/geos-chem/index.php/Species_in_GEOS-Chem
     """
+    def __repr__(self):
+        rtn_str = "This is a class to holding chemical species information for {}"
+        return rtn_str.format(self.name)
+
+    def __str__(self):
+        for key in self.__dict__.keys():
+            print( "{:<20}:".format(key, self.key) )
 
     def __init__(self, name):
         self.name = name
-        self.help = ("""This is a class to get information on species from a local CSV folder
+        self.help = ("""This is a class to get information on a species from a CSV file
    It might contain the following information:
-   self.RMM    = The Mean Mass of the species.
-   self.latex      = The latex name of the species.
-   self.smiles   = The smiles string of the species.
-   self.InChI    = The InChI string of the species.
+   self.RMM        = Molecular weight of the species in g mol-1
+   self.latex      = The latex name of the species
+   self.Smiles     = The smiles string of the species
+   self.InChI      = The InChI string of the species
+   self.Phase      = Denotes whether the species is in the gas or aerosol phase.
+   self.Formula    = Chemical formula of the species
+   self.long_name  = A longer, descriptive name for the species
+   self.Chem       = Is the species contained in one of the pre-built KPP chemistry mechanisms used by GEOS-Chem?
+   self.Advect     = Is the species subject to advection, cloud convection, + BL mixing?
+   self.Drydep     = Is the species subject to dry deposition?
+   self.Wetdep     = Is the species soluble and subject to wet deposition?
+   self.Phot       = Is the species included in the FAST-JX photolysis mechanism?
+   self.Mechanisms = the GEOS-Chem chemistry mechanisms to which the species belongs
+   self.Ox         = Shows the number of molecules of the species that will be included in the computation of the P(Ox) and L(Ox) diagnostic families
+   self.Version    = The version this species was added to GEOS-Chem or the latest version this species was updated (if available)
+    self.Carbons   = number of carbon atoms in species
    """)
-        species_filename = os.path.dirname(__file__) + "/Species.csv"
+        # Set folder and filename to use, then check they are present
+        # NOTE: "Python AC_tools/Scripts/get_data_files.py" retrieves data files
+        folder = os.path.dirname(__file__) + '/../data/'
+        filename = 'GEOS_ChemSpecies_fullchem_v0.1.0.csv'
+        print(folder+filename)
+        assert os.path.exists(folder+filename), "Error: Species csv not found!"
+        # Open species csv file as dataframe
+        dfM = pd.read_csv(folder+filename)
+        # see if species in df
+        df = dfM.loc[dfM['Species'] == str(self.name), : ]
+        # Add properties from csv file
+        if df.shape[0] != 0:
+            # - Now attributes for species
+            self.formula = str(df['Formula'].values[0])
+            self.long_name = str(df['Full name'].values[0])
+            self.RMM = str(df['Molec wt\n(g/mol)'].values[0])
+            self.Phase = str(df['Gas or Aer'].values[0])
+            self.Chem = str(df['Chem'].values[0])
+            self.Advect = str(df['Advect'].values[0])
+            self.Drydep = str(df['Drydep'].values[0])
+            self.Wetdep = str(df['Wetdep'].values[0])
+            self.Phot = str(df['Phot'].values[0])
+            self.Mechanisms = str(df['Mechanisms'].values[0])
+            self.Ox = str(df['Ox?'].values[0])
+            self.Version = str(df['Version\nadded/\nupdated'].values[0])
+            # inc smiles, InChI, and latex add offline from MChem_tools file.
+            # NOTE: smiles/InChI/latex need updating
+            self.InChI = str(df['InChI'].values[0])
+            self.smiles = str(df['smiles'].values[0])
+            self.LaTeX = str(df['LaTeX'].values[0])
 
-        try:
-            species_file = open(species_filename, 'r')
-        except IOError:
-            print("Error: Species.csv does not appear to exist.")
-        species_csv = csv.reader(species_file)
+            # - Update the formating of columns of DataFrame
+            # TODO: update to read a pre-processed file for speed.
+            # Add the number of carbons in a species
+            def add_carbon_column(x):
+                try:
+                    return float(x.split('(12, ')[-1][:-2])
+                except:
+                    return np.NaN
+#            df['Carbons'] = df['Molec wt\n(g/mol)'].map(add_carbon_column)
+#            val = df['Molec wt\n(g/mol)'].values[0]
+#            df['Carbons'] = np.NaN
+#            df.loc[:,'Carbons'] = add_carbon_column(val)
+            self.Carbons = add_carbon_column(self.RMM)
+            # Make sure mass is shown as RMM
+            def mk_RMM_a_float(x):
+                try:
+                    return float(x.split('(12, ')[0].strip())
+                except:
+                    return float(x)
+#            val = df['Molec wt\n(g/mol)'].values[0]
+#            df.loc[:,'Molec wt\n(g/mol)'] = mk_RMM_a_float(val)
+            self.RMM = mk_RMM_a_float(self.RMM)
+            # Convert booleans from crosses to True or False
+            def update_X_to_bool(x):
+                if x == 'X':
+                    return True
+                else:
+                    return False
+            booleans = 'Chem', 'Advect', 'Drydep', 'Wetdep', 'Phot'
+#            for col in booleans:
+#                val = df[col].values[0]
+#                df.loc[:,col] = update_X_to_bool(val)
+            self.Chem = update_X_to_bool(self.Chem)
+            self.Advect = update_X_to_bool(self.Advect)
+            self.Drydep = update_X_to_bool(self.Drydep)
+            self.Wetdep = update_X_to_bool(self.Wetdep)
+            self.Phot = update_X_to_bool(self.Phot)
 
-        if (name == 'OH'):
-            self.group = 'CHEM-L=$'
         else:
-            self.group = 'IJ-AVG-$'
+            print("Species not found in CSV file")
+        # Remove the DataFrame from memory
+        del dfM
 
-        for row in species_csv:
-            try:
-                if (str(self.name) == row[0].strip()):
-                    self.formula = row[1]
-                    self.InChI = row[2]
-                    self.smiles = row[3]
-                    self.RMM = float(row[4])
-                    self.Latex = row[5]
-            except NameError:
-                print("Species not found in CSV file")
-
-        # TODO - Add in function to return stiochmetery using smile str
-        # (e.g. how many carbons in species )
+    def help(self):
+        '''
+        Another way to get help for the class.
+        '''
+        help(self)
+        return
 
 
 def get_ctm_nc_var(variable):
@@ -989,9 +1066,14 @@ def latex_spec_name(input_x, debug=False):
     """
     Formatted (Latex) strings for species and analysis names
 
+
+    Returns
+    -------
+    (tuple)
+
     Notes
     -----
-    REDUNDENT: now using class structure ( see species instance )
+     - Redundant? Can use class structure ( see species instance )
     """
     spec_dict = {
         'OIO': 'OIO', 'C3H7I': 'C$_{3}$H$_{7}$I', 'IO': 'IO', 'I': 'I',
@@ -1095,8 +1177,6 @@ def latex_spec_name(input_x, debug=False):
 # NOTE(s):
 # (1) These are retained, but will be migrated to a seperate non-generic module
 # (2) It is not advised to use these.
-
-
 def gaw_2_name():
     """
     Returns dictionary GAW of sites
@@ -1104,7 +1184,6 @@ def gaw_2_name():
     wdf = get_dir('dwd') + 'ozonesurface/' + 'gaw_site_list.h5'
     df = pd.read_hdf(wdf,  'wp', mode='r')
     names = df.values[:, 1]
-
     # alter long name for CVO
     ind = [n for n, i in enumerate(names) if
            (i == 'Cape Verde Atmospheric Observatory')]
@@ -1126,29 +1205,33 @@ def get_global_GAW_sites(f='gaw_site_list_global.h5'):
     df = pd.read_hdf(wd+f,  'wp', mode='r')
     vars = sorted(list(df.index))
     # Kludge: remove those not in "grouped" analysis
-    # ( Q: why are these sites not present?  - A: data control for lomb-scragle)
-    [vars.pop(vars.index(i)) for i in ['ZUG', 'ZSF', 'ZEP', 'WLG', 'USH', 'SDK',
-                                       'PYR', 'PUY', 'PAL', 'MKN', 'IZO', 'HPB', 'DMV', 'BKT', 'AMS', 'ALT', 'ABP']]
-# [ 'AMS', 'MKN', 'IZO' , 'WLG', 'PYR', 'USH', 'ABP', 'ALT'] ]
+    # These sites are not included due to a data control for lomb-scragle work
+    sites2exclude = [
+    'ZUG', 'ZSF', 'ZEP', 'WLG', 'USH', 'SDK', 'PYR', 'PUY', 'PAL',
+    'MKN', 'IZO', 'HPB', 'DMV', 'BKT', 'AMS', 'ALT', 'ABP'
+    ]
+    [vars.pop(vars.index(i)) for i in sites2exclude]
     return vars
 
 
 def get_loc(loc=None, rtn_dict=False, debug=False):
     """
-    Dictionary to store locations for automated analysis
+    Dictionary to store locations (lon., lat., alt.)
 
-    Data arranged: LON, LAT, ALT
-    ( LON in deg E, LAT in deg N, ALT in metres a.s.l. )
+    Returns
+    -------
+    (tuple)
 
     Notes
     -----
+     - Data arranged: LON, LAT, ALT
+    ( LON in deg E, LAT in deg N, ALT in metres a.s.l. )
      - double up? ( with 5.02 ?? )
      - Now use Class of GEO_site in preference to this func?
      - UPDATE NEEDED: move this to func_vars4obs
     """
-
     loc_dict = {
-        # --- CAST/CONTRAST
+        # - CAST/CONTRAST
         'GUAM':  (144.800, 13.500, 0),
         'CHUUK': (151.7833, 7.4167, 0),
         'PILAU': (134.4667, 7.3500, 0),
@@ -1173,12 +1256,12 @@ def get_loc(loc=None, rtn_dict=False, debug=False):
         'CVO6': (-24.871, 16.848-4,  0),  # Cape Verde (S)
         'CVO (SW)': (-24.871-4, 16.848-4,  0),  # Cape Verde (SW)
         'CVO7': (-24.871-4, 16.848-4,  0),  # Cape Verde (SW)
-        # --- ClearFlo
+        # - ClearFlo
         'North Ken':  (-0.214174, 51.520718, 0),
         'KEN':  (-0.214174, 51.520718, 0),
         'BT tower': (-0.139055, 51.521556, 190),
         'BTT': (-0.139055, 51.521556, 190),
-        # --- ClNO2 sites
+        # - ClNO2 sites
         'HOU': (-95.22, 29.45, 0),
         'BOL': (-105.27, 40.0, 1655 + 150),
         'LAC': (-118.23, 34.05, 	0),
@@ -1187,7 +1270,7 @@ def get_loc(loc=None, rtn_dict=False, debug=False):
         'TEX': (-95.425000, 30.350278,  60),
         'CAL': (-114.12950, 51.07933,  1100),
         'PAS':  (-118.20, 34.23, 246),
-        # --- ClNO2 (UK) sites
+        # - ClNO2 (UK) sites
         'PEN':  (-4.1858, 50.3214, 0.),
         'LEI_AUG':  (-1.127311, 52.619823, 0.),
         'LEI_MAR':  (-1.127311, 52.619823, 0.),
@@ -1201,9 +1284,9 @@ def get_loc(loc=None, rtn_dict=False, debug=False):
         'Penlee_M5': (-0.85, 50.25, 0.),
         'Penlee_M6': (-7.05, 50.25, 0.),
         'Penlee_M7': (-4.1858, 50.1, 0.),
-        # --- Europe sites
+        # - Europe sites
         'DZK':  (4.5000, 52.299999237, 4),
-        # --- O3 preindustrial
+        # - sites with preindustrial ozone observations
         'MON':  (2.338333, 48.822222,  75+5),
         #    'MON' : (2.3, 48.8, 80), # Monsoursis
         # Pavelin  et al. (1999) / Mickely  et al. (2001)
@@ -1221,7 +1304,7 @@ def get_loc(loc=None, rtn_dict=False, debug=False):
         'TOK': (139.0, 35.0, 0),  # Tokyo
         'VIE': (16.0, 48.0, 0),  # Vienna
         'PDM': (0.0, 43.0, 1000),  # Pic du midi
-        # ---  Misc
+        # - Miscellaneous
         #    'MAC' : ( -10.846408, 53.209003, 0 ) # Mace Head.
         'MAC': (-9.9039169999999999, 53.326443999999995, 0),  # Mace Head.
         'Mace Head': (-9.9039169999999999, 53.326443999999995, 0),  # .
@@ -1237,14 +1320,14 @@ def get_loc(loc=None, rtn_dict=False, debug=False):
         'Sylt': (8.1033406, 54.8988164, 0),
         'Sicily': (14.2371407,  38.5519809, 0),  # Sicily
         #    'Frankfurt' : ( 8.45,50.22, )
-        # --- Global GAW sites (from gawsis
+        # - Global GAW sites (from GAWSIS)
         'Barrow': (-156.6114654541, 71.3230133057,  11),
         'Ascension Island': (-14.3999996185, -7.9699997902, 91),
         'Neumayer': (-8.265999794, -70.6660003662, 42),
         'Hilo': (-155.0700073242, 19.5799999237,  11),
         'Samoa': (-170.5645141602, -14.2474746704, 77),
         'Assekrem': (5.6333332062, 23.2666664124,  2710),
-        # --- Misc
+        # - Misc
         'UoM_Chem': (-2.2302418, 53.4659844, 38),
         'CDD': (6.83333333, 45.8333333, 4250),
         'NEEM': (-51.12, 77.75, 2484),
@@ -1258,7 +1341,7 @@ def get_loc(loc=None, rtn_dict=False, debug=False):
         'MAR': (27.48, -25.70, 1170),  # abrev. Marikana
         'Elandsfontein': (29.42, -26.25, 1750),
         'ELA': (29.42, -26.25, 1750),  # abrev. Elandsfontein
-        # --- Global GAW sites
+        # - Global GAW sites
         'ASK': (5.63, 23.27, 2710.0000000000005),
         'BRW': (-156.6, 71.32, 10.999999999999746),
         'CGO': (144.68, -40.68, 93.99999999999973),
@@ -1274,7 +1357,7 @@ def get_loc(loc=None, rtn_dict=False, debug=False):
         'SMO': (-170.565, -14.247, 77.00000000000001),
         'SPO': (-24.8, -89.98, 2810.0),
         'THD': (-124.15, 41.05, 119.99999999999997),
-        # --- NOAA
+        # - NOAA sites
         # https://www.esrl.noaa.gov/gmd/grad/antuv/Palmer.jsp
         'Palmer Station' : (64.05, -64.767, 21.),
         'PSA' : (64.05, -64.767, 21.),

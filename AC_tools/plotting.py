@@ -2882,36 +2882,31 @@ def mk_discrete_cmap(lvls=None, cmap=None, arr=None,
                      vmin=0, vmax=10, nticks=10, debug=False):
     """
     Make a discrete colormap from an existing cmap
-    NOTE:
+
+    Returns
+    -------
+    (colormap object, mpl norm object)
+
+    Notes
+    -------
      - the data will now need to normalised the range of lvls
     """
-
-    # define bins
+    # Define bins
     if isinstance(lvls, type(None)):
         bounds = np.linspace(vmin, vmax, nticks, endpoint=True)
     else:
         bounds = lvls
-
-    # get colormap if not provided
+    # Get colormap if not provided
     if isinstance(cmap, type(None)):
         cmap = get_colormap(np.array([vmin, vmax]))
-
     if debug:
         print((lvls, vmin, vmax, nticks))
-
-    # extract colors
-#    cmaplist = [ cmap(i) for i in range( len(lvls ) ) ]
+    # Extract colors
     cmaplist = [cmap(i) for i in range(cmap.N)]
-
-    # force the first color entry to be grey
-#    cmaplist[0] = (.5,.5,.5,1.0)
-
-    # create the new discrete cmap
+    # Create the new discrete cmap
     cmap = cmap.from_list('Custom cmap', cmaplist, cmap.N)
-
-    # make norm... -  define the bins and normalize
+    # Make a normalisation object... -  define the bins and normalize
     norm = mpl.colors.BoundaryNorm(bounds,  cmap.N)
-
     return cmap, norm
 
 
@@ -3005,7 +3000,6 @@ def equi(m, centerlon, centerlat, radius, *args, **kwargs):
      - This is an external function, for original postin please see link below
 http://www.geophysique.be/2011/02/20/matplotlib-basemap-tutorial-09-drawing-circles/
      - worker function to use "Shoot" function, also inlcuded in AC_tools
-
     """
     glon1 = centerlon
     glat1 = centerlat
@@ -3035,7 +3029,7 @@ def shoot(lon, lat, azimuth, maxdist=None):
     Notes
     -----
      - This is an external function, for original posting please see link below
-http://www.geophysique.be/2011/02/19/matplotlib-basemap-tutorial-08-shooting-great-circles/
+http://www.geophysique.be/2011/02/19/matplotlib-basemap-tutorial-08-shooting-great-circles
      - Original javascript on http://williams.best.vwh.net/gccalc.htm
      - Translated to python by Thomas Lecocq
     """
