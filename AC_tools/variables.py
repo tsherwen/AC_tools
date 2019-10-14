@@ -889,7 +889,7 @@ class species:
     http://wiki.seas.harvard.edu/geos-chem/index.php/Species_in_GEOS-Chem
     """
     def __repr__(self):
-        rtn_str = "This is a class to holding chemical species information for {}"
+        rtn_str = "This is a class to hold chemical species information for {}"
         return rtn_str.format(self.name)
 
     def __str__(self):
@@ -921,7 +921,6 @@ class species:
         # NOTE: "Python AC_tools/Scripts/get_data_files.py" retrieves data files
         folder = os.path.dirname(__file__) + '/../data/'
         filename = 'GEOS_ChemSpecies_fullchem_v0.1.0.csv'
-        print(folder+filename)
         assert os.path.exists(folder+filename), "Error: Species csv not found!"
         # Open species csv file as dataframe
         dfM = pd.read_csv(folder+filename)
@@ -987,7 +986,7 @@ class species:
             self.Phot = update_X_to_bool(self.Phot)
 
         else:
-            print("Species not found in CSV file")
+            print("Species not found in CSV file ({})".format(filename))
         # Remove the DataFrame from memory
         del dfM
 
