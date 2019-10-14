@@ -888,54 +888,115 @@ class species:
      below. It was updated on
     http://wiki.seas.harvard.edu/geos-chem/index.php/Species_in_GEOS-Chem
     """
+    def __repr__(self):
+        rtn_str = "This is a class to holding chemical species information for {}"
+        return rtn_str.format(self.name)
+
+    def __str__(self):
+        for key in self.__dict__.keys():
+            print( "{:<20}:".format(key, self.key) )
 
     def __init__(self, name):
         self.name = name
         self.help = ("""This is a class to get information on a species from a CSV file
    It might contain the following information:
-   self.RMM       = The Mean Mass of the species.
-   self.latex     = The latex name of the species.
-   self.smiles    = The smiles string of the species.
-   self.InChI     = The InChI string of the species.
-   self.phase     = gas or aerosol
-   self.formula   = chemical formula
-   self.long_name = longer name for species
-   self.chem
-   self.advect
-   self.drydep
-   self.wetdep
-   self.phot
-   self.mechanisms
-   self.ox
-   self.version
-
+   self.RMM        = Molecular weight of the species in g mol-1
+   self.latex      = The latex name of the species
+   self.Smiles     = The smiles string of the species
+   self.InChI      = The InChI string of the species
+   self.Phase      = Denotes whether the species is in the gas or aerosol phase.
+   self.Formula    = Chemical formula of the species
+   self.long_name  = A longer, descriptive name for the species
+   self.Chem       = Is the species contained in one of the pre-built KPP chemistry mechanisms used by GEOS-Chem?
+   self.Advect     = Is the species subject to advection, cloud convection, + BL mixing?
+   self.Drydep     = Is the species subject to dry deposition?
+   self.Wetdep     = Is the species soluble and subject to wet deposition?
+   self.Phot       = Is the species included in the FAST-JX photolysis mechanism?
+   self.Mechanisms = the GEOS-Chem chemistry mechanisms to which the species belongs
+   self.Ox         = Shows the number of molecules of the species that will be included in the computation of the P(Ox) and L(Ox) diagnostic families
+   self.Version    = The version this species was added to GEOS-Chem or the latest version this species was updated (if available)
+    self.Carbons   = number of carbon atoms in species
    """)
-        species_filename = os.path.dirname(__file__) + "/Species.csv"
+        # Set folder and filename to use, then check they are present
+        # NOTE: "Python AC_tools/Scripts/get_data_files.py" retrieves data files
+        folder = os.path.dirname(__file__) + '/../data/'
+        filename = 'GEOS_ChemSpecies_fullchem_v0.1.0.csv'
+        print(folder+filename)
+        assert os.path.exists(folder+filename), "Error: Species csv not found!"
+        # Open species csv file as dataframe
+        dfM = pd.read_csv(folder+filename)
+        # see if species in df
+        df = dfM.loc[dfM['Species'] == str(self.name), : ]
+        # Add properties from csv file
+        if df.shape[0] != 0:
+            # - Now attributes for species
+            self.formula = str(df['Formula'].values[0])
+            self.long_name = str(df['Full name'].values[0])
+            self.RMM = str(df['Molec wt\n(g/mol)'].values[0])
+            self.Phase = str(df['Gas or Aer'].values[0])
+            self.Chem = str(df['Chem'].values[0])
+            self.Advect = str(df['Advect'].values[0])
+            self.Drydep = str(df['Drydep'].values[0])
+            self.Wetdep = str(df['Wetdep'].values[0])
+            self.Phot = str(df['Phot'].values[0])
+            self.Mechanisms = str(df['Mechanisms'].values[0])
+            self.Ox = str(df['Ox?'].values[0])
+            self.Version = str(df['Version\nadded/\nupdated'].values[0])
+            # inc smiles, InChI, and latex add offline from MChem_tools file.
+            # NOTE: smiles/InChI/latex need updating
+            self.InChI = str(df['InChI'].values[0])
+            self.smiles = str(df['smiles'].values[0])
+            self.LaTeX = str(df['LaTeX'].values[0])
 
-        try:
-            species_file = open(species_filename, 'r')
-        except IOError:
-            print("Error: Species.csv does not appear to exist.")
-        species_csv = csv.reader(species_file)
+            # - Update the formating of columns of DataFrame
+            # TODO: update to read a pre-processed file for speed.
+            # Add the number of carbons in a species
+            def add_carbon_column(x):
+                try:
+                    return float(x.split('(12, ')[-1][:-2])
+                except:
+                    return np.NaN
+#            df['Carbons'] = df['Molec wt\n(g/mol)'].map(add_carbon_column)
+#            val = df['Molec wt\n(g/mol)'].values[0]
+#            df['Carbons'] = np.NaN
+#            df.loc[:,'Carbons'] = add_carbon_column(val)
+            self.Carbons = add_carbon_column(self.RMM)
+            # Make sure mass is shown as RMM
+            def mk_RMM_a_float(x):
+                try:
+                    return float(x.split('(12, ')[0].strip())
+                except:
+                    return float(x)
+#            val = df['Molec wt\n(g/mol)'].values[0]
+#            df.loc[:,'Molec wt\n(g/mol)'] = mk_RMM_a_float(val)
+            self.RMM = mk_RMM_a_float(self.RMM)
+            # Convert booleans from crosses to True or False
+            def update_X_to_bool(x):
+                if x == 'X':
+                    return True
+                else:
+                    return False
+            booleans = 'Chem', 'Advect', 'Drydep', 'Wetdep', 'Phot'
+#            for col in booleans:
+#                val = df[col].values[0]
+#                df.loc[:,col] = update_X_to_bool(val)
+            self.Chem = update_X_to_bool(self.Chem)
+            self.Advect = update_X_to_bool(self.Advect)
+            self.Drydep = update_X_to_bool(self.Drydep)
+            self.Wetdep = update_X_to_bool(self.Wetdep)
+            self.Phot = update_X_to_bool(self.Phot)
 
-        if (name == 'OH'):
-            self.group = 'CHEM-L=$'
         else:
-            self.group = 'IJ-AVG-$'
+            print("Species not found in CSV file")
+        # Remove the DataFrame from memory
+        del dfM
 
-        for row in species_csv:
-            try:
-                if (str(self.name) == row[0].strip()):
-                    self.formula = row[1]
-                    self.InChI = row[2]
-                    self.smiles = row[3]
-                    self.RMM = float(row[4])
-                    self.Latex = row[5]
-            except NameError:
-                print("Species not found in CSV file")
-
-        # TODO - Add in function to return stiochmetery using smile str
-        # (e.g. how many carbons in species )
+    def help(self):
+        '''
+        Another way to get help for the class.
+        '''
+        help(self)
+        return
 
 
 def get_ctm_nc_var(variable):
