@@ -31,12 +31,12 @@ import gc
 # The below imports need to be updated,
 # imports should be specific and in individual functions
 # import tms modules with shared functions
-from . variables import *
-from . generic import *
-from . AC_time import *
-from . planeflight import *
-from . GEOSChem_nc import *
-from . GEOSChem_bpch import *
+from .. variables import *
+from .. generic import *
+from .. AC_time import *
+from .. planeflight import *
+from .. GEOSChem_nc import *
+from .. GEOSChem_bpch import *
 # math
 from math import log10, floor
 import numpy as np

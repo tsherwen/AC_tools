@@ -11,10 +11,12 @@ from . GEOSChem_nc import *
 from . KPP import *
 from . mask import *
 from . planeflight import *
-from . plotting_REDUNDENT import *
 from . plotting import *
 from . SMVGEAR import *
 from . variables import *
+# include the redundent files for now
+from . obsolete.plotting_REDUNDANT import *
+from . obsolete.variables_REDUNDANT import *
 
 """
 AC_tools is a module of functions started by Tomas, and contributed to by others in the Evans' group, and hopefully maintained by the Group.
