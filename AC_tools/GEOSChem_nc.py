@@ -339,6 +339,22 @@ def get_StateMet_ds(file_str='GEOSChem.StateMet.*', wd=None):
     return get_GEOSChem_files_as_ds(file_str=file_str, wd=wd)
 
 
+def get_DryDep_ds(file_str='GEOSChem.DryDep.*', wd=None):
+    """
+    Wrapper to get NetCDF dry deposition output as a dataset
+
+    Parameters
+    ----------
+    wd (str): Specify the wd to get the results from a run.
+    file_str (str): a str for file format with wildcards (?, *)
+
+    Returns
+    -------
+    (dataset)
+    """
+    return get_GEOSChem_files_as_ds(file_str=file_str, wd=wd)
+
+
 def get_ProdLoss_ds(file_str='GEOSChem.ProdLoss.*', wd=None):
     """
     Wrapper to get NetCDF ProdLoss output as a Dataset
