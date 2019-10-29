@@ -4543,13 +4543,14 @@ def get_model_run_stats(wd=None, file_type='*geos.log*', debug=False):
         sys.exit()
 
 
-def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
-                                     REF2=None, REF_wd=None, res='4x5', trop_limit=True,
-                                     save2csv=True, prefix='GC_', run_names=None,
-                                     extra_burden_specs=['NIT', 'NITs'],
-                                     extra_surface_specs=['NIT', 'NITs'],
-                                     GC_version='v11-02d',
-                                     debug=False):
+def get_general_stats4run_dict_as_df_bpch(run_dict=None, extra_str='', REF1=None,
+                                          REF2=None, REF_wd=None, res='4x5',
+                                          trop_limit=True,
+                                          save2csv=True, prefix='GC_', run_names=None,
+                                          extra_burden_specs=['NIT', 'NITs'],
+                                          extra_surface_specs=['NIT', 'NITs'],
+                                          GC_version='v11-02d',
+                                          debug=False):
     """
     Get various stats on a set of runs in a dictionary ({name: location})
 
@@ -4736,8 +4737,9 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     # Now round the numbers
     df = df.round(3)
     # Save csv to disk
-    csv_filename = '{}_summary_statistics{}.csv'.format(prefix, extra_str)
-    df.to_csv(csv_filename)
+    if save2csv:
+        csv_filename = '{}_summary_statistics{}.csv'.format(prefix, extra_str)
+        df.to_csv(csv_filename)
     # Return the DataFrame too
     return df
 

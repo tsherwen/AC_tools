@@ -28,6 +28,7 @@ import numpy as np
 # imports should be specific and in individual functions
 # import tms modules with shared functions
 from .. core import *
+from .. variables import get_unit_scaling
 
 
 def pf_var(input, ver='3.0', ntracers=85, fill_var_with_zeroes=False):

@@ -74,12 +74,12 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
 def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None, wd=None,
                       trop_level_var='Met_TropLev', air_mass_var='Met_AD',
                       avg_over_time=False,
-                      sum_patially=True, rm_trop=True, use_time_in_trop=False,
+                      sum_patially=True, rm_trop=True, use_time_in_trop=True,
                       trop_mask=None, spec_conc_prefix='SpeciesConc_',
-                      time_in_trop_var='N/A',
+                      time_in_trop_var='N/A', vars2use=None,
                       ):
     """
-    Get Tropospheric burden for a/all species in dataset
+    Get Tropospheric burden for given/or all species in dataset
 
     Parameters
     ----------
@@ -90,6 +90,7 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None, wd=None
     spec (str): Name of the species (optional)
     spec_var (str):  Name of the species inc. Diagnostic prefix (optional)
     spec_conc_prefix (str): the diagnostic prefix for concentration
+    vars2use (list): list of variables to calculate burden for
 
     Returns
     -------
@@ -114,16 +115,17 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None, wd=None
         if isinstance(spec_var, type(None)):
             spec_var = spec_conc_prefix+spec
     # Create mask for stratosphere if not provided
-    if isinstance(trop_mask, type(None)):
+    if isinstance(trop_mask, type(None)) and not use_time_in_trop:
         trop_mask = create4Dmask4trop_level(StateMet=StateMet)
     # only allow "SpeciesConc" species
-    Specs2Convert = [i for i in dsL.data_vars if 'SpeciesConc' in i]
-    dsL = dsL[Specs2Convert]
+    if isinstance(vars2use, type(None)):
+        vars2use = [i for i in dsL.data_vars if 'SpeciesConc' in i]
+    dsL = dsL[vars2use]
     MXUnits = 'mol mol-1 dry'
     # Covert all species into burdens (Gg)
     if isinstance(spec_var, type(None)) and isinstance(spec, type(None)):
         # Loop by spec
-        for spec_var in Specs2Convert:
+        for spec_var in vars2use:
             # Remove diagnostic prefix from chemical species
             spec = spec_var.replace(spec_conc_prefix, '')
             # Check units
@@ -141,8 +143,12 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None, wd=None
         # Remove the tropospheric values?
         if rm_trop:
             # Loop by spec
-            for spec_var in Specs2Convert:
-                dsL[spec_var] = dsL[spec_var].where(trop_mask)
+            if use_time_in_trop:
+                dsL = rm_fractional_troposphere(dsL, vars2use=vars2use,
+                                                StateMet=StateMet)
+            else:
+                for spec_var in vars2use:
+                    dsL[spec_var] = dsL[spec_var].where(trop_mask)
     else:
         # Just consifer the species of interest
         dsL = dsL[[spec_var]]
@@ -162,13 +168,20 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None, wd=None
             dsL = dsL.mean(dim='time')
         # remove the tropospheric values?
         if rm_trop:
-            dsL[spec_var] = dsL[spec_var].where(trop_mask)
+            # Loop by spec
+            if use_time_in_trop:
+                dsL = rm_fractional_troposphere(dsL, vars2use=vars2use,
+                                                StateMet=StateMet)
+            else:
+                for spec_var in vars2use:
+                    dsL[spec_var] = dsL[spec_var].where(trop_mask)
     # Sum the values spatially?
-    if sum_patially:
+    if sum_spatially:
         dsL = dsL.sum()
         return dsL.to_array().to_pandas()
     else:
         return dsL
+
 
 def plot_up_surface_changes_between2runs( ds_dict=None, levs=[1], specs=[],
         BASE='', NEW='', prefix='IJ_AVG_S__', update_PyGChem_format2COARDS=False ):
@@ -260,6 +273,23 @@ def create4Dmask4trop_level(StateMet=None,
     # and summed via np.nansum( ds[VarName].where(MASK).values )
     MASK = pmid_press > DynTropPress
     return MASK
+
+
+def rm_fractional_troposphere(ds, vars2use=None, StateMet=None, TropFracDA=None,
+                              TropFracVar='FracOfTimeInTrop'):
+    """
+    rm stratospheric contribution by multiplying by grid box's time in troposphere
+    """
+    # Get the fraction of boxes in the troposphere as a data array
+    if isinstance(TropFracDA, type(None)):
+        TropFracDA = StateMet[TropFracVar]
+    # Set the variables to use as all data_vars if list not provided
+    if isinstance(vars2use, type(None)):
+        vars2use = list(ds.data_vars)
+    # multiply through by time in troposphere to remove stratosphere.
+    for var in vars2use:
+        ds[var] =  ds[var] * TropFracDA
+    return ds
 
 
 def read_inst_files_save_only_surface(wd=None, file_str='GEOSChem.inst1hr.*',
@@ -667,4 +697,183 @@ def get_HEMCO_ds_summary_stats_Gg_yr( ds, vars2use=None ):
     if verbose:
         print(df)
     return df
+
+
+def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
+                                     REF2=None, REF_wd=None, res='4x5', trop_limit=True,
+                                     save2csv=True, prefix='GC_', run_names=None,
+                                     extra_burden_specs=[],
+                                     extra_surface_specs=[],
+                                     GC_version='v12.6.0',
+                                     debug=False):
+    """
+    Get various stats on a set of runs in a dictionary ({name: location})
+
+    Parameters
+    ----------
+    run_dict (dict): dicionary of run names and locations
+    run_names (list): provide the names of run_dict keys to order df index
+    REF_wd (str): name of run in dictionary to use to extract shared variables
+    REF1 (str): name of (1st) run in dictionary to to % change calculations from
+    REF1 (str): name of (2nd) run in dictionary to to % change calculations from
+    prefix (str):  string to include as a prefix in saved csv's filename
+    extra_str (str):  string to include as a suffx in saved csv's filename
+    save2csv (bool): save dataframe as a csv file
+    trop_limit (bool): limit analysis to the troposphere?
+    extra_burden_specs (list): list of extra species to give trop. burden stats on
+    extra_surface_specs (list): list of extra species to give surface conc. stats on
+    res (str): resolution of the modul output (e.g. 4x5, 2x2.5, 0.125x0.125)
+
+    Returns
+    -------
+    (pd.DataFrame)
+
+    Notes
+    -----
+
+    """
+    # Extract names and locations of data
+    if isinstance(run_names, type(None)):
+        run_names = sorted(run_dict.keys())
+    wds = [run_dict[i] for i in run_names]
+
+    # - Define local variables
+    # Mass unit scaling
+    mass_scale = 1E3
+    mass_unit = 'Tg'
+    # mixing ratio (v/v) scaling?
+    ppbv_unit = 'ppbv'
+    ppbv_scale = 1E9
+    pptv_unit = 'pptv'
+    pptv_scale = 1E12
+    # Get shared variables from a single model run
+    if isinstance(REF_wd, type(None)):
+        REF_wd = wds[0]
+    # Core dataframe for storing calculated stats on runs
+    df = pd.DataFrame()
+    # - Get core data required
+    # Get StateMet object for 1st of the runs and use this for all runs
+    StateMet = AC.get_StateMet_ds(wd=REF_wd)
+    # Get all of the speciesConcs for runs as list of datasets
+    dsD = [AC.GetSpeciesConcDataset(wd=run_dict[run]) for run in run_names ]
+    dsD = dict(zip(run_names, dsD))
+    # - Get burdens for core species
+    core_burden_specs = ['O3', 'CO', 'NO', 'NO2']
+    specs2use = core_burden_specs+extra_burden_specs
+    prefix = 'SpeciesConc_'
+    vars2use = [  prefix+i for i in specs2use ]
+    for run in run_names:
+        ds = dsD[run]
+        S = get_Gg_trop_burden( ds, vars2use=vars2use, StateMet=StateMet )
+        # convert to ref spec equivalent (e.g. N for NO2, C for ACET)
+        for spec in specs2use:
+            ref_spec = get_ref_spec( spec )
+            val = S[prefix+spec]
+            S[prefix+spec] = val/species_mass(spec)*species_mass(ref_spec)
+        # Upate varnames
+        varnames = ['{} burden ({})'.format(i, mass_unit) for i in specs2use]
+        S = S.rename(index=dict(zip(list(S.index.values),varnames )))
+        # save the values for run to central DataFrame
+        df[run] =  S
+
+    # - Now add familes...
+    # transpose dataframe
+    df = df.T
+    # Get NOx burden
+    NO2_varname = 'NO2 burden ({})'.format(mass_unit)
+    NO_varname = 'NO burden ({})'.format(mass_unit)
+    NOx_varname = 'NOx burden ({})'.format(mass_unit)
+    try:
+        df[NOx_varname] = df[NO2_varname] + df[NO_varname]
+    except KeyError:
+        if debug:
+            PtrStr = 'NOx family not added for trop. df columns: {}'
+            print(  PtrStr.format( ', '.join(list(df.columns)) ) )
+
+    # Sum the aerosol nitrates (NIT+NITs)
+    if ('NITs' in specs2use) and ('NIT' in specs2use):
+        NIT_varname = 'NIT burden ({})'.format(mass_unit)
+        NITs_varname = 'NITs burden ({})'.format(mass_unit)
+        varname = 'NIT+NITs burden ({})'.format(mass_unit)
+        try:
+            df[varname] = df[NITs_varname] + df[NIT_varname]
+        except KeyError:
+            if debug:
+                PtrStr = 'NIT+NITs family not added for surface. df columns: {}'
+                print( PtrStr.format( ', '.join(list(df.columns)) ) )
+
+    # Scale units
+    for col_ in df.columns:
+        if 'Tg' in col_:
+            df.loc[:, col_] = df.loc[:, col_].values/mass_scale
+    # transpose back to variables as index
+    df = df.T
+
+    # - Add Ozone production and loss...
+
+
+    # - Surface concentrations
+    core_surface_specs = [
+    'O3', 'NO', 'NO2', 'N2O5'
+    ]
+    prefix = 'SpeciesConc_'
+    specs2use = core_surface_specs+extra_surface_specs
+    # Loop by run and get stats
+    for run in run_names:
+        print( run )
+        ds = dsD[run].copy()
+        # Select surface and average over time
+        ds = ds.mean(dim='time')
+        ds = ds.isel(lev=ds.lev==ds.lev[0])
+        for spec in specs2use:
+            # get units and scaling
+            units, scale = tra_unit( spec, scale=True )
+            # Surface ozone
+            varname = '{} surface ({})'.format(spec, units)
+            var = prefix+spec
+            # save values on a per species basis to series
+            val = get_avg_2D_conc_of_X_weighted_by_Y(ds, Xvar=var, Yvar='AREA')
+            # save calculated values to dataframe
+            df.loc[varname,run] = val
+
+    # transpose dataframe
+    df = df.T
+    # Scale units
+    for col_ in df.columns:
+        if 'ppb' in col_:
+            df.loc[:, col_] = df.loc[:, col_].values*ppbv_scale
+        if 'ppt' in col_:
+            df.loc[:, col_] = df.loc[:, col_].values*pptv_scale
+    # transpose back to variables as index
+    df = df.T
+
+    # - OH concentrations
+
+
+    # - Add methane lifetime calculation
+
+    # - Processing and save?
+    # Calculate % change from base case for each variable
+    if not isinstance(REF1, type(None)):
+        for col_ in df.columns:
+            pcent_var = col_+' (% vs. {})'.format(REF1)
+            df[pcent_var] = (df[col_]-df[col_][REF1]) / df[col_][REF1] * 100
+    if not isinstance(REF2, type(None)):
+        for col_ in df.columns:
+            pcent_var = col_+' (% vs. {})'.format(REF2)
+            df[pcent_var] = (df[col_]-df[col_][REF2]) / df[col_][REF2] * 100
+
+    # Re-order columns
+    df = df.reindex_axis(sorted(df.columns), axis=1)
+    # Reorder index
+    df = df.T.reindex_axis(sorted(df.T.columns), axis=1).T
+    # Now round the numbers
+    df = df.round(3)
+    # Save csv to disk
+    if save2csv:
+        csv_filename = '{}_summary_statistics{}.csv'.format(prefix, extra_str)
+        df.to_csv(csv_filename)
+    # Return the DataFrame too
+    return df
+
 
