@@ -715,7 +715,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     run_names (list): provide the names of run_dict keys to order df index
     REF_wd (str): name of run in dictionary to use to extract shared variables
     REF1 (str): name of (1st) run in dictionary to to % change calculations from
-    REF1 (str): name of (2nd) run in dictionary to to % change calculations from
+    REF2 (str): name of (2nd) run in dictionary to to % change calculations from
     prefix (str):  string to include as a prefix in saved csv's filename
     extra_str (str):  string to include as a suffx in saved csv's filename
     save2csv (bool): save dataframe as a csv file
@@ -727,10 +727,6 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     Returns
     -------
     (pd.DataFrame)
-
-    Notes
-    -----
-
     """
     # Extract names and locations of data
     if isinstance(run_names, type(None)):

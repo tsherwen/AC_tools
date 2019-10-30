@@ -69,7 +69,7 @@ If using within a python2 environment, the below example is a way of accessing G
     import AC_tools as AC
     folder = '<folder containing GEOS-Chem output>'
     # Get the atmospheric ozone burden in Gg O3 as a np.array
-    array = AC.get_O3_burden(folder)
+    array = AC.get_O3_burden_bpch(folder)
     print( "The ozone burden is: {burden}".format(burden=array.sum()))
     # Get surface area for resolution 
     s_area = get_surface_area(res)[..., 0]  # m2 land map

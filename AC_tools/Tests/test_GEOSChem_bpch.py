@@ -51,8 +51,8 @@ def test_get_LWI_map():
     return
 
 
-def test_get_O3_burden():
-    var = get_O3_burden(wd=wd)
+def test_get_O3_burden_bpch():
+    var = get_O3_burden_bpch(wd=wd)
     assert (round(var.sum(), 0) == round(376875.15625, 0)
             ), "The O3 burden is wrong ({var})".format(var=var)
     return

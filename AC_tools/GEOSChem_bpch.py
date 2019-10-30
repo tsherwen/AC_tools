@@ -4560,7 +4560,7 @@ def get_general_stats4run_dict_as_df_bpch(run_dict=None, extra_str='', REF1=None
     run_names (list): provide the names of run_dict keys to order df index
     REF_wd (str): name of run in dictionary to use to extract shared variables
     REF1 (str): name of (1st) run in dictionary to to % change calculations from
-    REF1 (str): name of (2nd) run in dictionary to to % change calculations from
+    REF2 (str): name of (2nd) run in dictionary to to % change calculations from
     prefix (str):  string to include as a prefix in saved csv's filename
     extra_str (str):  string to include as a suffx in saved csv's filename
     save2csv (bool): save dataframe as a csv file
@@ -4572,10 +4572,6 @@ def get_general_stats4run_dict_as_df_bpch(run_dict=None, extra_str='', REF1=None
     Returns
     -------
     (pd.DataFrame)
-
-    Notes
-    -----
-
     """
     # Extract names and locations of data
     if isinstance(run_names, type(None)):
@@ -4608,7 +4604,7 @@ def get_general_stats4run_dict_as_df_bpch(run_dict=None, extra_str='', REF1=None
     # -- Tropospheric burdens?
     # Get tropospheric burden for run
     varname = 'O3 burden ({})'.format(mass_unit)
-    ars = [get_O3_burden(i, t_p=t_p, res=res).sum() for i in wds]
+    ars = [get_O3_burden_bpch(i, t_p=t_p, res=res).sum() for i in wds]
     df = pd.DataFrame(ars, columns=[varname], index=run_names)
 
     # Get other core species
@@ -4802,7 +4798,7 @@ def get_trop_burden(spec='O3', wd=None, a_m=None, t_p=None,
         return arr.mean(axis=3)
 
 
-def get_O3_burden(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None,
+def get_O3_burden_bpch(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None,
                   trop_limit=True, all_data=False, annual_mean=True,
                    res='4x5', debug=False):
     """ Wrapper of 'get_trop_burden' to get tropospheric ozone burden """
