@@ -43,7 +43,7 @@ from .variables import *
 
 
 def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
-                              debug=False):
+                             debug=False):
     """
     Extract GEOS-Chem NetCDF files that match file string format to a xr.dataset
 
@@ -72,12 +72,12 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
 
 
 def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None, wd=None,
-                      trop_level_var='Met_TropLev', air_mass_var='Met_AD',
-                      avg_over_time=False,
-                      sum_patially=True, rm_trop=True, use_time_in_trop=True,
-                      trop_mask=None, spec_conc_prefix='SpeciesConc_',
-                      time_in_trop_var='N/A', vars2use=None,
-                      ):
+                       trop_level_var='Met_TropLev', air_mass_var='Met_AD',
+                       avg_over_time=False,
+                       sum_patially=True, rm_trop=True, use_time_in_trop=True,
+                       trop_mask=None, spec_conc_prefix='SpeciesConc_',
+                       time_in_trop_var='N/A', vars2use=None,
+                       ):
     """
     Get Tropospheric burden for given/or all species in dataset
 
@@ -134,7 +134,8 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None, wd=None
             assert_str = "Units must be in '{}' terms! (They are: '{}')"
             assert MixingRatioUnits, assert_str.format(MXUnits, SpecUnits)
             # v/v * (mass total of air (kg)/ 1E3 (converted kg to g)) = moles of tracer
-            dsL[spec_var] = dsL[spec_var] * (AirMass*1E3 / constants('RMM_air'))
+            dsL[spec_var] = dsL[spec_var] * \
+                (AirMass*1E3 / constants('RMM_air'))
             # Convert moles to mass (* RMM) , then to Gg
             dsL[spec_var] = dsL[spec_var] * float(species_mass(spec)) / 1E9
         # Return values averaged over time if requested
@@ -183,8 +184,8 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None, wd=None
         return dsL
 
 
-def plot_up_surface_changes_between2runs( ds_dict=None, levs=[1], specs=[],
-        BASE='', NEW='', prefix='IJ_AVG_S__', update_PyGChem_format2COARDS=False ):
+def plot_up_surface_changes_between2runs(ds_dict=None, levs=[1], specs=[],
+                                         BASE='', NEW='', prefix='IJ_AVG_S__', update_PyGChem_format2COARDS=False):
     """
     Compare BASE and NEW datasets for given species using GCPy
 
@@ -210,24 +211,24 @@ def plot_up_surface_changes_between2runs( ds_dict=None, levs=[1], specs=[],
     import gcpy
     # Species to plot
     vars2use = [prefix+i for i in specs]
-    unit=None
+    unit = None
     PDFfilenameStr = 'Oi_surface_change_{}_vs_{}_lev_{:0>2}'
     # Set datasets to use and  Just include the variables to plot in the dataset
     title1 = BASE
     title2 = NEW
-    ds1 = ds_dict[ BASE ][ vars2use ].copy()
-    ds2 = ds_dict[ NEW ][ vars2use ].copy()
+    ds1 = ds_dict[BASE][vars2use].copy()
+    ds2 = ds_dict[NEW][vars2use].copy()
     # Average over time
-    print( ds1, ds2 )
+    print(ds1, ds2)
     ds1 = ds1.mean(dim='time')
     ds2 = ds2.mean(dim='time')
     # Remove vestigial coordinates.
     # (e.g. the time_0 coord... what is this?)
     vars2drop = ['time_0']
-    dsL = [ds1,ds2]
+    dsL = [ds1, ds2]
     for var2drop in vars2drop:
         for n, ds in enumerate(dsL):
-            CoordVars = [ i for i in ds.coords ]
+            CoordVars = [i for i in ds.coords]
             if var2drop in CoordVars:
                 ds = ds.drop(var2drop)
                 dsL[n] = ds
@@ -246,17 +247,17 @@ def plot_up_surface_changes_between2runs( ds_dict=None, levs=[1], specs=[],
             ds1[var_].attrs = ds_dict[title1][var_].attrs
             ds2[var_].attrs = ds_dict[title2][var_].attrs
         # Plot and save through GCPy
-        PDFfilename = PDFfilenameStr.format( BASE, NEW, lev )
-        gcpy.compare_single_level( ds1, title1, ds2, title2, varlist=vars2use,
-                 ilev=0, pdfname=PDFfilename+'.pdf',)
+        PDFfilename = PDFfilenameStr.format(BASE, NEW, lev)
+        gcpy.compare_single_level(ds1, title1, ds2, title2, varlist=vars2use,
+                                  ilev=0, pdfname=PDFfilename+'.pdf',)
 
 
 def create4Dmask4trop_level(StateMet=None,
-                           trop_level_var='Met_TropLev',
-                           dyn_trop_press_var='Met_TropP',
-                           pmid_press='Met_PMID',
-                           use_time_in_trop=False,
-                           ):
+                            trop_level_var='Met_TropLev',
+                            dyn_trop_press_var='Met_TropP',
+                            pmid_press='Met_PMID',
+                            use_time_in_trop=False,
+                            ):
     """
     Create a mask to remove the stratosphere from GEOSChem output
     """
@@ -288,13 +289,13 @@ def rm_fractional_troposphere(ds, vars2use=None, StateMet=None, TropFracDA=None,
         vars2use = list(ds.data_vars)
     # multiply through by time in troposphere to remove stratosphere.
     for var in vars2use:
-        ds[var] =  ds[var] * TropFracDA
+        ds[var] = ds[var] * TropFracDA
     return ds
 
 
 def read_inst_files_save_only_surface(wd=None, file_str='GEOSChem.inst1hr.*',
-                                         file_extension='.nc4', save_new_NetCDF=True,
-                                         delete_existing_NetCDF=True):
+                                      file_extension='.nc4', save_new_NetCDF=True,
+                                      delete_existing_NetCDF=True):
     """
     Extract just surface values and save as NetCDF (& DELETE old NetCDF)
     """
@@ -450,8 +451,8 @@ def convert_pyGChem_iris_ds2COARDS_ds(ds=None, transpose_dims=True):
     PyGChem_Iris_order = ('time', 'longitude', 'latitude', 'dim3')
     # Make sure the Datasets are using the correct names
     rename_dims = {
-    'dim3': 'lev', 'latitude': 'lat', 'longitude': 'lon',
-    'model_level_number':'lev'
+        'dim3': 'lev', 'latitude': 'lat', 'longitude': 'lon',
+        'model_level_number': 'lev'
     }
     for CoordVar in ds.coords:
         try:
@@ -460,7 +461,7 @@ def convert_pyGChem_iris_ds2COARDS_ds(ds=None, transpose_dims=True):
             print('Not renamed {} as not in Dataset'.format(CoordVar))
     # Update the ordering to follow COARDS
     if transpose_dims:
-        CoordVars = [ i for i in ds.coords ]
+        CoordVars = [i for i in ds.coords]
         if 'time' in CoordVars:
             COARDS_order = ('time', 'lev', 'lat', 'lon')
         else:
@@ -470,8 +471,8 @@ def convert_pyGChem_iris_ds2COARDS_ds(ds=None, transpose_dims=True):
     return ds
 
 
-def convert_HEMCO_ds2Gg_per_yr( ds, vars2convert=None, var_species_dict=None,
-                          output_freq='End', verbose=False, debug=False):
+def convert_HEMCO_ds2Gg_per_yr(ds, vars2convert=None, var_species_dict=None,
+                               output_freq='End', verbose=False, debug=False):
     """
     Convert emissions in HEMCO dataset to mass/unit time
 
@@ -486,19 +487,19 @@ def convert_HEMCO_ds2Gg_per_yr( ds, vars2convert=None, var_species_dict=None,
         try:
             var_species[var] = var_species_dict[var]
         except:
-#            if verbose:
+            #            if verbose:
             PrtStr = "WARNING - using variable name '{}' as chemical species!"
-            print( PrtStr.format( var) )
+            print(PrtStr.format(var))
             var_species[var] = var
     # Print assumption about end units.
     if output_freq == 'End':
-        print( "WARNING - Assuming Output frequnecy ('End') is monthly")
+        print("WARNING - Assuming Output frequnecy ('End') is monthly")
 
     # Get equivalent unit for chemical species (e.g. I, Br, Cl, N, et c)
     ref_specs = {}
     for var in vars2convert:
         try:
-            ref_specs[var] = get_ref_spec( var_species[var] )
+            ref_specs[var] = get_ref_spec(var_species[var])
         except KeyError:
             print("WARNING: Using '{}' as reference species for '{}'".format(var, var))
     # Loop dataset by variable
@@ -509,7 +510,7 @@ def convert_HEMCO_ds2Gg_per_yr( ds, vars2convert=None, var_species_dict=None,
         try:
             arr = ds[var_].values
         except KeyError:
-            print("WARNING: skipping variable '({})' as not in dataset".format(var_ ))
+            print("WARNING: skipping variable '({})' as not in dataset".format(var_))
             continue
 
         # --- Adjust units to be in kg/gridbox
@@ -531,8 +532,8 @@ def convert_HEMCO_ds2Gg_per_yr( ds, vars2convert=None, var_species_dict=None,
                 print('WARNING: ({}) output convert. unknown'.format(
                     output_freq))
                 sys.exit()
-        elif ds[var_].units  == 'kg':
-            pass # units are already in kg .
+        elif ds[var_].units == 'kg':
+            pass  # units are already in kg .
         else:
             print('WARNING: unit convert. ({}) unknown'.format(ds[var_].units))
             sys.exit()
@@ -565,7 +566,7 @@ def convert_HEMCO_ds2Gg_per_yr( ds, vars2convert=None, var_species_dict=None,
 
 
 def get_GEOSCF_as_ds_via_OPeNDAP(collection='chm_inst_1hr_g1440x721_p23',
-                             mode='fcast', date=None):
+                                 mode='fcast', date=None):
     """
     Get the GEOS Composition Forecast (GEOS-CF) as a xr.Dataset (using OPeNDAP)
 
@@ -593,32 +594,34 @@ def get_GEOSCF_as_ds_via_OPeNDAP(collection='chm_inst_1hr_g1440x721_p23',
     xgc_tavg_1hr_g1440x721_x1
     """
     # Root OPeNDAP directory
-    root_url = 'https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/{}/'.format(mode)
+    root_url = 'https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/{}/'.format(
+        mode)
     # Make up the complete URL for a forecast or assimilation field
     if mode == 'fcast':
         # Which date to use?
         if isinstance(date, type(None)):
             # Use the lastest file (default)
-            URL = '{}/{}.latest'.format( root_url, collection )
+            URL = '{}/{}.latest'.format(root_url, collection)
         else:
             # Use a file specified in arguments
             correct_type = type(date) == datetime.datetime
             assert correct_type, "'date' variable must be a datetime.datetime object"
             # Use the lastest file (default)
             dstr = date.strftime(format='%Y%m%d')
-            URL = '{}/{}/{}.{}_12z'.format( root_url, collection, collection, dstr )
+            URL = '{}/{}/{}.{}_12z'.format(root_url,
+                                           collection, collection, dstr)
     elif mode == 'assim':
         # Just retrieve an OPeNDAP pointer to the entire dataset for now
-        URL = '{}/{}'.format( root_url, collection)
+        URL = '{}/{}'.format(root_url, collection)
     else:
         print("WARNING: GEOS-CF mode provided ('{}') not known".format(mode))
         sys.exit()
     # Open the dataset via OPeNDAP and return
-    ds = xr.open_dataset( URL )
+    ds = xr.open_dataset(URL)
     return ds
 
 
-def get_HEMCO_ds_summary_stats_Gg_yr( ds, vars2use=None ):
+def get_HEMCO_ds_summary_stats_Gg_yr(ds, vars2use=None):
     """
     Get summary statistics on dataframe of data
     """
@@ -751,26 +754,26 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     # Get StateMet object for 1st of the runs and use this for all runs
     StateMet = AC.get_StateMet_ds(wd=REF_wd)
     # Get all of the speciesConcs for runs as list of datasets
-    dsD = [AC.GetSpeciesConcDataset(wd=run_dict[run]) for run in run_names ]
+    dsD = [AC.GetSpeciesConcDataset(wd=run_dict[run]) for run in run_names]
     dsD = dict(zip(run_names, dsD))
     # - Get burdens for core species
     core_burden_specs = ['O3', 'CO', 'NO', 'NO2']
     specs2use = core_burden_specs+extra_burden_specs
     prefix = 'SpeciesConc_'
-    vars2use = [  prefix+i for i in specs2use ]
+    vars2use = [prefix+i for i in specs2use]
     for run in run_names:
         ds = dsD[run]
-        S = get_Gg_trop_burden( ds, vars2use=vars2use, StateMet=StateMet )
+        S = get_Gg_trop_burden(ds, vars2use=vars2use, StateMet=StateMet)
         # convert to ref spec equivalent (e.g. N for NO2, C for ACET)
         for spec in specs2use:
-            ref_spec = get_ref_spec( spec )
+            ref_spec = get_ref_spec(spec)
             val = S[prefix+spec]
             S[prefix+spec] = val/species_mass(spec)*species_mass(ref_spec)
         # Upate varnames
         varnames = ['{} burden ({})'.format(i, mass_unit) for i in specs2use]
-        S = S.rename(index=dict(zip(list(S.index.values),varnames )))
+        S = S.rename(index=dict(zip(list(S.index.values), varnames)))
         # save the values for run to central DataFrame
-        df[run] =  S
+        df[run] = S
 
     # - Now add familes...
     # transpose dataframe
@@ -784,7 +787,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     except KeyError:
         if debug:
             PtrStr = 'NOx family not added for trop. df columns: {}'
-            print(  PtrStr.format( ', '.join(list(df.columns)) ) )
+            print(PtrStr.format(', '.join(list(df.columns))))
 
     # Sum the aerosol nitrates (NIT+NITs)
     if ('NITs' in specs2use) and ('NIT' in specs2use):
@@ -796,7 +799,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
         except KeyError:
             if debug:
                 PtrStr = 'NIT+NITs family not added for surface. df columns: {}'
-                print( PtrStr.format( ', '.join(list(df.columns)) ) )
+                print(PtrStr.format(', '.join(list(df.columns))))
 
     # Scale units
     for col_ in df.columns:
@@ -807,30 +810,29 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
 
     # - Add Ozone production and loss...
 
-
     # - Surface concentrations
     core_surface_specs = [
-    'O3', 'NO', 'NO2', 'N2O5'
+        'O3', 'NO', 'NO2', 'N2O5'
     ]
     prefix = 'SpeciesConc_'
     specs2use = core_surface_specs+extra_surface_specs
     # Loop by run and get stats
     for run in run_names:
-        print( run )
+        print(run)
         ds = dsD[run].copy()
         # Select surface and average over time
         ds = ds.mean(dim='time')
-        ds = ds.isel(lev=ds.lev==ds.lev[0])
+        ds = ds.isel(lev=ds.lev == ds.lev[0])
         for spec in specs2use:
             # get units and scaling
-            units, scale = tra_unit( spec, scale=True )
+            units, scale = tra_unit(spec, scale=True)
             # Surface ozone
             varname = '{} surface ({})'.format(spec, units)
             var = prefix+spec
             # save values on a per species basis to series
             val = get_avg_2D_conc_of_X_weighted_by_Y(ds, Xvar=var, Yvar='AREA')
             # save calculated values to dataframe
-            df.loc[varname,run] = val
+            df.loc[varname, run] = val
 
     # transpose dataframe
     df = df.T
@@ -844,7 +846,6 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     df = df.T
 
     # - OH concentrations
-
 
     # - Add methane lifetime calculation
 
@@ -871,5 +872,3 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
         df.to_csv(csv_filename)
     # Return the DataFrame too
     return df
-
-

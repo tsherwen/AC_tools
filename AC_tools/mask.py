@@ -63,7 +63,7 @@ def get_country_mask(country='South Africa', res='2x2.5'):
 
 
 def add_raster_of_oceans2ds(ds, featurecla='ocean', set_all_regions2one=False,
-        test_plot=False, dpi=320):
+                            test_plot=False, dpi=320):
     """
     Add raster outline of country to spatial dataset
     """
@@ -80,7 +80,7 @@ def add_raster_of_oceans2ds(ds, featurecla='ocean', set_all_regions2one=False,
     if set_all_regions2one:
         arr = ds[featurecla].values
         arr[np.where(~np.isnan(arr))] = 1
-        ds[featurecla].values =  arr
+        ds[featurecla].values = arr
     return ds
 
 
@@ -92,7 +92,7 @@ def get_shapes4oceans(featurecla='ocean', rtn_group=False):
     -------
      - data credit: NaturalEarth     https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/physical/ne_10m_geography_marine_polys.zip
     """
-    #location of data
+    # location of data
     URL = "http://www.naturalearthdata.com/downloads/10m-physical-labels/"
     URL += "/10m-ocean/"
     # Shapefiles locally?
@@ -100,7 +100,7 @@ def get_shapes4oceans(featurecla='ocean', rtn_group=False):
 #    shapefiles = 'ne_10m_ocean'
     shapefiles = 'ne_10m_geography_marine_polys'
     folder = '/mnt/lustre/users/ts551/labbook/Python_progs/'
-    folder += '/AC_tools/data/shapefiles/{}'.format(shapefiles,shapefiles)
+    folder += '/AC_tools/data/shapefiles/{}'.format(shapefiles, shapefiles)
     group = geopandas.read_file(folder)
     # Just select state of interest
     choosen_group = group.query("featurecla == '{}'".format(featurecla))
@@ -119,7 +119,7 @@ def add_loc_ocean2df(df=None, LatVar='lat', LonVar='lon'):
     """
     from geopandas.tools import sjoin
     # Get the shapes for the ocean
-    featurecla='ocean'
+    featurecla = 'ocean'
     group = get_shapes4oceans(rtn_group=True, featurecla=featurecla)
     # Turn the dataframe into a geopandas dataframe
     gdf = geopandas.GeoDataFrame(
@@ -131,7 +131,7 @@ def add_loc_ocean2df(df=None, LatVar='lat', LonVar='lon'):
     N = float(df.shape[0])
     if N != Nnew:
         pstr = 'WARNING: Only {:.2f}% assigned ({} of {})'
-        print( pstr.format( (Nnew/N)*100, int(Nnew), int(N)) )
+        print(pstr.format((Nnew/N)*100, int(Nnew), int(N)))
     # Add the ocean assingnment back into the orginal dataframe
     df[featurecla] = pointInPolys['name'].values
     return df
@@ -144,8 +144,8 @@ def regrid2coarse_res(dsA, res='2x2.5'):
     import xesmf as xe
     # Hard code this for now
     grid2use = {
-    '2x2.5':'2x2.5_deg_centre_GEOSChem',
-    '4x5':'4x5_deg_centre_GEOSChem',
+        '2x2.5': '2x2.5_deg_centre_GEOSChem',
+        '4x5': '4x5_deg_centre_GEOSChem',
     }[res]
     # Get dictionary of grid coordinates
     grids = grids4reses()
@@ -184,7 +184,7 @@ def regrid2coarse_res(dsA, res='2x2.5'):
 
 
 def add_raster_of_country2ds(ds, country='South Africa', set_all_regions2one=True,
-        test_plot=False, dpi=320):
+                             test_plot=False, dpi=320):
     """
     Add raster outline of country to spatial dataset
     """
@@ -202,7 +202,7 @@ def add_raster_of_country2ds(ds, country='South Africa', set_all_regions2one=Tru
     if set_all_regions2one:
         arr = ds['states'].values
         arr[np.where(~np.isnan(arr))] = 1
-        ds['states'].values =  arr
+        ds['states'].values = arr
     return ds
 
 
@@ -213,7 +213,7 @@ def get_shapes4country(country='South Africa'):
     NOTES
      - data credit    http://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-admin-1-states-provinces/
     """
-    #location of data
+    # location of data
     URL = "http://www.naturalearthdata.com/downloads/10m-cultural-vectors"
     URL += "/10m-admin-1-states-provinces/"
     # Shapefiles locally?
@@ -221,7 +221,7 @@ def get_shapes4country(country='South Africa'):
     shapefiles = 'ne_10m_admin_1_states_provinces_lakes'
 #    shapefiles = 'ne_10m_admin_1_states_provinces'
     folder = '/mnt/lustre/users/ts551/labbook/Python_progs/'
-    folder += '/AC_tools/data/shapefiles/{}'.format(shapefiles,shapefiles)
+    folder += '/AC_tools/data/shapefiles/{}'.format(shapefiles, shapefiles)
     states = geopandas.read_file(folder)
     # Just select state of interest
     choosen_states = states.query("admin == '{}'".format(country))
@@ -1548,4 +1548,3 @@ def get_2D_nighttime_mask4date_pd(date=None, ncfile=None, res='4x5',
         print(("--- (end-7) %s seconds ---" % (time.time() - start_time)))
 
     return marr
-

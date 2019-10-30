@@ -442,6 +442,7 @@ def get_nighttime_values(dates=None, data=None, select_nighttime=True,
     print(df)
     df.columns = ['Datetime']
     # function to generate boolean for daytime
+
     def is_daytime(input, daybreak=daybreak, dayend=dayend):
         """
         Takes datetime.datetime and retruns True (bool) if daytime
@@ -478,6 +479,7 @@ def get_daily_maximum(dates=None, data=None):
     # Add column of index numbers to allow for later indexing...
     df['ind'] = df.index.values
     # Add column for days
+
     def convert_datetime2days(input):
         return datetime.datetime(*input.timetuple()[:3])
     df['days'] = df['Datetime'].map(convert_datetime2days)

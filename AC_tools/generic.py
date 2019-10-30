@@ -429,7 +429,6 @@ def split_data_by_days(data=None, dates=None, day_list=None,
     return data4days, day_list
 
 
-
 def get_linear_ODR(x=None, y=None, job=10, maxit=5000, beta0=(0, 1),
                    xvalues=None, return_model=True, debug=False, verbose=False):
     """
@@ -533,7 +532,6 @@ def convert_mg_per_m3_2_ppbv(data=None,  spec='O3', rtn_units=False,
         return data, units
     else:
         return data
-
 
 
 def get_2D_solartime_array4_date(date=None, ncfile=None, res='4x5',
@@ -1008,7 +1006,7 @@ def get_vars_from_line_printed_in_txt_file(filename=None, folder=None,
 
 def mk_spatial_dataset_from_longform_df(df=None, LatVar='lat', LonVar='lon',
                                         unstack=True, attrs={},
-                                        VarName='New_Variable' ):
+                                        VarName='New_Variable'):
     """
     Make a xr.dataset from a provided 2D array
 
@@ -1038,13 +1036,15 @@ def mk_spatial_dataset_from_longform_df(df=None, LatVar='lat', LonVar='lon',
     arr = df.values
     # Now make a dataset
     ds = xr.Dataset(data_vars={VarName: (['lat', 'lon', ], arr)},
-                    coords={'lat': lats4ds, 'lon': lons4ds,}
+                    coords={'lat': lats4ds, 'lon': lons4ds, }
                     )
     # Set the attributes for the new variable
     ds[VarName].attrs = attrs
     # Add the coordinate standard information
-    ds.lat.attrs = {"axis":'Y', 'long_name': "latitude", "standard_name": "latitude"}
-    ds.lon.attrs = {"axis":'X','long_name': "longitude","standard_name": "longitude",}
+    ds.lat.attrs = {"axis": 'Y', 'long_name': "latitude",
+                    "standard_name": "latitude"}
+    ds.lon.attrs = {"axis": 'X', 'long_name': "longitude",
+                    "standard_name": "longitude", }
     # Add core attributes
     return ds
 

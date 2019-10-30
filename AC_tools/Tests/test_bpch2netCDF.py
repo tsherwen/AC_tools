@@ -7,9 +7,11 @@ import os
 try:
     import urllib2
     from urllib import urlopen
-#except ModuleNotFoundError:
+# except ModuleNotFoundError:
 except ImportError:
-    import urllib.request, urllib.error, urllib.parse
+    import urllib.request
+    import urllib.error
+    import urllib.parse
 
 slow = pytest.mark.skipif(
     not pytest.config.getoption("--slow"),

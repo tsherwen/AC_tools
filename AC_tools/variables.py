@@ -71,13 +71,14 @@ class species:
      below. It was updated on
     http://wiki.seas.harvard.edu/geos-chem/index.php/Species_in_GEOS-Chem
     """
+
     def __repr__(self):
         rtn_str = "This is a class to hold chemical species information for {}"
         return rtn_str.format(self.name)
 
     def __str__(self):
         for key in self.__dict__.keys():
-            print( "{:<20}:".format(key, self.key) )
+            print("{:<20}:".format(key, self.key))
 
     def __init__(self, name):
         self.name = name
@@ -108,7 +109,7 @@ class species:
         # Open species csv file as dataframe
         dfM = pd.read_csv(folder+filename)
         # see if species in df
-        df = dfM.loc[dfM['Species'] == str(self.name), : ]
+        df = dfM.loc[dfM['Species'] == str(self.name), :]
         # Add properties from csv file
         if df.shape[0] != 0:
             # - Now attributes for species
@@ -144,6 +145,7 @@ class species:
 #            df.loc[:,'Carbons'] = add_carbon_column(val)
             self.Carbons = add_carbon_column(self.RMM)
             # Make sure mass is shown as RMM
+
             def mk_RMM_a_float(x):
                 try:
                     return float(x.split('(12, ')[0].strip())
@@ -153,6 +155,7 @@ class species:
 #            df.loc[:,'Molec wt\n(g/mol)'] = mk_RMM_a_float(val)
             self.RMM = mk_RMM_a_float(self.RMM)
             # Convert booleans from crosses to True or False
+
             def update_X_to_bool(x):
                 if x == 'X':
                     return True
@@ -346,7 +349,7 @@ def get_loc(loc=None, rtn_dict=False, debug=False):
         'CGO': (144.68, -40.68, 93.99999999999973),
         'CMN': (10.7, 44.18, 2165.0),
         'CPT': (18.48, -34.35, 229.99999999999997),
-#        'CVO': (-24.871, 16.848, 10.000000000000103), # Already present.
+        #        'CVO': (-24.871, 16.848, 10.000000000000103), # Already present.
         'JFJ': (7.987, 46.548, 3580.0),
         'LAU': (169.67, -45.03, 369.99999999999983),
         'MHD': (-9.9, 53.33, 4.999999999999905),
@@ -358,29 +361,29 @@ def get_loc(loc=None, rtn_dict=False, debug=False):
         'THD': (-124.15, 41.05, 119.99999999999997),
         # - NOAA sites
         # https://www.esrl.noaa.gov/gmd/grad/antuv/Palmer.jsp
-        'Palmer Station' : (64.05, -64.767, 21.),
-        'PSA' : (64.05, -64.767, 21.),
+        'Palmer Station': (64.05, -64.767, 21.),
+        'PSA': (64.05, -64.767, 21.),
         # https://www.esrl.noaa.gov/gmd/dv/site/LEF.html
-        'Park Falls Wisconsin' : (-90.2732, 45.9451, 472.00),
-        'LEF' : (-90.2732, 45.9451, 472.00),
+        'Park Falls Wisconsin': (-90.2732, 45.9451, 472.00),
+        'LEF': (-90.2732, 45.9451, 472.00),
         # https://www.esrl.noaa.gov/gmd/obop/mlo/aboutus/siteInformation/kumukahi.html
-        'Cape Kumukahi' : (-154.82, 19.54, 15.0),
-        'KUM' : (-154.82, 19.54, 15.0),
+        'Cape Kumukahi': (-154.82, 19.54, 15.0),
+        'KUM': (-154.82, 19.54, 15.0),
         # https://www.esrl.noaa.gov/gmd/dv/site/NWR.html
         # NOTE: altitude in the GAW NetCDF is differrent (680.7339159020077m)
-        'Niwot Ridge' : (-105.5864, 40.0531, 3523.00),
-        'NWR' : (-105.5864, 40.0531, 3523.00),
+        'Niwot Ridge': (-105.5864, 40.0531, 3523.00),
+        'NWR': (-105.5864, 40.0531, 3523.00),
         # https://gawsis.meteoswiss.ch/GAWSIS/#/search/station/stationReportDetails/487
-        'Alert' : (-62.3415260315, 82.4991455078, 210.),
-        'ALT' : (-62.3415260315, 82.4991455078, 210.),
+        'Alert': (-62.3415260315, 82.4991455078, 210.),
+        'ALT': (-62.3415260315, 82.4991455078, 210.),
         # https://gawsis.meteoswiss.ch/GAWSIS/#/search/station/stationReportDetails/312
-        'Summit' : (-38.4799995422, 72.5800018311, 3238.),
-        'SUM' : (-38.4799995422, 72.5800018311, 3238.),
+        'Summit': (-38.4799995422, 72.5800018311, 3238.),
+        'SUM': (-38.4799995422, 72.5800018311, 3238.),
         # https://www.esrl.noaa.gov/gmd/hats/stations/hfm.html
         # https://gawsis.meteoswiss.ch/GAWSIS/#/search/station/stationReportDetails/173
         # https://www.esrl.noaa.gov/gmd/dv/site/HFM.html
-        'Havard Forest' :  ( -72.3000030518, 42.9000015259, 340.),
-        'HFM' : ( -72.3000030518, 42.9000015259, 340.),
+        'Havard Forest':  (-72.3000030518, 42.9000015259, 340.),
+        'HFM': (-72.3000030518, 42.9000015259, 340.),
     }
     if rtn_dict:
         return loc_dict
@@ -393,27 +396,27 @@ def site_code2name(code):
     Get the full site name from a given code (e.g. GAW ID)
     """
     d = {
-    'CMN' : 'Monte Cimone',
-    'CGO' : 'Cape Grim',
-    'BRW' : 'Barrow',
-    'HFM' : 'Havard Forest',
-    'SUM' : 'Summit',
-    'NWR' : 'Niwot Ridge',
-    'KUM' : 'Cape Kumukahi',
-    'LAU' : 'Lauder',
-    'ASK' : 'Assekrem',
-    'JFJ' : 'Jungfraujoch',
-    'MHD' : 'Mace Head',
-    'MLO' : 'Mauna Loa',
-    'MNM' : 'Minamitorishima',
-    'NMY' : 'Neumayer',
-    'SMO' : 'Samoa',
-    'SPO' : 'South Pole',
-    'THD' : 'Trinidad Head',
-    'ALT' : 'Alert',
-    'CPT' : 'Cape Point',
-    'LEF' : 'Park Falls Wisconsin',
-    'PSA' : 'Palmer Station',
+        'CMN': 'Monte Cimone',
+        'CGO': 'Cape Grim',
+        'BRW': 'Barrow',
+        'HFM': 'Havard Forest',
+        'SUM': 'Summit',
+        'NWR': 'Niwot Ridge',
+        'KUM': 'Cape Kumukahi',
+        'LAU': 'Lauder',
+        'ASK': 'Assekrem',
+        'JFJ': 'Jungfraujoch',
+        'MHD': 'Mace Head',
+        'MLO': 'Mauna Loa',
+        'MNM': 'Minamitorishima',
+        'NMY': 'Neumayer',
+        'SMO': 'Samoa',
+        'SPO': 'South Pole',
+        'THD': 'Trinidad Head',
+        'ALT': 'Alert',
+        'CPT': 'Cape Point',
+        'LEF': 'Park Falls Wisconsin',
+        'PSA': 'Palmer Station',
     }
     return d[code]
 
@@ -423,11 +426,8 @@ def sort_locs_by_lat(sites):
     Order given list of sties by their latitudes
     """
     # Get info
-    vars = [get_loc(s) for s in sites]  #  lon, lat, alt,
+    vars = [get_loc(s) for s in sites]  # lon, lat, alt,
     # Sort by lat, index orginal sites list and return
     lats = [i[1] for i in vars]
     slats = sorted(lats)[::-1]
     return [sites[i] for i in [lats.index(ii) for ii in slats]]
-
-
-

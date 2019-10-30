@@ -32,12 +32,12 @@ from .GEOSChem_nc import *
 
 
 def get_fam_prod_loss4tagged_mech(wd=None, fam='LOx', ref_spec='O3',
-                                           tags=None, RR_dict=None, Data_rc=None,
-                                           Var_rc=None, tags2_rxn_num=None,
-                                           RR_dict_fam_stioch=None, region=None,
-                                           rm_strat=False,
-                                           weight_by_molecs=False, verbose=True,
-                                           debug=False):
+                                  tags=None, RR_dict=None, Data_rc=None,
+                                  Var_rc=None, tags2_rxn_num=None,
+                                  RR_dict_fam_stioch=None, region=None,
+                                  rm_strat=False,
+                                  weight_by_molecs=False, verbose=True,
+                                  debug=False):
     """
     Extract prod/loss for family from wd and code directory
 
@@ -260,7 +260,7 @@ def get_reactants_and_products4tagged_fam(fam='LOx', KPP_output_mech=None,
     if isinstance(KPP_output_mech, type(None)):
         KPP_output_mech = get_dict_of_KPP_mech(wd=folder)
     # Make a DataFrame from the dictionary
-    s = pd.Series( KPP_output_mech )
+    s = pd.Series(KPP_output_mech)
     df = pd.DataFrame()
     df['rxn str'] = s
 #    df.index = df.index - 1 # Adjust Fortran numbering in output to Pythonic #
@@ -629,8 +629,8 @@ def split_combined_KPP_eqns(list_in):
 
 
 def get_stioch4family_rxns(fam='LOx', filename='gckpp_Monitor.F90',
-                                    Mechanism='Halogens', RR_dict=None, wd=None,
-                                    debug=False):
+                           Mechanism='Halogens', RR_dict=None, wd=None,
+                           debug=False):
     """
     Get the stiochmetery for each reaction in family from compiled KPP file
 
@@ -680,8 +680,8 @@ def get_stioch4family_rxns(fam='LOx', filename='gckpp_Monitor.F90',
 
 
 def get_tags4family(fam='LOx', filename='gckpp_Monitor.F90',
-                     Mechanism='Halogens', tag_prefix='PT', RR_dict=None, wd=None,
-                     get_one_tag_per_fam=True, debug=False):
+                    Mechanism='Halogens', tag_prefix='PT', RR_dict=None, wd=None,
+                    get_one_tag_per_fam=True, debug=False):
     """
     For a P/L family tag (e.g. LOx), if there are induvidual tags then these
     are extracted
@@ -893,7 +893,8 @@ def get_KKP_mech_from_eqn_file_as_dicts(folder=None, Mechanism='Tropchem',
         filename = '{}.eqn'.format(Mechanism)
     # Get dictionaries of all reactions
     print('get_KKP_mech_from_eqn_file_as_dicts', folder, filename)
-    rxn_dicts = get_dicts_of_KPP_eqn_file_reactions(folder=folder, filename=filename)
+    rxn_dicts = get_dicts_of_KPP_eqn_file_reactions(
+        folder=folder, filename=filename)
     # Process rxns to be in dictionaries of DataFrames
     # (with extra diagnostic columns, inc. reactants, products, metadata,...)
     rxn_dicts = process_KPP_rxn_dicts2DataFrames(rxn_dicts=rxn_dicts)
@@ -911,7 +912,7 @@ def get_KKP_mech_from_eqn_file_as_dicts(folder=None, Mechanism='Tropchem',
 
 
 def get_KKP_mech_from_eqn_file_as_df(folder=None, Mechanism='Tropchem',
-                                        filename=None):
+                                     filename=None):
     """
     Get KPP mechanism as a pandas DataFrame
     """
@@ -1008,12 +1009,13 @@ def get_Ox_fam_based_on_reactants(filename='gckpp_Monitor.F90',
         RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism,
                                        filename=filename, wd=wd)
     if isinstance(input_KPP_mech, type(None)):
-        input_KPP_mech = get_KKP_mech_from_eqn_file_as_df(Mechanism=Mechanism, folder=wd)
+        input_KPP_mech = get_KKP_mech_from_eqn_file_as_df(
+            Mechanism=Mechanism, folder=wd)
     # Get tags for reaction unless already provided
     if isinstance(tags, type(None)):
         tags = get_tags4family(wd=wd, fam=fam, filename=filename,
-                                Mechanism=Mechanism, tag_prefix=tag_prefix,
-                                RR_dict=RR_dict)
+                               Mechanism=Mechanism, tag_prefix=tag_prefix,
+                               RR_dict=RR_dict)
     # --- Extra local variables
     HOx = ['OH', 'HO2', 'H2O2']
     # temporarily add to definition of HOx
@@ -1038,7 +1040,7 @@ def get_Ox_fam_based_on_reactants(filename='gckpp_Monitor.F90',
 #             hv_rxns_tags += [rxn_]
 #         else:
 #             pass
-    hv_rxns = input_KPP_mech.loc[ input_KPP_mech['Type'] =='Photolysis', :]
+    hv_rxns = input_KPP_mech.loc[input_KPP_mech['Type'] == 'Photolysis', :]
     hv_rxns = hv_rxns.index.astype(list)
 
     # The below line will not work as "hv" not in rxn strings in gckpp_Monitor.F90
@@ -1319,16 +1321,16 @@ def get_Ox_loss_dicts(fam='LOx', ref_spec='O3',
     sorted_fam_names += halogen_fams
     # - Place all variables/data of share us into a dictionary and return this
     d = {
-    'sorted_fam_names': sorted_fam_names,
-    'fam_dict' : fam_dict,
-    'ars' : ars,
-    'RR_dict_fam_stioch': RR_dict_fam_stioch,
-    'RR_dict': RR_dict,
-    'tags2_rxn_num': tags2_rxn_num,
-    'tags': tags,
-    'tags_dict': tags_dict,
-    'Data_rc': Data_rc,
-    'Var_rc': Var_rc,
-    'halogen_fams': halogen_fams,
+        'sorted_fam_names': sorted_fam_names,
+        'fam_dict': fam_dict,
+        'ars': ars,
+        'RR_dict_fam_stioch': RR_dict_fam_stioch,
+        'RR_dict': RR_dict,
+        'tags2_rxn_num': tags2_rxn_num,
+        'tags': tags,
+        'tags_dict': tags_dict,
+        'Data_rc': Data_rc,
+        'Var_rc': Var_rc,
+        'halogen_fams': halogen_fams,
     }
     return d

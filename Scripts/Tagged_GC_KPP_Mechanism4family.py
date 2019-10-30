@@ -102,7 +102,8 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
     if print_formatted_KPP_file:
         AC.print_out_dfs2KPP_eqn_file(headers=headers, species_df=species_df,
                                       rxn_dicts=rxn_dicts,
-                                      extr_str='EXISTING_MECH_{}'.format(mechanism)
+                                      extr_str='EXISTING_MECH_{}'.format(
+                                          mechanism)
                                       )
 
     # ---- Get outputted KPP files and process these...

@@ -10,7 +10,9 @@ import AC_tools as AC
 try:
     import urllib2
 except ModuleNotFoundError:
-    import urllib.request, urllib.error, urllib.parse
+    import urllib.request
+    import urllib.error
+    import urllib.parse
 
 #FORMAT = "[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"
 FORMAT = "%(filename)s:%(lineno)s - %(funcName)s() : %(message)s"

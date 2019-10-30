@@ -735,14 +735,14 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,
         'Cl-': 'pptv',
         # PM
         'PM10': '$\mu$g m$^{-3}$', 'PM2.5': '$\mu$g m$^{-3}$',
-        'PM2.5(dust)':'$\mu$g m$^{-3}$',
+        'PM2.5(dust)': '$\mu$g m$^{-3}$',
         'PM2.5(SO4)': '$\mu$g m$^{-3}$',
         'PM2.5(NIT)': '$\mu$g m$^{-3}$',
         'PM2.5(SOA)': '$\mu$g m$^{-3}$',
         'PM2.5(SSA)': '$\mu$g m$^{-3}$',
         'PM2.5(BC)': '$\mu$g m$^{-3}$',
         'PM2.5(OC)': '$\mu$g m$^{-3}$',
-        'PM':'$\mu$g m$^{-3}$',
+        'PM': '$\mu$g m$^{-3}$',
     }
     try:
         units = tra_unit[x]
@@ -849,7 +849,6 @@ def diagnosticname_gamap2iris(x):
     return d[x]
 
 
-
 def get_ctm_nc_var(variable):
     """
     Get number variable for diagnostic family where NetCDF import
@@ -879,6 +878,7 @@ def get_ctm_nc_var(variable):
         'DAO_3D_S__VWND': 'DAO_3D_S___0'
     }
     return d[variable]
+
 
 def latex_spec_name(input_x, debug=False):
     """
@@ -995,6 +995,8 @@ def latex_spec_name(input_x, debug=False):
 # NOTE(s):
 # (1) These are retained, but will be migrated to a seperate non-generic module
 # (2) It is not advised to use these.
+
+
 def gaw_2_name():
     """
     Returns dictionary GAW of sites
@@ -1025,11 +1027,12 @@ def get_global_GAW_sites(f='gaw_site_list_global.h5'):
     # Kludge: remove those not in "grouped" analysis
     # These sites are not included due to a data control for lomb-scragle work
     sites2exclude = [
-    'ZUG', 'ZSF', 'ZEP', 'WLG', 'USH', 'SDK', 'PYR', 'PUY', 'PAL',
-    'MKN', 'IZO', 'HPB', 'DMV', 'BKT', 'AMS', 'ALT', 'ABP'
+        'ZUG', 'ZSF', 'ZEP', 'WLG', 'USH', 'SDK', 'PYR', 'PUY', 'PAL',
+        'MKN', 'IZO', 'HPB', 'DMV', 'BKT', 'AMS', 'ALT', 'ABP'
     ]
     [vars.pop(vars.index(i)) for i in sites2exclude]
     return vars
+
 
 def GC_var(input_x=None, rtn_dict=False, debug=False):
     """
@@ -1454,7 +1457,7 @@ def get_ref_spec(spec='LIOx'):
         # Other VOCs
         'ACET': 'C',
         'ALD2': 'C',
-        'DMS' : 'S',
+        'DMS': 'S',
         # include halogens
         'HOI': 'I',
         'I2': 'I',
@@ -1476,7 +1479,5 @@ def get_ref_spec(spec='LIOx'):
         return d[spec]
     except KeyError:
         pstr = "WARNING: Just returning provided species ('{}') as ref_spec"
-        print( pstr.format( spec ) )
+        print(pstr.format(spec))
         return spec
-
-

@@ -79,7 +79,8 @@ def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson(),
         fig = plt.figure(figsize=(10, 6))
     if isinstance(ax, type(None)):
         ax = fig.add_subplot(111, projection=projection, aspect='auto')
-    ds[var2plot].plot.imshow(x=LonVar, y=LatVar, ax=ax, transform=ccrs.PlateCarree())
+    ds[var2plot].plot.imshow(x=LonVar, y=LatVar, ax=ax,
+                             transform=ccrs.PlateCarree())
     # Beautify the figure/plot
     ax.coastlines()
     ax.set_global()
@@ -88,7 +89,7 @@ def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson(),
         plt.title('Spatial plot of {}'.format(var2plot))
     # save the plot?
     if save_plot:
-        if isinstance( savename, type(None)):
+        if isinstance(savename, type(None)):
             savename = 'spatial_plot_{}_{}'.format(var2plot, extra_str)
         savename = rm_spaces_and_chars_from_str(savename)
         plt.savefig(savename+'.png', dpi=dpi)
@@ -149,9 +150,9 @@ def plt_df_X_vs_Y(df=None, x_var='', y_var='', x_label=None, y_label=None,
         ax.plot(x_121, x_121, alpha=0.5, color='k', ls='--')
     # Add a line for the orthogonal distance regression
     xvalues, Y_ODR = get_linear_ODR(x=X, y=Y, xvalues=x_121,
-                                       return_model=False, maxit=10000)
+                                    return_model=False, maxit=10000)
     ODRoutput = get_linear_ODR(x=X, y=Y, xvalues=x_121,
-                                 return_model=True, maxit=10000)
+                               return_model=True, maxit=10000)
     if verbose:
         print(x_label, y_label, ODRoutput.beta)
     ax.plot(xvalues, Y_ODR, color=color, label=y_label)
@@ -168,7 +169,7 @@ def plt_df_X_vs_Y(df=None, x_var='', y_var='', x_label=None, y_label=None,
 
 
 def plt_df_X_vs_Y_hexbin(x=None, y=None, c=None, xscale='linear', yscale='linear',
-                         gridsize=(150,150),
+                         gridsize=(150, 150),
                          fig=None, ax=None, xlimit=None, ylimit=None, dpi=320,
                          xlabel=None, ylabel=None, clabel=None, cmap=None,
                          vmin=None, vmax=None, save2png=False, show_plot=False,
@@ -198,7 +199,8 @@ def plt_df_X_vs_Y_hexbin(x=None, y=None, c=None, xscale='linear', yscale='linear
     """
     # Setup an figure and axis if not provided
     if isinstance(fig, type(None)):
-        fig = plt.figure(figsize=figsize, dpi=dpi, facecolor='w', edgecolor='k')
+        fig = plt.figure(figsize=figsize, dpi=dpi,
+                         facecolor='w', edgecolor='k')
     if isinstance(ax, type(None)):
         ax = fig.add_subplot(111)
     # Set the colourmap if it is not provided
@@ -211,15 +213,15 @@ def plt_df_X_vs_Y_hexbin(x=None, y=None, c=None, xscale='linear', yscale='linear
                          )
     # Limit X axis to provided values
     if not isinstance(xlimit, type(None)):
-        ax.set_xlim( xlimit )
+        ax.set_xlim(xlimit)
     # Limit Y axis to provided values
     if not isinstance(ylimit, type(None)):
-        ax.set_ylim( ylimit )
+        ax.set_ylim(ylimit)
     # Beautify the figure/plot
     if not isinstance(ylabel, type(None)):
-        ax.set_ylabel( ylabel )
+        ax.set_ylabel(ylabel)
     if not isinstance(xlabel, type(None)):
-        ax.set_xlabel( xlabel )
+        ax.set_xlabel(xlabel)
     # Add a colourbar?
     if not isinstance(c, type(None)):
         plt.colorbar(mappable, label=clabel)
@@ -706,7 +708,7 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, f_size=10,
                                                  vmax=fixcb_[
                                                      1], vmin=fixcb_[0],
 
-                                              sigfig_rounding_on_cb=sigfig_rounding_on_cb)
+                                                 sigfig_rounding_on_cb=sigfig_rounding_on_cb)
 
         # Setup Colormap
         cmap, fixcb_buffered = get_colormap(np.array(fixcb_),
@@ -940,7 +942,7 @@ def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
             tmp_df = dfs[key_]
             tmp_df = tmp_df[tmp_df['Season'] == season_]
             data_ = tmp_df[spec]
-            dates_ = pd.to_datetime( tmp_df.index.values )
+            dates_ = pd.to_datetime(tmp_df.index.values)
             # See if color is set in dictionary (color_dict)
             try:
                 color = color_dict[key_]
@@ -952,10 +954,10 @@ def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
                 legend = True
             # Plot up using the basic plotter function
             BASIC_diel_plot(fig=fig, ax=ax, data=data_, units=units,
-                               dates=dates_, label=key_, stat2plot=stat2plot,
-                               title='{}'.format(season_),
-                               plt_xlabel=plt_xlabel, plt_ylabel=plt_ylabel,
-                               color=color, spec=spec, plt_legend=legend)
+                            dates=dates_, label=key_, stat2plot=stat2plot,
+                            title='{}'.format(season_),
+                            plt_xlabel=plt_xlabel, plt_ylabel=plt_ylabel,
+                            color=color, spec=spec, plt_legend=legend)
             # Remove tmp data dictionary from memory...
             del tmp_df
 
@@ -978,14 +980,14 @@ def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
 
 
 def BASIC_diel_plot(fig=None, ax=None, dates=None, data=None, color='red',
-                       title=None, label=None, plt_legend=None, plt_xlabel=True,
-                       plt_ylabel=True, show_plt=False, plot_pcent_change_from_max=False,
-                       units='ppbv', spec='O3', alt_text=None, loc='best',
-                       filename2save='diel_plot.png', save_plt=False, show_plot=False,
-                       stat2plot='50%', alpha=0.3, time_resolution_str="%H",
-                       add_quartiles2plot=True, return_avgs=True, ls='-', ncol=1,
-                       xlabel='Hour of day (UTC)', debug=False, lw=2,
-                       force_repeat_of_first_hour_as_last_hour=False, update_xticks=True):
+                    title=None, label=None, plt_legend=None, plt_xlabel=True,
+                    plt_ylabel=True, show_plt=False, plot_pcent_change_from_max=False,
+                    units='ppbv', spec='O3', alt_text=None, loc='best',
+                    filename2save='diel_plot.png', save_plt=False, show_plot=False,
+                    stat2plot='50%', alpha=0.3, time_resolution_str="%H",
+                    add_quartiles2plot=True, return_avgs=True, ls='-', ncol=1,
+                    xlabel='Hour of day (UTC)', debug=False, lw=2,
+                    force_repeat_of_first_hour_as_last_hour=False, update_xticks=True):
     """
     Creates a diel plot for given data and dates
 
@@ -1624,7 +1626,7 @@ def plot_zonal_figure(arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None,
         if not log:
             lvls = get_human_readable_gradations(vmax=fixcb[1],
                                                  vmin=fixcb[0], nticks=nticks,
-                                              sigfig_rounding_on_cb=sigfig_rounding_on_cb,
+                                                 sigfig_rounding_on_cb=sigfig_rounding_on_cb,
                                                  verbose=verbose, debug=debug)
     else:
         # Assume numbers provided as fixcb +nticks will allow for creation
@@ -1950,7 +1952,7 @@ def plot_lons_lats_spatial_on_map_CARTOPY(central_longitude=0,
         ax.gridlines()
 
     # Now scatter points on plot
-    ax.scatter(lons, lats, color=color, s=s, marker=marker,alpha=alpha,
+    ax.scatter(lons, lats, color=color, s=s, marker=marker, alpha=alpha,
                transform=projection(), zorder=999, label=label)
 
     # return  ax (and show plot?)
@@ -2076,8 +2078,8 @@ def get_ls(num):
     Get a list of available line styles
     """
     ls = [
-    ':', '--', '-.', '-', ':', '--', '-.', '-', ':', ':', '--',
-    '-.', '-', ':', '--', '-.', '-', ':'
+        ':', '--', '-.', '-', ':', '--', '-.', '-', ':', ':', '--',
+        '-.', '-', ':', '--', '-.', '-', ':'
     ]
     return ls[:num]
 
@@ -2236,8 +2238,8 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, upper=1,
             cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
                 'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=lower,
                                                     b=upper),
-                                                    cmap(np.linspace(lower,
-                                                    upper, npoints))
+                cmap(np.linspace(lower,
+                                 upper, npoints))
             )
             logging.debug('maintain scale for vars: {}'.format(
                 *[str(float(i)) for i in list([eq_range, act_range, vmin,
@@ -2537,7 +2539,7 @@ def get_colormap(arr,  center_zero=True, minval=0.15, maxval=0.95,
         lvls, lvls_diff = get_human_readable_gradations(vmax=fixcb[1],
                                                         vmin=fixcb[0], nticks=nticks,
                                                         rtn_lvls_diff=True,
-                                               sigfig_rounding_on_cb=sigfig_rounding_on_cb
+                                                        sigfig_rounding_on_cb=sigfig_rounding_on_cb
                                                         )
 
         # increase maximum value in color by 5% of level diff
@@ -2594,18 +2596,18 @@ def get_colormap(arr,  center_zero=True, minval=0.15, maxval=0.95,
         cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
             'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=0,
                                                 b=maxval-minval, ),
-                                                cmap(np.linspace(0,
-                                                maxval-minval,
-                                                npoints)))
+            cmap(np.linspace(0,
+                             maxval-minval,
+                             npoints)))
 
     if (positive and ('gnuplot2' in cb)) or (negative and ('CMRmap' in cb)):
         #    if positive and ( 'CMRmap' in cb ):
         cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
             'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval,
                                                 b=maxval),
-                                                cmap(np.linspace(minval,
-                                                maxval,  npoints))
-                                                )
+            cmap(np.linspace(minval,
+                             maxval,  npoints))
+        )
 
     # --- divergent
     if ((not positive) and (not negative)) or divergent:
@@ -2975,8 +2977,8 @@ def get_CB_color_cycle():
      - Credit @ thriveth: https://gist.github.com/thriveth/8560036
     """
     CB_color_cycle = [
-    '#377eb8', '#ff7f00', '#4daf4a', '#f781bf', '#a65628', '#984ea3',
-    '#999999', '#e41a1c', '#dede00'
+        '#377eb8', '#ff7f00', '#4daf4a', '#f781bf', '#a65628', '#984ea3',
+        '#999999', '#e41a1c', '#dede00'
     ]
     return CB_color_cycle
 

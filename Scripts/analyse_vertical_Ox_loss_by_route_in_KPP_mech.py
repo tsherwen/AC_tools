@@ -17,7 +17,7 @@ from netCDF4 import Dataset
 import os
 
 
-def main( wd=None, CODE_wd=None ):
+def main(wd=None, CODE_wd=None):
     """
     Driver for analysis of LOx via KPP in GEOS-Chem
 
@@ -31,9 +31,11 @@ def main( wd=None, CODE_wd=None ):
     wd = root+'rundirs/GC_v11_2d_plus_Clv3/geosfp_4x5_tropchem_Cl.v3_0.1year.2016.tagged/'
     Mechanism = 'Tropchem'
     # Get all the necessary data as as a dictionary object
-    Ox_loss_dict = AC.get_Ox_loss_dicts(wd=wd, CODE_wd=CODE_wd, Mechanism=Mechanism)
+    Ox_loss_dict = AC.get_Ox_loss_dicts(
+        wd=wd, CODE_wd=CODE_wd, Mechanism=Mechanism)
     # Plot vertical odd oxygen (Ox) loss via route (chemical family)
-    plot_vertical_fam_loss_by_route(Ox_loss_dict=Ox_loss_dict, Mechanism=Mechanism)
+    plot_vertical_fam_loss_by_route(
+        Ox_loss_dict=Ox_loss_dict, Mechanism=Mechanism)
     # Analyse odd oxygen (Ox) loss budget via route (chemical family)
     calc_fam_loss_by_route(Ox_loss_dict=Ox_loss_dict, Mechanism=Mechanism)
 
@@ -76,11 +78,11 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3',
     # - Local variables/ Plot extraction / Settings
     if isinstance(Ox_loss_dict, type(None)):
         Ox_loss_dict = AC.get_Ox_loss_dicts(wd=wd, CODE_wd=CODE_wd, fam=fam,
-                                           ref_spec=ref_spec,
-                                           Mechanism=Mechanism, rm_strat=rm_strat,
-                                           weight_by_molecs=weight_by_molecs,
-                                           full_vertical_grid=full_vertical_grid,
-                                           )
+                                            ref_spec=ref_spec,
+                                            Mechanism=Mechanism, rm_strat=rm_strat,
+                                            weight_by_molecs=weight_by_molecs,
+                                            full_vertical_grid=full_vertical_grid,
+                                            )
     # extract variables from data/variable dictionary
     sorted_fam_names = Ox_loss_dict['sorted_fam_names']
     fam_dict = Ox_loss_dict['fam_dict']
@@ -117,13 +119,14 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3',
     # Add zeros array to beginning (for stack/area plot )
     arr_ = np.vstack((np.zeros((1, arr.shape[-1])), arr))
     # Setup figure
-    fig, ax = plt.subplots(figsize=(9, 6), dpi=dpi, \
+    fig, ax = plt.subplots(figsize=(9, 6), dpi=dpi,
                            facecolor='w', edgecolor='w')
     # Plot by family
     for n, label in enumerate(sorted_fam_names):
         # Print out some summary stats
         if verbose:
-            print(n, label, arr[:n, 0].sum(axis=0), arr[:n+1, 0].sum(axis=0), end=' ')
+            print(n, label, arr[:n, 0].sum(axis=0),
+                  arr[:n+1, 0].sum(axis=0), end=' ')
             print(arr[:n, :].sum(), arr[:n+1, :].sum())
             print([i.shape for i in (Data_rc['alt'], arr)])
         # Fill between X
@@ -240,13 +243,13 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
         print(('Total contribution of halogens is: {:.2f} %'.format(hal_LOx)))
     # Add Halogen total and general total to DataFrame
     dfFam = grp.sum().T
-    dfFam['Total'] =dfFam.sum().sum()
+    dfFam['Total'] = dfFam.sum().sum()
     dfFam['Halogens'] = dfFam[halogen_fams].sum().sum()
     # Update units to Tg O3
-    dfFam = dfFam.T /1E12
+    dfFam = dfFam.T / 1E12
     # return dictionaries of LOx by reaction or by family (in Tg O3)
     if rtn_by_rxn:
-        return df /1E12
+        return df / 1E12
     if rtn_by_fam:
         return dfFam
 

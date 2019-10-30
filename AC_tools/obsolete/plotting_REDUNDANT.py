@@ -618,7 +618,6 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None,
                 ax2.tick_params(axis='y', which='both', labelleft='off')
 
 
-
 def monthly_plot(ax, data, f_size=20, pos=0, posn=1, lw=1, ls='-', color=None,
                  title=None, subtitle=None, legend=False, xrotation=90,
                  window=False, label=None, ylabel=None, xlabel=True,
@@ -987,8 +986,8 @@ def north_pole_surface_plot(arr, return_m=False, grid=True, centre=False,
     debug_ptr = [len(i) for i in (x, y, lat, lon)]
     debug_ptr += [[i.min(), i.mean(), i.max(), i.shape] for i in (arr,
                                                                   arr[:,
-                                                                  get_gc_lat(boundinglat,
-                                                                   res=res):])]
+                                                                      get_gc_lat(boundinglat,
+                                                                                 res=res):])]
     if debug:
         print((2, 'len:', debug_ptr))
 
@@ -1951,7 +1950,6 @@ def plt_4Darray_zonal_by_month(arr, res='4x5', dpi=160,
         plt.show()
 
 
-
 def get_seasonal_plot(arr, fixcb=None, fig=None, f_size=15,
                       case='linear', format=None, extend='neither', units=None,
                       right=0.9, left=0.05, bottom=0.05, top=0.85, hspace=0.1,
@@ -2221,8 +2219,7 @@ def plot_specs_zonal_change_annual2pdf(Vars, res='4x5', dpi=160,
             arr = Vars[n, ...].mean(axis=0).mean(axis=-1)*scale
 
         if set_window:
-            arr = arr[..., get_gc_lat(lat_0, res=res)
-                                      : get_gc_lat(lat_1, res=res), :]
+            arr = arr[..., get_gc_lat(lat_0, res=res): get_gc_lat(lat_1, res=res), :]
 
         # plot up spatial surface change
         zonal_plot(arr, fig, ax=ax, title=None, debug=debug, tropics=False,
@@ -2253,4 +2250,3 @@ def plot_specs_zonal_change_annual2pdf(Vars, res='4x5', dpi=160,
 
         #  save entire pdf
         plot2pdfmulti(pdff, savetitle, close=True, dpi=dpi, no_dstr=no_dstr)
-

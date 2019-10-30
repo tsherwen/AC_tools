@@ -996,4 +996,3 @@ def prod_loss_4_spec(wd, fam, all_clean=True, ver='1.7', debug=False):
 #    print '1'*300, tags
 
     return nums, rxns, tags, Coe
-

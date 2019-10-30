@@ -281,8 +281,8 @@ def get_latlonalt4res(res=None, centre=True, hPa=False, nest=None,
         res = '4x5'
     if isinstance(wd, type(None)):
         # Get AC_tools location, then set example data folder location
-#        this_filename = inspect.getframeinfo(inspect.currentframe()).filename
-#        path = os.path.dirname(os.path.abspath(this_filename))
+        #        this_filename = inspect.getframeinfo(inspect.currentframe()).filename
+        #        path = os.path.dirname(os.path.abspath(this_filename))
         AC_tools_dir = os.path.dirname(__file__)
         dwd = AC_tools_dir + '/../data/LM/'
         dir_dict = {
@@ -1202,7 +1202,6 @@ def grids4reses(just_1x1_grids=False):
 
     else:
         return d
-
 
 
 def get_sigfig(x, p=3):

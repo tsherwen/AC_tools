@@ -61,7 +61,6 @@ from .bpch2netCDF import convert_to_netCDF
 from .obsolete.variables_REDUNDANT import species_mass
 
 
-
 def get_surface_area(res=None, wd=None, debug=False):
     """
     Get_surface_area of grid boxes for a given resolution
@@ -185,7 +184,7 @@ def list_variables(wd=None):
 
 
 def get_LWI_map(res='4x5', date=None, wd=None, rtn_ds=False,
-                 average_over_time=True, debug=False):
+                average_over_time=True, debug=False):
     """
     Return land, water, and ice indices (LWI ) from GEOS-Chem with integers
     for Land (1) and Water (0). Ice fraction is given as fractional values.
@@ -4273,7 +4272,7 @@ def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
 #            ds_l = [xr.open_dataset(i) for i in ncfiles]
             # Make sure the time dimension is unlimitetd
 #            ds = xr.concat(ds_l, dim='time')
-            ds = xr.open_mfdataset(ncfiles, concat_dim='time' )
+            ds = xr.open_mfdataset(ncfiles, concat_dim='time')
             # Now save the combined file
             ds.to_netcdf(folder+filename,
                          unlimited_dims={'time_counter': True})
@@ -4612,15 +4611,15 @@ def get_general_stats4run_dict_as_df_bpch(run_dict=None, extra_str='', REF1=None
 
     # Get other core species
     core_burden_specs = [
-    'NO', 'NO2', 'N2O5'
+        'NO', 'NO2', 'N2O5'
     ]
     # Loop and add core species.
     for spec in core_burden_specs+extra_burden_specs:
         varname = '{} burden ({})'.format(spec, mass_unit)
-        ref_spec = get_ref_spec( spec )
+        ref_spec = get_ref_spec(spec)
         # get arrrays
         ars = [get_trop_burden(spec=spec, t_p=t_p, wd=i, all_data=False, res=res).sum()
-                               for i in wds]
+               for i in wds]
         # convert to N equivalent
         ars = [i/species_mass(spec)*species_mass(ref_spec) for i in ars]
         df[varname] = ars
@@ -4634,7 +4633,7 @@ def get_general_stats4run_dict_as_df_bpch(run_dict=None, extra_str='', REF1=None
         df[NOx_varname] = df[NO2_varname] + df[NO_varname]
     except KeyError:
         if debug:
-            print( 'NOx family not added for trop. df columns:', list(df.columns) )
+            print('NOx family not added for trop. df columns:', list(df.columns))
 
     # Sum the aerosol nitrates (NIT+NITs)
     NIT_varname = 'NIT burden ({})'.format(mass_unit)
@@ -4644,7 +4643,8 @@ def get_general_stats4run_dict_as_df_bpch(run_dict=None, extra_str='', REF1=None
         df[varname] = df[NITs_varname] + df[NIT_varname]
     except KeyError:
         if debug:
-            print( 'NIT+NITs family not added for surface. df columns:', list(df.columns))
+            print('NIT+NITs family not added for surface. df columns:',
+                  list(df.columns))
 
     # Scale units
     for col_ in df.columns:
@@ -4654,31 +4654,31 @@ def get_general_stats4run_dict_as_df_bpch(run_dict=None, extra_str='', REF1=None
     # Add ozone (+fast cycling specs.) production (POx) and loss (LOx) for simulation
     try:
         PL_l = [get_POxLOx(wd=wd, t_p=t_p, vol=vol, GC_version=GC_version, debug=debug)
-                           for wd in wds]
+                for wd in wds]
         # Unpack data
-        PL_l = [ [i.sum() for i in l] for l in PL_l ]
+        PL_l = [[i.sum() for i in l] for l in PL_l]
         POxLOx = np.array(PL_l)
         # Add to dataframe
         LOx_varname = 'Ox loss (Tg)'
         POx_varname = 'Ox prod. (Tg)'
         Net_Ox_varname = 'Net Ox (Tg)'
-        df[POx_varname] = POxLOx[:,0]
-        df[LOx_varname] = POxLOx[:,1]
+        df[POx_varname] = POxLOx[:, 0]
+        df[LOx_varname] = POxLOx[:, 1]
         df[Net_Ox_varname] = df[POx_varname] - df[LOx_varname]
     except:
         pass
 
     # - Surface concentrations?
     core_surface_specs = [
-    'O3', 'NO', 'NO2', 'N2O5'
+        'O3', 'NO', 'NO2', 'N2O5'
     ]
     for spec in core_surface_specs+extra_surface_specs:
         #
-        units, scale = tra_unit( spec, scale=True )
+        units, scale = tra_unit(spec, scale=True)
         # Surface ozone
         varname = '{} surface ({})'.format(spec, units)
         ars = [get_avg_surface_conc_of_X(spec=spec, wd=i, s_area=s_area, res=res)
-           for i in wds]
+               for i in wds]
         df[varname] = ars
 
     # Surface NOx (note: NO units are pptv, NO2 is ppbv)
@@ -4689,7 +4689,7 @@ def get_general_stats4run_dict_as_df_bpch(run_dict=None, extra_str='', REF1=None
         df[NOx_sur_varname] = df[NO2_sur_varname] + (df[NO_sur_varname]*1E3)
     except KeyError:
         if debug:
-            print( 'NOx family not added for surface. df columns:', list(df.columns) )
+            print('NOx family not added for surface. df columns:', list(df.columns))
 
     # - OH concentrations?
     # First process the files to have different names for the different years
@@ -4802,8 +4802,8 @@ def get_trop_burden(spec='O3', wd=None, a_m=None, t_p=None,
 
 
 def get_O3_burden_bpch(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None,
-                  trop_limit=True, all_data=False, annual_mean=True,
-                   res='4x5', debug=False):
+                       trop_limit=True, all_data=False, annual_mean=True,
+                       res='4x5', debug=False):
     """ Wrapper of 'get_trop_burden' to get tropospheric ozone burden """
     # ---  Local vars.
     # (all_data == ( annual_mean == False ) )
@@ -4813,10 +4813,9 @@ def get_O3_burden_bpch(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None,
     if trop_limit:
         total_atmos = True
     # --- just call existing function
-    return get_trop_burden(wd=wd, total_atmos=False, all_data=all_data,res=res,
+    return get_trop_burden(wd=wd, total_atmos=False, all_data=all_data, res=res,
                            trop_limit=trop_limit, spec=spec, a_m=a_m, t_p=t_p, arr=O3_arr,
                            debug=debug)
-
 
 
 #
@@ -4870,4 +4869,3 @@ def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None,
     if debug:
         print(('arr', arr.shape, 'vol', vol.shape))
     return arr
-

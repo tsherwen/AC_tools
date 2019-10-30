@@ -267,7 +267,7 @@ def setup_plot2animate(arr, fig=None, ax=None, lat=None, lon=None,
     global specplt
 
     print((3, 'detail on output: ', [[np.ma.min(i), np.ma.max(i),
-                                     np.ma.mean(i), type(i), i.shape] for i in [arr]]))
+                                      np.ma.mean(i), type(i), i.shape] for i in [arr]]))
 
     # Setup basemap
     m = get_basemap(lat=lat, lon=lon, resolution=resolution, res=res,
@@ -332,7 +332,7 @@ def animate_array(arr, dates, specplt, spec='O3', min_change=0.5,
     def plotgc(i):
         global specplt
         print((i, 'for {} @ model time of {} @  real time of {}'.format(spec,
-                                                                       dates[i], time.strftime('%Y %m %d %H:%M:%S'))))
+                                                                        dates[i], time.strftime('%Y %m %d %H:%M:%S'))))
         if contour:
             # Remove previous plot data, but retain basemap....
             for c in specplt.collections:

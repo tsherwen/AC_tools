@@ -10,7 +10,7 @@ import logging
 try:
     from urllib.request import urlopen
     from urllib.error import HTTPError
-#except ModuleNotFoundError:
+# except ModuleNotFoundError:
 except ImportError:
     from urllib.request import urlopen
     from urllib.error import HTTPError
@@ -88,7 +88,7 @@ def download_file(new_filename, file_url):
         new_file = open(new_filename, 'wb')
         logging.debug("downloading from {url}".format(url=file_url))
         prt_str = "Downloading file ({}), which may take some time."
-        print( prt_str.format(new_filename) )
+        print(prt_str.format(new_filename))
         file_data = urlopen(file_url).read()
         new_file.write(file_data)
         print("Download complete.")

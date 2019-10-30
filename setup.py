@@ -15,7 +15,7 @@ on_rtd = os.environ.get('READTHEDOCS') == 'True'
 if on_rtd:
     INSTALL_REQUIRES = []
 else:
-    INSTALL_REQUIRES = [ 'pandas', 'xarray', 'numpy', 'scipy', 'pytest' ]
+    INSTALL_REQUIRES = ['pandas', 'xarray', 'numpy', 'scipy', 'pytest']
 
 CLASSIFIERS = [
     'Development Status :: 4 - Beta',
