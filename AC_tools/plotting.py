@@ -10,10 +10,12 @@ NOTE(S):
  - Where external code is used credit is given.
 """
 # - Required modules:
-try:
-    from mpl_toolkits.basemap import Basemap
-except ModuleNotFoundError:
-    print('WARNING: Module not found error raised for: mpl_toolkits.basemap')
+import sys
+if sys.version_info.major < 3:
+    try:
+        from mpl_toolkits.basemap import Basemap
+    except ModuleNotFoundError:
+        print('WARNING: Module not found error raised for: mpl_toolkits.basemap')
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from pylab import setp

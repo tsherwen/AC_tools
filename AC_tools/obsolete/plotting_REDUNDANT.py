@@ -9,11 +9,13 @@ Notes
  - These functions are a mixture fo those made redundant by shift from matplotlib's basemap to cartopy and those that are now longer in use/years old/not useful/not pythonic
 
 """
+import sys
 # - Required modules:
-try:
-    from mpl_toolkits.basemap import Basemap
-except ModuleNotFoundError:
-    print('WARNING: Module not found error raised for: mpl_toolkits.basemap')
+if sys.version_info.major < 3:
+    try:
+        from mpl_toolkits.basemap import Basemap
+    except ModuleNotFoundError:
+        print('WARNING: Module not found error raised for: mpl_toolkits.basemap')
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from pylab import setp

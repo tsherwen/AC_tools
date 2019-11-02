@@ -33,10 +33,11 @@ import pandas as pd
 import xarray as xr
 import re
 from netCDF4 import Dataset
-try:
-    import iris
-except ImportError:
-    print('WARNING iris not imported')
+if sys.version_info.major < 3:
+    try:
+        import iris
+    except ImportError:
+        print('WARNING iris not imported')
 import logging
 # Math/Analysis
 import numpy as np
