@@ -2,7 +2,7 @@
 from setuptools import setup, find_packages
 import os
 
-VERSION = '0.0.1'
+VERSION = '0.1.1'
 DISTNAME = 'AC_tools'
 DESCRIPTION = "Atmospheric Chemistry (AC) tools"
 AUTHOR = 'Tomas Sherwen, Ben Newsome'
