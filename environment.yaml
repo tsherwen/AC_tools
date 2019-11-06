@@ -1,0 +1,18 @@
+name: ac_tools
+channels:
+    - conda-forge
+dependencies:
+    - python=3.7
+    - affine
+    - cartopy
+    - geopandas
+    - geos
+    - matplotlib
+    - netcdf4
+    - numpy
+    - pandas
+    - proj4
+    - pytest
+    - rasterio
+    - scipy
+    - xarray
