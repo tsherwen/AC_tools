@@ -13,10 +13,11 @@ import sys
 import glob
 import os
 import netCDF4
-try:
-    import iris
-except ImportError:
-    print('WARNING iris not imported')
+if sys.version_info.major < 3:
+    try:
+        import iris
+    except ImportError:
+        print('WARNING iris not imported')
 # retain back compatibility for PyGChem
 try:
     if (sys.version_info.major <= 2):

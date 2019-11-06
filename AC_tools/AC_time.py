@@ -17,11 +17,13 @@ import time
 import calendar
 import datetime as datetime
 from datetime import datetime as datetime_
+import sys
 # Attempt to import ephem if installed
-try:
-    import ephem
-except ImportError:
-    print('ephem package not installed')
+if sys.version_info.major < 3:
+    try:
+        import ephem
+    except ImportError:
+        print('ephem package not installed')
 
 
 def get_day_fraction(date):
