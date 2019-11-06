@@ -384,6 +384,10 @@ def get_loc(loc=None, rtn_dict=False, debug=False):
         # https://www.esrl.noaa.gov/gmd/dv/site/HFM.html
         'Havard Forest':  (-72.3000030518, 42.9000015259, 340.),
         'HFM': (-72.3000030518, 42.9000015259, 340.),
+        # - ARNA locations
+        'Dakar': (-17.467686, 14.716677, 22),
+        'Sao Vicente Airport': (-25.0569, 16.8331, 20),
+        'Santiago Airport': (-23.4939, 14.9242, 70),
     }
     if rtn_dict:
         return loc_dict
