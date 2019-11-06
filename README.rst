@@ -18,16 +18,19 @@ Installation
 ------------
 
 **AC_Tools** is currently only installable from source. To do this, you
-can either install directly via pip (reccomended and this includes any dependencies):
+can either install directly via pip (reccomended and this includes any dependencies)::
+
 
     $ pip install git+https://github.com/tsherwen/AC_tools.git
 
 
 or (not recommended), clone the source directory and manually install::
 
+
     $ git clone https://github.com/tsherwen/AC_tools.git
     $ cd AC_tools
     $ python setup.py install
+
 
 
 Quick Start
