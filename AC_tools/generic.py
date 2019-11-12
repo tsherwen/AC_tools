@@ -1051,12 +1051,14 @@ def mk_spatial_dataset_from_longform_df(df=None, LatVar='lat', LonVar='lon',
 
 def rm_spaces_and_chars_from_str(input_str, remove_slashes=True,
                                  replace_brackets=True, replace_quotes=True,
-                                 replace_dots=True,
+                                 replace_dots=True, replace_colons=True,
                                  remove_plus=True, swap_pcent=True, replace_braces=True):
     """
     Remove the spaces and species characters from strings
     """
     input_str = input_str.replace(' ', '_')
+    if replace_colons:
+        input_str = input_str.replace(':', '_')
     if replace_brackets:
         input_str = input_str.replace('(', '_')
         input_str = input_str.replace(')', '_')
