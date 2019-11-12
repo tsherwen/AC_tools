@@ -2882,10 +2882,18 @@ def get_human_readable_gradations(lvls=None, vmax=10, vmin=0,
         return lvls
 
 
-def mk_discrete_cmap(lvls=None, cmap=None, arr=None,
-                     vmin=0, vmax=10, nticks=10, debug=False):
+def mk_discrete_cmap(lvls=None, cmap=None, rtn_norm=False,
+                     vmin=None, vmax=None, nticks=10, debug=False):
     """
     Make a discrete colormap from an existing cmap
+
+    Parameters
+    ----------
+    lvls (np.array): array of the bounding got discrete
+    cmap (colormap/str): colour map object to discretise
+    nticks (int): number of sections to discretise colourbar into
+    vmin/vmax (float): the min and max of the norm object to be created
+    rtn_norm (bool): return a norm object as well as colourbar?
 
     Returns
     -------
@@ -2893,25 +2901,31 @@ def mk_discrete_cmap(lvls=None, cmap=None, arr=None,
 
     Notes
     -------
-     - the data will now need to normalised the range of lvls
+     - the data can be optionally to normalised the range of lvls
     """
-    # Define bins
-    if isinstance(lvls, type(None)):
-        bounds = np.linspace(vmin, vmax, nticks, endpoint=True)
-    else:
-        bounds = lvls
-    # Get colormap if not provided
+    # Get colormap if not provided and make sure it is
     if isinstance(cmap, type(None)):
         cmap = get_colormap(np.array([vmin, vmax]))
+    if isinstance(cmap, str):
+        cmap = matplotlib.cm.get_cmap(cmap)
     if debug:
-        print((lvls, vmin, vmax, nticks))
-    # Extract colors
-    cmaplist = [cmap(i) for i in range(cmap.N)]
-    # Create the new discrete cmap
-    cmap = cmap.from_list('Custom cmap', cmaplist, cmap.N)
+        print((vmin, vmax, nticks))
+    # Extract colors linearly from colormap
+    cmaplist = cmap(np.linspace(0, 1, nticks))
+    # Create the new discrete colormap object
+    cmap_name = '{}_{}'.format( cmap.name, str(nticks) )
+    cmap = cmap.from_list(cmap_name, cmaplist, nticks)
     # Make a normalisation object... -  define the bins and normalize
-    norm = mpl.colors.BoundaryNorm(bounds,  cmap.N)
-    return cmap, norm
+    if rtn_norm:
+        # Define bins
+        if isinstance(lvls, type(None)):
+            bounds = np.linspace(vmin, vmax, nticks, endpoint=True)
+        else:
+            bounds = lvls
+        norm = mpl.colors.BoundaryNorm(bounds,  nticks)
+        return cmap, norm
+    else:
+        return cmap
 
 
 def show_plot():
