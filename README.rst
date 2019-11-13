@@ -11,8 +11,9 @@ found to be useful for work in atmospheric chemistry and now
 simply aims to contain functionality outside the remit of the 
 more specialised community packages (e.g PyGChem_, xbpch_, and 
 gcpy_) and use the existing Python stack (e.g. dask_, xarray_, 
-pandas_). `Pull Requests are 
-welcome! <https://github.com/tsherwen/AC_tools/pulls>`_
+pandas_). 
+`Please raise any questions/coments or bugs as issues here on GitHub <https://github.com/tsherwen/AC_tools/issues>`_ 
+and `pull requests are welcome! <https://github.com/tsherwen/AC_tools/pulls>`_
 
 Installation
 ------------
