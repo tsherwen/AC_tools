@@ -1,7 +1,7 @@
 AC_tools: Atmospheric Chemistry (AC) tools
 ======================================
 
-This module contains a functions and scripts used for 
+This module contains functions and scripts used for 
 working with atmospheric model output and observational data. 
 Many functions are included for working with global and regional 
 chemical transport model (CTM) ouput from the GEOS-Chem model.
@@ -12,14 +12,14 @@ simply aims to contain functionality outside the remit of the
 more specialised community packages (e.g PyGChem_, xbpch_, and 
 gcpy_) and use the existing Python stack (e.g. dask_, xarray_, 
 pandas_). 
-`Please raise any questions/coments or bugs as issues here on GitHub <https://github.com/tsherwen/AC_tools/issues>`_ 
+`Please raise any questions/comments or bugs as issues here on GitHub <https://github.com/tsherwen/AC_tools/issues>`_ 
 and `pull requests are welcome! <https://github.com/tsherwen/AC_tools/pulls>`_
 
 Installation
 ------------
 
 **AC_Tools** is currently only installable from source. To do this, you
-can either install directly via pip (reccomended and this includes any dependencies)::
+can either install directly via pip (recommended and this includes any dependencies)::
 
 
     $ pip install git+https://github.com/tsherwen/AC_tools.git
@@ -39,7 +39,7 @@ Quick Start
 
 Functions within **AC_Tools** can be used for various tasks for handling model output and observations. 
 
-An exmample would be importing NetCDF files or converting ctm.bpch files from a directory of GEOS-Chem_ output (with ``tracerinfo.dat`` and ``diaginfo.dat`` files). Or using GEOS-Chem_ NetCDf output to make a quick plot of surface ozone. 
+An example would be importing NetCDF files or converting ctm.bpch files from a directory of GEOS-Chem_ output (with ``tracerinfo.dat`` and ``diaginfo.dat`` files). Or using GEOS-Chem_ NetCDF output to make a quick plot of surface ozone. 
 
 If using within a python3 environment and GEOS-Chem 
 
@@ -68,7 +68,7 @@ If using within a python3 environment and GEOS-Chem
     print(prt_str.format(spec=spec, ratio=ratio*1E9))
 
 
-If using within a python2 environment, the below example is a way of accessing GEOS-Chem data. The data is converted from bpch to NetCDF by defauly via a iris backend through PyGChem (using bpch2netCDF.py).
+If using within a python2 environment, the below example is a way of accessing GEOS-Chem data. The data is converted from bpch to NetCDF by default via an iris backend through PyGChem (using bpch2netCDF.py).
 
 .. code:: python
 
@@ -94,7 +94,7 @@ Usage
 Example analysis code for using AC_tools is available in the 
 scripts folder. 
 
-For more infomation, please visit the AC_tools_wiki_.
+For more information, please visit the AC_tools_wiki_.
 
 
 License
