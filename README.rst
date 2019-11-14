@@ -33,6 +33,8 @@ or (not recommended), clone the source directory and manually install::
     $ python setup.py install
 
 
+If you specifically wish to use the legacy "bpch to NetCDF" (`bpch2netCDF`_) capability, you will need to run AC_tools in a Python2 environment due to use of an `iris`_ backend via `PyGChem`_. In this specific case, please install using the later method and ensure that you have `iris`_ (version 1.13.0) installed. You will also need to install `PyGChem`_ (version 0.3.0) by the same route. 
+
 
 Quick Start
 -----------
@@ -119,4 +121,6 @@ Contact
 .. _gcpy: https://github.com/geoschem/gcpy
 .. _PyGChem: https://github.com/benbovy/PyGChem
 .. _xbpch: https://github.com/darothen/xbpch
+.. _iris: https://scitools.org.uk/iris/docs/latest/
+.. _bpch2netCDF: https://github.com/tsherwen/AC_tools/blob/master/Scripts/bpch2netCDF.py
 .. _AC_tools_wiki: https://github.com/tsherwen/AC_tools/wiki
