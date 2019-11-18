@@ -43,7 +43,7 @@ from .variables import *
 
 
 def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
-                             debug=False):
+                             collection=None, debug=False):
     """
     Extract GEOS-Chem NetCDF files that match file string format to a xr.dataset
 
@@ -62,12 +62,21 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
     # Check input
     assert type(wd) == str, 'Working directory (wd) provided must be a string!'
     # Get files
-    files = glob.glob(wd+file_str)
+    if isinstance(collection, str):
+        glob_pattern = '{}/*.{}.*'.format(wd, collection)
+
+    else:
+        glob_pattern = '{}/{}'.format(wd, file_str)
+    files = glob.glob(glob_pattern)
     assert len(files) >= 1, 'No files found matching-{}'.format(wd+file_str)
     # Sort the files based on their name (which contains a regular datastring)
     files = list(sorted(files))
     # open all of these files as single Dataset
-    ds = xr.open_mfdataset(files)
+    # NOTE: Updated to use faster opening settings for files sharing the same coords
+    # https://github.com/pydata/xarray/issues/1823
+    ds = xr.open_mfdataset(files,
+#                           concat_dim='time',
+                           data_vars="minimal", coords="minimal", compat="override")
     return ds
 
 
@@ -185,7 +194,8 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None, wd=None
 
 
 def plot_up_surface_changes_between2runs(ds_dict=None, levs=[1], specs=[],
-                                         BASE='', NEW='', prefix='IJ_AVG_S__', update_PyGChem_format2COARDS=False):
+                                         BASE='', NEW='', prefix='IJ_AVG_S__',
+                                         update_PyGChem_format2COARDS=False):
     """
     Compare BASE and NEW datasets for given species using GCPy
 
