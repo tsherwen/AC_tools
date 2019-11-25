@@ -58,8 +58,6 @@ from .AC_time import *
 from .planeflight import *
 from .variables import *
 from .bpch2netCDF import convert_to_netCDF
-# Use the species properties from the online dictionaries for now.
-from .obsolete.variables_REDUNDANT import species_mass
 
 
 def get_surface_area(res=None, wd=None, debug=False):

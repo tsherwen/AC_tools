@@ -86,6 +86,7 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None, wd=None
                        sum_patially=True, rm_trop=True, use_time_in_trop=True,
                        trop_mask=None, spec_conc_prefix='SpeciesConc_',
                        time_in_trop_var='N/A', vars2use=None,
+                       sum_spatially=True
                        ):
     """
     Get Tropospheric burden for given/or all species in dataset
@@ -762,9 +763,9 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     df = pd.DataFrame()
     # - Get core data required
     # Get StateMet object for 1st of the runs and use this for all runs
-    StateMet = AC.get_StateMet_ds(wd=REF_wd)
+    StateMet = get_StateMet_ds(wd=REF_wd)
     # Get all of the speciesConcs for runs as list of datasets
-    dsD = [AC.GetSpeciesConcDataset(wd=run_dict[run]) for run in run_names]
+    dsD = [GetSpeciesConcDataset(wd=run_dict[run]) for run in run_names]
     dsD = dict(zip(run_names, dsD))
     # - Get burdens for core species
     core_burden_specs = ['O3', 'CO', 'NO', 'NO2']

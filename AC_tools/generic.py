@@ -1077,3 +1077,15 @@ def rm_spaces_and_chars_from_str(input_str, remove_slashes=True,
     if swap_pcent:
         input_str = input_str.replace("%", 'pcent')
     return input_str
+
+
+def get_avg_2D_conc_of_X_weighted_by_Y(ds, Xvar=None, Yvar='AREA', Yda=None):
+    """
+    Get average 2D concentration of X (e.g. O3 v/v) weighted by Y (e.g. surface area)
+    """
+    # Get Y as data array if not provided
+    if isinstance(Yda, type(None)):
+        Yda = ds[Yvar]
+    # return X as a weighted average of Y
+    return float((ds[Xvar]*Yda).sum() / Yda.sum())
+
