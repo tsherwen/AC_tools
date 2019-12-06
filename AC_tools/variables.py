@@ -386,8 +386,18 @@ def get_loc(loc=None, rtn_dict=False, debug=False):
         'HFM': (-72.3000030518, 42.9000015259, 340.),
         # - ARNA locations
         'Dakar': (-17.467686, 14.716677, 22),
+        'DSS' : (-17.467686, 14.716677, 22), # Dakar airport code (as above)
         'Sao Vicente Airport': (-25.0569, 16.8331, 20),
-        'Santiago Airport': (-23.4939, 14.9242, 70),
+        'VXE' : (-25.0569, 16.8331, 20), # Sao Vincite code (as above)
+        'Praia Airport': (-23.4939, 14.9242, 70),
+        'RAI' : (-23.4939, 14.9242, 70), # Praia airport code (as above)
+        # Other "nearby" airports
+        'Gran Canaria Airport' : (-15.386667, 27.931944, 24),
+        'LPA' : (-15.386667, 27.931944, 24), # Gran Canaria airport code (as above)
+        'Lisbon Airport' : (-9.134167, 38.774167, 114),
+        'LIS' : (-9.134167, 38.774167, 114), # Lisbon airport code (as above)
+        'Paris (Charles de Gaulle) Airport' : (-2.547778, 49.009722, 119),
+        'CDG' : (-2.547778, 49.009722, 119), # Paris airport code (as above)
     }
     if rtn_dict:
         return loc_dict
