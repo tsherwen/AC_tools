@@ -252,7 +252,7 @@ def prt_PlaneFlight_files_v12_plus(df=None, LAT_var='LAT', LON_var='LON',
         #        pstr = '{:>5}  {:<3} {:0>2}-{:0>2}-{:0>4} {:0>2}:{:0>2}  {:>6,.2f} {:>7,.2f} {:>7.2f}'
         #        endstr ='99999   END  0- 0-   0  0: 0    0.00    0.00    0.00 '
         pstr = '{:>5}{:>7} {:0>2}-{:0>2}-{:0>4} {:0>2}:{:0>2}  {:>6,.2f} {:>7,.2f} {:>7.2f} {:>10.3f}'
-        endstr = '99999   END 00-00-0000 00:00    0.00    0.00    0.00'
+        endstr = '99999   END  00-00-0000 00:00   0.00     0.00    0.00      0.00'
     # Output a general list of species/tracers/met vars if not provided as arguments
     if isinstance(slist, type(None)):
         met_vars = [
