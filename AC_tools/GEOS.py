@@ -138,7 +138,7 @@ def get_GEOS5_online_diagnostic_plots(dt=None, ptype='wxmaps',
 
     # Which forecast to use
     if isinstance(fcst, type(None)):
-        fcst = '{}{:0>2}{:0>2}T{:>2}0000'.format( dt.year, dt.month, dt.day, dt.hour )
+        fcst = '{}{:0>2}{:0>2}T{:0>2}0000'.format( dt.year, dt.month, dt.day, dt.hour )
     # What is the website location for the data?
     site = 'https://fluid.nccs.nasa.gov/'
     type_root = '{}/{}'.format( site, ptype)
@@ -197,7 +197,7 @@ def get_GEOS5_datagram_plots( dt=None, stream='G5FPFC', folder=None,
         # Just use yesterday for Now
         TNow = time2datetime( [gmtime()] )[0]
         dt = datetime.datetime(TNow.year, TNow.month, TNow.day-1)
-    date_str = '{}_{}_{}'.format(dt.year, dt.month, dt.day)
+    date_str = '{}_{:0>2}_{:0>2}'.format(dt.year, dt.month, dt.day)
     # get plots in list
     site = 'https://fluid.nccs.nasa.gov/'
     gram_root = site+'/gram/static/plots/'
