@@ -576,62 +576,6 @@ def convert_HEMCO_ds2Gg_per_yr(ds, vars2convert=None, var_species_dict=None,
     return ds
 
 
-def get_GEOSCF_as_ds_via_OPeNDAP(collection='chm_inst_1hr_g1440x721_p23',
-                                 mode='fcast', date=None):
-    """
-    Get the GEOS Composition Forecast (GEOS-CF) as a xr.Dataset (using OPeNDAP)
-
-    Parameters
-    ----------
-    mode (str): retrieve the forecast (fcast) or assimilated fields (assim)
-    date (datetime.datetime): date to retrieve forecast from or assimilation for
-    collection (str): data collection to access (e.g. chm_inst_1hr_g1440x721_p23)
-
-    Returns
-    -------
-    (xr.dataset)
-
-    NOTES
-    ---
-     - default is to get the latest forecast for chemistry
-     - See documentation for details:
-    https://gmao.gsfc.nasa.gov/weather_prediction/GEOS-CF/
-     - Collections include:
-    chm_inst_1hr_g1440x721_p23
-    chm_tavg_1hr_g1440x721_v1
-    htf_inst_15mn_g1440x721_x1
-    met_inst_1hr_g1440x721_p23
-    met_tavg_1hr_g1440x721_x1
-    xgc_tavg_1hr_g1440x721_x1
-    """
-    # Root OPeNDAP directory
-    root_url = 'https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/{}/'.format(
-        mode)
-    # Make up the complete URL for a forecast or assimilation field
-    if mode == 'fcast':
-        # Which date to use?
-        if isinstance(date, type(None)):
-            # Use the lastest file (default)
-            URL = '{}/{}.latest'.format(root_url, collection)
-        else:
-            # Use a file specified in arguments
-            correct_type = type(date) == datetime.datetime
-            assert correct_type, "'date' variable must be a datetime.datetime object"
-            # Use the lastest file (default)
-            dstr = date.strftime(format='%Y%m%d')
-            URL = '{}/{}/{}.{}_12z'.format(root_url,
-                                           collection, collection, dstr)
-    elif mode == 'assim':
-        # Just retrieve an OPeNDAP pointer to the entire dataset for now
-        URL = '{}/{}'.format(root_url, collection)
-    else:
-        print("WARNING: GEOS-CF mode provided ('{}') not known".format(mode))
-        sys.exit()
-    # Open the dataset via OPeNDAP and return
-    ds = xr.open_dataset(URL)
-    return ds
-
-
 def get_HEMCO_ds_summary_stats_Gg_yr(ds, vars2use=None):
     """
     Get summary statistics on dataframe of data

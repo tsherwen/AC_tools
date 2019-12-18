@@ -8,6 +8,7 @@ from . core import *
 from . generic import *
 from . GEOSChem_bpch import *
 from . GEOSChem_nc import *
+from . GEOS import *
 from . KPP import *
 from . mask import *
 from . planeflight import *
