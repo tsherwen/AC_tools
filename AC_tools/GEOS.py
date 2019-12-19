@@ -104,7 +104,7 @@ def get_GEOS5_online_diagnostic_plots(dt=None, ptype='wxmaps',
                                       fcst=None, stream='G5FPFC',
                                       taus=[0], level='0',
                                       folder='./', prefix='ARNA',
-                                      ):
+                                      verbose=False):
     """
     Get the static meteorological plots for GEOS5 from NASA's NCCS/Fluid
 
@@ -141,7 +141,11 @@ def get_GEOS5_online_diagnostic_plots(dt=None, ptype='wxmaps',
         fcst = '{}{:0>2}{:0>2}T{:0>2}0000'.format( dt.year, dt.month, dt.day, dt.hour )
     # What is the website location for the data?
     site = 'https://fluid.nccs.nasa.gov/'
-    type_root = '{}/{}'.format( site, ptype)
+    if ptype == 'wxmaps':
+        type_root = '{}/{}'.format( site, ptype)
+    else:
+        type_root = '{}/wxmaps/{}'.format( site, ptype)
+
     # What is the outline file structure?
     urlstr = '{}/?one_click=1&tau={:0>3}&stream={}&level={}&region={}&fcst={}&field={}'
     # Loop by requested time from forecast start
@@ -157,15 +161,15 @@ def get_GEOS5_online_diagnostic_plots(dt=None, ptype='wxmaps',
         assert len(images) > 0, 'WARNING: No images found @ URL ({})'.format(URL)
         # Get the one image
         for img in images:
-            print()
             src = img.get('src')
             title = img.get('title')
             if field in src:
                 image_URL = site+src
-                print(img, src, title, image_URL)
+                if verbose:
+                    print(img, src, title, image_URL)
                 # Download using Python wget
-                f = '{}_{}_{}_fcast_{}_{:0>2}_{:0>3}_{}_{}.png'
-                name = f.format(prefix, ptype, stream, fcst, level, tau, field, region)
+                f = '{}_{}_{}_fcast_{}_{}_{}_{:0>2}_{:0>3}.png'
+                name = f.format(prefix, ptype, stream, fcst, field, region, level, tau )
                 wget.download(image_URL, folder+name)
 
 
