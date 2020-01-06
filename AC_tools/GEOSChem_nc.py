@@ -663,6 +663,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
                                      extra_burden_specs=[],
                                      extra_surface_specs=[],
                                      GC_version='v12.6.0',
+                                     use_time_in_trop=True, rm_trop=True,
                                      debug=False):
     """
     Get various stats on a set of runs in a dictionary ({name: location})
@@ -717,8 +718,11 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     prefix = 'SpeciesConc_'
     vars2use = [prefix+i for i in specs2use]
     for run in run_names:
-        ds = dsD[run]
-        S = get_Gg_trop_burden(ds, vars2use=vars2use, StateMet=StateMet)
+        # Average burden over time
+        ds = dsD[run]#.mean(dim='time', keep_attrs=True)
+        S = get_Gg_trop_burden(ds, vars2use=vars2use, StateMet=StateMet,
+                               use_time_in_trop=use_time_in_trop,
+                               rm_trop=rm_trop)
         # convert to ref spec equivalent (e.g. N for NO2, C for ACET)
         for spec in specs2use:
             ref_spec = get_ref_spec(spec)
@@ -816,9 +820,9 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
             df[pcent_var] = (df[col_]-df[col_][REF2]) / df[col_][REF2] * 100
 
     # Re-order columns
-    df = df.reindex_axis(sorted(df.columns), axis=1)
+    df = df.reindex(sorted(df.columns), axis=1)
     # Reorder index
-    df = df.T.reindex_axis(sorted(df.T.columns), axis=1).T
+    df = df.T.reindex(sorted(df.T.columns), axis=1).T
     # Now round the numbers
     df = df.round(3)
     # Save csv to disk
