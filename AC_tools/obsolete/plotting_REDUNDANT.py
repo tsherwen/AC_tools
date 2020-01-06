@@ -109,7 +109,7 @@ def plot_map(arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fal
              interval=15, resolution='c', shrink=0.4, window=False, everyother=1,
              extend='neither', degrade_resolution=False, discrete_cmap=False,
              lon_0=None, lon_1=None, lat_0=None, lat_1=None, norm=None,
-             sigfig_rounding_on_cb=2, fixcb_buffered=None, ylabel=True,
+             cb_sigfig=2, fixcb_buffered=None, ylabel=True,
              xlabel=True, wd=None, verbose=True, debug=False, tight_layout=False,
              **Kwargs):
     """
@@ -150,7 +150,7 @@ def plot_map(arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fal
     shrink (bool): colorbar size settings ( fractional shrink )
     set_window (bool): set the limits of the plotted data (lon_0, lon_1, lat_0, lat_1)
     (for nested boundary conditions )
-    sigfig_rounding_on_cb (int): significant figure rounding to use for colourbar
+    cb_sigfig (int): significant figure rounding to use for colourbar
     set_cb_ticks (bool): mannually set colorbar ticks? (vestigle)
     title (str): plot title (deafult is ==None, therefore no title)
     tight_layout (bool): use use tight lyaout for figure
@@ -298,7 +298,7 @@ def plot_map(arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fal
         # Set readable levels for cb, then use these to dictate cmap
         if isinstance(lvls, type(None)):
             lvls = get_human_readable_gradations(vmax=fixcb_[1], vmin=fixcb_[0],
-                                                 nticks=nticks, sigfig_rounding_on_cb=sigfig_rounding_on_cb)
+                                                 nticks=nticks, cb_sigfig=cb_sigfig)
 
         # Setup Colormap
         cmap, fixcb_buffered = get_colormap(np.array(fixcb_),
@@ -386,7 +386,7 @@ def plot_map(arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fal
                 # for asectics, round colorbar labels to sig figs given
                 for n, lvl in enumerate(lvls):
                     try:
-                        lvls[n] = round_to_n(lvl, sigfig_rounding_on_cb)
+                        lvls[n] = round_to_n(lvl, cb_sigfig)
                     except:
                         lvls[n] = lvl
             else:
@@ -425,7 +425,7 @@ def plot_map(arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fal
             # for asectics, round colorbar labels to sig figs given
             for n, lvl in enumerate(lvls):
                 try:
-                    lvls[n] = round_to_n(lvl, sigfig_rounding_on_cb)
+                    lvls[n] = round_to_n(lvl, cb_sigfig)
                 except:
                     lvls[n] = lvl
         else:
@@ -1736,7 +1736,7 @@ def plt_4Darray_surface_by_month(arr, res='4x5', dpi=160,
                                  format=None,
                                  savetitle='', extend='neither',  wd=None, ax=None,
                                  fig=None,
-                                 sigfig_rounding_on_cb=3, nticks=7, discrete_cmap=False,
+                                 cb_sigfig=3, nticks=7, discrete_cmap=False,
                                  units=None, set_window=False, lat_0=None, lat_1=None,
                                  return_m=False, log=False, window=True, interval=3,
                                  ylabel=True,
@@ -1771,7 +1771,7 @@ def plt_4Darray_surface_by_month(arr, res='4x5', dpi=160,
     # Set readable levels for cb, then use these to dictate cmap
     lvls = get_human_readable_gradations(vmax=fixcb[1],
                                          vmin=fixcb[0], nticks=nticks,
-                                         sigfig_rounding_on_cb=sigfig_rounding_on_cb)
+                                         cb_sigfig=cb_sigfig)
 
     # Setup Colormap
     cmap, fixcb_buffered = get_colormap(np.array(fixcb),
@@ -1843,7 +1843,7 @@ def plt_4Darray_zonal_by_month(arr, res='4x5', dpi=160,
                                no_dstr=True, f_size=15, dlist=None, fixcb=None,
                                savetitle='', extend='neither',  wd=None, ax=None,
                                fig=None,
-                               sigfig_rounding_on_cb=3, nticks=7, discrete_cmap=False,
+                               cb_sigfig=3, nticks=7, discrete_cmap=False,
                                units=None, set_window=False, lat_0=None, lat_1=None,
                                return_m=False, log=False, window=True, interval=3,
                                ylabel=True,
@@ -1884,7 +1884,7 @@ def plt_4Darray_zonal_by_month(arr, res='4x5', dpi=160,
     # Set readable levels for cb, then use these to dictate cmap
     lvls = get_human_readable_gradations(vmax=fixcb[1],
                                          vmin=fixcb[0], nticks=nticks,
-                                         sigfig_rounding_on_cb=sigfig_rounding_on_cb)
+                                         cb_sigfig=cb_sigfig)
 
     # Setup Colormap
     cmap, fixcb_buffered = get_colormap(np.array(fixcb),

@@ -247,7 +247,7 @@ def map_plot(arr, return_m=False, grid=False, centre=False, cmap=None,
              interval=1, resolution='c', shrink=0.4, window=False, everyother=1,
              extend='neither', degrade_resolution=False, discrete_cmap=False,
              lon_0=None, lon_1=None, lat_0=None, lat_1=None, norm=None,
-             sigfig_rounding_on_cb=2, fixcb_buffered=None, ylabel=True,
+             cb_sigfig=2, fixcb_buffered=None, ylabel=True,
              xlabel=True, wd=None, verbose=True, debug=False, tight_layout=False,
              axis_titles=False, split_title_if_too_long=True, fillcontinents=False,
              **Kwargs):
@@ -286,7 +286,7 @@ def map_plot(arr, return_m=False, grid=False, centre=False, cmap=None,
     shrink (bool): colorbar size settings ( fractional shrink )
     set_window (bool): set the limits of the plotted data (lon_0, lon_1, lat_0, lat_1)
     (for nested boundary conditions )
-    sigfig_rounding_on_cb (int): significant figure rounding to use for colourbar
+    cb_sigfig (int): significant figure rounding to use for colourbar
     set_cb_ticks (bool): mannually set colorbar ticks? (vestigle)
     title (str): plot title (deafult is ==None, therefore no title)
     tight_layout (bool): use use tight lyaout for figure
@@ -448,7 +448,7 @@ def map_plot(arr, return_m=False, grid=False, centre=False, cmap=None,
             lvls = get_human_readable_gradations(nticks=nticks,
                                                  vmax=fixcb_[
                                                      1], vmin=fixcb_[0],
-                                                 sigfig_rounding_on_cb=sigfig_rounding_on_cb)
+                                                 cb_sigfig=cb_sigfig)
 
         # Setup Colormap
         cmap, fixcb_buffered = get_colormap(np.array(fixcb_),
@@ -531,7 +531,7 @@ def map_plot(arr, return_m=False, grid=False, centre=False, cmap=None,
             # for asectics, round colorbar labels to sig figs given
             for n, lvl in enumerate(lvls):
                 try:
-                    lvls[n] = round_to_n(lvl, sigfig_rounding_on_cb)
+                    lvls[n] = round_to_n(lvl, cb_sigfig)
                 except:
                     lvls[n] = lvl
         else:
@@ -598,7 +598,7 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, f_size=10,
                fixcb=None, fixcb_buffered=None,
                xlimit=None, rotatecbunits='horizontal', extend='neither', ylabel=True,
                cb=None, ylim=[0, 18],
-               lvls=None, sigfig_rounding_on_cb=2, nticks=10, norm=None,
+               lvls=None, cb_sigfig=2, nticks=10, norm=None,
                set_window=False,
                lat_0=None, lat_1=None, lat40_2_40=False, xlabel=True,
                mask_invalids=False,
@@ -635,7 +635,7 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, f_size=10,
     shrink (bool): colorbar size settings ( fractional shrink )
     set_window (bool): set the limits of the plotted data (lat_0, lat_1)
     (for nested boundary conditions or subregion plots -)
-    sigfig_rounding_on_cb (int): significant figure rounding to use for colourbar
+    cb_sigfig (int): significant figure rounding to use for colourbar
     title (str): plot title (deafult is ==None, therefore no title)
     ylabel, xlabel (bool): label x/y axis?
     units (str): units of given data for plot title
@@ -710,7 +710,7 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, f_size=10,
                                                  vmax=fixcb_[
                                                      1], vmin=fixcb_[0],
 
-                                                 sigfig_rounding_on_cb=sigfig_rounding_on_cb)
+                                                 cb_sigfig=cb_sigfig)
 
         # Setup Colormap
         cmap, fixcb_buffered = get_colormap(np.array(fixcb_),
@@ -786,7 +786,7 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, f_size=10,
             # for asectics, round colorbar labels to sig figs given
             for n, lvl in enumerate(lvls):
                 try:
-                    lvls[n] = round_to_n(lvl, sigfig_rounding_on_cb)
+                    lvls[n] = round_to_n(lvl, cb_sigfig)
                 except:
                     lvls[n] = lvl
         else:
@@ -1385,7 +1385,7 @@ def scatter_3D_cube(data, dims=None, res='2x2.5', fig=None, everyother=1, interv
     ax.set_zlim(alt[0], alt[-1])
 
 
-def plot_spatial_figure(arr, fixcb=None, sigfig_rounding_on_cb=2,
+def plot_spatial_figure(arr, fixcb=None, cb_sigfig=2,
                         norm=None, nticks=10, format=None, units=None, extend='neither',
                         ax=None, cb_height=0.6, centre=False,
                         discrete_cmap=False, f_size=15, fig=None, left_cb_pos=0.86,
@@ -1438,7 +1438,7 @@ def plot_spatial_figure(arr, fixcb=None, sigfig_rounding_on_cb=2,
     shrink (bool): colorbar size settings ( fractional shrink )
     set_window (bool): set the limits of the plotted data (lon_0, lon_1, lat_0, lat_1)
     (for nested boundary conditions )
-    sigfig_rounding_on_cb (int): significant figure rounding to use for colourbar
+    cb_sigfig (int): significant figure rounding to use for colourbar
     set_cb_ticks (bool): mannually set colorbar ticks? (vestigle)
     title (str): plot title (deafult is ==None, therefore no title)
     tight_layout (bool): use use tight lyaout for figure
@@ -1485,7 +1485,7 @@ def plot_spatial_figure(arr, fixcb=None, sigfig_rounding_on_cb=2,
         # Set readable levels for cb, then use these to dictate cmap
         lvls = get_human_readable_gradations(vmax=fixcb[1],
                                              vmin=fixcb[0], nticks=nticks,
-                                             sigfig_rounding_on_cb=sigfig_rounding_on_cb)
+                                             cb_sigfig=cb_sigfig)
 
     else:
         if log:
@@ -1558,7 +1558,7 @@ def plot_spatial_figure(arr, fixcb=None, sigfig_rounding_on_cb=2,
                       rotatecbunits=rotatecbunits, bottom=bottom_cb_pos,
                       vmax=fixcb_buffered[1], format=format, f_size=f_size*.75,
                       extend=extend, lvls=lvls, log=log, orientation=orientation,
-                      sigfig_rounding_on_cb=sigfig_rounding_on_cb, nticks=nticks,
+                      cb_sigfig=cb_sigfig, nticks=nticks,
                       norm=norm, discrete_cmap=discrete_cmap, debug=debug)
 
     # Adjust plot ascetics
@@ -1574,7 +1574,7 @@ def plot_spatial_figure(arr, fixcb=None, sigfig_rounding_on_cb=2,
         return [fig, cmap] + plt_vars + [fixcb]  # += [ cb_ax ]
 
 
-def plot_zonal_figure(arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None,
+def plot_zonal_figure(arr, fixcb=None, cb_sigfig=2, ax=None,
                       norm=None, nticks=10, format=None, units=None, extend='neither',
                       discrete_cmap=False, f_size=15, fig=None, res='4x5', wd=None,
                       t_ps=None,
@@ -1628,7 +1628,7 @@ def plot_zonal_figure(arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None,
         if not log:
             lvls = get_human_readable_gradations(vmax=fixcb[1],
                                                  vmin=fixcb[0], nticks=nticks,
-                                                 sigfig_rounding_on_cb=sigfig_rounding_on_cb,
+                                                 cb_sigfig=cb_sigfig,
                                                  verbose=verbose, debug=debug)
     else:
         # Assume numbers provided as fixcb +nticks will allow for creation
@@ -1684,7 +1684,7 @@ def plot_zonal_figure(arr, fixcb=None, sigfig_rounding_on_cb=2, ax=None,
               cmap=cmap, vmin=fixcb_buffered[0],
               vmax=fixcb_buffered[1], format=format, f_size=f_size*.75,
               extend=extend, lvls=lvls, cb_ax=cb_ax,
-              sigfig_rounding_on_cb=sigfig_rounding_on_cb, nticks=nticks,
+              cb_sigfig=cb_sigfig, nticks=nticks,
               norm=norm, discrete_cmap=discrete_cmap,
               verbose=verbose, debug=debug)
 
@@ -2279,7 +2279,7 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,
           orientation='vertical', f_size=20, rotatecbunits='vertical', nticks=10,
           extend='neither', norm=None, log=False, format=None, cmap=None,
           vmin=0, vmax=10, cb_ax=None, ticklocation='auto', extendfrac=None,
-          sigfig_rounding_on_cb=2, lvls=None, discrete_cmap=False,
+          cb_sigfig=2, lvls=None, discrete_cmap=False,
           boundaries=None, verbose=True, debug=False):
     """
     Create Colorbar based on recieved parameters.
@@ -2302,7 +2302,7 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,
     cmap (str): colormap instance
     vmin, vmax (float): miminium and maximum of colorbar
     extendfrac (float): fraction by which to extend "pointers" on colorbar
-    sigfig_rounding_on_cb (int): significant figure rounding to use for colourbar
+    cb_sigfig (int): significant figure rounding to use for colourbar
     lvls (list): manually provide levels for colorbar
     boundaries (list):  manually provide levels for discrete colorbar
     discrete_cmap (bool): use a discrete instead of conitunous colorbar map
@@ -2354,7 +2354,7 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,
         # make graduations in colourbar to be human readable
         lvls = get_human_readable_gradations(vmax=vmax,
                                              vmin=vmin, nticks=nticks,
-                                             sigfig_rounding_on_cb=sigfig_rounding_on_cb)
+                                             cb_sigfig=cb_sigfig)
 
     # add an extra decimal place for values under 50,
     # and two for values under 1
@@ -2434,7 +2434,7 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,
     if log:
         def round_to_n(x, n): return round(x, -int(floor(log10(x))) + (n - 1))
         cb.set_ticks([float('{:.2g}'.format(t)) for t in lvls])
-        labels = [round_to_n(i, sigfig_rounding_on_cb) for i in lvls]
+        labels = [round_to_n(i, cb_sigfig) for i in lvls]
         cb.set_ticklabels([format % i for i in labels])
 
     # Set cb label sizes
@@ -2495,7 +2495,7 @@ def get_basemap(lat, lon, resolution='l', projection='cyl', res='4x5',
 def get_colormap(arr,  center_zero=True, minval=0.15, maxval=0.95,
                  npoints=100, cb='CMRmap_r', maintain_scaling=True,
                  negative=False, positive=False, divergent=False,
-                 sigfig_rounding_on_cb=2, buffer_cmap_upper=False, fixcb=None, nticks=10,
+                 cb_sigfig=2, buffer_cmap_upper=False, fixcb=None, nticks=10,
                  verbose=True, debug=False):
     """
     Create *correct* colormap by checking if it contains just +ve or -ve or
@@ -2512,7 +2512,7 @@ def get_colormap(arr,  center_zero=True, minval=0.15, maxval=0.95,
     negative (bool): force colormap to be sequential negative (==True)
     positive (bool): force colormap to be sequential positive (==True)
     divergent (bool): force colormap to be divergent (==True)
-    sigfig_rounding_on_cb (int): number of sig. figs. to round colourbar ticks
+    cb_sigfig (int): number of sig. figs. to round colourbar ticks
     buffer_cmap_upper (bool): make sure colorbar has space for maxiumium val.
     fixcb (array): lower and upper values to fix colourmap to.
     nticks (int): number of ticks to use for colorbar
@@ -2541,7 +2541,7 @@ def get_colormap(arr,  center_zero=True, minval=0.15, maxval=0.95,
         lvls, lvls_diff = get_human_readable_gradations(vmax=fixcb[1],
                                                         vmin=fixcb[0], nticks=nticks,
                                                         rtn_lvls_diff=True,
-                                                        sigfig_rounding_on_cb=sigfig_rounding_on_cb
+                                                        cb_sigfig=cb_sigfig
                                                         )
 
         # increase maximum value in color by 5% of level diff
@@ -2722,9 +2722,9 @@ def colorline(x, y, z=None, cmap=plt.get_cmap('copper'),
 
 
 def get_human_readable_gradations(lvls=None, vmax=10, vmin=0,
-                                  nticks=10, sigfig_rounding_on_cb=2,
-                                  sigfig_rounding_on_cb_ticks=2,
-                                  sigfig_rounding_on_cb_lvls=2, rtn_lvls_diff=False,
+                                  nticks=10, cb_sigfig=2,
+                                  cb_sigfig_ticks=2,
+                                  cb_sigfig_lvls=2, rtn_lvls_diff=False,
                                   verbose=True, debug=False):
     """
     Get human readible gradations for plotting (e.g. colorbars etc)
@@ -2762,9 +2762,9 @@ def get_human_readable_gradations(lvls=None, vmax=10, vmin=0,
         raise ValueError(err_str)
     try:
         if ((abs(int(vmin)) == 0) and (abs(int(vmax)) == 0)):
-            sigfig_rounding_on_cb += 1
+            cb_sigfig += 1
         logging.debug("Significant figures needed for plot is {sf}"
-                      .format(sf=sigfig_rounding_on_cb))
+                      .format(sf=cb_sigfig))
     except np.ma.core.MaskError:
         print('Gotcha: numpy.ma.core.MaskError')
         print((lvls, vmin, vmax))
@@ -2778,7 +2778,7 @@ def get_human_readable_gradations(lvls=None, vmax=10, vmin=0,
 #        log_diff = abs( np.log10(abs(vmax)) - np.log10(abs(vmin)) )
 #        sig_figs_needed = int(np.ceil(abs(np.log10( log_diff ))))
 #
-#    sigfig_rounding_on_cb_ticks = sig_figs_needed
+#    cb_sigfig_ticks = sig_figs_needed
 
     # significant figure ( sig. fig. ) rounding func.
 
@@ -2788,31 +2788,31 @@ def get_human_readable_gradations(lvls=None, vmax=10, vmin=0,
     # --- Get current gradations
 #    if debug:
 #        print abs(lvls[-4])-abs(lvls[-3]), abs(lvls[-4])-abs(lvls[-3]), lvls,\
-#                     sigfig_rounding_on_cb
+#                     cb_sigfig
     try:
-        lvls_diff = [round_to_n(abs(i-l[n+1]), sigfig_rounding_on_cb_ticks)
+        lvls_diff = [round_to_n(abs(i-l[n+1]), cb_sigfig_ticks)
                      for n, i in enumerate(l[:-1])]
         lvls_diff = list(set(lvls_diff))
         if len(lvls_diff) > 1:
             lvls_diff = max(lvls_diff)
 #        lvls_diff = round_to_n( abs(lvls[-3])-abs(lvls[-4]), \
-#                                sigfig_rounding_on_cb_ticks)
+#                                cb_sigfig_ticks)
 
     # handle if values (2,3) are both negative or abs. of both <0
     except:
-        debug_list = (abs(lvls[-4])-abs(lvls[-3]), sigfig_rounding_on_cb_ticks)
+        debug_list = (abs(lvls[-4])-abs(lvls[-3]), cb_sigfig_ticks)
         if debug:
             print(debug_list)
         try:    # handle if values (2,3) are both negative
             lvls_diff = round_to_n(abs(lvls[-4])-abs(lvls[-3]),
-                                   sigfig_rounding_on_cb_ticks)
+                                   cb_sigfig_ticks)
         except:  # If both absolute of vmin and vmax  are <0 ( and +ve )
             debug_list = (lvls, lvls[-3], lvls[-4],
-                          sigfig_rounding_on_cb_ticks)
+                          cb_sigfig_ticks)
             if debug:
                 print(debug_list)
             lvls_diff = round_to_n(lvls[-3]-lvls[-4],
-                                   sigfig_rounding_on_cb_ticks)
+                                   cb_sigfig_ticks)
 
     # ---  Round top of colorbar lvls, then count down from this
     # first get top numer rounded up to nearest 'lvls_diff'
@@ -2823,14 +2823,14 @@ def get_human_readable_gradations(lvls=None, vmax=10, vmin=0,
         if debug:
             print((vmax, lvls_diff))
         vmax_rounded = myround(vmax, base=lvls_diff,  integer=False)
-        vmax_rounded = round_to_n(vmax_rounded, sigfig_rounding_on_cb)
+        vmax_rounded = round_to_n(vmax_rounded, cb_sigfig)
     else:
         # <= update needed! - add function to round negative numbers
         # ( this method also fails if vmax<lvls_diff )
         vmax_rounded = vmax
 
 #    if debug:
-#        print 1, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
+#        print 1, lvls, vmax_rounded, lvls_diff, cb_sigfig_lvls
 
     lvls = np.array([vmax_rounded - lvls_diff*i
                      for i in range(nticks)][::-1])
@@ -2838,7 +2838,7 @@ def get_human_readable_gradations(lvls=None, vmax=10, vmin=0,
     logging.debug("colorbar levels are: {lvls}".format(lvls=lvls))
 #    if debug:
 #        print lvls, len( lvls )
-#        print 2, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
+#        print 2, lvls, vmax_rounded, lvls_diff, cb_sigfig_lvls
 
     # ensure returned ticks are to a maximum of 2 sig figs
     # ( this only works if all positive ) and are unique
@@ -2846,21 +2846,21 @@ def get_human_readable_gradations(lvls=None, vmax=10, vmin=0,
 #        # Make sure the colorbar labels are not repeated
 #        invalid = True
 #        while invalid:
-#            new_lvls = [ round_to_n( i, sigfig_rounding_on_cb_lvls) \
+#            new_lvls = [ round_to_n( i, cb_sigfig_lvls) \
 #                for i in lvls ]
 #            if len( set(new_lvls) ) == len(lvls):
 #                lvls = new_lvls
 #                invalid=False
 #            else: # Try with one more sig fig
-#                sigfig_rounding_on_cb_lvls += 1
+#                cb_sigfig_lvls += 1
 #
 #    except:
 #        print 'WARNING: unable to round level values to {} sig figs'.format(\
-#                   sigfig_rounding_on_cb_lvls  )
+#                   cb_sigfig_lvls  )
 
     new_lvls = []
     for level in lvls:
-        new_lvls.append(get_sigfig(level, sigfig_rounding_on_cb_lvls))
+        new_lvls.append(get_sigfig(level, cb_sigfig_lvls))
 
     lvls = new_lvls
 
@@ -2872,7 +2872,7 @@ def get_human_readable_gradations(lvls=None, vmax=10, vmin=0,
 #                lvls[n] = 0.0
 
 #    if debug:
-#        print 3, lvls, vmax_rounded, lvls_diff, sigfig_rounding_on_cb_lvls
+#        print 3, lvls, vmax_rounded, lvls_diff, cb_sigfig_lvls
 #    print [(i, type(i)) for i in vmin, vmax ], lvls
 #    print [(i, type(i)) for i in lvls ]
 

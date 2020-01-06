@@ -257,7 +257,7 @@ def setup_plot2animate(arr, fig=None, ax=None, lat=None, lon=None,
                        period=1, adjust_window=3, alpha=0.85, npoints=50,
                        everyother=1, interval=1, resolution='f', drawcountries=True,
                        cnorm=None, lvls=None, fixcb=None, positive=None,
-                       nticks=10, sigfig_rounding_on_cb=2, debug=False):
+                       nticks=10, cb_sigfig=2, debug=False):
 
     from plotting_special import get_basemap, get_colormap, \
         get_human_readable_gradations
@@ -291,7 +291,7 @@ def setup_plot2animate(arr, fig=None, ax=None, lat=None, lon=None,
     # Set readable levels for cb, then use these to dictate cmap
     lvls = get_human_readable_gradations(vmax=fixcb[1],
                                          vmin=fixcb[0], nticks=nticks,
-                                         sigfig_rounding_on_cb=sigfig_rounding_on_cb)
+                                         cb_sigfig=cb_sigfig)
 
     # Setup colour or pcolor plot
     if contour:
