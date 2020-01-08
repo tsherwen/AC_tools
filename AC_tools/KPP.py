@@ -683,7 +683,7 @@ def get_tags4family(fam='LOx', filename='gckpp_Monitor.F90',
                     Mechanism='Halogens', tag_prefix='PT', RR_dict=None, wd=None,
                     get_one_tag_per_fam=True, debug=False):
     """
-    For a P/L family tag (e.g. LOx), if there are induvidual tags then these
+    For a P/L family tag (e.g. LOx), if there are individual tags then these
     are extracted
 
     Parameters
