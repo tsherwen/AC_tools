@@ -99,6 +99,67 @@ def get_GEOSCF_as_ds_via_OPeNDAP(collection='chm_inst_1hr_g1440x721_p23',
     return ds
 
 
+def get_GEOS5_as_ds_via_OPeNDAP(collection='inst3_3d_aer_Nv',
+                                fcast_start_hour=12,
+                                mode='seamless', dt=None):
+    """
+    Get the GEOS-5 model product (GEOS-5) as a xr.Dataset (using OPeNDAP)
+
+    Parameters
+    ----------
+    mode (str): retrieve the forecast (fcast) or assimilated fields (assim) or both
+                (seemless)
+    dt (datetime.datetime): date to retrieve forecast from or assimilation for
+    collection (str): data collection to access (e.g. chm_inst_1hr_g1440x721_p23)
+    fcast_start_hour (int): hour the forcast started on a given day
+
+    Returns
+    -------
+    (xr.dataset)
+
+    NOTES
+    ---
+     - default is to get the latest forecast for chemistry (via seamless route)
+     - See documentation for details:    https://geos5.org/wiki/index.php?title=GEOS-5_Earth_System_Modeling_and_Data_Assimilation
+     - Collections include:
+     - The forecast set going at different times are for different length.
+     00 - ~10 days
+     06 - ~1.5 days
+     12 - ~5 days
+     18 - ~1.5 days
+     - the 5 day forecast for a given day is selected as default (fcast_start_hour)
+
+    """
+    # Root OPeNDAP directory
+    root_url = 'https://opendap.nccs.nasa.gov/dods/GEOS-5/fp/0.25_deg/{}/'
+    root_url = root_url.format(mode)
+    # Make up the complete URL for a forecast or assimilation field
+    if (mode == 'fcast') or (mode == 'seamless'):
+        # Which date to use?
+        if isinstance(dt, type(None)):
+            # Use the lastest file (default)
+            URL = '{}/{}.latest'.format(root_url, collection)
+        else:
+            # Use a file specified in arguments
+            correct_type = type(dt) == datetime.datetime
+            assert correct_type, "'date' variable must be a datetime.datetime object"
+            # Use the 'lastest' file (default)
+            # NOTE: lastest 12 file is used to match up with GEOS-CF
+            # TODO: update this. this will not give enough data
+            dstr = dt.strftime(format='%Y%m%d')
+            URL = '{}/{}/{}.{}_{:0>2}'
+            URL = URL.format(root_url, collection, collection, dstr, fcast_start_hour)
+    elif mode == 'assim':
+        # Just retrieve an OPeNDAP pointer to the entire dataset for now
+        URL = '{}/{}'.format(root_url, collection)
+    else:
+        print("WARNING: GEOS-5 mode provided ('{}') not known".format(mode))
+        sys.exit()
+    # Open the dataset via OPeNDAP and return
+    ds = xr.open_dataset(URL)
+    return ds
+
+
 def get_GEOS5_online_diagnostic_plots(dt=None, ptype='wxmaps',
                                       region='atlantic', field='precip',
                                       fcst=None, stream='G5FPFC',
