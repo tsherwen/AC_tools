@@ -4828,7 +4828,7 @@ def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None,
     """
     Convert species/tag prod/loss from "molec/cm3/s" to "Gg (Ox) yr^-1".
 
-    !!! This is redundent. use convert_molec_cm3_s_2_g_X_s instead. !!!
+    !!! This is redundant. use convert_molec_cm3_s_2_g_X_s instead. !!!
     ( temporarily here for get_POxLOx )
 
     NOTES:

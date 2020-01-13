@@ -2091,7 +2091,7 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=F
     title (str): plot title
     location (str): String of directory to save output
     extensions (list):  List of strings of file extensions. (e.g. ['png'])
-    tight (bool): use tight layout - redundent?
+    tight (bool): use tight layout - redundant?
 
     Returns
     -------

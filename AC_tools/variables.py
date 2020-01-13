@@ -734,7 +734,7 @@ def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
         d = {
             'LO3_18': 2.0, 'LO3_03': 1.0,  'PO3_14': 1.0, 'RD65': 1.0, 'LR25': 1.0,
             'LOH': 1.0, 'POH': 1.0, 'LO3_86': 1.0, 'RD98': 1.0, \
-            # Redundent: 'RD95': 1.0,
+            # Redundant: 'RD95': 1.0,
             # also include HO2 and OH for HOx calculations
             'OH': 1.0, 'HO2': 1.0
         }
@@ -890,7 +890,7 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,
 
     Notes
     -----
-     - Is this redundent now with the species class?
+     - Is this redundant now with the species class?
      - "Appropirate" unit is taken from GEOS-Chem input.geos
      - Option to use IUPAC unit. ( set IUPAC_unit==True )
     """
@@ -1144,7 +1144,7 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
     Notes
     -----
      - A lot of this dictionary is vestigial. consider removing entirely?
-        or moving to redundent section
+        or moving to redundant section
      - Variables includes:
     f_var = GC flux (EW, NS , UP) variables
     Ox = 'Ox', 'POX', 'LOX' + list of drydep species

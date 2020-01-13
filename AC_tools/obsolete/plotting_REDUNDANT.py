@@ -2618,7 +2618,7 @@ def zonal_plot(arr, fig, ax=None, title=None, tropics=False, f_size=10,
                lat_0=None, lat_1=None, lat40_2_40=False, xlabel=True,
                mask_invalids=False,
                trop_limit=True, verbose=True, debug=False, \
-               # redundent?
+               # redundant?
                lower_limited=False, nlvls=25,
                ):
     """

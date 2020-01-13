@@ -16,7 +16,7 @@ from . plotting import *
 
 from . SMVGEAR import *
 from . variables import *
-# include the redundent files for now
+# include the redundant files for now
 from . obsolete.plotting_REDUNDANT import *
 from . obsolete.variables_REDUNDANT import *
 

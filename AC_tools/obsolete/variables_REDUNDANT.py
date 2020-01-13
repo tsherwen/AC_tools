@@ -236,7 +236,7 @@ def what_species_am_i(input=None, V_9_2=True, V_9_2_C=False, ver='1.7',
     res (string): the resolution if wd not given ( e.g. '4x5')
     invert (bool): invert dictionary keys and values
     debug = False (legacy debug, replaced by logging)
-    V_9_2, V_9_2_C = redundent oiption swicthes for previous GEOS-Chem versions
+    V_9_2, V_9_2_C = redundant oiption swicthes for previous GEOS-Chem versions
     special_case = overide seclected species dictionary
 
     Returns

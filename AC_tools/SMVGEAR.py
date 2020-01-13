@@ -29,7 +29,7 @@ from .GEOSChem_nc import *
 
 
 # -------------- Smvgear input/output file Processing
-# NOTE: this is now redundent as GEOS-Chem uses KPP going forward. procssing/parsing
+# NOTE: this is now redundant as GEOS-Chem uses KPP going forward. procssing/parsing
 #       scripts are  also present in AC_tools for KPP.
 def prt_Prod_Loss_list4input_geos(spec_list=None, prefix_list=None, start_num=1):
     """
@@ -114,7 +114,7 @@ def rxn_dict_from_smvlog(wd, PHOTOPROCESS=None, ver='1.7',
     Notes
     -----
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11)
-    will make it redundent and therefore this is not being maintained.
+    will make it redundant and therefore this is not being maintained.
     """
 
     if isinstance(PHOTOPROCESS, type(None)):
@@ -198,7 +198,7 @@ def rxns_in_pl(wd, spec='LOX', debug=False):
     Notes
     -----
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11)
-    will make it redundent and therefore this is not being maintained.
+    will make it redundant and therefore this is not being maintained.
     """
 
     fn = 'smv2.log'
@@ -258,7 +258,7 @@ def rxn4pl(pls, wd='example/example', rdict=None, reduce_size=True,
     Notes
     -----
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11)
-    will make it redundent and therefore this is not being maintained.
+    will make it redundant and therefore this is not being maintained.
     """
 
     # ---  Get Dict of reaction detail
@@ -312,7 +312,7 @@ def get_indicies_4_fam(tags, fam=False, IO_BrOx2=False, rtnspecs=False,
     Notes
     -----
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11)
-    will make it redundent and therefore this is not being maintained.
+    will make it redundant and therefore this is not being maintained.
     """
     # assign family
 #    famsn = [ 'Photolysis','HOx','NOy' ,'Bromine', 'Iodine' ]
@@ -384,7 +384,7 @@ def get_p_l_tags(rxns, debug=False):
     Notes
     -----
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11)
-    will make it redundent and therefore this is not being maintained.
+    will make it redundant and therefore this is not being maintained.
 
     """
 
@@ -422,7 +422,7 @@ def p_l_species_input_geos(wd, ver='1.7', rm_multiple_tagged_rxs=False, debug=Fa
     Notes
     -----
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11)
-    will make it redundent and therefore this is not being maintained.
+    will make it redundant and therefore this is not being maintained.
     """
     # find and open input.geos file
     fn = glob.glob(wd+'/*input.geos*')[0]
@@ -485,7 +485,7 @@ def tags_from_smvlog(wd):  # , spec='LOX' ):
     Notes
     -----
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11)
-    will make it redundent and therefore this is not being maintained.
+    will make it redundant and therefore this is not being maintained.
     """
     fn = 'smv2.log'
     file_ = open(wd+'/'+fn, 'r')
@@ -518,7 +518,7 @@ def PDs_from_smvlog(wd, spec='LOX'):
     Notes
     -----
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11)
-    will make it redundent and therefore this is not being maintained.
+    will make it redundant and therefore this is not being maintained.
     """
     fn = 'smv2.log'
     file_ = open(wd+'/'+fn, 'r')
@@ -555,7 +555,7 @@ def rxns4tag(tag, rdict=None, ver='1.7', wd=None):
     Notes
     -----
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11)
-    will make it redundent and therefore this is not being maintained.
+    will make it redundant and therefore this is not being maintained.
     """
     # --- get reaction dictionary
     if isinstance(rdict, type(None)):
@@ -599,7 +599,7 @@ def get_tag_details(wd, tag=None, PDs=None,  rdict=None, PHOTOPROCESS=None, ver=
     Notes
     -----
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11)
-    will make it redundent and therefore this is not being maintained.
+    will make it redundant and therefore this is not being maintained.
     """
 
     # what is the number of the first photolysis reaction?
@@ -652,7 +652,7 @@ def get_rxn_Coe(wd, num, tag, nums=None, rxns=None, tags=None, Coe=None, spec='L
      - This is no longer the case. However, previously if using dev.
     Iy scheme, then the listed values from fuction Ox_in_species() will be used.
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11)
-    will make it redundent and therefore this is not being maintained.
+    will make it redundant and therefore this is not being maintained.
     """
 
     # --- get dictionaries for reactions within
@@ -694,7 +694,7 @@ def get_pldict_reactants(pl_dict=None, only_rtn_tracers=True, rm_OH=True, rm_Cl=
     ( to remove these set only_rtn_tracers=True )
      - to remove OH from reactant list set rm_OH=True
      - This function is useful, but update to GEOS-Chem flexchem ( in >v11)
-    will make it redundent and therefore this is not being maintained.
+    will make it redundant and therefore this is not being maintained.
     """
 #    non_TRAs = ['CH4', '', 'ETHLN', 'ISOPND', 'E', 'M', 'HCO', 'MVKN', 'ACTA']
 
@@ -774,7 +774,7 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5', verbose=False, debug=
         print('update programme - manual PLdict now obsolete. ')
 
 
-def get_pl_dict(wd, spec='LOX', rmx2=False, ver='1.7', rm_redundent_ClBrI_tags=False,
+def get_pl_dict(wd, spec='LOX', rmx2=False, ver='1.7', rm_redundant_ClBrI_tags=False,
                 debug=False):
     """
     Get reaction IDs for each rxn. in spec (p/l, e.g. LOX). This is the driver for
@@ -839,7 +839,7 @@ def get_pl_dict(wd, spec='LOX', rmx2=False, ver='1.7', rm_redundent_ClBrI_tags=F
         ]
         # Use Justin's 'LR??'/Johan's JTO1 tags in preference to 'LO3??' tags
         # This is an Kludge that only is necessary for "NOHAL" runs
-        if rm_redundent_ClBrI_tags:
+        if rm_redundant_ClBrI_tags:
             d += [
                 ['LR6', 'LO3_73'], ['LR5',  'LO3_73'], ['LR10', 'LO3_74'],
                 ['LR25', 'LO3_84'], ['LO3_82', 'LO3_82'], ['LO3_76', 'LO3_76'],
@@ -853,7 +853,7 @@ def get_pl_dict(wd, spec='LOX', rmx2=False, ver='1.7', rm_redundent_ClBrI_tags=F
         # Either one can be removed as currently two will be present and both #
         # are  equally weighted by use of the Ox_in_species diagnostic ...
         # ( However, this  only if all are equiv. )
-        if rm_redundent_ClBrI_tags:
+        if rm_redundant_ClBrI_tags:
             # Drop the 2nd element in "d" list #
             d = [i[1] for i in d]
         else:
