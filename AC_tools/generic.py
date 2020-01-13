@@ -429,19 +429,41 @@ def split_data_by_days(data=None, dates=None, day_list=None,
     return data4days, day_list
 
 
-def get_linear_ODR(x=None, y=None, job=10, maxit=5000, beta0=(0, 1),
+def get_linear_ODR(x=None, y=None, maxit=5000, beta0=(0, 1),
                    xvalues=None, return_model=True, debug=False, verbose=False):
     """
-    Wrapper to run ODR for arrays of x and y
+    Wrapper to run a orthogonal distance regression (ODR) for arrays of x and y.
 
-    NOTES
-    -----
-    adapted from example in manual
-    (https://docs.scipy.org/doc/scipy/reference/odr.html)
+    Parameters
+    ----------
+    x (np.array): np.array of x values
+    y (np.array): np.array of y values
+    maxit (int): integer specifying the maximum number of iterations to perform.
+                 For first runs, maxit is the total number of iterations performed
+                 and defaults to 50 (in core implimentation, here =1000). For restarts,
+                 maxit is the number of additional iterations to perform and defaults
+                 to 10.
+    beta0 (array_like): starting parameters to use (e.g. y = mx+ c for linear model).
+                        default is a 1:1 line between x and y, with an intercept of 0.
+    xvalues (array): values of x to predict over with model
+    return_model (bool): return the model object
+    verbose (bool): print out extra information
+    debug (bool): print out debugging information
+
+    Returns
+    -------
+    (myodr.run or predicted X & Y)
+
+    Notes
+    -------
+     - The function is setup to either return the ODR model or
+     - For original implementation in Fortran, please see the
+    https://docs.scipy.org/doc/external/odrpack_guide.pdf
+     - Wrapper adapted from example in manual
+    https://docs.scipy.org/doc/scipy/reference/odr.html
     """
     import scipy.odr
     # Setup linear model to fit
-
     def f(B, x):
         '''Linear function y = m*x + b'''
         # B is a vector of the parameters.
@@ -452,16 +474,16 @@ def get_linear_ODR(x=None, y=None, job=10, maxit=5000, beta0=(0, 1),
         return B[0]*x + B[1]
     # Create a model
     linear = scipy.odr.Model(f)
-    # Create a Data or RealData instance.:
+    # Create a Data or RealData instance
     mydata = scipy.odr.Data(x, y)
-    # Instantiate ODR with your data, model and initial parameter estimate.:
-#    myodr = scipy.odr.ODR(mydata, linear, beta0=[1., 2.])
-    myodr = scipy.odr.ODR(mydata, linear, beta0,  maxit=maxit, job=job)
-    # Run the fit.:
+    # Instantiate ODR with your data, model and initial parameter estimate
+    myodr = scipy.odr.ODR(mydata, linear, beta0,  maxit=maxit, job=None)
+    # Run the fit:
     myoutput = myodr.run()
-    # Examine output.:
+    # Examine output
     if verbose:
         myoutput.pprint()
+    # Return either the entire outputted object, or predicted X and Y values.
     if return_model:
         return myoutput
     else:
@@ -781,8 +803,8 @@ def interpolate_sparse_grid2value(Y_CORDS=None, X_CORDS=None,
     XY (array): array of values with shape (X_CORDS, Y_CORDS)
     buffer_CORDS (int): number of units of X_CORDS and Y_CORDS to interpolate
         around (great this value, greater the cost.)
-    verbose (bool): print out extra infomation
-    debug (bool): print out debugging infomation
+    verbose (bool): print out extra information
+    debug (bool): print out debugging information
 
     Returns
     -------
