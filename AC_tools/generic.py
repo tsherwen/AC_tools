@@ -11,6 +11,7 @@ NOTE(S):
 """
 # - Required modules:
 # I/O / Low level
+import os
 import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
@@ -1099,6 +1100,19 @@ def rm_spaces_and_chars_from_str(input_str, remove_slashes=True,
     if swap_pcent:
         input_str = input_str.replace("%", 'pcent')
     return input_str
+
+
+def mk_folder(folder=None, verbose=False):
+    """
+    Make a folder at provided location string
+    """
+    if os.path.isdir(folder):
+        if verbose:
+            print('WARNING: folder already exists ({})'.format(folder))
+    else:
+        os.makedirs(folder)
+        if verbose:
+            print('Created folder for data ({})'.format(folder))
 
 
 def get_avg_2D_conc_of_X_weighted_by_Y(ds, Xvar=None, Yvar='AREA', Yda=None):
