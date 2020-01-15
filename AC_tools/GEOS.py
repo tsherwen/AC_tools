@@ -216,7 +216,7 @@ def get_GEOS5_online_diagnostic_plots(dt=None, ptype='wxmaps',
         # Request URL and then get images from location
         r = requests.get(URL)
         html = r.text
-        soup = BeautifulSoup(html, 'lxml')
+        soup = BeautifulSoup(html, "html.parser")
         images = soup.findAll('img')
         # check that the URL was correct
         assert len(images) > 0, 'WARNING: No images found @ URL ({})'.format(URL)
