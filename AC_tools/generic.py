@@ -1115,6 +1115,24 @@ def mk_folder(folder=None, verbose=False):
             print('Created folder for data ({})'.format(folder))
 
 
+def rm_file(folder=None, filename=None, verbose=False, debug=False):
+    """
+    Remove a specific file from the working directory or a provided folder
+    """
+    # Use the current directory if no folder set
+    if isinstance(folder, type(None)):
+        folder = './'
+    # Try and remove the file if present
+    try:
+        os.remove(folder+filename)
+        if verbose:
+            print('Removed file: {}'.format(folder+filename))
+    except FileNotFoundError:
+        pstr = "WARNING: File was not removed as it doesn't exit: {}"
+        if verbose:
+            print( pstr.format(folder+filename) )
+
+
 def get_avg_2D_conc_of_X_weighted_by_Y(ds, Xvar=None, Yvar='AREA', Yda=None):
     """
     Get average 2D concentration of X (e.g. O3 v/v) weighted by Y (e.g. surface area)
