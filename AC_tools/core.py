@@ -475,6 +475,30 @@ def hPa_to_Km(input, reverse=False, debug=False):
         return [-7.6*np.log(float(i) / 1013.) for i in input]
 
 
+def km2nautical_miles(input):
+    """
+    Convert km into nautical miles
+    """
+    return [i*0.539957 for i in input]
+
+
+def km2degrees(aproximate=True):
+    """
+    Convert km into degrees
+    """
+    if aproximate:
+        return [i/110. for i in input]
+    else:
+        print('TODO: setup a full calculation for km from degrees lon')
+
+
+def m2ft(input):
+    """
+    Convert m into ft (or km to kft)
+    """
+    return [i*3.281 for i in input]
+
+
 def find_nearest_value(array, value):
     """
     Find nearest point.

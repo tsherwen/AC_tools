@@ -236,7 +236,7 @@ def get_GEOS5_online_diagnostic_plots(dt=None, ptype='wxmaps',
 
 def get_GEOS5_datagram_plots( dt=None, stream='G5FPFC', folder=None,
                               prefix='ARNA', plts2get=['du_16.7_-23.0'],
-                              verbose=False ):
+                              verbose=False, debug=False ):
     """
     Get GEOS5 datagram plots and save these locally
 
@@ -272,5 +272,7 @@ def get_GEOS5_datagram_plots( dt=None, stream='G5FPFC', folder=None,
         # Download using wget through python
         fstr = '{}_{}_{}_datagram_{}.png'.format( prefix, stream, date_str, plt2get )
         filename = fstr.format(date_str, stream, )
+        if debug:
+            print( 'Getting {} and saving here: {}'.format(url, folder+filename) )
         wget.download(url, folder+filename)
 
