@@ -1132,6 +1132,36 @@ def rm_file(folder=None, filename=None, verbose=False, debug=False):
         if verbose:
             print( pstr.format(folder+filename) )
 
+def get_stats_on_files_in_folder_as_dict(folder=None):
+    """
+    Get statistics on files in a folder
+    """
+    # Setup a dictionary to hold info on the files
+    d = {}
+    # list all files in the folder
+    files = glob.glob( '{}/*'.format(folder) )
+    nfiles = len(files)
+    d['#'] = nfiles
+    if len(files) == 0:
+        print('WARNING: No files found in directory')
+        return d
+    else:
+        # get the sizes of the files
+        sizes = [os.path.getsize(i) for i in files]
+        # get the extensions of the files
+        extensions = [i.split('.')[-1] for i in files]
+        extensions = list(set(extensions))
+        d['Extensions'] = extensions
+        # smallest sixe
+        d['Min. size'] = np.min(sizes)
+        # largest size
+        d['Max. size'] = np.max(sizes)
+        # mean size
+        d['Mean size'] = AC.myround(np.mean(sizes), base=0.1, integer=False)
+        # mediun size
+        d['Medium size'] = np.percentile(sizes, 50)
+        return d
+
 
 def get_avg_2D_conc_of_X_weighted_by_Y(ds, Xvar=None, Yvar='AREA', Yda=None):
     """
