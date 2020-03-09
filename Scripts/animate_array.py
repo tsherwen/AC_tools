@@ -6,7 +6,7 @@ import time
 import numpy as np
 import gc
 import datetime
-from . import AC_tools as AC
+import AC_tools as AC
 """
 Animate a NetCDF array to give a video of 2D (surface)
 """

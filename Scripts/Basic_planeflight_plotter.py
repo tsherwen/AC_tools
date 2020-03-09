@@ -4,7 +4,7 @@
 import glob
 import sys
 import matplotlib.pyplot as plt
-from . import AC_tools as AC
+import AC_tools as AC
 
 # --------- SET PLOTTING HERE ----------------------------------------
 # -------------

@@ -14,7 +14,7 @@ import os.path
 import sys
 import numpy as np
 from pandas import DataFrame
-from . import AC_tools as AC
+import AC_tools as AC
 
 # ---  Master  settings for main call
 # Verbose/debug output? (set  debug=True)

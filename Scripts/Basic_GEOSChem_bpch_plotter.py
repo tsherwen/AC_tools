@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # modules
-from . import AC_tools as AC
+import AC_tools as AC
 import numpy as np
 import sys
 import matplotlib.pyplot as plt
