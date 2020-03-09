@@ -6,9 +6,9 @@ Automatically tag reactions in a GEOS-Chem (KPP) mechansim for a given family
 
 Notes
 -------
- - This script using AC_tools with contains functions to extract data from KPP mechanism files. This utilizes the fact that:
-     - KPP mechanisms are contructed and information can be extracted from both the produced files (e.g. gckpp_Monitor.F90) and those the mechanism is constructed from (e.g. *.eqn)
-     - When using P/L tagging, the output P/L infomation (e.g. rxns in family and their stiochmetry in gckpp_Monitor.F90) can be used to add more specific tags/for post-processing
+ - This script using AC_tools contains functions to extract data from KPP mechanism files. This utilizes the fact that:
+     - KPP mechanisms are constructed and information can be extracted from both the produced files (e.g. gckpp_Monitor.F90) and those the mechanism is constructed from (e.g. *.eqn)
+     - When using P/L tagging, the output P/L information (e.g. rxns in family and their stoichiometry in gckpp_Monitor.F90) can be used to add more specific tags/for post-processing
 
 """
 # Compatibility with both python 2 and 3
@@ -35,9 +35,9 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
     -------
     print_formatted_KPP_file (bool): Save the uniformly formated .eqn file
     folder (str): folder of GEOS-Chem code directory
-    mechanism (str): mechanism to create tag files for ?
+    mechanism (str): KPP mechanism to create tag files for (e.g. Standard)
     GC_version (str): version of GEOS-Chem (e.g. v11-2)
-    debug (bool): print out extra infomation for debugging
+    debug (bool): print out extra information for debugging
     verbose (bool): print out extra information during processing
 
     Returns
