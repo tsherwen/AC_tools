@@ -18,10 +18,11 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from netCDF4 import Dataset
-from . import AC_tools as AC
+import AC_tools as AC
 import matplotlib.pyplot as plt
 import datetime as datetime
 import glob
+import re
 
 
 def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
