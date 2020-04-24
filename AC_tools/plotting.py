@@ -165,7 +165,8 @@ def plt_df_X_vs_Y(df=None, x_var='', y_var='', x_label=None, y_label=None,
         plt.savefig(png_filename, dpi=dpi)
 
 
-def plt_df_X_vs_Y_hexbin(x=None, y=None, c=None, xscale='linear', yscale='linear',
+def plt_df_X_vs_Y_hexbin(x=None, y=None, c=None, xscale='linear',
+                         yscale='linear',
                          gridsize=(150, 150),
                          fig=None, ax=None, xlimit=None, ylimit=None, dpi=320,
                          xlabel=None, ylabel=None, clabel=None, cmap=None,
@@ -354,13 +355,16 @@ def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
 
 def BASIC_diel_plot(fig=None, ax=None, dates=None, data=None, color='red',
                     title=None, label=None, plt_legend=None, plt_xlabel=True,
-                    plt_ylabel=True, show_plt=False, plot_pcent_change_from_max=False,
+                    plt_ylabel=True, show_plt=False,
+                    plot_pcent_change_from_max=False,
                     units='ppbv', spec='O3', alt_text=None, loc='best',
-                    filename2save='diel_plot.png', save_plt=False, show_plot=False,
+                    filename2save='diel_plot.png', save_plt=False,
+                    show_plot=False,
                     stat2plot='50%', alpha=0.3, time_resolution_str="%H",
                     add_quartiles2plot=True, return_avgs=True, ls='-', ncol=1,
                     xlabel='Hour of day (UTC)', debug=False, lw=2,
-                    force_repeat_of_first_hour_as_last_hour=False, update_xticks=True):
+                    force_repeat_of_first_hour_as_last_hour=False,
+                    update_xticks=True):
     """
     Creates a diel plot for given data and dates
 
@@ -506,8 +510,10 @@ def BASIC_seasonal_plot(dates=None, data=None, ax=None,
                         return_avgs=False,
                         plt_median=False, plot_Q1_Q3=False,
                         xtickrotation=45, alt_text=None, alt_text_x=.925,
-                        alt_text_y=.925, xlabel=True, rm_yticks=False, log=False,
-                        pcent1=25, pcent2=75, color='red', lw=1, ls='-', label=None,
+                        alt_text_y=.925, xlabel=True, rm_yticks=False,
+                        log=False,
+                        pcent1=25, pcent2=75, color='red', lw=1, ls='-',
+                        label=None,
                         ylim=None, debug=False):
     """
     Plot up a basic seasonal plot - adapted from AC_tools
@@ -612,10 +618,13 @@ def BASIC_seasonal_plot(dates=None, data=None, ax=None,
 def binned_boxplots_by_altitude(df=None, fig=None, ax=None, dataset_name=None,
                                 num_of_datasets=1, dataset_num=0, label='Obs.',
                                 showfliers=False,
-                                bins=np.arange(8), binned_var='O3', var2bin_by='ALT',
-                                color=None, dpi=320, xlabel=None, ylabel='Altitude (km)',
+                                bins=np.arange(8), binned_var='O3',
+                                var2bin_by='ALT',
+                                color=None, dpi=320, xlabel=None,
+                                ylabel='Altitude (km)',
                                 title=None,
-                                show_plot=False, widths=0.3, verbose=False, debug=False):
+                                show_plot=False, widths=0.3, verbose=False,
+                                debug=False):
     """
     Plot up dataset (1 or more) as boxplots binned by altitude
 
@@ -684,7 +693,8 @@ def binned_boxplots_by_altitude(df=None, fig=None, ax=None, dataset_name=None,
         sys.exit()
     # - Add plots
     bp = ax.boxplot(x=data, positions=positions, patch_artist=True,
-                    widths=widths, notch=False, vert=False, showfliers=showfliers)
+                    widths=widths, notch=False, vert=False,
+                    showfliers=showfliers)
     # add an (invisible) plot to carry the label
     ax.plot([], [], label=label, color=color)
     # - Beautify
@@ -716,7 +726,8 @@ def binned_boxplots_by_altitude(df=None, fig=None, ax=None, dataset_name=None,
         plt.show()
 
 
-def scatter_3D_cube(data, dims=None, res='2x2.5', fig=None, everyother=1, interval=1,
+def scatter_3D_cube(data, dims=None, res='2x2.5', fig=None, everyother=1,
+                    interval=1,
                     f_size=20, cm='RdYlBu', debug=False):
     """
     Make a 3D scatter cube of given 3D array
@@ -757,17 +768,23 @@ def scatter_3D_cube(data, dims=None, res='2x2.5', fig=None, everyother=1, interv
 
 
 def plot_zonal_figure(arr, fixcb=None, cb_sigfig=2, ax=None,
-                      norm=None, nticks=10, format=None, units=None, extend='neither',
-                      discrete_cmap=False, f_size=15, fig=None, res='4x5', wd=None,
+                      norm=None, nticks=10, format=None, units=None,
+                      extend='neither',
+                      discrete_cmap=False, f_size=15, fig=None, res='4x5',
+                      wd=None,
                       t_ps=None,
-                      trop_limit=True, axn=None, cb_ax=None, orientation='vertical',
+                      trop_limit=True, axn=None, cb_ax=None,
+                      orientation='vertical',
                       rotatecbunits='vertical', width=0.015, height=0.6,
-                      bottom=0.1, top=0.925, hspace=0.4, wspace=0.5, left=0.075,
+                      bottom=0.1, top=0.925, hspace=0.4, wspace=0.5,
+                      left=0.075,
                       right=0.875,
                       cb_bottom=0.125, cb_height=0.825, cb_left=0.885, dpi=160,
                       no_cb=True,
-                      region='All', lat_0=None, lat_1=None, pdftitle=None, return_m=False,
-                      rtn_plt_vars=False, set_window=False, pdf=False, show=True,
+                      region='All', lat_0=None, lat_1=None, pdftitle=None,
+                      return_m=False,
+                      rtn_plt_vars=False, set_window=False, pdf=False,
+                      show=True,
                       log=False,
                       window=False, xlabel=True, ylabel=True, title=None,
                       interval=None, verbose=False, debug=False):
@@ -914,10 +931,13 @@ def plot_arr_avg_Q1_Q3(X, Y, ax=None, color='blue', label=None,
 
 
 def X_stackplot(X=None, Y=None, labels=None, baseline='zero',
-                fig=None, ax=None, dpi=160, show=False, f_size=10, legend=False,
-                colors=None, title=None, loc='upper right', ylim=None, xlim=None,
+                fig=None, ax=None, dpi=160, show=False, f_size=10,
+                legend=False,
+                colors=None, title=None, loc='upper right', ylim=None,
+                xlim=None,
                 lw=8.0, ylabel=None, xlabel=False, log=False, rm_ticks=False,
-                alt_text_x=.15, alt_text_y=0.75, alt_text=None, ncol=1, pcent=False,
+                alt_text_x=.15, alt_text_y=0.75, alt_text=None, ncol=1,
+                pcent=False,
                 stacked=False, verbose=False, debug=False):
     """
     Make a stacked plot (by X axis) for values in Y array.
@@ -925,7 +945,7 @@ def X_stackplot(X=None, Y=None, labels=None, baseline='zero',
     Parameters
     -------
     X (list): list of numpy arrays to plot as X
-    Y (array): must be a numpy array use use as Y
+    Y (array): must be a numpy array use as Y
     labels (list): list of labels for stack data
     baseline (str): if =='zero' then start filling from zero.
 
@@ -1057,12 +1077,16 @@ def X_stackplot(X=None, Y=None, labels=None, baseline='zero',
 
 
 def plot_lons_lats_spatial_on_map_CARTOPY(central_longitude=0,
-                                          lats=None, lons=None, add_background_image=True,
-                                          projection=ccrs.PlateCarree, fig=None, ax=None,
-                                          marker='o', s=50, color='red', show_plot=False,
+                                          lats=None, lons=None,
+                                          add_background_image=True,
+                                          projection=ccrs.PlateCarree,
+                                          fig=None, ax=None,
+                                          marker='o', s=50, color='red',
+                                          show_plot=False,
                                           dpi=320, label=None, alpha=1,
                                           add_gridlines=True,
-                                          buffer_degrees=20, add_detailed_map=False):
+                                          buffer_degrees=20,
+                                          add_detailed_map=False):
     """
     Plot a list of lons and lats spatially on a map (using cartopy)
 
@@ -1337,7 +1361,8 @@ def mask_not_obs(loc='Denmark', res='4x5', debug=False):
 
 
 def annotate_gc_grid(ax, res='4x5', f_size=6.5,
-                     loc_list=[[-9999, -9999]], everyother=1, label_gc_grid=True):
+                     loc_list=[[-9999, -9999]], everyother=1,
+                     label_gc_grid=True):
     """
     Annotate grid with GEOS-Chem indices
     """
@@ -1371,8 +1396,10 @@ def annotate_gc_grid(ax, res='4x5', f_size=6.5,
 
 
 def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, upper=1,
-                    start_center=0.5, stop=1.0, maintain_scaling=True, arr=None,
-                    name='shiftedcmap', npoints=257, verbose=True, debug=False):
+                    start_center=0.5, stop=1.0, maintain_scaling=True,
+                    arr=None,
+                    name='shiftedcmap', npoints=257, verbose=True,
+                    debug=False):
     """
     ORGINAL DESCRIPTION: Function to offset the "centre" of a colormap. Useful
     for data with a negative min and positive max and you want the middle of
@@ -1457,7 +1484,8 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, lower=0, upper=1,
 
 
 def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,
-          orientation='vertical', f_size=20, rotatecbunits='vertical', nticks=10,
+          orientation='vertical', f_size=20, rotatecbunits='vertical',
+          nticks=10,
           extend='neither', norm=None, log=False, format=None, cmap=None,
           vmin=0, vmax=10, cb_ax=None, ticklocation='auto', extendfrac=None,
           cb_sigfig=2, lvls=None, discrete_cmap=False,
@@ -1602,7 +1630,8 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,
                                        boundaries=boundaries,
                                        spacing='proportional',
                                        #                spacing='uniform',
-                                       orientation=orientation, ticklocation=ticklocation)
+                                       orientation=orientation,
+                                       ticklocation=ticklocation)
 
     # Standard approach below
     else:
@@ -1611,7 +1640,8 @@ def mk_cb(fig, units=None, left=0.925, bottom=0.2, width=0.015, height=0.6,
                    cb_ax))
         cb = mpl.colorbar.ColorbarBase(cb_ax, cmap=cmap, format=format,
                                        norm=norm, ticks=lvls, extend=extend,
-                                       orientation=orientation, ticklocation=ticklocation)
+                                       orientation=orientation,
+                                       ticklocation=ticklocation)
 
     if log:
         def round_to_n(x, n): return round(x, -int(floor(log10(x))) + (n - 1))
@@ -1646,7 +1676,7 @@ def get_colormap(arr,  center_zero=True, minval=0.15, maxval=0.95,
     Parameters
     ----------
     arr (array): array of values to assess colourbar from
-    center_zero (bool): make sure (divergent) colorbar centered around zero
+    center_zero (bool): make sure (divergent) colorbar centred around zero
     minval, maxval (float): values to restrict 'gnuplot2' to
     npoints (int): number of points in colormap
     cb (str): name of colorbar string
@@ -1655,7 +1685,7 @@ def get_colormap(arr,  center_zero=True, minval=0.15, maxval=0.95,
     positive (bool): force colormap to be sequential positive (==True)
     divergent (bool): force colormap to be divergent (==True)
     cb_sigfig (int): number of sig. figs. to round colourbar ticks
-    buffer_cmap_upper (bool): make sure colorbar has space for maxiumium val.
+    buffer_cmap_upper (bool): make sure colorbar has space for maximum val.
     fixcb (array): lower and upper values to fix colourmap to.
     nticks (int): number of ticks to use for colorbar
     verbose (bool): legacy debug option, replaced by python logging
@@ -1681,7 +1711,8 @@ def get_colormap(arr,  center_zero=True, minval=0.15, maxval=0.95,
     # i.e head of colormap often rounded for ascetic/readability reasons
     if buffer_cmap_upper:
         lvls, lvls_diff = get_human_readable_gradations(vmax=fixcb[1],
-                                                        vmin=fixcb[0], nticks=nticks,
+                                                        vmin=fixcb[0],
+                                                        nticks=nticks,
                                                         rtn_lvls_diff=True,
                                                         cb_sigfig=cb_sigfig
                                                         )
@@ -1849,7 +1880,8 @@ def colorline(x, y, z=None, cmap=plt.get_cmap('copper'),
     # convert x and y into indices
     segments = make_segments(x, y)
 
-    lc = mpl.collections.LineCollection(segments, array=z, cmap=cmap, norm=norm,
+    lc = mpl.collections.LineCollection(segments, array=z, cmap=cmap,
+                                        norm=norm,
                                         linewidth=linewidth, alpha=alpha)
 
     if isinstance(ax, type(None)):
@@ -2071,18 +2103,23 @@ def mk_discrete_cmap(lvls=None, cmap=None, rtn_norm=False,
 
 
 def show_plot():
-    """ Wrapper for plt.show(). Use to plot to screen """
+    """
+    Wrapper for plt.show(). Use to plot to screen
+    """
     plt.show()
     return
 
 
 def close_plot():
-    """ Wrapper for plt.close(). Use to closes plots on screen """
+    """
+    Wrapper for plt.close(). Use to closes plots on screen
+    """
     plt.close()
     return
 
 
-def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'], tight=False):
+def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'],
+              tight=False):
     """
     Save a plot to disk.
 
