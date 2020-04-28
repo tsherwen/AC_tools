@@ -242,7 +242,8 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False,
 
 
 def get_latlonalt4res(res=None, centre=True, hPa=False, nest=None,
-                      dtype=None, wd=None, filename='ctm.nc', full_vertical_grid=False,
+                      dtype=None, wd=None, filename='ctm.nc',
+                      full_vertical_grid=False,
                       lat_bounds='latitude_bnds', lon_bounds='longitude_bnds',
                       lon_var='longitude', lat_var='latitude', \
                       #        lon_var=u'lon', lat_var=u'lat',
@@ -403,8 +404,9 @@ def get_latlonalt4res(res=None, centre=True, hPa=False, nest=None,
             lat = np.arange(-90, 90+step_size, step_size)
             lon = np.arange(-180, 180, step_size)
         else:
-            lat = np.array(
-                [-90]+list(np.arange(-89-(step_size/2), 90+(step_size/2), step_size))+[90])
+            lat = np.array([-90]+list(np.arange(-89-(step_size/2),
+                           90+(step_size/2),step_size))+[90]
+                           )
             lon = np.arange(-180-(step_size/2), 180+(step_size/2), step_size)
     # Manually set values for (generic?) 0.5x0.5 grid
     if res == '0.5x0.5':
@@ -413,8 +415,9 @@ def get_latlonalt4res(res=None, centre=True, hPa=False, nest=None,
             lat = np.array([-90]+list(np.arange(-89, 90, step_size))+[90])
             lon = np.arange(-180, 180, step_size)
         else:
-            lat = np.array(
-                [-90]+list(np.arange(-89.75, 90+(step_size/2), step_size))+[90])
+            lat = np.array([-90]+list(np.arange(-89.75, 90+(step_size/2),
+                           step_size))+[90]
+                           )
             lon = np.arange(-180-(step_size/2), 180+(step_size/2), step_size)
     # Manually set values for 0.1x0.1
     # Manually set values for 0.083x0.083
@@ -558,13 +561,13 @@ def iGEOSChem_ver(wd, also_return_GC_version=False, verbose=True, debug=False):
     if also_return_GC_version:
         # list GEOS-Chem versions (written with dashes and underscores)
         versions = [
-            'v11-02', 'v12.0.0',
-            'v11-01', 'v11_01', 'v10-01', 'v10_01', 'v9-02', 'v9_02', 'v9-01-03',
-            'v9_01_03', 'v9-01-02', 'v9_01_02', 'v9-01-01', 'v9_01_01', 'v8-03-02',
-            'v8_03_02', 'v8-03-01', 'v8_03_01', 'v8-02-04', 'v8_02_04', 'v8-02-03',
-            'v8_02_03', 'v8-02-02', 'v8_02_02', 'v8-02-01', 'v8_02_01', 'v8-01-04',
-            'v8_01_04', 'v8-01-03', 'v8_01_03', 'v8-01-02', 'v8_01_02', 'v8-01-01',
-            'v8_01_01', 'v7-04-13', 'v7_04_13', 'v7-04-12', 'v7_04_12'
+        'v11-02', 'v12.0.0',
+        'v11-01', 'v11_01', 'v10-01', 'v10_01', 'v9-02', 'v9_02', 'v9-01-03',
+        'v9_01_03', 'v9-01-02', 'v9_01_02', 'v9-01-01', 'v9_01_01', 'v8-03-02',
+        'v8_03_02', 'v8-03-01', 'v8_03_01', 'v8-02-04', 'v8_02_04', 'v8-02-03',
+        'v8_02_03', 'v8-02-02', 'v8_02_02', 'v8-02-01', 'v8_02_01', 'v8-01-04',
+        'v8_01_04', 'v8-01-03', 'v8_01_03', 'v8-01-02', 'v8_01_02', 'v8-01-01',
+        'v8_01_01', 'v7-04-13', 'v7_04_13', 'v7-04-12', 'v7_04_12'
         ]
         df = pd.DataFrame(versions, columns=['Versions'])
         if debug:
@@ -1314,13 +1317,22 @@ def get_sigfig(x, p=3):
 def get_scientific_number(number, precision, string=False):
     """
     Gets a number in scientific notation with a given precision.
-    Returns a rounded number by default, or can be returned as a string
-    Recomended for plotting.
-    Inputs:
-    number (float) (number you want to change)
-    precision (Integer) (How many significant figures you want)
-    String = True (Boolian) Do you want the output returned as a string?
-    Output: float(default) OR string(if string==True)
+
+    Parameters
+    -------
+    number (float): number you want to change
+    precision (Integer): How many significant figures you want
+    String (Boolean): Do you want the output returned as a string?
+    Output float(default): OR string(if string==True)
+
+    Returns
+    -------
+    (float) or (str)
+
+    Notes
+    -----
+     - Returns a rounded number by default, or can be returned as a string
+    (Recommended for plotting).
     """
     number = float(number)
     # Special case for 0

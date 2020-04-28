@@ -105,7 +105,7 @@ def nearest(ts, s):
 
     Parameters
     -------
-    ts (float, int, timestamp): point as object  that nearset to which is being sought
+    ts (float, int, timestamp): point as object  that nearest to which is being sought
     s (list): list of objects of the same type to be searched
 
     Returns

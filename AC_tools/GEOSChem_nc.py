@@ -76,11 +76,13 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
     # https://github.com/pydata/xarray/issues/1823
     ds = xr.open_mfdataset(files,
 #                           concat_dim='time',
-                           data_vars="minimal", coords="minimal", compat="override")
+                           data_vars="minimal", coords="minimal",
+                           compat="override")
     return ds
 
 
-def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None, wd=None,
+def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None,
+                       wd=None,
                        trop_level_var='Met_TropLev', air_mass_var='Met_AD',
                        avg_over_time=False,
                        sum_patially=True, rm_trop=True, use_time_in_trop=True,
@@ -112,9 +114,10 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None, wd=None
      (e.g. sum_patially=True), otherwise a dataset xr.dataset is returned.
     """
     # Only setup to take xarray datasets etc currently...
-    assert type(StateMet) != None, 'Func. just setup to take StateMet currently'
-    assert type(
-        ds) == xr.Dataset, 'Func. just setup to take a xr.dataset currently'
+    ass_Str = 'WATNING: Func. just setup to take StateMet currently'
+    assert type(StateMet) != None, ass_Str
+    ass_Str = 'WATNING: Func. just setup to take a xr.dataset currently'
+    assert type(ds) == xr.Dataset, ass_Str
     # Setup a dataset to process and return
     dsL = ds.copy()
     # Extract local variables
@@ -281,13 +284,14 @@ def create4Dmask4trop_level(StateMet=None,
 #    TropLevel = TropLevel.astype(int)
 #    MASK = (StateMet['Met_PMID'] > )
     # Just mask as middle pressures values above dynamic troposphere for now
-    # this can then be used like ds[VarName].where( MASK )
+    # This can then be used like ds[VarName].where( MASK )
     # and summed via np.nansum( ds[VarName].where(MASK).values )
     MASK = pmid_press > DynTropPress
     return MASK
 
 
-def rm_fractional_troposphere(ds, vars2use=None, StateMet=None, TropFracDA=None,
+def rm_fractional_troposphere(ds, vars2use=None, StateMet=None,
+                              TropFracDA=None,
                               TropFracVar='FracOfTimeInTrop'):
     """
     rm stratospheric contribution by multiplying by grid box's time in troposphere
@@ -305,7 +309,8 @@ def rm_fractional_troposphere(ds, vars2use=None, StateMet=None, TropFracDA=None,
 
 
 def read_inst_files_save_only_surface(wd=None, file_str='GEOSChem.inst1hr.*',
-                                      file_extension='.nc4', save_new_NetCDF=True,
+                                      file_extension='.nc4',
+                                      save_new_NetCDF=True,
                                       delete_existing_NetCDF=True):
     """
     Extract just surface values and save as NetCDF (& DELETE old NetCDF)
@@ -658,8 +663,10 @@ def get_HEMCO_ds_summary_stats_Gg_yr(ds, vars2use=None):
 
 
 def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
-                                     REF2=None, REF_wd=None, res='4x5', trop_limit=True,
-                                     save2csv=True, prefix='GC_', run_names=None,
+                                     REF2=None, REF_wd=None, res='4x5',
+                                     trop_limit=True,
+                                     save2csv=True, prefix='GC_',
+                                     run_names=None,
                                      extra_burden_specs=[],
                                      extra_surface_specs=[],
                                      GC_version='v12.6.0',
@@ -735,7 +742,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
         df[run] = S
 
     # - Now add familes...
-    # transpose dataframe
+    # Transpose dataframe
     df = df.T
     # Get NOx burden
     NO2_varname = 'NO2 burden ({})'.format(mass_unit)
@@ -764,7 +771,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     for col_ in df.columns:
         if 'Tg' in col_:
             df.loc[:, col_] = df.loc[:, col_].values/mass_scale
-    # transpose back to variables as index
+    # Transpose back to variables as index
     df = df.T
 
     # - Add Ozone production and loss...
@@ -793,7 +800,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
             # save calculated values to dataframe
             df.loc[varname, run] = val
 
-    # transpose dataframe
+    # Transpose dataframe
     df = df.T
     # Scale units
     for col_ in df.columns:
@@ -801,7 +808,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
             df.loc[:, col_] = df.loc[:, col_].values*ppbv_scale
         if 'ppt' in col_:
             df.loc[:, col_] = df.loc[:, col_].values*pptv_scale
-    # transpose back to variables as index
+    # Transpose back to variables as index
     df = df.T
 
     # - OH concentrations

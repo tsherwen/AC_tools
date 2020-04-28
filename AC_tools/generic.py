@@ -66,7 +66,9 @@ def myround(x, base=5, integer=True, round_up=False):
 
 
 def counter_directory_contains_files(model_path, must_contain):
-    """ Count number of files in directory """
+    """
+    Count number of files in directory
+    """
     model_ouput_file_counter = len(glob.glob1(model_path, must_contain))
     return model_ouput_file_counter
 
@@ -88,8 +90,9 @@ def get_xy(Lon, Lat, lon_edges, lat_edges, debug=False):
     Takes lon,lat values for a point (e.g. station) and arrays of longitude
     and latitudes indicating edges of gridboxes.
 
-    Returns the index of the gridbox corresponding to this point.
-    NOTES:
+    Notes
+    -------
+     - Returns the index of the gridbox corresponding to this point.
      - Credit: Eric Sofen
      - Could be easily extended to return data values corresponding to points.
     """
@@ -98,10 +101,11 @@ def get_xy(Lon, Lat, lon_edges, lat_edges, debug=False):
     gridindx, gridindy = np.where(hasobs >= 1)
     if not gridindx:
         if debug:
-            print(('Lat, lon outside of x,y range.  Assigning -1 for', Lon, Lat))
+            pstr = 'Lat, lon outside of x,y range.  Assigning -1 for {} {}'
+            print(pstr.format(Lon, Lat))
         return -1, -1
     else:
-        # print Lon, Lat, gridindx, gridindy
+        # Print Lon, Lat, gridindx, gridindy
         return gridindx[0], gridindy[0]
 
 
@@ -111,7 +115,7 @@ def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=320,
     """
     Save figures (e.g. matplotlib) to pdf file
     """
-    # set save directory ( using default directory dictionary )
+    # Set save directory ( using default directory dictionary )
     if isinstance(wd, type(None)):
         wd = './'
 
@@ -125,14 +129,14 @@ def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=320,
     else:
         npdf = wd+date_str+'_'+title
 
-    # setup pdf
+    # Setup pdf
     pdf = PdfPages(npdf + '.pdf')
 
     # Rasterise to save space?
     if rasterized:
         plt.gcf().set_rasterized(True)
 
-    # save and close
+    # Save and close
     file_extension = 'PDF'
     pdf.savefig(dpi=dpi, transparent=transparent)
     pdf.close()
@@ -150,14 +154,14 @@ def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=320,
 
 
 def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, wd=None,
-                  dpi=320, open=False, close=False, justHH=False, no_dstr=True):
+                  dpi=320, open=False, close=False, justHH=False,
+                  no_dstr=True):
     """
     Save figures (e.g. matplotlib) to pdf file with multiple pages
     """
-    # set save directory ( using default directory dictionary )
+    # Set save directory ( using default directory dictionary )
     if isinstance(wd, type(None)):
         wd = './'
-
     # Set pdf name
     if justHH and (not no_dstr):
         date_str = time.strftime("%y_%m_%d_%H")
@@ -167,18 +171,15 @@ def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, wd=None,
         npdf = wd+title+'.pdf'
     else:
         npdf = wd+date_str+'_'+title+'.pdf'
-
     # If 1st call ( open ==True), setup pdf
     if open:
         pdf = PdfPages(npdf)
         print(('pdf opened @: {}'.format(npdf)))
         return pdf
-
     # Rasterise to save space?
     if rasterized:
         plt.gcf().set_rasterized(True)
-
-    # save and close or keep open to allow additions of plots
+    # Save and close or keep open to allow additions of plots
     if close:
         pdf.close()
         print(('PDF saved & Closed as/at: ', npdf))
@@ -189,7 +190,13 @@ def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, wd=None,
 
 def obs2grid(glon=None, glat=None, galt=None, nest='high res global',
              sites=None, debug=False):
-    """ values that have a given lat, lon and alt """
+    """
+    values that have a given lat, lon and alt
+
+    Notes
+    -------
+     - Function flagged for removal
+    """
     if isinstance(glon, type(None)):
         glon, glat, galt = get_latlonalt4res(nest=nest, centre=False,
                                              debug=debug)
@@ -199,7 +206,7 @@ def obs2grid(glon=None, glat=None, galt=None, nest='high res global',
         loc_dict = get_loc(rtn_dict=True)
         sites = list(loc_dict.keys())
 
-    # pull out site location indicies
+    # Pull out site location indicies
     indices_list = []
     for site in sites:
         lon, lat, alt = loc_dict[site]
@@ -209,7 +216,9 @@ def obs2grid(glon=None, glat=None, galt=None, nest='high res global',
 
 
 def sort_sites_by_lat(sites):
-    """ Order given list of GAW sties by latitudes """
+    """
+    Order given list of GAW sties by latitudes
+    """
     # Get info
     vars = [gaw_2_loc(s) for s in sites]  # lat, lon, alt, TZ
     # Sort by lat, index orginal sites list and return
@@ -222,10 +231,11 @@ def find_nearest(array, value):
     """
     Find nearest number in array to given value.
 
-#    NOTES:
-#    - Adapted from (credit:) HappyLeapSecond's Stackoverflow answer.
-#    ( http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array )
-#    """
+    Notes
+    -------
+     - credit: Adapted from HappyLeapSecond's Stackoverflow answer.
+   http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
+    """
     idx = (np.abs(array-value)).argmin()
     return idx
 
@@ -243,10 +253,11 @@ def get_shortest_in(needle, haystack, r_distance=False):
     that has the shortest distance to needle
 
     NOTES:
+    -------
      - adapted from stackoverflow (Credit: jterrace):
-    (http://stackoverflow.com/questions/6656475/python-speeding-up-geographic-comparison)
+http://stackoverflow.com/questions/6656475/python-speeding-up-geographic-comparison
     """
-    # set Earth's radius
+    # Set Earth's radius
     earth_radius_miles = 3956.0
 
     # convert to radians
@@ -273,9 +284,10 @@ def gen_log_space(limit, n):
     """
     Get logarithmically spaced integers
 
-    NOTES:
+    Notes
+    -------
     - credit: Avaris
-    ( http://stackoverflow.com/questions/12418234/logarithmically-spaced-integers)
+ http://stackoverflow.com/questions/12418234/logarithmically-spaced-integers
     """
     result = [1]
     if n > 1:  # just a check to avoid ZeroDivisionError
@@ -283,10 +295,10 @@ def gen_log_space(limit, n):
     while len(result) < n:
         next_value = result[-1]*ratio
         if next_value - result[-1] >= 1:
-            # safe zone. next_value will be a different integer
+            # Safe zone. next_value will be a different integer
             result.append(next_value)
         else:
-            # problem! same integer. we need to find next_value
+            # Problem! same integer. we need to find next_value
             # by artificially incrementing previous value
             result.append(result[-1]+1)
             # recalculate the ratio so that the remaining
@@ -302,7 +314,6 @@ def get_arr_edge_indices(arr, res='4x5', extra_points_point_on_edge=None,
     Find indices in a lon, lat (2D) grid, where value does not equal a given
     value ( e.g. the edge )
     """
-
     if verbose:
         print(('get_arr_edge_indices for arr of shape: ', arr.shape))
 
@@ -431,7 +442,8 @@ def split_data_by_days(data=None, dates=None, day_list=None,
 
 
 def get_linear_ODR(x=None, y=None, maxit=5000, beta0=(0, 1),
-                   xvalues=None, return_model=True, debug=False, verbose=False):
+                   xvalues=None, return_model=True, debug=False,
+                   verbose=False):
     """
     Wrapper to run a orthogonal distance regression (ODR) for arrays of x and y.
 
@@ -558,7 +570,8 @@ def convert_mg_per_m3_2_ppbv(data=None,  spec='O3', rtn_units=False,
 
 
 def get_2D_solartime_array4_date(date=None, ncfile=None, res='4x5',
-                                 lons=None, lats=None, varname='SolarTime',  debug=False):
+                                 lons=None, lats=None, varname='SolarTime',
+                                 debug=False):
     """
     Creates 2D (lon,lat) masked (1=Masked) for nighttime for a given list of
     dates
@@ -621,17 +634,17 @@ def get_2D_solartime_array4_date(date=None, ncfile=None, res='4x5',
         """
         # --- get sunrise and sunset for location
         o = ephem.Observer()
-        # set lat (decimal?), lon (decimal?), and date (UTC)
+        # Set lat (decimal?), lon (decimal?), and date (UTC)
         o.lat = str(lat)
         o.long = str(lon)
         o.date = date
-        # planetary body
+        # Planetary body
         s = ephem.Sun()
         # Compute sun vs observer
         s.compute(o)
         # below code was adapted from stackoverflow (Credit: J.F. Sebastian)
         # http://stackoverflow.com/questions/13314626/local-solar-time-function-from-utc-and-longitude
-        # sidereal time == ra (right ascension) is the highest point (noon)
+        # Sidereal time == ra (right ascension) is the highest point (noon)
         hour_angle = o.sidereal_time() - s.ra
         s_time = ephem.hours(
             hour_angle + ephem.hours('12:00')).norm  # norm for 24h
@@ -662,8 +675,10 @@ def get_2D_solartime_array4_date(date=None, ncfile=None, res='4x5',
 
 
 def save_2D_arrays_to_3DNetCDF(ars=None, dates=None, res='4x5', lons=None,
-                               lats=None, varname='MASK', Description=None, Contact=None,
-                               filename='misc_output', var_type='f8', debug=False):
+                               lats=None, varname='MASK', Description=None,
+                               Contact=None,
+                               filename='misc_output', var_type='f8',
+                               debug=False):
     """
     makes a NetCDF from a list of dates and list of (lon, lat) arrays
 
@@ -751,7 +766,7 @@ def save_2D_arrays_to_3DNetCDF(ars=None, dates=None, res='4x5', lons=None,
     def format(x): return unix_time(x)
     df = pd.DataFrame({'Datetime': dates})
     df['Epoch'] = df['Datetime'].map(format).astype('i8')
-    # store a copy of dates at datetime.datetime, then remove from DataFrame
+    # Store a copy of dates at datetime.datetime, then remove from DataFrame
     dt_dates = dt64_2_dt(df['Datetime'].values.copy())
     del df['Datetime']
     dates = df['Epoch'].values
@@ -924,7 +939,8 @@ def split_NetCDF_by_month(folder=None, filename=None, ext_str='',
 def get_2D_df_of_lon_lats_and_time(res='4x5', df_lar_var='lat',
                                    df_lon_var='lon', df_time_var='month',
                                    add_all_months=False,
-                                   lons=None, lats=None, verbose=True, month=9):
+                                   lons=None, lats=None, verbose=True,
+                                   month=9):
     """ stack a 2D table (DataFrame) of lat/lon coords """
     # Get lon and lat resolution (Add other ways to get lat and lon here...
     lons_not_provided = isinstance(lons, type(None))
@@ -1075,7 +1091,8 @@ def mk_spatial_dataset_from_longform_df(df=None, LatVar='lat', LonVar='lon',
 def rm_spaces_and_chars_from_str(input_str, remove_slashes=True,
                                  replace_brackets=True, replace_quotes=True,
                                  replace_dots=True, replace_colons=True,
-                                 remove_plus=True, swap_pcent=True, replace_braces=True):
+                                 remove_plus=True, swap_pcent=True,
+                                 replace_braces=True):
     """
     Remove the spaces and species characters from strings
     """
@@ -1152,7 +1169,7 @@ def get_stats_on_files_in_folder_as_dict(folder=None):
         extensions = [i.split('.')[-1] for i in files]
         extensions = list(set(extensions))
         d['Extensions'] = extensions
-        # smallest sixe
+        # Smallest sixe
         d['Min. size'] = np.min(sizes)
         # largest size
         d['Max. size'] = np.max(sizes)
