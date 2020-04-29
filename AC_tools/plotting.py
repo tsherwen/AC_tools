@@ -45,7 +45,8 @@ import scipy
 
 def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson(),
                    save_plot=True, show_plot=False, savename=None, title=None,
-                   LatVar='lat', LonVar='lon', fig=None, ax=None, dpi=320):
+                   LatVar='lat', LonVar='lon', fig=None, ax=None, dpi=320,
+                   set_global=True):
     """
     Plot up a quick spatial plot of data using cartopy
 
@@ -80,7 +81,8 @@ def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson(),
                              transform=ccrs.PlateCarree())
     # Beautify the figure/plot
     ax.coastlines()
-    ax.set_global()
+    if set_global:
+        ax.set_global()
     # Add a generic title if one is not provided
     if isinstance(title, type(None)):
         plt.title('Spatial plot of {}'.format(var2plot))
