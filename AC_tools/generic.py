@@ -1190,3 +1190,23 @@ def get_avg_2D_conc_of_X_weighted_by_Y(ds, Xvar=None, Yvar='AREA', Yda=None):
     # return X as a weighted average of Y
     return float((ds[Xvar]*Yda).sum() / Yda.sum())
 
+
+def write_lines2txt_file(lines, folder=None, filename=None):
+    """
+    Write out provided lines to text file
+    """
+    # Write lines to text file
+    with open(folder+filename, "w") as f:
+        for line in lines:
+            f.write(line)
+
+
+def read_lines_from_txt_file(folder=None, filename=None):
+    """
+    Read and return lines from provided text file
+    """
+    # Write lines to text file
+    with open(folder+filename, "r") as f:
+        lines = f.readlines()
+    return lines
+

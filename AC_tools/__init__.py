@@ -9,11 +9,12 @@ from . generic import *
 from . GEOSChem_bpch import *
 from . GEOSChem_nc import *
 from . GEOS import *
+from . HEMCO import *
 from . KPP import *
 from . mask import *
+from . observations import *
 from . planeflight import *
 from . plotting import *
-from . observations import *
 from . SMVGEAR import *
 from . variables import *
 # include the redundant files for now
