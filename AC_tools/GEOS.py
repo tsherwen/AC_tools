@@ -276,3 +276,36 @@ def get_GEOS5_datagram_plots( dt=None, stream='G5FPFC', folder=None,
             print( 'Getting {} and saving here: {}'.format(url, folder+filename) )
         wget.download(url, folder+filename)
 
+
+def get_GEOSCF_vertical_levels(print_equivalents=False, native_levels=False):
+    """
+    get a dictionary of GEOS Composition Forecast (GEOS-CF) vertical levels
+    """
+    # Get a list of the pressure levels in GEOS-CF
+    if native_levels:
+        HPa_l  = [
+        0.01, 0.02, 0.0327, 0.0476, 0.066, 0.0893, 0.1197, 0.1595, 0.2113, 0.2785, 0.365, 0.4758, 0.6168, 0.7951, 1.0194, 1.3005, 1.6508, 2.085, 2.6202, 3.2764, 4.0766, 5.0468, 6.2168, 7.6198, 9.2929, 11.2769, 13.6434, 16.4571, 19.7916, 23.7304, 28.3678, 33.81, 40.1754, 47.6439, 56.3879, 66.6034, 78.5123, 92.3657, 108.663, 127.837, 150.393, 176.93, 208.152, 244.875, 288.083, 337.5, 375.0, 412.5, 450.0, 487.5, 525.0, 562.5, 600.0, 637.5, 675.0, 700.0, 725.0, 750.0, 775.0, 800.0, 820.0, 835.0, 850.0, 865.0, 880.0, 895.0, 910.0, 925.0, 940.0, 955.0, 970.0, 985.0
+        ]
+    else:
+        HPa_l = [
+            1000, 975, 950, 925, 900, 850, 800, 750, 700, 650, 600, 550, 500, 450, 400,
+            350, 300, 250, 200, 150, 100, 50
+        ]
+
+    # Get altitudes in km, then convert to metres
+    Alt = hPa_to_Km(HPa_l)
+    Alt = np.array(Alt) / 1E3
+    # Print out a summary
+    if print_equivalents:
+        # For just HPa and km
+        pstr = 'A pressure {:>4}HPa of is equiv to {:>4,.3f}km'
+        Alt_dict = dict(zip(HPa_l, Alt*1E3))
+        for HPa in HPa_l:
+            print(pstr.format(HPa, Alt_dict[HPa]))
+        # Also for kft
+        pstr = 'A press. {:>4} HPa of is equiv to {:>4,.3f} km ({:>4,.3f} kft)'
+        for HPa in HPa_l:
+            print(pstr.format(HPa, Alt_dict[HPa], Alt_dict[HPa]/304.8))
+    return HPa_l
+
+
