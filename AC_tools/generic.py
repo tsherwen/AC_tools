@@ -96,8 +96,9 @@ def get_xy(Lon, Lat, lon_edges, lat_edges, debug=False):
      - Credit: Eric Sofen
      - Could be easily extended to return data values corresponding to points.
     """
-    hasobs, lonrange, latrange = np.histogram2d(
-        [Lon], [Lat], [lon_edges, lat_edges])
+    hasobs, lonrange, latrange = np.histogram2d([Lon], [Lat],
+                                                [lon_edges, lat_edges]
+                                                )
     gridindx, gridindy = np.where(hasobs >= 1)
     if not gridindx:
         if debug:
@@ -186,33 +187,6 @@ def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, wd=None,
     else:
         pdf.savefig(dpi=dpi)
         print(('pdf is still open @: {}'.format(npdf)))
-
-
-def obs2grid(glon=None, glat=None, galt=None, nest='high res global',
-             sites=None, debug=False):
-    """
-    values that have a given lat, lon and alt
-
-    Notes
-    -------
-     - Function flagged for removal
-    """
-    if isinstance(glon, type(None)):
-        glon, glat, galt = get_latlonalt4res(nest=nest, centre=False,
-                                             debug=debug)
-
-    # Assume use of known CAST sites... unless others given.
-    if isinstance(sites, type(None)):
-        loc_dict = get_loc(rtn_dict=True)
-        sites = list(loc_dict.keys())
-
-    # Pull out site location indicies
-    indices_list = []
-    for site in sites:
-        lon, lat, alt = loc_dict[site]
-        vars = get_xy(lon,  lat, glon, glat)
-        indices_list += [vars]
-    return indices_list
 
 
 def sort_sites_by_lat(sites):
@@ -308,144 +282,11 @@ def gen_log_space(limit, n):
     return np.array([round(x)-1 for x in result], dtype=np.uint64)
 
 
-def get_arr_edge_indices(arr, res='4x5', extra_points_point_on_edge=None,
-                         verbose=True, debug=False):
-    """
-    Find indices in a lon, lat (2D) grid, where value does not equal a given
-    value ( e.g. the edge )
-    """
-    if verbose:
-        print(('get_arr_edge_indices for arr of shape: ', arr.shape))
-
-    # initialise variables
-    lon_c, lat_c, NIU = get_latlonalt4res(res=res, centre=True)
-    lon_e, lat_e, NIU = get_latlonalt4res(res=res, centre=False)
-    lon_diff = lon_e[-5]-lon_e[-6]
-    lat_diff = lat_e[-5]-lat_e[-6]
-    nn, n, = 0, 0
-    last_lat_box = arr[nn, n]
-    coords = []
-    last_lon_box = arr[nn, n]
-    need_lon_outer_edge, need_lat_outer_edge = False, False
-    if debug:
-        print((lon_e, lat_e))
-
-    # ---- Loop X dimension ( lon )
-    for nn, lon_ in enumerate(lon_c):
-
-        # Loop Y dimension ( lat ) and store edges
-        for n, lat_ in enumerate(lat_c):
-
-            if debug:
-                print((arr[nn, n], last_lat_box, last_lon_box,
-                       arr[nn, n] == last_lat_box, arr[nn, n] == last_lon_box))
-
-            if arr[nn, n] != last_lat_box:
-
-                # If 1st lat, selct bottom of box
-                point_lon = lon_e[nn]+lon_diff/2
-                if need_lat_outer_edge:
-                    point_lat = lat_e[n+1]
-                else:
-                    point_lat = lat_e[n]
-                    need_lat_outer_edge = True
-                need_lat_outer_edge = False
-
-                # Add mid point to cordinates list
-                if isinstance(extra_points_point_on_edge, type(None)):
-                    mid_point = [point_lon, point_lat]
-                    coords += [mid_point]
-
-                # Add given number of points along edge
-                else:
-                    coords += [[lon_e[nn]+(lon_diff*i), point_lat] for i in
-                               np.linspace(0, 1, extra_points_point_on_edge,
-                                           endpoint=True)]
-
-            # temporally save the previous box's value
-            last_lat_box = arr[nn, n]
-
-    # ---- Loop Y dimension ( lat )
-    for n, lat_ in enumerate(lat_c):
-
-        if debug:
-            print((arr[nn, n], last_lat_box, last_lon_box,
-                   arr[nn, n] == last_lat_box, arr[nn, n] == last_lon_box))
-        # Loop X dimension ( lon ) and store edges
-        for nn, lon_ in enumerate(lon_c):
-
-            # If change in value at to list
-            if arr[nn, n] != last_lon_box:
-                point_lat = lat_e[n]+lat_diff/2
-
-                # Make sure we select the edge lon
-                if need_lon_outer_edge:
-                    point_lon = lon_e[nn+1]
-                else:
-                    point_lon = lon_e[nn]
-                    need_lon_outer_edge = True
-                need_lon_outer_edge = False
-
-                # Add mid point to coordinates list
-                if isinstance(extra_points_point_on_edge, type(None)):
-                    mid_point = [point_lon, point_lat]
-                    coords += [mid_point]
-
-                # Add given number of points along edge
-                else:
-                    coords += [[point_lon, lat_e[n]+(lat_diff*i)] for i in
-                               np.linspace(0, 1, extra_points_point_on_edge,
-                                           endpoint=True)]
-
-            # temporally save the previous box's value
-            last_lon_box = arr[nn, n]
-
-    return coords
-
-
-def split_data_by_days(data=None, dates=None, day_list=None,
-                       verbose=False, debug=False):
-    """
-    Takes a list of datetimes and data and returns a list of data and
-    the bins ( days )
-    """
-    if verbose:
-        print('split_data_by_days called')
-
-    # Create DataFrame of Data and dates
-    df = DataFrame(data, index=dates, columns=['data'])
-    # Add list of dates ( just year, month, day ) <= this is mappable, update?
-    df['days'] = [datetime.datetime(*i.timetuple()[:3]) for i in dates]
-    if debug:
-        print(df)
-
-    # Get list of unique days
-    if isinstance(day_list, type(None)):
-        day_list = sorted(set(df['days'].values))
-    # Loop unique days and select data on these days
-    data4days = []
-    for day in day_list:
-        print((day, df[df['days'] == day]))
-        data4days += [df['data'][df['days'] == day]]
-    # Just return the values ( i.e. not pandas array )
-    data4days = [i.values.astype(float) for i in data4days]
-    print([type(i) for i in data4days])
-#    print data4days[0]
-#    sys.exit()
-
-    if debug:
-        print(('returning data for {} days, with lengths: '.format(
-            len(day_list)), [len(i) for i in data4days]))
-
-    # Return as list of days (datetimes) + list of data for each day
-    return data4days, day_list
-
-
 def get_linear_ODR(x=None, y=None, maxit=5000, beta0=(0, 1),
                    xvalues=None, return_model=True, debug=False,
                    verbose=False):
     """
-    Wrapper to run a orthogonal distance regression (ODR) for arrays of x and y.
+    Wrapper to run orthogonal distance regression (ODR) for arrays of x and y
 
     Parameters
     ----------
@@ -1149,6 +990,7 @@ def rm_file(folder=None, filename=None, verbose=False, debug=False):
         if verbose:
             print( pstr.format(folder+filename) )
 
+
 def get_stats_on_files_in_folder_as_dict(folder=None):
     """
     Get statistics on files in a folder
@@ -1182,7 +1024,7 @@ def get_stats_on_files_in_folder_as_dict(folder=None):
 
 def get_avg_2D_conc_of_X_weighted_by_Y(ds, Xvar=None, Yvar='AREA', Yda=None):
     """
-    Get average 2D concentration of X (e.g. O3 v/v) weighted by Y (e.g. surface area)
+    Get average 2D value of X (e.g. O3 v/v) weighted by Y (e.g. surface area)
     """
     # Get Y as data array if not provided
     if isinstance(Yda, type(None)):
@@ -1212,13 +1054,33 @@ def read_lines_from_txt_file(folder=None, filename=None):
 
 
 def calc_4D_idx_in_ds(ds=None, df=None, LonVar='lon', LatVar='lat',
-                      TimeVar='time',
-                      AltVar='hPa', dsAltVar='lev',
+                      TimeVar='time', AltVar='hPa', dsAltVar='lev',
                       dsLonVar='lon', dsLatVar='lat', dsTimeVar='time',
                       ds_lat=None, ds_lon=None, ds_hPa=None, ds_time=None,
                       debug=False):
     """
-    Calculated the indexes to extract of a dataset from a dataframe.
+    Calculate the 4D indexes of dataframe locations in a dataset
+
+    Parameters
+    ----------
+    df (pd.DataFrame): dataframe containing coordinates (lon, lat, alt, time)
+    ds (xr.dataset): dataset to calculate indexes within
+    LonVar (str): Variable name in DataFrame for Longitude
+    dsLonVar (str): Variable name in dataset for Longitude
+    LatVar (str): Variable name in DataFrame for latitude
+    dsLatVar (str): Variable name in dataset for latitude
+    AltVar (str): Variable name in DataFrame for pressure (hPa)
+    dsAltVar (str): Variable name in dataset for pressure (hPa)
+    TimeVar (str): Variable name in DataFrame for time
+    dsTimeVar (str): Variable name in dataset for time
+    ds_hPa (np.array): array of pressure coordinate (hPa)
+    ds_lat (np.array): array of latitude coordinate in dataset
+    ds_lon (np.array):  array of longitude coordinate in dataset
+    ds_time (np.array): array of time coordinate in dataset
+
+    Returns
+    -------
+    (dict)
     """
     # Get arrays of the coordinate variables in the dataset
     if isinstance(ds_lat, type(None)):
@@ -1230,10 +1092,10 @@ def calc_4D_idx_in_ds(ds=None, df=None, LonVar='lon', LatVar='lat',
     if isinstance(ds_time, type(None)):
         ds_time = ds[dsTimeVar].values
     # Calculate the index individually by coordinate
-    lat_idx = [AC.find_nearest(ds_lat, i) for i in df[LatVar].values]
-    lon_idx = [AC.find_nearest(ds_lon, i) for i in df[LonVar].values]
-    hPa_idx = [AC.find_nearest(ds_hPa, i) for i in df[AltVar].values]
-    time_idx = [AC.find_nearest(ds_time, i) for i in df.index.values]
+    lat_idx = [find_nearest(ds_lat, i) for i in df[LatVar].values]
+    lon_idx = [find_nearest(ds_lon, i) for i in df[LonVar].values]
+    hPa_idx = [find_nearest(ds_hPa, i) for i in df[AltVar].values]
+    time_idx = [find_nearest(ds_time, i) for i in df.index.values]
     # Return a dictionary of the values
     return {LatVar:lat_idx, LonVar:lon_idx, TimeVar:time_idx, AltVar:hPa_idx}
 

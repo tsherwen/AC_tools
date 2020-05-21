@@ -20,9 +20,10 @@ from . variables import *
 # include the redundant files for now
 from . obsolete.plotting_REDUNDANT import *
 from . obsolete.variables_REDUNDANT import *
+from . obsolete.misc_REDUNDANT import *
 
 """
-AC_tools is a module of functions started by Tomas, and contributed to by others in the York Modelling group, and hopefully maintained by the Group.
+AC_tools is a module of functions started by Tomas, and contributed to by others in the York Atmospheric Modelling group, and hopefully maintained by the Group.
 To access the help, from python or ipython, type help(AC_tools) to get general help
 To get more detailed help from a module for example, type help(AC_tools.AC_time.py)
 If you find missing documentation any thing is unclear in any of this, please request a git push to github.
