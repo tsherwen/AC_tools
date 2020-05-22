@@ -309,3 +309,136 @@ def get_GEOSCF_vertical_levels(print_equivalents=False, native_levels=False):
     return HPa_l
 
 
+def extract_GEOSCF4FAAM_flight(folder=None, flight_ID='C216', folder4csv=None,
+                               PressVar="PS_RVSM",
+                               LonVar='LON_GIN',
+                               LatVar='LAT_GIN', TimeVar='Time',
+                               testing_mode=True, csv_suffix='',
+                               inc_core_obs_in_csv=False):
+    """
+    Extract the GEOS-CF model for a given FAAM BAe146 flight
+    """
+    # Retrieve FAAM BAe146 Core NetCDF files
+    filename = 'core_faam_*_{}_1hz.nc'.format(flight_ID.lower())
+    file2use = glob.glob(folder+filename)
+    if len(file2use) > 1:
+        print( 'WARNING: more that one file found! (so using latest file)' )
+        print(file2use)
+    ds = xr.open_dataset( file2use[0] )
+    # Only select the variable of intereest and drop where these are NaNs
+    df = ds[ [PressVar, LatVar, LonVar, TimeVar] ].to_dataframe()
+    df = df.dropna()
+    # If doing a test, then just extract the first 150 points of flight track
+    if testing_mode:
+        df = df.head(150)
+    # Get variables from chemistry collection
+    collection = 'chm_inst_1hr_g1440x721_p23'
+    df1 = extract_GEOSCF_assim4flight(df, PressVar=PressVar, LonVar=LonVar,
+                                      LatVar=LatVar, TimeVar=TimeVar,
+                                      collection=collection)
+    # Get variables from meterology collection
+    collection = 'met_inst_1hr_g1440x721_p23'
+    df2 = extract_GEOSCF_assim4flight(df, PressVar=PressVar, LonVar=LonVar,
+                                      LatVar=LatVar, TimeVar=TimeVar,
+                                      collection=collection)
+    # Combine dataframes and remove duplicate columns
+    dfs = [df1, df2]
+    df = pd.concat(dfs, axis=1)
+    if inc_core_obs_in_csv:
+        FAAM_df = ds.to_dataframe()
+        df = pd.concat([df, FAAM_df], axis=1)
+        duplicates = [i for i in FAAM_df.columns if i in df.columns ]
+        if len(duplicates)>1:
+            print('WARNING: duplicates in FAAM and GEOS-CF dataframe headers!')
+    df = df[ list(set(df.columns)) ]
+    # Save dateframe to a csv file
+    if isinstance(folder4csv, type(None)):
+        folder4csv = './'
+    filename = 'FAAM_flightpath_extracted_from_GEOSCF_4_{}{}'
+    filename = filename.format(flight_ID, csv_suffix)
+    filename = rm_spaces_and_chars_from_str(filename)
+    df.to_csv(folder4csv+filename+'.csv')
+
+
+def extract_GEOSCF_assim4flight(df=None, ds=None,
+                                LatVar='lat', vars2extract=None,
+                                collection='met_inst_1hr_g1440x721_p23',
+                                LonVar='lon', PressVar='hPa',
+                                mode='assim', TimeVar='time',
+                                dsAltVar='lev', dsTimeVar='time',
+                                dsLonVar='lon', dsLatVar='lat',
+                                testing_mode=False, inc_attrs=True,
+                                debug=False):
+    """
+    Extract GEOS-CF collection for flightpath locations in dataframe
+    """
+    # Get the start and end date of flight (with a 1/2 day buffer)
+    sdate = add_days(df.index.min(), -0.25)
+    edate = add_days(df.index.max(), 0.25)
+    # Retrieve the 3D fields for given collection
+    ds = get_GEOSCF_as_ds_via_OPeNDAP(collection=collection, mode=mode)
+    # Extract all of the data variables unless a specific list is provided
+    if isinstance(vars2extract, type(None)):
+        vars2extract = list(ds.data_vars)
+    # Restrict the dataset to the day(s) of the flight
+    time_bool = [((i>=sdate) & (i<=edate)) for i in ds.time.values]
+    ds = ds.isel(time=time_bool)
+    # Reduce the dataset size to the area of the flight
+    spatial_buffer = 2 # degrees lat / lon
+    lat_min = df[LatVar].values.max() - spatial_buffer
+    lat_max = df[LatVar].values.max() + spatial_buffer
+    lat_bool = [((i>=lat_min) & (i<=lat_max)) for i in ds[dsLatVar].values]
+    ds = ds.isel(lat=lat_bool)
+    lon_min = df[LonVar].values.max() - spatial_buffer
+    lon_max = df[LonVar].values.max() + spatial_buffer
+    lon_bool = [((i>=lon_min) & (i<=lon_max)) for i in ds[dsLonVar].values]
+    ds = ds.isel(lon=lon_bool)
+    # Get a list of the levels that the data is interpolated onto
+    HPa_l = get_GEOSCF_vertical_levels(native_levels=False)
+    # Get nearest indexes in 4D data from locations in dataframe
+    idx_dict = calc_4D_idx_in_ds(ds_hPa=HPa_l, ds=ds, df=df,
+                                    TimeVar=TimeVar,
+                                    AltVar=PressVar,
+                                    LatVar=LatVar, LonVar=LonVar,
+                                    dsLonVar=dsLonVar, dsLatVar=dsLatVar,
+                                    dsTimeVar=dsTimeVar,
+                                    )
+    # Make a dictionary to convert between ds and df variable names
+    df2ds_dict = {
+    LonVar:dsLonVar, LatVar:dsLatVar, TimeVar:dsTimeVar, PressVar:dsAltVar,
+    }
+    df2ds_dict_r = {v: k for k, v in list(df2ds_dict.items())}
+    # Save subset of dataset locally and then reload
+    ds = save_ds2disk_then_reload(ds=ds)
+    # Run a testing of the extraction
+    if testing_mode:
+        times2use = df.index.values[:10]
+    else:
+        times2use = df.index.values
+    # Create a data frame for values
+    dfN = pd.DataFrame()
+    # Extraction of data points in a bulk manner
+    for nval, var in enumerate( vars2extract ):
+        print(var)
+        # Now extract values
+        dims2use = list(ds[var].coords)
+        idx_list = [idx_dict[df2ds_dict_r[i]] for i in dims2use]
+        vals = ds[var].values[tuple(idx_list)]
+        dfN[vars2extract[nval]] = vals
+    # Also save model time variable to dataframe
+    time_idx = idx_dict[df2ds_dict_r[dsTimeVar]]
+    dfN['model-time'] = ds[dsTimeVar].values[time_idx]
+    # Include variable attributes from original dataset
+    if inc_attrs:
+        for col in dfN.columns:
+            try:
+                attrs = ds[col].attrs.copy()
+                dfN[col].attrs = attrs
+            except KeyError:
+                pass
+    # Save the datetime as a column too
+    dfN['Datetime'] = dfN.index.values
+    # Update the model datetime to be in datetime units
+    dfN['model-time'] = pd.to_datetime(dfN['model-time'].values)
+    return dfN
+
