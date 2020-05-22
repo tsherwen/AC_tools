@@ -43,7 +43,11 @@ from .variables import *
 
 
 def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
-                             collection=None, debug=False):
+                             collection=None,
+                             parallel=True, data_vars="minimal",
+                             coords="minimal", compat="override",
+                             combine='by_coords',
+                             debug=False):
     """
     Extract GEOS-Chem NetCDF files that match file string format to a xr.dataset
 
@@ -76,8 +80,9 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
     # https://github.com/pydata/xarray/issues/1823
     ds = xr.open_mfdataset(files,
 #                           concat_dim='time',
-                           data_vars="minimal", coords="minimal",
-                           compat="override")
+                           combine=combine,
+                           data_vars=data_vars, coords=coords,
+                           compat=compat, parallel=parallel)
     return ds
 
 
