@@ -21,6 +21,7 @@ import time
 import datetime as datetime
 # math
 from math import radians, sin, cos, asin, sqrt, pi, atan2
+import xarray as xr
 
 # The below imports need to be updated,
 # imports should be specific and in individual functions
@@ -217,7 +218,7 @@ def find_nearest(array, value):
 def get_suffix(n):
     """  Add the appropriate suffix (th/st/rd) to any number given  """
     def ordinal(n): return "%d%s" % (
-        n, "tsnrhtdd"[(n/10 % 10 != 1)*(n % 10 < 4)*n % 10::4])
+        n, "tsnrhtdd"[(n//10 % 10 != 1)*(n % 10 < 4)*n % 10::4])
     return ordinal(n)
 
 
@@ -1112,4 +1113,6 @@ def save_ds2disk_then_reload(ds, savename='TEMP_NetCDF.nc', folder='./',
         del ds
     # Reload the dataset and return it
     return xr.open_dataset(folder+savename)
+
+
 
