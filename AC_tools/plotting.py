@@ -1087,8 +1087,9 @@ def plot_lons_lats_spatial_on_map_CARTOPY(central_longitude=0,
                                           show_plot=False,
                                           dpi=320, label=None, alpha=1,
                                           add_gridlines=True,
-                                          buffer_degrees=20,
-                                          add_detailed_map=False):
+                                          buffer_degrees=10,
+                                          add_detailed_map=False,
+                                          map_minor_islands=False,):
     """
     Plot a list of lons and lats spatially on a map (using cartopy)
 
@@ -1130,10 +1131,10 @@ def plot_lons_lats_spatial_on_map_CARTOPY(central_longitude=0,
 #         myround(lons.max()+buffer_degrees, 10, round_up=True))
     x0, x1, y0, y1 = ax.get_extent()
     try:
-        x0 = myround(lons.min()-buffer_degrees, 10, )
-        x1 = myround(lons.max()+buffer_degrees, 10, round_up=True)
-        y0 = myround(lats.min()-buffer_degrees, 10, )
-        y1 = myround(lats.max()+buffer_degrees, 10, round_up=True)
+        x0 = myround(lons.min()-buffer_degrees, buffer_degrees, )
+        x1 = myround(lons.max()+buffer_degrees, buffer_degrees, round_up=True)
+        y0 = myround(lats.min()-buffer_degrees, buffer_degrees, )
+        y1 = myround(lats.max()+buffer_degrees, buffer_degrees, round_up=True)
         ax.set_extent((x0, x1, y0, y1), projection())
     except ValueError:
         print('lon and lat buffer not set extent as out of range')
@@ -1142,17 +1143,27 @@ def plot_lons_lats_spatial_on_map_CARTOPY(central_longitude=0,
     if add_background_image:
         ax.stock_img()
     if add_detailed_map:
+        # Also add minor islands (inc. Cape Verde)?
+        if map_minor_islands:
+            land_10m = cfeature.NaturalEarthFeature('physical', 'land', '10m',
+                                                    edgecolor=None,
+                                                    facecolor='none')
+            ax.add_feature(land_10m, edgecolor='grey', facecolor='none',
+                           zorder=50)
+        else:
+            ax.add_feature(cfeature.LAN)
+            ax.add_feature(cfeature.COASTLINE)
         # Create a feature for States/Admin 1 regions at 1:50m
         # from Natural Earth
         states_provinces = cfeature.NaturalEarthFeature(
             category='cultural',
             name='admin_1_states_provinces_lines',
             scale='50m',
+            edgecolor='grey',
             facecolor='none')
-        ax.add_feature(cfeature.LAND)
-        ax.add_feature(cfeature.COASTLINE)
-        ax.add_feature(cfeature.BORDERS)
-#            ax.add_feature(states_provinces, edgecolor='gray')
+        ax.add_feature(cfeature.BORDERS, edgecolor='grey')
+#        ax.add_feature(states_provinces, edgecolor='gray')
+
     else:
         ax.coastlines(resolution='110m')
 #        ax.drawcountries() # not in cartopy
