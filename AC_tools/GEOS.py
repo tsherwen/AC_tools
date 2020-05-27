@@ -83,7 +83,8 @@ def get_GEOSCF_as_ds_via_OPeNDAP(collection='chm_inst_1hr_g1440x721_p23',
         else:
             # Use a file specified in arguments
             correct_type = type(date) == datetime.datetime
-            assert correct_type, "'date' variable must be a datetime.datetime object"
+            AssStr = "'date' variable must be a datetime.datetime object"
+            assert correct_type, AssStr
             # Use the lastest file (default)
             dstr = date.strftime(format='%Y%m%d')
             URL = '{}/{}/{}.{}_12z'.format(root_url,
@@ -107,10 +108,11 @@ def get_GEOS5_as_ds_via_OPeNDAP(collection='inst3_3d_aer_Nv',
 
     Parameters
     ----------
-    mode (str): retrieve the forecast (fcast) or assimilated fields (assim) or both
-                (seemless)
+    mode (str): retrieve the forecast (fcast) or assimilated fields (assim) or
+                both (seemless)
     dt (datetime.datetime): date to retrieve forecast from or assimilation for
-    collection (str): data collection to access (e.g. chm_inst_1hr_g1440x721_p23)
+    collection (str): data collection to access
+                      (e.g. chm_inst_1hr_g1440x721_p23)
     fcast_start_hour (int): hour the forcast started on a given day
 
     Returns
@@ -127,7 +129,8 @@ def get_GEOS5_as_ds_via_OPeNDAP(collection='inst3_3d_aer_Nv',
      06 - ~1.5 days
      12 - ~5 days
      18 - ~1.5 days
-     - the 5 day forecast for a given day is selected as default (fcast_start_hour)
+     - the 5 day forecast for a given day is selected as default
+       (fcast_start_hour)
 
     """
     # Root OPeNDAP directory
@@ -142,13 +145,15 @@ def get_GEOS5_as_ds_via_OPeNDAP(collection='inst3_3d_aer_Nv',
         else:
             # Use a file specified in arguments
             correct_type = type(dt) == datetime.datetime
-            assert correct_type, "'date' variable must be a datetime.datetime object"
+            AssStr = "'date' variable must be a datetime.datetime object"
+            assert correct_type, AssStr
             # Use the 'lastest' file (default)
             # NOTE: lastest 12 file is used to match up with GEOS-CF
             # TODO: update this. this will not give enough data
             dstr = dt.strftime(format='%Y%m%d')
             URL = '{}/{}/{}.{}_{:0>2}'
-            URL = URL.format(root_url, collection, collection, dstr, fcast_start_hour)
+            URL = URL.format(root_url, collection, collection, dstr,
+                             fcast_start_hour)
     elif mode == 'assim':
         # Just retrieve an OPeNDAP pointer to the entire dataset for now
         URL = '{}/{}'.format(root_url, collection)
@@ -175,7 +180,7 @@ def get_GEOS5_online_diagnostic_plots(dt=None, ptype='wxmaps',
     ptype (str): type of plot (e.g. wxmaps or chem2d)
     field (str): data field to access
     region (str): Plotted region (e.g. atlantic)
-    fcst (str): forecast string to use (if not provided, then evaluated from 'dt')
+    fcst (str): forecast string to use (else evaluated from 'dt')
     taus (list of int): list of integer timesteps to save from
     level (list): level to extract (only = 0 currently setup)
     stream (str): which model data stream to use
@@ -199,7 +204,8 @@ def get_GEOS5_online_diagnostic_plots(dt=None, ptype='wxmaps',
 
     # Which forecast to use
     if isinstance(fcst, type(None)):
-        fcst = '{}{:0>2}{:0>2}T{:0>2}0000'.format( dt.year, dt.month, dt.day, dt.hour )
+        fcst_str = '{}{:0>2}{:0>2}T{:0>2}0000'
+        fcst = fcst_str.format( dt.year, dt.month, dt.day, dt.hour )
     # What is the website location for the data?
     site = 'https://fluid.nccs.nasa.gov/'
     if ptype == 'wxmaps':
@@ -212,14 +218,15 @@ def get_GEOS5_online_diagnostic_plots(dt=None, ptype='wxmaps',
     # Loop by requested time from forecast start
     for tau in taus:
         # Compile the URL
-        URL = urlstr.format(type_root, tau, stream, level, region, fcst, field )
+        URL = urlstr.format(type_root, tau, stream, level, region, fcst, field)
         # Request URL and then get images from location
         r = requests.get(URL)
         html = r.text
         soup = BeautifulSoup(html, "html.parser")
         images = soup.findAll('img')
         # check that the URL was correct
-        assert len(images) > 0, 'WARNING: No images found @ URL ({})'.format(URL)
+        AssStr = 'WARNING: No images found @ URL ({})'
+        assert len(images) > 0, AssStr.format(URL)
         # Get the one image
         for img in images:
             src = img.get('src')
@@ -230,7 +237,8 @@ def get_GEOS5_online_diagnostic_plots(dt=None, ptype='wxmaps',
                     print(img, src, title, image_URL)
                 # Download using Python wget
                 f = '{}_{}_{}_fcast_{}_{}_{}_{:0>2}_{:0>3}.png'
-                name = f.format(prefix, ptype, stream, fcst, field, region, level, tau )
+                name = f.format(prefix, ptype, stream, fcst, field, region,
+                                level, tau )
                 wget.download(image_URL, folder+name)
 
 
@@ -270,10 +278,12 @@ def get_GEOS5_datagram_plots( dt=None, stream='G5FPFC', folder=None,
     for plt2get in plts2get:
         url = '{}{}.png'.format( gram_root, plt2get )
         # Download using wget through python
-        fstr = '{}_{}_{}_datagram_{}.png'.format( prefix, stream, date_str, plt2get )
+        fstr = '{}_{}_{}_datagram_{}.png'
+        fstr = fstr.format( prefix, stream, date_str, plt2get )
         filename = fstr.format(date_str, stream, )
         if debug:
-            print( 'Getting {} and saving here: {}'.format(url, folder+filename) )
+            pstr = 'Getting {} and saving here: {}'
+            print(pstr.format(url, folder+filename))
         wget.download(url, folder+filename)
 
 
@@ -314,7 +324,7 @@ def extract_GEOSCF4FAAM_flight(folder=None, flight_ID='C216', folder4csv=None,
                                LonVar='LON_GIN',
                                LatVar='LAT_GIN', TimeVar='Time',
                                testing_mode=True, csv_suffix='',
-                               inc_core_obs_in_csv=False):
+                               inc_ds_vars_in_csv=False):
     """
     Extract the GEOS-CF model for a given FAAM BAe146 flight
     """
@@ -344,7 +354,7 @@ def extract_GEOSCF4FAAM_flight(folder=None, flight_ID='C216', folder4csv=None,
     # Combine dataframes and remove duplicate columns
     dfs = [df1, df2]
     df = pd.concat(dfs, axis=1)
-    if inc_core_obs_in_csv:
+    if inc_ds_vars_in_csv:
         FAAM_df = ds.to_dataframe()
         df = pd.concat([df, FAAM_df], axis=1)
         duplicates = [i for i in FAAM_df.columns if i in df.columns ]
@@ -368,14 +378,15 @@ def extract_GEOSCF_assim4flight(df=None, ds=None,
                                 dsAltVar='lev', dsTimeVar='time',
                                 dsLonVar='lon', dsLatVar='lat',
                                 testing_mode=False, inc_attrs=True,
+                                TEMP_nc_name=None,
                                 debug=False):
     """
     Extract GEOS-CF collection for flightpath locations in dataframe
     """
-    # Get the start and end date of flight (with a 1/2 day buffer)
+    # Get the start and end date of flight (with a 1/4 day buffer)
     sdate = add_days(df.index.min(), -0.25)
     edate = add_days(df.index.max(), 0.25)
-    # Retrieve the 3D fields for given collection
+    # Retrieve the 3D fields from OPenDAP for given collection
     ds = get_GEOSCF_as_ds_via_OPeNDAP(collection=collection, mode=mode)
     # Extract all of the data variables unless a specific list is provided
     if isinstance(vars2extract, type(None)):
@@ -383,13 +394,13 @@ def extract_GEOSCF_assim4flight(df=None, ds=None,
     # Restrict the dataset to the day(s) of the flight
     time_bool = [((i>=sdate) & (i<=edate)) for i in ds.time.values]
     ds = ds.isel(time=time_bool)
-    # Reduce the dataset size to the area of the flight
+    # Reduce the dataset size to the spatial locations of the flight (+ buffer)
     spatial_buffer = 2 # degrees lat / lon
-    lat_min = df[LatVar].values.max() - spatial_buffer
+    lat_min = df[LatVar].values.min() - spatial_buffer
     lat_max = df[LatVar].values.max() + spatial_buffer
     lat_bool = [((i>=lat_min) & (i<=lat_max)) for i in ds[dsLatVar].values]
     ds = ds.isel(lat=lat_bool)
-    lon_min = df[LonVar].values.max() - spatial_buffer
+    lon_min = df[LonVar].values.min() - spatial_buffer
     lon_max = df[LonVar].values.max() + spatial_buffer
     lon_bool = [((i>=lon_min) & (i<=lon_max)) for i in ds[dsLonVar].values]
     ds = ds.isel(lon=lon_bool)
@@ -397,24 +408,21 @@ def extract_GEOSCF_assim4flight(df=None, ds=None,
     HPa_l = get_GEOSCF_vertical_levels(native_levels=False)
     # Get nearest indexes in 4D data from locations in dataframe
     idx_dict = calc_4D_idx_in_ds(ds_hPa=HPa_l, ds=ds, df=df,
-                                    TimeVar=TimeVar,
-                                    AltVar=PressVar,
-                                    LatVar=LatVar, LonVar=LonVar,
-                                    dsLonVar=dsLonVar, dsLatVar=dsLatVar,
-                                    dsTimeVar=dsTimeVar,
-                                    )
-    # Make a dictionary to convert between ds and df variable names
+                                 TimeVar=TimeVar,
+                                 AltVar=PressVar,
+                                 LatVar=LatVar, LonVar=LonVar,
+                                 dsLonVar=dsLonVar, dsLatVar=dsLatVar,
+                                 dsTimeVar=dsTimeVar,
+                                 )
+    # Make a dictionaries to convert between ds and df variable names
     df2ds_dict = {
     LonVar:dsLonVar, LatVar:dsLatVar, TimeVar:dsTimeVar, PressVar:dsAltVar,
     }
     df2ds_dict_r = {v: k for k, v in list(df2ds_dict.items())}
     # Save subset of dataset locally and then reload
-    ds = save_ds2disk_then_reload(ds=ds)
-    # Run a testing of the extraction
-    if testing_mode:
-        times2use = df.index.values[:10]
-    else:
-        times2use = df.index.values
+    if isinstance(TEMP_nc_name, type(None)):
+         TEMP_nc_name = 'TEMP_NetCDF_{}.nc'.format(collection)
+    ds = save_ds2disk_then_reload(ds, savename=TEMP_nc_name)
     # Create a data frame for values
     dfN = pd.DataFrame()
     # Extraction of data points in a bulk manner
@@ -428,6 +436,13 @@ def extract_GEOSCF_assim4flight(df=None, ds=None,
     # Also save model time variable to dataframe
     time_idx = idx_dict[df2ds_dict_r[dsTimeVar]]
     dfN['model-time'] = ds[dsTimeVar].values[time_idx]
+    # Add model lat, lon and pressure to dataframe
+    lon_idx = idx_dict[df2ds_dict_r[dsLonVar]]
+    dfN['model-lon'] = ds[dsLonVar].values[lon_idx]
+    lat_idx = idx_dict[df2ds_dict_r[dsLatVar]]
+    dfN['model-lat'] = ds[dsLatVar].values[lat_idx]
+    alt_idx = idx_dict[df2ds_dict_r[dsAltVar]]
+    dfN['model-alt'] = ds[dsAltVar].values[alt_idx]
     # Include variable attributes from original dataset
     if inc_attrs:
         for col in dfN.columns:
@@ -437,8 +452,11 @@ def extract_GEOSCF_assim4flight(df=None, ds=None,
             except KeyError:
                 pass
     # Save the datetime as a column too
-    dfN['Datetime'] = dfN.index.values
+    dfN['Datetime'] = df.index.values
     # Update the model datetime to be in datetime units
     dfN['model-time'] = pd.to_datetime(dfN['model-time'].values)
+    # Remove the temporary NetCDF file (of OPenDap dataset subset) from disk
+    rm_file(folder='./', filename=TEMP_nc_name)
+    # Return the extracted dataframe of flighttrack points
     return dfN
 
