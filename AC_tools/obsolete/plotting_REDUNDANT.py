@@ -33,6 +33,7 @@ import gc
 # imports should be specific and in individual functions
 # import tms modules with shared functions
 from .. variables import *
+from .. plotting import *
 from .. generic import *
 from .. AC_time import *
 from .. planeflight import *
