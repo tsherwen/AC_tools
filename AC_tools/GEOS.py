@@ -38,7 +38,7 @@ from time import gmtime, strftime
 from .core import *
 from .generic import *
 from .AC_time import *
-#from .planeflight import *
+from .planeflight import prt_PlaneFlight_files_v12_plus
 #from .variables import *
 #from .bpch2netCDF import convert_to_netCDF
 

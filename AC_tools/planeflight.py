@@ -257,7 +257,7 @@ def prt_PlaneFlight_files_v12_plus(df=None, LAT_var='LAT', LON_var='LON',
     if isinstance(slist, type(None)):
         met_vars = [
             'GMAO_ABSH', 'GMAO_PSFC', 'GMAO_SURF', 'GMAO_TEMP', 'GMAO_UWND',
-            'GMAO_VWND''GMAO_PRES'
+            'GMAO_VWND', 'GMAO_PRES'
         ]
         assert isinstance(num_tracers, int), 'num_tracers must be an integer'
         slist = ['TRA_{:0>3}'.format(i) for i in np.arange(1, num_tracers+1)]
