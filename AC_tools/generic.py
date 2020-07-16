@@ -113,7 +113,8 @@ def get_xy(Lon, Lat, lon_edges, lat_edges, debug=False):
 
 def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=320,
              justHH=False, no_dstr=True, save2png=True, wd=None,
-             save2eps=False, transparent=True, debug=False):
+             save2eps=False, transparent=True,
+             bbox_inches=None, debug=False):
     """
     Save figures (e.g. matplotlib) to pdf file
     """
@@ -140,24 +141,24 @@ def plot2pdf(title='new_plot', fig=None, rasterized=True, dpi=320,
 
     # Save and close
     file_extension = 'PDF'
-    pdf.savefig(dpi=dpi, transparent=transparent)
+    pdf.savefig(dpi=dpi, transparent=transparent, bbox_inches=bbox_inches)
     pdf.close()
 
     # Also export to png and eps?
     if save2png:
         file_extension += '/PDF'
         plt.savefig(npdf+'.png', format='png', dpi=dpi,
-                    transparent=transparent)
+                    transparent=transparent, bbox_inches=bbox_inches)
     if save2eps:
         file_extension += '/EPS'
         plt.savefig(npdf+'.eps', format='eps', dpi=dpi,
-                    transparent=transparent)
+                    transparent=transparent, bbox_inches=bbox_inches)
     print((file_extension+' saved & Closed as/at: ', npdf))
 
 
 def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, wd=None,
                   dpi=320, open=False, close=False, justHH=False,
-                  no_dstr=True):
+                  no_dstr=True, tight=False):
     """
     Save figures (e.g. matplotlib) to pdf file with multiple pages
     """
@@ -181,6 +182,8 @@ def plot2pdfmulti(pdf=None, title='new_plot', rasterized=True, wd=None,
     # Rasterise to save space?
     if rasterized:
         plt.gcf().set_rasterized(True)
+    if tight:
+        plt.tight_layout()
     # Save and close or keep open to allow additions of plots
     if close:
         pdf.close()
