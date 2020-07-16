@@ -506,3 +506,93 @@ def mk_planeflight_input4FAAM_flight(folder=None, flight_ID='C216',
                                    PRESS_var=PressVar, loc_var=LocVar,
                                    num_tracers=num_tracers,
                                    Username=Username,)
+
+
+def regrid_restart_file4flexgrid(dsA, OutFile=None, lons=None,
+                                lats=None, res='1x1', folder='./',
+                                vars2regrid=None, rm_regridder=True,
+                                save2netcdf=True,
+                                debug=False):
+    """
+    Regrid a GEOS-Chem restart file to a given resolution using xEMSF
+
+    Parameters
+    -------
+    dsA (xr.dataset): dataset to regrid
+    OutFile (str): name to save regretted netCDF to
+    folder (str): directory address to save file to
+    res (str): resolution to regrid to (TODO: add this functionality)
+    vars2regrid (list): list of variables to regrid (or all data_vars used)
+    rm_regridder (bool): remove the regridded file afterwards?
+    save2netcdf (Boolean): Save the regridded file as a NetCDF?
+    debug (bool): print debug statements to screen
+
+    Returns
+    -------
+    (xr.dataset)
+
+    Notes
+    -----
+     - Important note: Extra dimensions must be on the left, i.e. (time, lev, lat, lon) is correct but (lat, lon, time, lev) would not work. Most data sets should have (lat, lon) on the right (being the fastest changing dimension in the memory). If not, use DataArray.transpose or numpy.transpose to preprocess the data.
+    """
+    # TODO - setup using AC_Tools to import standard resolutions?
+    # Create a dataset to re-grid into
+    ds_out = xr.Dataset(dsA.coords)
+    # Replace the lat and lon coords
+    del ds_out['lat']
+    ds_out = ds_out.assign_coords({'lat':lats})
+    del ds_out['lon']
+    ds_out = ds_out.assign_coords({'lon':lons})
+    # Create a regidder (to be reused )
+    regridder = xe.Regridder(dsA, ds_out, 'bilinear', reuse_weights=True)
+    # Loop and regrid variables
+    ds_l = []
+    if isinstance(vars2regrid, type(None)):
+        vars2regrid = dsA.data_vars
+    # Only regrid variables wit lon and lat in them
+    vars2leave = [i for i in vars2regrid if 'lat' not in dsA[i].coords.keys()]
+    vars2regrid = [i for i in vars2regrid if 'lat' in dsA[i].coords.keys() ]
+    for var2use in vars2regrid:
+        if debug:
+            print(var2use)
+        # Create a dataset to re-grid into
+        ds_out = xr.Dataset(dsA.coords)
+        # Replace the lat and lon coords with the ones to regrid to
+        del ds_out['lat']
+        ds_out = ds_out.assign_coords({'lat':lats})
+        del ds_out['lon']
+        ds_out = ds_out.assign_coords({'lon':lons})
+        # Get a DataArray
+        dr = dsA[var2use]
+        # Build regridder
+        dr_out = regridder(dr)
+        # Exactly the same as input?
+        if ('time' in dsA[var2use].coords):
+            xr.testing.assert_identical(dr_out['time'], dsA['time'])
+        else:
+            pstr = 'WARNING: time variable not coord. for var. - not checked'
+            if debug:
+                print(pstr)
+        # Save variable
+        ds_l += [dr_out]
+    # Combine variables
+    ds = xr.Dataset()
+    for n, var2use in enumerate(vars2regrid):
+        ds[var2use] = ds_l[n]
+    # Transfer attributes
+    for coord in ds.coords:
+        ds[coord].attrs = dsA[coord].attrs.copy()
+    for var2use in ds.data_vars:
+        ds[var2use].attrs = dsA[var2use].attrs.copy()
+    # Add non re-regridded variables into returned dataset
+    for var2use in vars2leave:
+        ds[var2use] = dsA[var2use]
+    # Clean up
+    if rm_regridder:
+        regridder.clean_weight_file()
+    # Save the file (and return)
+    if save2netcdf:
+        if isinstance(OutFile, type(None)):
+            OutFile = '{}.out.nc'.format(InFile)
+        ds.to_netcdf(os.path.join(folder, OutFile))
+    return ds
