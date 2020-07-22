@@ -30,7 +30,7 @@ import numpy as np
 import time
 #import calendar
 import datetime as datetime
-#from datetime import datetime as datetime_
+from datetime import datetime as datetime_
 # The below imports need to be updated,
 # imports should be specific and in individual functions
 # import tms modules with shared functions
@@ -43,7 +43,7 @@ from .variables import *
 
 
 def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
-                             collection=None,
+                             collection=None, dates2use=None,
                              parallel=True, data_vars="minimal",
                              coords="minimal", compat="override",
                              combine='by_coords',
@@ -75,6 +75,29 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
     assert len(files) >= 1, 'No files found matching-{}'.format(wd+file_str)
     # Sort the files based on their name (which contains a regular datastring)
     files = list(sorted(files))
+    # Only open dates for certain dates?
+    if not isinstance(dates2use, type(None)):
+        FileRootsVar = 'FileRoots'
+        df = pd.DataFrame(files)
+        df = pd.DataFrame({FileRootsVar:files})
+        # Setup a helper function to extract dates from file strings
+        def get_date_from_filename(x, format='%Y%m%d%H%M'):
+            """
+            Extract Dates from filenames
+
+            Notes
+            -------
+             - It is assumed that the date ends the file string before the
+             format identifier
+             - time format is assumed to be YYYYMMDDHHMM
+            """
+            date_str = x.split('.')[-2]
+            dt = datetime_.strptime(date_str, format)
+            return dt
+        dtVar = 'datetime'
+        df[dtVar] = df[FileRootsVar].map(get_date_from_filename)
+        bool = df[dtVar].isin(dates2use)
+        files = list(df.loc[bool,FileRootsVar].values)
     # open all of these files as single Dataset
     # NOTE: Updated to use faster opening settings for files sharing the same coords
     # https://github.com/pydata/xarray/issues/1823
@@ -343,7 +366,8 @@ def read_inst_files_save_only_surface(wd=None, file_str='GEOSChem.inst1hr.*',
             os.remove(FullFileRoot)
 
 
-def GetSpeciesConcDataset(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None):
+def GetSpeciesConcDataset(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
+                          dates2use=None):
     """
     Wrapper to retrive GEOSChem SpeciesConc NetCDFs as a xr.dataset
 
@@ -356,10 +380,13 @@ def GetSpeciesConcDataset(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None):
     -------
     (dataset)
     """
-    return get_GEOSChem_files_as_ds(file_str=file_str, wd=wd)
+    return get_GEOSChem_files_as_ds(file_str=file_str, wd=wd,
+                                    dates2use=dates2use)
 
 
-def get_Inst1hr_ds(file_str='GEOSChem.inst1hr.*', wd=None):
+
+def get_Inst1hr_ds(file_str='GEOSChem.inst1hr.*', wd=None,
+                   dates2use=None):
     """
     Wrapper to get NetCDF 1hr instantaneous (Inst1hr) output as a Dataset
 
@@ -372,10 +399,12 @@ def get_Inst1hr_ds(file_str='GEOSChem.inst1hr.*', wd=None):
     -------
     (dataset)
     """
-    return get_GEOSChem_files_as_ds(file_str=file_str, wd=wd)
+    return get_GEOSChem_files_as_ds(file_str=file_str, wd=wd,
+                                    dates2use=dates2use)
 
 
-def get_StateMet_ds(file_str='GEOSChem.StateMet.*', wd=None):
+def get_StateMet_ds(file_str='GEOSChem.StateMet.*', wd=None,
+                    dates2use=None):
     """
     Wrapper to get NetCDF StateMet output as a Dataset
 
@@ -388,10 +417,12 @@ def get_StateMet_ds(file_str='GEOSChem.StateMet.*', wd=None):
     -------
     (dataset)
     """
-    return get_GEOSChem_files_as_ds(file_str=file_str, wd=wd)
+    return get_GEOSChem_files_as_ds(file_str=file_str, wd=wd,
+                                    dates2use=dates2use)
 
 
-def get_DryDep_ds(file_str='GEOSChem.DryDep.*', wd=None):
+def get_DryDep_ds(file_str='GEOSChem.DryDep.*', wd=None,
+                  dates2use=None):
     """
     Wrapper to get NetCDF dry deposition output as a dataset
 
@@ -404,10 +435,12 @@ def get_DryDep_ds(file_str='GEOSChem.DryDep.*', wd=None):
     -------
     (dataset)
     """
-    return get_GEOSChem_files_as_ds(file_str=file_str, wd=wd)
+    return get_GEOSChem_files_as_ds(file_str=file_str, wd=wd,
+                                    dates2use=dates2use)
 
 
-def get_ProdLoss_ds(file_str='GEOSChem.ProdLoss.*', wd=None):
+def get_ProdLoss_ds(file_str='GEOSChem.ProdLoss.*', wd=None,
+                    dates2use=None):
     """
     Wrapper to get NetCDF ProdLoss output as a Dataset
 
@@ -420,10 +453,12 @@ def get_ProdLoss_ds(file_str='GEOSChem.ProdLoss.*', wd=None):
     -------
     (dataset)
     """
-    return get_GEOSChem_files_as_ds(file_str=file_str, wd=wd)
+    return get_GEOSChem_files_as_ds(file_str=file_str, wd=wd,
+                                    dates2use=dates2use)
 
 
-def GetJValuesDataset(file_str='GEOSChem.JValues.*', wd=None):
+def GetJValuesDataset(file_str='GEOSChem.JValues.*', wd=None,
+                      dates2use=None):
     """
     Wrapper to get NetCDF photolysis rates (Jvalues) output as a Dataset
 
@@ -436,10 +471,12 @@ def GetJValuesDataset(file_str='GEOSChem.JValues.*', wd=None):
     -------
     (dataset)
     """
-    return get_GEOSChem_files_as_ds(file_str=file_str, wd=wd)
+    return get_GEOSChem_files_as_ds(file_str=file_str, wd=wd,
+                                    dates2use=dates2use)
 
 
-def get_HEMCO_diags_as_ds(file_str='HEMCO_diagnostics.*', wd=None):
+def get_HEMCO_diags_as_ds(file_str='HEMCO_diagnostics.*', wd=None,
+                          dates2use=None):
     """
     Wrapper to get HEMCO diagnostics NetCDF output as a Dataset
 
@@ -452,7 +489,8 @@ def get_HEMCO_diags_as_ds(file_str='HEMCO_diagnostics.*', wd=None):
     -------
     (dataset)
     """
-    return get_GEOSChem_files_as_ds(file_str=file_str, wd=wd)
+    return get_GEOSChem_files_as_ds(file_str=file_str, wd=wd,
+                                    dates2use=dates2use)
 
 
 def convert_pyGChem_iris_ds2COARDS_ds(ds=None, transpose_dims=True):
@@ -563,7 +601,7 @@ def convert_HEMCO_ds2Gg_per_yr(ds, vars2convert=None, var_species_dict=None,
         spec = var_species[var_]
         # Get equivalent unit for species (e.g. I, Br, Cl, N, et c)
         ref_spec = ref_specs[var_]
-        # get stiochiometry of ref_spec in species
+        # get stoichiometry of ref_spec in species
         stioch = spec_stoich(spec, ref_spec=ref_spec)
         RMM_spec = species_mass(spec)
         RMM_ref_spec = species_mass(ref_spec)
