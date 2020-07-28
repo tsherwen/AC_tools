@@ -1118,4 +1118,19 @@ def save_ds2disk_then_reload(ds, savename='TEMP_NetCDF.nc', folder='./',
     return xr.open_dataset(folder+savename)
 
 
+def merge_two_dicts(x, y):
+    """
+    Given two dictionaries, merge them into a new dict as a shallow copy.
+
+    Returns
+    -------
+    (dict)
+
+    Notes
+    -------
+     - Credit for function Aaron Hall (link below) https://stackoverflow.com/questions/38987/how-do-i-merge-two-dictionaries-in-a-single-expression-in-python-taking-union-o
+    """
+    z = x.copy()
+    z.update(y)
+    return z
 

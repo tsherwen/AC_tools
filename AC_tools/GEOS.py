@@ -12,15 +12,16 @@ from __future__ import print_function
 # I/O / Low level
 import os
 import sys
-import glob
-import pandas as pd
-import xarray as xr
 import re
-from netCDF4 import Dataset
+import glob
 import logging
 import wget
-from bs4 import BeautifulSoup
 import requests
+import pandas as pd
+import xarray as xr
+import xesmf as xe
+from netCDF4 import Dataset
+from bs4 import BeautifulSoup
 # Math/Analysis
 import numpy as np
 from time import mktime
