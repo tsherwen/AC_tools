@@ -69,7 +69,7 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
         # TODO - get this online from log files
         # (already implemented in AC_Tools)
         #        GC_version = 'v11-2'
-        GC_version = 'v12.0.1'
+        GC_version = 'v12.9.1'
     # Add mechanism name to string (and KPP folder)
     folder += 'KPP/{}/'.format(mechanism)
 
@@ -101,15 +101,14 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
     # --- Print out input KPP files with updated formatting (prior to tagging)
     # (Uniform formatting required for parsing - this step may not be required)
     if print_formatted_KPP_file:
+        extr_str='EXISTING_MECH_{}_{}'.format(mechanism, GC_version)
         AC.print_out_dfs2KPP_eqn_file(headers=headers, species_df=species_df,
-                                      rxn_dicts=rxn_dicts,
-                                      extr_str='EXISTING_MECH_{}'.format(
-                                          mechanism)
+                                      rxn_dicts=rxn_dicts, extr_str=extr_str,
                                       )
 
     # ---- Get outputted KPP files and process these...
     # Get outputted KPP mechanism
-    KPP_output_mech = AC.get_dict_of_KPP_mech(wd=folder, GC_version=GC_version)
+    KPP_mech = AC.get_dict_of_KPP_mech(wd=folder, GC_version=GC_version)
 
     # ---------------------- Tagging of Mechanism
     # Initialise dictionary to store tags used for reactions
@@ -123,7 +122,7 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
     # Get tagged reactions (as a dictionary)
     fam = 'LOx'
     df_fam = AC.get_reactants_and_products4tagged_fam(folder=folder,
-                                                      KPP_output_mech=KPP_output_mech,
+                                                      KPP_output_mech=KPP_mech,
                                                       fam=fam)
     # Loop reaction indexes for LOx family
     for n_key_, key_ in enumerate(rxn_dicts.keys()):
@@ -213,17 +212,24 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
     species_df = pd.concat([species_df, df_spec_tmp])
 
     # --- Print out updated KPP .eqn file (with tags)
+    extr_str = 'TAGGED_MECH_{}_{}'.format(mechanism, GC_version)
     AC.print_out_dfs2KPP_eqn_file(headers=headers, species_df=species_df,
                                   rxn_dicts=rxn_dicts,
-                                  extr_str='TAGGED_MECH_{}'.format(mechanism))
+                                  extr_str=extr_str)
 
     # --- Save out the tags and the reactions tagged
     # (to use for post-processing of tagged output)
-    savetitle = 'Tagged_reactions_in_{}.csv'.format(mechanism)
+    savetitle = 'Tagged_reactions_in_{}_{}.csv'.format(mechanism, GC_version)
     df_tags.to_csv(savetitle)
 
     # --- Save out lines that need to be added to the gckpp.kpp file
     AC.print_out_lines_for_gckpp_file(tags=tags, extr_str=mechanism)
+
+    # -
+    range = np.arange(1, int(current_tag[1:]))
+    tags = ['P{}{:0>3}'.format(tag_prefix,i) for i in range ]
+    tags += ['{}{:0>3}'.format(tag_prefix,i) for i in range ]
+    print_lines4species_database_yml(tags)
 
 
 if __name__ == "__main__":

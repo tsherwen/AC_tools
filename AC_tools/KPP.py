@@ -78,11 +78,11 @@ def get_fam_prod_loss4tagged_mech(wd=None, fam='LOx', ref_spec='O3',
         RR_dict_fam_stioch = get_stioch4family_rxns(
             fam=fam, RR_dict=RR_dict, Mechanism=Mechanism)
     # --- Get data
-    # get prod/loss arrays
+    # Get prod/loss arrays
     ars = get_GC_output(wd=Var_rc['wd'], r_list=True,
                         vars=['PORL_L_S__'+i for i in tags],
                         trop_limit=Var_rc['trop_limit'])
-    # limit prod/loss vertical dimension?
+    # Limit prod/loss vertical dimension?
     limit_Prod_loss_dim_to = Var_rc['limit_Prod_loss_dim_to']
     # Covert units based on whether model output is monthly
     if Data_rc['output_freq'] == 'Monthly':
@@ -90,13 +90,14 @@ def get_fam_prod_loss4tagged_mech(wd=None, fam='LOx', ref_spec='O3',
     else:
         month_eq = False
     # Now convert the units (to G/s)
-    ars = convert_molec_cm3_s_2_g_X_s(ars=ars, ref_spec=ref_spec, \
-                                      # shared settings...
-                                      months=Data_rc['months'], years=Data_rc['years'],
-                                      vol=Data_rc['vol'], t_ps=Data_rc['t_ps'], \
+    ars = convert_molec_cm3_s_2_g_X_s(ars=ars, ref_spec=ref_spec,
+                                      # Shared settings...
+                                      months=Data_rc['months'],
+                                      years=Data_rc['years'],
+                                      vol=Data_rc['vol'], t_ps=Data_rc['t_ps'],
                                       trop_limit=Var_rc['trop_limit'],
                                       rm_strat=Var_rc['rm_strat'],
-                                      # there are 59 levels of computation for P/l in
+                                      # There are 59 levels of computation for P/l in
                                       # v11-1+ (so limit to 59)
                                       limit_Prod_loss_dim_to=limit_Prod_loss_dim_to,
                                       # ... and function specific settings...
@@ -108,7 +109,7 @@ def get_fam_prod_loss4tagged_mech(wd=None, fam='LOx', ref_spec='O3',
     # Scale to annual
     if Data_rc['output_freq'] == 'Monthly':
         # Should this be summated then divided adjusted to time points.
-        # sum over time
+        # Sum over time
         ars = [i.sum(axis=-1) for i in ars]
         # Adjust to equivalent months.
         ars = [i/len(Data_rc['months'])*12 for i in ars]
@@ -132,7 +133,7 @@ def get_fam_prod_loss4tagged_mech(wd=None, fam='LOx', ref_spec='O3',
         ars = [i*t_ps for i in ars]
     # Select data by location or average globally?
     if not isinstance(region, type(None)):
-        # also allow for applying masks here...
+        # Also allow for applying masks here...
         print('NOT SETUP!!!')
         sys.exit()
     else:
@@ -142,7 +143,8 @@ def get_fam_prod_loss4tagged_mech(wd=None, fam='LOx', ref_spec='O3',
                                       trop_limit=Var_rc['trop_limit'],
                                       rm_strat=Var_rc['rm_strat'], \
                                       # provide shared data arrays averaged over time...
-                                      molecs=Data_rc['molecs'].mean(axis=-1), t_p=t_ps) \
+                                      molecs=Data_rc['molecs'].mean(axis=-1),
+                                      t_p=t_ps) \
                    for i in ars]
     if debug:
         print([i.shape for i in ars])
@@ -154,7 +156,9 @@ def get_fam_prod_loss4tagged_mech(wd=None, fam='LOx', ref_spec='O3',
 
 def print_out_dfs2KPP_eqn_file(species_df=None, headers=None,
                                extr_str='OUTPUT', rxn_dicts=None):
-    """ print out DataFrames to *.eqn file """
+    """
+    Print out DataFrames to *.eqn file
+    """
     # ---- Create KPP Mechanism file to save lines to
     a = open('{}.eqn'.format(extr_str), 'w')
     # ---  Print headers to file (list of strings)
@@ -205,7 +209,7 @@ def print_out_dfs2KPP_eqn_file(species_df=None, headers=None,
         print('//', file=a)
         print('// {}'.format(rxn_type) + ' reactions', file=a)
         print('//', file=a)
-        # now loop by reaction
+        # Now loop by reaction
         rxn_dict = rxn_dicts[rxn_type]
         for ind in rxn_dict.index:
             print
@@ -224,7 +228,7 @@ def print_out_dfs2KPP_eqn_file(species_df=None, headers=None,
 #                 nchunks = myround( frac_of_max, base=1, round_up=True )
 #                 sub_strs = chunks(l=rxn, n=int(KPP_line_max)-2 )
                 sub_strs = split_KPP_rxn_str_into_chunks(rxn)
-                # loop sub strings
+                # Loop sub strings
                 for n, sub_str in enumerate(sub_strs):
                     # If not the final sub string, then just print sub string
                     if (n+1 != len(sub_strs)):
@@ -241,8 +245,10 @@ def print_out_dfs2KPP_eqn_file(species_df=None, headers=None,
 
 
 def KPP_eqn_file_headers(folder=None, filename=None):
-    """ Get headers from KPP *.eqn file """
-    # ----open file and loop by line
+    """
+    Get headers from KPP *.eqn file
+    """
+    # Open file and loop by line
     header_lines = []
     with open(folder+filename, 'r') as file_:
         for line in file_:
@@ -265,7 +271,6 @@ def get_reactants_and_products4tagged_fam(fam='LOx', KPP_output_mech=None,
     df['rxn str'] = s
 #    df.index = df.index - 1 # Adjust Fortran numbering in output to Pythonic #
     # Split apart reaction str to give products and reactants
-
     def extract_products(input):
         return str(input).split(' --> ')[-1].strip()
 
@@ -274,7 +279,7 @@ def get_reactants_and_products4tagged_fam(fam='LOx', KPP_output_mech=None,
     df['prod'] = df['rxn str'].map(extract_products)
     df['react'] = df['rxn str'].map(extract_reactants)
     # Make the formating the same as in input files
-    # ---- Check if the file mapping can work between KPP input & output
+    # - Check if the file mapping can work between KPP input & output
     df['KPP input react'] = df['react'].map(update_KPP_rxn_str)
 #    KPP_Input_df['KPP input react'] = KPP_Input_df['react'].map(update_rxn_str)
     find_breakpoint = False
@@ -285,15 +290,14 @@ def get_reactants_and_products4tagged_fam(fam='LOx', KPP_output_mech=None,
             a_ = df['react'][s:e][~bool]
             b_ = KPP_Input_df['KPP input react'][s:e][~bool]
 #            print dict( zip( a_, b_ )  )
-            # turn into sorted lists
+            # Turn into sorted lists
             a_ = [list(sorted([ii.strip()for ii in i.split('+')])) for i in a_]
             b_ = [list(sorted([ii.strip()for ii in i.split('+')])) for i in b_]
-            # compare these and only print if they differ
+            # Compare these and only print if they differ
             for n, a__ in enumerate(a_):
                 if a__ != b_[n]:
                     print(a__, b_[n])
     # Only consider reaction that include family in the products
-
     def fam_in_rxn(input):
         return (fam in input)
     rtn_vars = ['react', 'prod', 'KPP input react']
@@ -322,12 +326,12 @@ def get_KPP_tagged_rxns(fam='LOx', filename='gckpp_Monitor.F90',
     if isinstance(RR_dict, type(None)):
         RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename,
                                        wd=wd)
-    # loop dictionary of reactions and save those that contain tag
+    # Loop dictionary of reactions and save those that contain tag
     tagged_RR_dummies = []
     for key_ in list(RR_dict.keys()):
         # Get reaction string
         rxn_str = RR_dict[key_]
-        # collection reactions with tag
+        # Collection reactions with tag
         if fam in rxn_str:
             tagged_RR_dummies += [key_]
     return tagged_RR_dummies
@@ -337,7 +341,9 @@ def get_KPP_tagged_rxns(fam='LOx', filename='gckpp_Monitor.F90',
 
 
 def KPP_eqn_file_species(folder=None, filename=None, debug=False):
-    """ Get specoes from *.eqn file """
+    """
+    Get species from *.eqn file
+    """
     import pandas as pd
     import numpy as np
     # ----open file and loop by line
@@ -353,7 +359,7 @@ def KPP_eqn_file_species(folder=None, filename=None, debug=False):
             # Now save the species detail
             if (n_line >= num2read_line_from) and (len(line_) > 1):
                 specs += [line_]
-            # also include inactive species? - Yes
+            # Also include inactive species? - Yes
             # (but track that these are inactive)
             if ("#DEFFIX" in line_):
                 species_is_not_active = True
@@ -365,7 +371,6 @@ def KPP_eqn_file_species(folder=None, filename=None, debug=False):
             if debug:
                 print(num2read_line_from)
     # Process extracted lines to dict of names and descriptions...
-
     def strip_line(line_):
         try:
             name, descrip = line_.strip().split('= IGNORE;')
@@ -374,12 +379,12 @@ def KPP_eqn_file_species(folder=None, filename=None, debug=False):
             print('ERROR for: {}'.format(line_))
         return line_
     specs = [strip_line(i) for i in specs if (len(i) > 12)]
-    # return as a DataFrame
+    # Return as a DataFrame
     maxlen = 400
     df = pd.DataFrame([i[1] for i in specs], dtype=(np.str, maxlen))
     df.index = [i[0] for i in specs]
     df.columns = ['Description']
-    # add activity to DataFrame
+    # Add activity to DataFrame
     df['inactive'] = inactive
     return df
 
@@ -387,20 +392,34 @@ def KPP_eqn_file_species(folder=None, filename=None, debug=False):
 def get_dicts_of_KPP_eqn_file_reactions(folder=None, filename=None,
                                         debug=False):
     """
-    Get reactions from *.eqn file
-    (Heterogeneous, Photolysis, Gas-phase)
+    Get reactions (Heterogeneous, Photolysis, Gas-phase) from *.eqn file
     """
     import string
     # Local vars
-    rxt_funcs = 'HET', 'PHOTOL', 'GCARR', '  GC'
-    # loop lines in file
+    KPP_rxn_funcs = (
+    # Main KPP functions
+    'HET', 'PHOTOL', 'GCARR','GCJPLPR',
+#    'GC_',
+    # Specialist KPP functions for mechanism
+    'GC_HO2HO2', 'GC_OHCO',
+    'GC_RO2NO', 'GC_OHHNO3', 'GC_RO2HO2', 'GC_HACOHA',
+    'GC_RO2HO2', 'GC_HACOHB', 'GC_TBRANCH', 'GCJPLEQ',
+    'GC_GLYCOHA', 'GC_GLYCOHB', 'GC_DMSOH', 'GC_GLYXNO3',
+    # Include ISOP reaction functions (inc. GC)
+    'GC_ALK', 'GC_NIT', 'GC_PAN', 'GC_EPO', 'GC_ISO1', 'GC_ISO2',
+    # KPP function without GC prefix
+#   'NIT', 'PAN', 'ALK', 'EPO',
+    'ARRPLUS', 'TUNPLUS',
+    '1.33E-13+3.82E-11*exp', # Why is this function not in gckpp.kpp?
+    )
+    # Loop lines in file
     with open(folder+filename, 'r') as file_:
         rxns_dict = {}
         for rxns in ('Gas-phase', 'Heterogeneous', 'Photolysis',):
             #        for rxns in ('Gas-phase',):
             num2read_line_from = 999999
             eqns = []
-            # tmp variables to catch KPP reactions over more than one line
+            # Tmp variables to catch KPP reactions over more than one line
             tmp_line_ = ''
             partial_rxn_str = False
             # Now loop
@@ -410,37 +429,37 @@ def get_dicts_of_KPP_eqn_file_reactions(folder=None, filename=None,
                     num2read_line_from = n_line+2
                 # Now save the species detail
                 if (n_line >= num2read_line_from) and (len(line_) > 1):
-                    # is there a rxn function in  the line?
-                    if not any([(i in line_) for i in rxt_funcs]):
-                        # if not then str/line only contains a partial strin
+                    # Is there a rxn function in  the line?
+                    if not any([(i in line_) for i in KPP_rxn_funcs]):
+                        # If not then str/line only contains a partial strin
                         partial_rxn_str = True
                         rxn_func_in_str = False
                     else:
                         rxn_func_in_str = True
-                    # if only part of rxn str, then save and add to next line
+                    # If only part of rxn str, then save and add to next line
                     if partial_rxn_str:
                         tmp_line_ += line_.strip()
                         if debug:
                             print('added to tmp_line_:', tmp_line_, line_)
-                    # if the tmp str is empty, just fill it with the line_
+                    # If the tmp str is empty, just fill it with the line_
                     if (tmp_line_ == ''):
                         tmp_line_ = line_.strip()
                     # (extra) check: is there is rxn func in the tmp_line_ str?
-                    if any([(i in tmp_line_) for i in rxt_funcs]):
+                    if any([(i in tmp_line_) for i in KPP_rxn_funcs]):
                         rxn_func_in_str = True
                     if rxn_func_in_str:
                         eqns += [tmp_line_]
-                        # reset the tmp str
+                        # Reset the tmp str
                         tmp_line_ = ''
                         partial_rxn_str = False
                 # Stop reading lines at end of section
                 if ("//" in line_) and len(eqns) > 3:
                     break
                 print(n_line, line_)
-            # remove spacing errors in KPP eqn entries
+            # Remove spacing errors in KPP eqn entries
 
             def remove_KPP_spacing_errors(input):
-                """ remove differences in spacing ion KPP """
+                """ Remove differences in spacing in KPP """
                 # Numbers
                 for num in [str(i) for i in range(0, 10)]:
                     input = input.replace(' +'+num, ' + '+num)
@@ -451,7 +470,7 @@ def get_dicts_of_KPP_eqn_file_reactions(folder=None, filename=None,
                 for let in string.ascii_uppercase:
                     input = input.replace(' +'+let, ' + '+let)
                 return input
-            # remove KPP spacing errors
+            # Remove KPP spacing errors
             eqns = [remove_KPP_spacing_errors(i) for i in eqns]
             # Check for "eqns" with more than one eqn in
             eqns = split_combined_KPP_eqns(eqns)
@@ -464,33 +483,35 @@ def get_dicts_of_KPP_eqn_file_reactions(folder=None, filename=None,
 
 
 def split_KPP_rxn_str_into_chunks(rxn, KPP_line_max=43, debug=False):
-    """ Split a rxn str so that it is not longer than KPP max line length """
+    """
+    Split a rxn str so that it is not longer than KPP max line length
+    """
     print(rxn)
-    # sub-function to cut strings to last " +"
+    # Sub-function to cut strings to last " +"
 
     def return_string_in_parts_ending_with_plus(input):
         """ return string upto last ' +'  in string """
-        # find the last ' + ' in string
+        # Find the last ' + ' in string
         ind = input[::-1].find(' +')
         return input[:-(ind)-1]
-    # now loop the sub_Strs
+    # Now loop the sub_Strs
     rxn_len = len(rxn)
     remainder = rxn_len
     sub_str_lens = [0]
     sub_strs = []
-    # loops to do ()
+    # Loops to do ()
     times2loop = rxn_len / float(KPP_line_max)
     times2loop = myround(times2loop, round_up=True, base=1) + 1
     for n in range(times2loop):
         if debug:
             print(n, remainder, sub_str_lens)
-        if (remainder > 0):  # and len(sub_str):
+        if (remainder > 0):  # And len(sub_str):
             #        while (remainder > 0):
-            # cut reaction string from length taken
+            # Cut reaction string from length taken
             new_str = rxn[sum(sub_str_lens):][:int(KPP_line_max)]
             if debug:
                 print(new_str)
-            # if the new string is the end of the rxn string
+            # If the new string is the end of the rxn string
             if len(new_str) < int(KPP_line_max):
                 sub_strs += [new_str]
                 sub_str_lens += [len(new_str)]
@@ -499,7 +520,7 @@ def split_KPP_rxn_str_into_chunks(rxn, KPP_line_max=43, debug=False):
             # If not chop str to las "+"
             else:
                 new_str = return_string_in_parts_ending_with_plus(new_str)
-                # now save to sub str list
+                # Now save to sub str list
                 sub_strs += [new_str]
                 sub_str_lens += [len(new_str)]
                 remainder = rxn_len - sum(sub_str_lens)
@@ -512,14 +533,18 @@ def split_KPP_rxn_str_into_chunks(rxn, KPP_line_max=43, debug=False):
 
 
 def get_KPP_PL_tag(last_tag, tag_prefix='T'):
-    """ Get the next P/L tag in a format T??? """
+    """
+    Get the next P/L tag in a format T???
+    """
     assert (len(last_tag) == 4), "Tag must be 4 characers long! (e.g. T???)"
     last_tag_num = int(last_tag[1:])
     return '{}{:0>3}'.format(tag_prefix, last_tag_num+1)
 
 
 def print_out_lines_for_gckpp_file(tags=None, extr_str=''):
-    """ Print lines to gckpp.kpp for added for tags in now in the .eqn file """
+    """
+    Print lines to gckpp.kpp for added for tags in now in the .eqn file
+    """
     # Create a *.kpp file for lines to be saved to
     a = open('gckpp.kpp_extra_lines_for_tagged_mech_{}'.format(extr_str), 'w')
     print('#FAMILIES', file=a)
@@ -530,7 +555,9 @@ def print_out_lines_for_gckpp_file(tags=None, extr_str=''):
 
 
 def update_KPP_rxn_str(input, rtn_as_list=False):
-    """ Update reaction string in KPP reaction string """
+    """
+    Update reaction string in KPP reaction string
+    """
     # Remove +hv from phtolysis reactions
     input = input.replace('+hv', '')
     input = input.replace('+ hv', '')
@@ -553,7 +580,9 @@ def update_KPP_rxn_str(input, rtn_as_list=False):
 
 def process_KPP_rxn_dicts2DataFrames(rxn_dicts=None, debug=False,
                                      Use_FORTRAN_KPP_numbering=True):
-    """ Process lists of strings of KPP mech into organised DataFrame """
+    """
+    Process lists of strings of KPP mechanism into organised DataFrame
+    """
     import pandas as pd
     # Loop dictionary of reaction mechanisms
     for key_ in rxn_dicts.keys():
@@ -569,7 +598,7 @@ def process_KPP_rxn_dicts2DataFrames(rxn_dicts=None, debug=False,
 #                metadata_start = metadata.find('{')
 #                metadata_end = metadata[::-1.find('}')
 #                metadata = metadata[metadata_start:metadata_end+1]
-            # split off reactants and products...
+            # Split off reactants and products...
             react = rxn_str.split('=')[0].strip()
             prod = rxn_str.split('=')[-1].strip()
             rxn_list_processed += [[rxn_str, react, prod, eqn, metadata]]
@@ -586,7 +615,7 @@ def process_KPP_rxn_dicts2DataFrames(rxn_dicts=None, debug=False,
 
 
 def split_combined_KPP_eqns(list_in):
-    """ split combined KPP eqn strings  """
+    """ Split combined KPP eqn strings  """
     # Indices of KPP eqn strings with more than one "="
     inds = []
     for n, str in enumerate(list_in):
@@ -657,20 +686,20 @@ def get_stioch4family_rxns(fam='LOx', filename='gckpp_Monitor.F90',
     for key_ in list(RR_dict.keys()):
         # Get reaction string
         rxn_str = RR_dict[key_]
-        # collection reactions with tag
+        # Collection reactions with tag
         if fam in rxn_str:
             tagged_rxns += [key_]
-            # split reaction str by '+' (excluding reactants part)
+            # Split reaction str by '+' (excluding reactants part)
             rxn_str = rxn_str[18:].split('+')
             if debug:
                 print(rxn_str)
-            # get product
+            # Get product
             product_str = [i for i in rxn_str if (fam in i)]
             if debug:
                 print(product_str)
             # Find index of reaction
 #            ind_of_rxn = [ n for n,i in product_str if (fam in i) ]
-            # split coefficient ("Coe") from reaction
+            # Split coefficient ("Coe") from reaction
             product_str = product_str[0].strip().split()
             if len(product_str) > 1:
                 tagged_rxn_stioch += [float(product_str[0])]
@@ -680,7 +709,8 @@ def get_stioch4family_rxns(fam='LOx', filename='gckpp_Monitor.F90',
 
 
 def get_tags4family(fam='LOx', filename='gckpp_Monitor.F90',
-                    Mechanism='Halogens', tag_prefix='PT', RR_dict=None, wd=None,
+                    Mechanism='Halogens', tag_prefix='PT', RR_dict=None,
+                    wd=None,
                     get_one_tag_per_fam=True, debug=False):
     """
     For a P/L family tag (e.g. LOx), if there are individual tags then these
@@ -701,19 +731,19 @@ def get_tags4family(fam='LOx', filename='gckpp_Monitor.F90',
     if isinstance(RR_dict, type(None)):
         RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename,
                                        wd=wd)
-    # loop dictionary of reactions and save those that contain tag
+    # Loop dictionary of reactions and save those that contain tag
     tagged_rxns = []
     tagged_rxn_tags = []
     for key_ in list(RR_dict.keys()):
         # Get reaction string
         rxn_str = RR_dict[key_]
-        # collection reactions with tag
+        # Collection reactions with tag
         if fam in rxn_str:
             #            if debug: print( key_, fam, rxn_str )
             tagged_rxns += [key_]
-            # split reaction str by '+' (excluding reactants part)
+            # Split reaction str by '+' (excluding reactants part)
             rxn_str = rxn_str[18:].split('+')
-            # look for tag(s)... - should only be one per reaction!
+            # Look for tag(s)... - should only be one per reaction!
             tags = [i.strip() for i in rxn_str if (tag_prefix in i)]
             if debug:
                 print(rxn_str, tags)
@@ -768,10 +798,10 @@ def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90',
     strs_in_non_rxn_lines = 'N_NAMES_', 'CHARACTER', 'DIMENSION', 'PARAMETER'
     RR_dict = {}
     with open(wd+filename, 'r') as file:
-        # loop by line in file
+        # Loop by line in file
         start_extracting_mech_line = 1E99
         for n, line in enumerate(file):
-            # check for mechanism identifier
+            # Check for mechanism identifier
             if (MECH_start_str in line):
                 start_extracting_mech_line = n+3
             # Extract reaction mechanism info
@@ -779,24 +809,24 @@ def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90',
                 # break out of loop after empyty line (len<3)
                 if len(line) < 3:
                     break
-                # check if the line contains a reaction str
+                # Check if the line contains a reaction str
 #                if (rxn_line_ind in line) or start_extracting_mech_line:
-                # check if line contrains strings not in reaction lines
+                # Check if line contrains strings not in reaction lines
                 if not any([(i in line) for i in strs_in_non_rxn_lines]):
                     rxn_str = line[6:106]
                     # RR??? dummy tags only available on v11-01 patches!
                     if GC_version == 'v11-01':
                         RR_dummy = 'RR{}'.format(line[118:].strip())
-                        # add to dictionary
+                        # Add to dictionary
                         RR_dict[RR_dummy] = rxn_str
                     # Use just reaction number for other versions...
                     else:
                         try:
                             RR_num = int(line[118:].strip())
-                            # add to dictionary
+                            # Add to dictionary
                             RR_dict[RR_num] = rxn_str
                         except ValueError:
-                            # add gotcha for lines printed without an index in
+                            # Add gotcha for lines printed without an index in
                             # KPP
                             # e.g. final line is missing index in KPP output.
                             # CHARACTER(LEN=???), PARAMETER, DIMENSION(??) ::
@@ -804,7 +834,7 @@ def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90',
                             #  ' ... ', & ! index ???
                             #  ' ... ' /)
                             # (no index given for the final output. so assume
-                            # n+1)
+                            # N+1)
                             logging.debug('rxn # assumed as {} for {}'.format(
                                 RR_num+1, rxn_str))
                             # use the value of the line previous and add to
@@ -832,7 +862,7 @@ def prt_families4rxns_to_input_to_PROD_LOSS(fam='LOx', rxns=None, wd=None,
     -------
     (None)
     """
-    # get list of tagged reactions for family
+    # Get list of tagged reactions for family
     if isinstance(rxns, type(None)):
         rxns = get_KPP_tagged_rxns(fam=fam, filename=filename,
                                    Mechanism=Mechanism, wd=wd)
@@ -870,7 +900,7 @@ def prt_families4rxns_to_input_to_PROD_LOSS_globchem_spec(fam='LOx',
      - From v11-2d the KPP mechanism is in a single *.eqn file (globchem.spc was
         retired).
     """
-    # get list of tagged reactions for family
+    # Get list of tagged reactions for family
     if isinstance(rxns, type(None)):
         rxns = get_KPP_tagged_rxns(fam=fam, filename=filename,
                                    Mechanism=Mechanism, wd=wd)
@@ -921,14 +951,15 @@ def get_KKP_mech_from_eqn_file_as_df(folder=None, Mechanism='Tropchem',
         filename = '{}.eqn'.format(Mechanism)
     print('get_KKP_mech_from_eqn_file_as_df', folder, filename)
     # Get dictionary of dictionaries
-    dicts = get_KKP_mech_from_eqn_file_as_dicts(folder=folder, Mechanism=Mechanism,
+    dicts = get_KKP_mech_from_eqn_file_as_dicts(folder=folder,
+                                                Mechanism=Mechanism,
                                                 filename=filename)
     # Add a flag for reaction type
     for key in dicts.keys():
         df = dicts[key]
         df['Type'] = key
         dicts[key] = df
-    # combine into a single data frame
+    # Combine into a single data frame
     df = pd.concat([dicts[i] for i in dicts.keys()], join='outer')
     return df
 
@@ -957,7 +988,7 @@ def get_dictionary_of_tagged_reactions(filename='globchem.eqn',
     rxn_l = []
     # Now open file and look for tags
     with open(wd+filename) as file_:
-        # loop lines and store reaction strs (1st line) that contain tags
+        # Loop lines and store reaction strs (1st line) that contain tags
         for line in file_:
             try:
                 # What does the reaction string begin?
@@ -969,12 +1000,12 @@ def get_dictionary_of_tagged_reactions(filename='globchem.eqn',
                 # update this to use regular expressions?
                 part_of_str_that_would_contain_tag = product_str[:6]
                 if ' T' in part_of_str_that_would_contain_tag:
-                    # strip tag from string.
+                    # Strip tag from string.
                     tag = part_of_str_that_would_contain_tag.strip()
                     # Add if actually a tag.
                     if tag not in tracer_names_like_tag:
                         tags_l += [tag]
-                        # select tag
+                        # Select tag
                         rxn_l += [reaction_str.strip()]
             # If the line doesn't contain a reaction # ("{?}"), then pass
             except ValueError:
@@ -1018,15 +1049,15 @@ def get_Ox_fam_based_on_reactants(filename='gckpp_Monitor.F90',
                                RR_dict=RR_dict)
     # --- Extra local variables
     HOx = ['OH', 'HO2', 'H2O2']
-    # temporarily add to definition of HOx
+    # Temporarily add to definition of HOx
     HOx += ['O1D', 'O', 'O3', 'NO3']
     ClOx = ['CFC', 'Cl', 'ClO']
     NOx = ['NO', 'NO2', 'NO3', 'N2O5']
     non_I_specs_with_I_char = [
         'INO2', 'ISN1', 'ISNOOA', 'ISNOHOO', 'ISOPNB', 'ISOPND', 'ISOP', 'ISNP',
-        # add species in v11-2d
+        # Add species in v11-2d
         'IONITA',
-        # add species in v11-2d (benchmarks)
+        # Add species in v11-2d (benchmarks)
         'IMAO3', 'IPMN', 'MONITS', 'MONITU', 'ISNP', 'LIMO', 'ISNOOB', 'PIO2',
         'LIMO2'
     ]
@@ -1068,7 +1099,7 @@ def get_Ox_fam_based_on_reactants(filename='gckpp_Monitor.F90',
             Br_is_reactant = True
         # IOx reaction?
         if 'I' in reactant_str:
-            # account for non-iodine species with I Character in...
+            # Account for non-iodine species with I Character in...
             if not any([(i in reactant_str) for i in non_I_specs_with_I_char]):
                 I_is_reactant = True
         # ClOx reaction?
@@ -1091,7 +1122,7 @@ def get_Ox_fam_based_on_reactants(filename='gckpp_Monitor.F90',
         # HOx reaction?
         if any([(i in reactant_str) for i in HOx]):
             HOx_is_reactant = True
-        # gotcha for IONITA in v11-01
+        # Gotcha for IONITA in v11-01
 #         if (GC_version=='v11-01'):
 #             IONITA_rxns = ['T040', 'T039', 'T037']
 #             if any( [(tags[rxn_] == i) for i in IONITA_rxns] ):
@@ -1124,7 +1155,7 @@ def get_Ox_fam_based_on_reactants(filename='gckpp_Monitor.F90',
         # HOx?
         elif HOx_is_reactant:
             fam_l += ['HOx']
-        # if IONITA reaction
+        # If IONITA reaction
         elif IONITA_is_formed:
             fam_l += ['NOx']
         # Not assigned?!
@@ -1158,7 +1189,8 @@ def get_Ox_fam_based_on_reactants(filename='gckpp_Monitor.F90',
 
 
 def get_tags_in_rxn_numbers(rxn_nums=[], RR_dict=None,
-                            filename='gckpp_Monitor.F90', Mechanism='Halogens', wd=None,
+                            filename='gckpp_Monitor.F90', Mechanism='Halogens',
+                            wd=None,
                             debug=False):
     """
     Get tags in given list of reactions
@@ -1180,21 +1212,21 @@ def get_tags_in_rxn_numbers(rxn_nums=[], RR_dict=None,
     # Loop dictionary of reactions and save those that contain tag
     tagged_rxns = []
     tags_for_rxns = []
-    # create a sub dictionary for reaction numbers provided
+    # Create a sub dictionary for reaction numbers provided
     sub_dict = dict([(i, RR_dict[i]) for i in rxn_nums])
     print(sub_dict)
     for key_ in list(sub_dict.keys()):
         # Get reaction string
         rxn_str = RR_dict[key_]
-        # collection reactions with tag
+        # Collection reactions with tag
         tag_strs = [' + T', '> T']
-        # replace this with reg ex?
+        # Replace this with reg ex?
         if debug:
             print((key_, rxn_str, any([i in rxn_str for i in tag_strs])))
         if any([i in rxn_str for i in tag_strs]):
-            # split reaction str by '+' (excluding reactants part)
+            # Split reaction str by '+' (excluding reactants part)
             product_str_list = rxn_str[18:].split('+')
-            # select tag(s)
+            # Select tag(s)
             tag_ = [i for i in product_str_list if (' T' in i)]
             if len(tag_) > 1:
                 print(('WARNING - more than one tag for reaction? :', tag_))
@@ -1233,7 +1265,7 @@ def get_oxidative_release4specs(filename='gckpp_Monitor.F90',
         # Loop reactions
         for key_ in RR_dict:
             rxn_str = RR_dict[key_]
-            # species in reaction?
+            # Species in reaction?
             if spec in rxn_str:
                 print(rxn_str)
                 RR_rxn_dummies += [key_]
@@ -1334,3 +1366,17 @@ def get_Ox_loss_dicts(fam='LOx', ref_spec='O3',
         'halogen_fams': halogen_fams,
     }
     return d
+
+
+def print_lines4species_database_yml(tags, extr_str=''):
+    """
+    Print lines for tags to paste into the species_database.yml file
+    """
+    # Create a *.kpp file for lines to be saved to
+    FileStr = 'species_database_extra_lines_for_tagged_mech_{}'
+    a = open(FileStr.format(extr_str), 'w')
+    pstr1 = '{}:'
+    pstr2 = '  Is_Gas: true'
+    for tag in tags:
+        print(pstr1.format(tag), file=a)
+        print(pstr2, file=a)
