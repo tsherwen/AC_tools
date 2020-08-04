@@ -1,0 +1,3 @@
+[submodule "geos-chem-schedule"]
+	path = geos-chem-schedule
+	url = git@github.com:wacl-york/geos-chem-schedule.git
