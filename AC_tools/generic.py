@@ -1105,12 +1105,19 @@ def calc_4D_idx_in_ds(ds=None, df=None, LonVar='lon', LatVar='lat',
 
 
 def save_ds2disk_then_reload(ds, savename='TEMP_NetCDF.nc', folder='./',
-                             delete_ds=True):
+                             delete_ds=True, debug=False):
     """
     Save a dataset (subset) to disk locally, then reload into memory
     """
+    if debug:
+        PrtStr = 'Saving NetCDF {} @ {} with dims: {}'
+        print( PrtStr.format(savename, datetime.datetime.now(), ds.dims ) )
+        print( '... and variables: {}'.format( list(ds.data_vars) ) )
     # Save the dataset to disk
     ds.to_netcdf(folder+savename)
+    if debug:
+        PrtStr = 'Saved NetCDF {} @ {} with dims: {}'
+        print( PrtStr.format(savename, datetime.datetime.now(), ds.dims ) )
     # Delete the dataset
     if delete_ds:
         del ds

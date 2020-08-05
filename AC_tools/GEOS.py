@@ -299,8 +299,8 @@ def get_GEOSCF_vertical_levels(print_equivalents=False, native_levels=False):
         ]
     else:
         HPa_l = [
-            1000, 975, 950, 925, 900, 850, 800, 750, 700, 650, 600, 550, 500, 450, 400,
-            350, 300, 250, 200, 150, 100, 50
+            1000, 975, 950, 925, 900, 850, 800, 750, 700, 650, 600, 550, 500,
+            450, 400, 350, 300, 250, 200, 150, 100, 50
         ]
 
     # Get altitudes in km, then convert to metres
@@ -328,6 +328,13 @@ def extract_GEOSCF4FAAM_flight(folder=None, flight_ID='C216', folder4csv=None,
                                inc_ds_vars_in_csv=False):
     """
     Extract the GEOS-CF model for a given FAAM BAe146 flight
+
+    Parameters
+    -------
+
+    Returns
+    -------
+    (None)
     """
     # Retrieve FAAM BAe146 Core NetCDF files
     filename = 'core_faam_*_{}_1hz.nc'.format(flight_ID.lower())
@@ -371,19 +378,28 @@ def extract_GEOSCF4FAAM_flight(folder=None, flight_ID='C216', folder4csv=None,
     df.to_csv(folder4csv+filename+'.csv')
 
 
-
 def extract_GEOSCF_assim4df(df=None, ds=None,
-                                LatVar='lat', vars2extract=None,
-                                collection='met_inst_1hr_g1440x721_p23',
-                                LonVar='lon', PressVar='hPa',
-                                mode='assim', TimeVar='time',
-                                dsAltVar='lev', dsTimeVar='time',
-                                dsLonVar='lon', dsLatVar='lat',
-                                testing_mode=False, inc_attrs=True,
-                                TEMP_nc_name=None,
-                                debug=False):
+                            LatVar='lat', vars2extract=None,
+                            collection='met_inst_1hr_g1440x721_p23',
+                            LonVar='lon', PressVar='hPa',
+                            mode='assim', TimeVar='time',
+                            dsAltVar='lev', dsTimeVar='time',
+                            dsLonVar='lon', dsLatVar='lat',
+                            testing_mode=False, inc_attrs=True,
+                            TEMP_nc_name=None,
+                            resample_df2ds_freq=False,
+                            spatial_buffer=None,
+                            debug=False):
     """
     Extract GEOS-CF collection for dataframe point locations (e.g. flightpath)
+
+    Parameters
+    -------
+    df (pd.DataFrame):
+
+    Returns
+    -------
+    (None)
     """
     # Get the start and end date of dataframe (with a 1/4 day buffer)
     sdate = add_days(df.index.min(), -0.25)
@@ -401,13 +417,15 @@ def extract_GEOSCF_assim4df(df=None, ds=None,
     # Extract all of the data variables unless a specific list is provided
     if isinstance(vars2extract, type(None)):
         vars2extract = list(ds.data_vars)
+    ds = ds[vars2extract]
     # Restrict the dataset to the day(s) of the flight
     dates = dt64_2_dt(ds.time.values)
 #    time_bool = [((i>=sdate) & (i<=edate)) for i in ds.time.values]
     time_bool = [((i>=sdate) & (i<=edate)) for i in dates]
     ds = ds.isel(time=time_bool)
     # Reduce the dataset size to the spatial locations of the flight (+ buffer)
-    spatial_buffer = 2 # degrees lat / lon
+    if isinstance(spatial_buffer, type(None)):
+        spatial_buffer = 2 # degrees lat / lon
     lat_min = df[LatVar].values.min() - spatial_buffer
     lat_max = df[LatVar].values.max() + spatial_buffer
     lat_bool = [((i>=lat_min) & (i<=lat_max)) for i in ds[dsLatVar].values]
@@ -423,6 +441,15 @@ def extract_GEOSCF_assim4df(df=None, ds=None,
         HPa_l = [ HPa_l[-1] ]
     else:
         HPa_l = get_GEOSCF_vertical_levels(native_levels=False)
+    # Save subset of dataset locally and then reload
+    if isinstance(TEMP_nc_name, type(None)):
+         TEMP_nc_name = 'TEMP_NetCDF_{}.nc'.format(collection)
+    ds = save_ds2disk_then_reload(ds, savename=TEMP_nc_name, debug=debug)
+    # Resample the values to extract
+    if resample_df2ds_freq:
+        grads_step = ds.time.attrs['grads_step']
+        grads_step = grads_step.replace('mn', 'T' )
+        df = df.resample(grads_step).mean()
     # Get nearest indexes in 4D data from locations in dataframe
     idx_dict = calc_4D_idx_in_ds(ds_hPa=HPa_l, ds=ds, df=df,
                                  TimeVar=TimeVar,
@@ -436,10 +463,6 @@ def extract_GEOSCF_assim4df(df=None, ds=None,
     LonVar:dsLonVar, LatVar:dsLatVar, TimeVar:dsTimeVar, PressVar:dsAltVar,
     }
     df2ds_dict_r = {v: k for k, v in list(df2ds_dict.items())}
-    # Save subset of dataset locally and then reload
-    if isinstance(TEMP_nc_name, type(None)):
-         TEMP_nc_name = 'TEMP_NetCDF_{}.nc'.format(collection)
-    ds = save_ds2disk_then_reload(ds, savename=TEMP_nc_name)
     # Create a data frame for values
     dfN = pd.DataFrame()
     # Extraction of data points in a bulk manner
@@ -493,6 +516,13 @@ def mk_planeflight_input4FAAM_flight(folder=None, flight_ID='C216',
                                      ):
     """
     Extract the GEOS-CF model for a given FAAM BAe146 flight
+
+    Parameters
+    -------
+
+    Returns
+    -------
+    (None)
     """
     # Retrieve FAAM BAe146 Core NetCDF files
     filename = 'core_faam_*_{}_1hz.nc'.format(flight_ID.lower())
