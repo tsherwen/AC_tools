@@ -344,14 +344,14 @@ def extract_GEOSCF4FAAM_flight(folder=None, flight_ID='C216', folder4csv=None,
         df = df.head(150)
     # Get variables from chemistry collection
     collection = 'chm_inst_1hr_g1440x721_p23'
-    df1 = extract_GEOSCF_assim4flight(df, PressVar=PressVar, LonVar=LonVar,
-                                      LatVar=LatVar, TimeVar=TimeVar,
-                                      collection=collection)
+    df1 = extract_GEOSCF_assim4df(df, PressVar=PressVar, LonVar=LonVar,
+                                  LatVar=LatVar, TimeVar=TimeVar,
+                                  collection=collection)
     # Get variables from meterology collection
     collection = 'met_inst_1hr_g1440x721_p23'
-    df2 = extract_GEOSCF_assim4flight(df, PressVar=PressVar, LonVar=LonVar,
-                                      LatVar=LatVar, TimeVar=TimeVar,
-                                      collection=collection)
+    df2 = extract_GEOSCF_assim4df(df, PressVar=PressVar, LonVar=LonVar,
+                                  LatVar=LatVar, TimeVar=TimeVar,
+                                  collection=collection)
     # Combine dataframes and remove duplicate columns
     dfs = [df1, df2]
     df = pd.concat(dfs, axis=1)
@@ -372,7 +372,7 @@ def extract_GEOSCF4FAAM_flight(folder=None, flight_ID='C216', folder4csv=None,
 
 
 
-def extract_GEOSCF_assim4flight(df=None, ds=None,
+def extract_GEOSCF_assim4df(df=None, ds=None,
                                 LatVar='lat', vars2extract=None,
                                 collection='met_inst_1hr_g1440x721_p23',
                                 LonVar='lon', PressVar='hPa',
@@ -383,18 +383,28 @@ def extract_GEOSCF_assim4flight(df=None, ds=None,
                                 TEMP_nc_name=None,
                                 debug=False):
     """
-    Extract GEOS-CF collection for flightpath locations in dataframe
+    Extract GEOS-CF collection for dataframe point locations (e.g. flightpath)
     """
-    # Get the start and end date of flight (with a 1/4 day buffer)
+    # Get the start and end date of dataframe (with a 1/4 day buffer)
     sdate = add_days(df.index.min(), -0.25)
     edate = add_days(df.index.max(), 0.25)
-    # Retrieve the 3D fields from OPenDAP for given collection
+    # Retrieve the 1D/3D fields from OPenDAP for given collection
     ds = get_GEOSCF_as_ds_via_OPeNDAP(collection=collection, mode=mode)
+    # Check if there are multiple horizontal levels in OPenDAP dataset
+    try:
+        if len(ds.lev.values) == 1:
+            single_horizontal_level = True
+        else:
+            single_horizontal_level = False
+    except AttributeError:
+        single_horizontal_level = True
     # Extract all of the data variables unless a specific list is provided
     if isinstance(vars2extract, type(None)):
         vars2extract = list(ds.data_vars)
     # Restrict the dataset to the day(s) of the flight
-    time_bool = [((i>=sdate) & (i<=edate)) for i in ds.time.values]
+    dates = dt64_2_dt(ds.time.values)
+#    time_bool = [((i>=sdate) & (i<=edate)) for i in ds.time.values]
+    time_bool = [((i>=sdate) & (i<=edate)) for i in dates]
     ds = ds.isel(time=time_bool)
     # Reduce the dataset size to the spatial locations of the flight (+ buffer)
     spatial_buffer = 2 # degrees lat / lon
@@ -406,8 +416,13 @@ def extract_GEOSCF_assim4flight(df=None, ds=None,
     lon_max = df[LonVar].values.max() + spatial_buffer
     lon_bool = [((i>=lon_min) & (i<=lon_max)) for i in ds[dsLonVar].values]
     ds = ds.isel(lon=lon_bool)
-    # Get a list of the levels that the data is interpolated onto
-    HPa_l = get_GEOSCF_vertical_levels(native_levels=False)
+    # Get a list of the levels that the data is present for
+    # NOTE: GEOS-CF has 3 options (p23, interpolated; x1/v1, surface)
+    if single_horizontal_level:
+        HPa_l = get_GEOSCF_vertical_levels(native_levels=True)
+        HPa_l = [ HPa_l[-1] ]
+    else:
+        HPa_l = get_GEOSCF_vertical_levels(native_levels=False)
     # Get nearest indexes in 4D data from locations in dataframe
     idx_dict = calc_4D_idx_in_ds(ds_hPa=HPa_l, ds=ds, df=df,
                                  TimeVar=TimeVar,
@@ -512,7 +527,7 @@ def mk_planeflight_input4FAAM_flight(folder=None, flight_ID='C216',
 def regrid_restart_file4flexgrid(dsA, OutFile=None, lons=None,
                                 lats=None, res='1x1', folder='./',
                                 vars2regrid=None, rm_regridder=True,
-                                save2netcdf=True,
+                                save2netcdf=True, method='bilinear',
                                 debug=False):
     """
     Regrid a GEOS-Chem restart file to a given resolution using xEMSF
@@ -527,6 +542,7 @@ def regrid_restart_file4flexgrid(dsA, OutFile=None, lons=None,
     rm_regridder (bool): remove the regridded file afterwards?
     save2netcdf (Boolean): Save the regridded file as a NetCDF?
     debug (bool): print debug statements to screen
+    method (str): regriding method (e.g. conservative or bilinear)
 
     Returns
     -------
@@ -545,7 +561,7 @@ def regrid_restart_file4flexgrid(dsA, OutFile=None, lons=None,
     del ds_out['lon']
     ds_out = ds_out.assign_coords({'lon':lons})
     # Create a regidder (to be reused )
-    regridder = xe.Regridder(dsA, ds_out, 'bilinear', reuse_weights=True)
+    regridder = xe.Regridder(dsA, ds_out, method, reuse_weights=True)
     # Loop and regrid variables
     ds_l = []
     if isinstance(vars2regrid, type(None)):
