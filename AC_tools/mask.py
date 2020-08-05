@@ -137,7 +137,7 @@ def add_loc_ocean2df(df=None, LatVar='lat', LonVar='lon'):
     return df
 
 
-def regrid2coarse_res(dsA, res='2x2.5'):
+def regrid2coarse_res(dsA, res='2x2.5', method='bilinear'):
     """
     Regrid a high resolution dataset to a lower resolution (e.g. 2x2.5)
     """
@@ -156,7 +156,7 @@ def regrid2coarse_res(dsA, res='2x2.5'):
         'lon': (['lon'], grids[grid2use]['lon']),
     })
     # Create a regidder (to be reused )
-    regridder = xe.Regridder(dsA, ds_out, 'bilinear', reuse_weights=True)
+    regridder = xe.Regridder(dsA, ds_out, method, reuse_weights=True)
     # loop and regrid variables
     ds_l = []
     vars2regrid = dsA.data_vars
@@ -183,7 +183,8 @@ def regrid2coarse_res(dsA, res='2x2.5'):
     return ds
 
 
-def add_raster_of_country2ds(ds, country='South Africa', set_all_regions2one=True,
+def add_raster_of_country2ds(ds, country='South Africa',
+                             set_all_regions2one=True,
                              test_plot=False, dpi=320):
     """
     Add raster outline of country to spatial dataset
@@ -728,8 +729,9 @@ def get_analysis_masks(masks='basic',  hPa=None, M_all=False, res='4x5',
     if masks == 'full':
         # ---- List of masks
         mtitles = [
-            'All', 'Ocean', 'Land', 'Ice', 'All Sur.',  'Ocean Sur.', 'Land Sur.', 'Ice Sur.', 'NH', 'SH', 'Tropics', 'Ex. Tropics', 'Mid Lats',
-            'Ocn. 50S-50N',  '50S-50N'
+            'All', 'Ocean', 'Land', 'Ice', 'All Sur.',  'Ocean Sur.',
+            'Land Sur.', 'Ice Sur.', 'NH', 'SH', 'Tropics', 'Ex. Tropics',
+            'Mid Lats', 'Ocn. 50S-50N',  '50S-50N'
         ]
         tsects3D = ['MBL', 'BL', 'FT',  'UT']
         # get MBL, FT and UT maskes
@@ -740,7 +742,8 @@ def get_analysis_masks(masks='basic',  hPa=None, M_all=False, res='4x5',
         # ---- Use non-pythonic mulitply method?
         if use_multiply_method:
             maskes = [mask_all_but(i, trop_limit=trop_limit, mask3D=True,
-                                   use_multiply_method=True, res=res) for i in mtitles]
+                                   use_multiply_method=True, res=res)
+                                   for i in mtitles]
             # if comparison with saiz-lopez 2014,
             if M_all:
                 ind = [n for n, i in enumerate(mtitles) if not ('MBL' in i)]
@@ -749,7 +752,8 @@ def get_analysis_masks(masks='basic',  hPa=None, M_all=False, res='4x5',
         # --- Use pythonic approach
         else:
             maskes = [mask_all_but(i, trop_limit=trop_limit, mask3D=True,
-                                   use_multiply_method=False, res=res) for i in mtitles]
+                                   use_multiply_method=False, res=res)
+                                   for i in mtitles]
             # If not 'use_multiply_method', then invert hPa masks
             sects3D = [np.logical_not(i) for i in sects3D]
         # Add to mask and mask title lists
@@ -813,7 +817,8 @@ def get_analysis_masks(masks='basic',  hPa=None, M_all=False, res='4x5',
 
 
 def mask_all_but(region='All', M_all=False, saizlopez=False,
-                 res='4x5', trop_limit=True, mask2D=False, mask3D=False, mask4D=False,
+                 res='4x5', trop_limit=True, mask2D=False, mask3D=False,
+                 mask4D=False,
                  use_multiply_method=True, lat=None, lon=None,
                  verbose=False, debug=False):
     """
@@ -936,10 +941,12 @@ def mask_all_but(region='All', M_all=False, saizlopez=False,
             mask = mask_lat40_2_40(res=res)
         elif case == 13:  # 'Oceanic Tropics'
             mask = np.ma.mask_or(ocean_unmasked(res=res),
-                                 tropics_unmasked(res=res, saizlopez=saizlopez))
+                                 tropics_unmasked(res=res,
+                                 saizlopez=saizlopez))
         elif case == 14:  # 'Land Tropics'
             mask = np.ma.mask_or(land_unmasked(res=res),
-                                 tropics_unmasked(res=res, saizlopez=saizlopez))
+                                 tropics_unmasked(res=res,
+                                 saizlopez=saizlopez))
         elif case == 15:  # 'All Sur.'
             mask = surface_unmasked(res=res)
         elif case == 16:  # 'Ocean Sur.'
@@ -1004,10 +1011,12 @@ def mask_all_but(region='All', M_all=False, saizlopez=False,
             mask = mask_lat40_2_40(res=res)
         elif case == 13:
             mask = np.ma.mask_or(ocean_unmasked(res=res),
-                                 tropics_unmasked(res=res, saizlopez=saizlopez))
+                                 tropics_unmasked(res=res,
+                                 saizlopez=saizlopez))
         elif case == 14:
             mask = np.ma.mask_or(land_unmasked(res=res),
-                                 tropics_unmasked(res=res, saizlopez=saizlopez))
+                                 tropics_unmasked(res=res,
+                                 saizlopez=saizlopez))
         elif case == 15:  # 'All Sur.'
             mask = surface_unmasked(res=res)
         elif case == 16:  # 'Ocean Sur.'
@@ -1164,7 +1173,8 @@ def get_EU_unmasked(res='1x1'):
 
 
 def get_cruise_track_mask(max_lon=None, min_lon=None, max_lat=None,
-                          min_lat=None, unmask_water=True, res='4x5', trop_limit=True):
+                          min_lat=None, unmask_water=True, res='4x5',
+                          trop_limit=True):
     """
     Mask whole area of ship based research campaigns for bulk comparison
     """
@@ -1362,7 +1372,8 @@ def get_Southern_Africa_Masked(res='0.25x0.3125', ):
 #     return mask
 
 def get_2D_nighttime_mask4date_pd(date=None, ncfile=None, res='4x5',
-                                  mask_daytime=False, buffer_hours=0, debug=False):
+                                  mask_daytime=False, buffer_hours=0,
+                                  debug=False):
     """
     Creates 2D (lon,lat) masked (1=Masked) for nighttime for a given list of
     dates
