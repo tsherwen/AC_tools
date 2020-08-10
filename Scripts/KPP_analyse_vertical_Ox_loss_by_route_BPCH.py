@@ -202,7 +202,7 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
                                             Mechanism=Mechanism,
                                             rm_strat=rm_strat,
                                             weight_by_molecs=weight_by_molecs,
-                                         full_vert_grid=full_vert_grid,
+                                            full_vert_grid=full_vert_grid,
                                             )
     # Extract variables from data/variable dictionary
     fam_dict = Ox_loss_dict['fam_dict']
