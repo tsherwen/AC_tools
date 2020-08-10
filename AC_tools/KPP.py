@@ -578,7 +578,7 @@ def update_KPP_rxn_str(input, rtn_as_list=False):
     return input.strip()
 
 
-def process_KPP_rxn_dicts2DataFrames(rxn_dicts=None, debug=False,
+def process_KPP_rxn_dicts2dfs(rxn_dicts=None, debug=False,
                                      Use_FORTRAN_KPP_numbering=True):
     """
     Process lists of strings of KPP mechanism into organised DataFrame
@@ -927,7 +927,7 @@ def get_KKP_mech_from_eqn_file_as_dicts(folder=None, Mechanism='Tropchem',
         folder=folder, filename=filename)
     # Process rxns to be in dictionaries of DataFrames
     # (with extra diagnostic columns, inc. reactants, products, metadata,...)
-    rxn_dicts = process_KPP_rxn_dicts2DataFrames(rxn_dicts=rxn_dicts)
+    rxn_dicts = process_KPP_rxn_dicts2dfs(rxn_dicts=rxn_dicts)
     # Update the numbering of DataFrame indexes...
     Gas_dict = rxn_dicts['Gas-phase']
     Het_dict = rxn_dicts['Heterogeneous']
@@ -1368,7 +1368,7 @@ def get_Ox_loss_dicts(fam='LOx', ref_spec='O3',
     return d
 
 
-def print_lines4species_database_yml(tags, extr_str=''):
+def prt_lines4species_database_yml(tags, extr_str=''):
     """
     Print lines for tags to paste into the species_database.yml file
     """
