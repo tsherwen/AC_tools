@@ -1275,7 +1275,7 @@ def get_oxidative_release4specs(filename='gckpp_Monitor.F90',
 def get_Ox_loss_dicts(fam='LOx', ref_spec='O3',
                       wd=None, Mechanism='Halogens', rm_strat=False,
                       weight_by_molecs=True, CODE_wd=None,
-                      dpi=320, suffix='', full_vertical_grid=False,
+                      dpi=320, suffix='', full_vert_grid=False,
                       save_plot=True, show_plot=False,
                       verbose=True, debug=False):
     """
@@ -1291,7 +1291,7 @@ def get_Ox_loss_dicts(fam='LOx', ref_spec='O3',
     weight_by_molecs (bool): weight grid boxes by number of molecules
     rm_strat (bool): (fractionally) replace values in statosphere with zeros
     debug, verbose (bool): switches to turn on/set verbosity of output to screen
-    full_vertical_grid (bool): use the full vertical grid for analysis
+    full_vert_grid (bool): use the full vertical grid for analysis
 
     Returns
     -------
@@ -1303,7 +1303,7 @@ def get_Ox_loss_dicts(fam='LOx', ref_spec='O3',
     """
     # - Get key model variables, model settings, etc
     # Setup dictionary for shared variables
-    Var_rc = get_default_variable_dict(full_vertical_grid=full_vertical_grid)
+    Var_rc = get_default_variable_dict(full_vert_grid=full_vert_grid)
     # Get locations of model output/core
     assert os.path.exists(wd), 'working directory not found @: {}'.format(wd)
     CODE_wd = '/{}/KPP/{}/'.format(CODE_wd, Mechanism)

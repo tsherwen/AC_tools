@@ -41,12 +41,15 @@ def main(wd=None, CODE_wd=None):
 
 
 def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3',
-                                    wd=None, Mechanism='Halogens', rm_strat=False,
+                                    wd=None, Mechanism='Halogens',
+                                    rm_strat=False,
                                     weight_by_molecs=True, CODE_wd=None,
-                                    full_vertical_grid=True, dpi=320, suffix='',
+                                    full_vert_grid=True, dpi=320,
+                                    suffix='',
                                     save_plot=True, show_plot=False,
                                     limit_plotted_alititude=True, lw=16,
-                                    Ox_loss_dict=None, fontsize=10, cmap=plt.cm.jet,
+                                    Ox_loss_dict=None, fontsize=10,
+                                    cmap=plt.cm.jet,
                                     verbose=True, debug=False):
     """
     Plot vertical odd oxygen (Ox) loss via route (chemical family)
@@ -61,7 +64,7 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3',
     weight_by_molecs (bool): weight grid boxes by number of molecules
     rm_strat (bool): (fractionally) replace values in statosphere with zeros
     debug, verbose (bool): switches to turn on/set verbosity of output to screen
-    full_vertical_grid (bool): use the full vertical grid for analysis
+    full_vert_grid (bool): use the full vertical grid for analysis
     limit_plotted_alititude (bool): limit the plotted vertical extend to troposphere
     suffix (str): suffix in filename for saved plot
     dpi (int): resolution to use for saved image (dots per square inch)
@@ -79,9 +82,11 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3',
     if isinstance(Ox_loss_dict, type(None)):
         Ox_loss_dict = AC.get_Ox_loss_dicts(wd=wd, CODE_wd=CODE_wd, fam=fam,
                                             ref_spec=ref_spec,
-                                            Mechanism=Mechanism, rm_strat=rm_strat,
+                                            Mechanism=Mechanism,
+                                            rm_strat=rm_strat,
                                             weight_by_molecs=weight_by_molecs,
-                                            full_vertical_grid=full_vertical_grid,
+
+                                         full_vert_grid=full_vert_grid,
                                             )
     # extract variables from data/variable dictionary
     sorted_fam_names = Ox_loss_dict['sorted_fam_names']
@@ -162,8 +167,9 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3',
 
 
 def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
-                           rm_strat=True, Mechanism='Halogens', Ox_loss_dict=None,
-                           weight_by_molecs=False, full_vertical_grid=False,
+                           rm_strat=True, Mechanism='Halogens',
+                           Ox_loss_dict=None,
+                           weight_by_molecs=False, full_vert_grid=False,
                            CODE_wd=None, verbose=True, debug=False):
     """
     Build an Ox budget table like table 4 in Sherwen et al 2016b
@@ -178,7 +184,7 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
     Ox_loss_dict (dict), dictionary of Ox loss variables/data (from get_Ox_loss_dicts)
     Mechanism (str): name of the KPP mechanism (and folder) of model output
     weight_by_molecs (bool): weight grid boxes by number of molecules
-    full_vertical_grid (bool): use the full vertical grid for analysis
+    full_vert_grid (bool): use the full vertical grid for analysis
     debug, verbose (bool): switches to turn on/set verbosity of output to screen
 
     Returns
@@ -193,9 +199,10 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
     if isinstance(Ox_loss_dict, type(None)):
         Ox_loss_dict = AC.get_Ox_loss_dicts(wd=wd, CODE_wd=CODE_wd, fam=fam,
                                             ref_spec=ref_spec,
-                                            Mechanism=Mechanism, rm_strat=rm_strat,
+                                            Mechanism=Mechanism,
+                                            rm_strat=rm_strat,
                                             weight_by_molecs=weight_by_molecs,
-                                            full_vertical_grid=full_vertical_grid,
+                                         full_vert_grid=full_vert_grid,
                                             )
     # Extract variables from data/variable dictionary
     fam_dict = Ox_loss_dict['fam_dict']

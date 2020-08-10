@@ -164,7 +164,7 @@ def get_gc_lon(lon, res='4x5', wd=None, filename='ctm.nc', debug=False):
 
 
 def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False,
-                 just2D=False, full_vertical_grid=False, add_n_time_dims=None,
+                 just2D=False, full_vert_grid=False, add_n_time_dims=None,
                  debug=False):
     """
     Get dimension of GEOS-Chem output for given resolution
@@ -201,7 +201,7 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False,
         print(dims)
 
     # If full using full vertical
-    if full_vertical_grid:
+    if full_vert_grid:
         vals = []
         for i in list(dims.values()):
             vals += [(i[0], i[1], 72)]
@@ -243,7 +243,7 @@ def get_dims4res(res=None, r_dims=False, invert=True, trop_limit=False,
 
 def get_latlonalt4res(res=None, centre=True, hPa=False, nest=None,
                       dtype=None, wd=None, filename='ctm.nc',
-                      full_vertical_grid=False,
+                      full_vert_grid=False,
                       lat_bounds='latitude_bnds', lon_bounds='longitude_bnds',
                       lon_var='longitude', lat_var='latitude', \
                       #        lon_var=u'lon', lat_var=u'lat',
@@ -262,7 +262,7 @@ def get_latlonalt4res(res=None, centre=True, hPa=False, nest=None,
     dtype (type): type for which data is return as, e.g. np.float64
     nest (str): manual override for retruned variables - vestigle?
     hPa (bool): return altitudes in units of hPa, instead of km
-    full_vertical_grid (bool): use full vertical grid or reduced (47 vs. 72)
+    full_vert_grid (bool): use full vertical grid or reduced (47 vs. 72)
 
     Returns
     -------
@@ -439,7 +439,7 @@ def get_latlonalt4res(res=None, centre=True, hPa=False, nest=None,
     else:
         alt = 'c_km_geos5'
     # Use reduced vertical grid? (then add '_r')
-    if not full_vertical_grid:
+    if not full_vert_grid:
         alt += '_r'
     d = gchemgrid(rtn_dict=True)
     alt = d[alt]

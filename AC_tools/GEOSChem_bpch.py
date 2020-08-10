@@ -797,7 +797,7 @@ def get_GC_output(wd, vars=None, species=None, category=None, r_cubes=False,
             # -- '4x5'
             and ((72, 46, 47) != arr[0].shape) \
             and ((72, 46, 38) != arr[0].shape) \
-            # also consider for vertical levels=72 (full_vertical_grid=True)
+            # also consider for vertical levels=72 (full_vert_grid=True)
             and ((72, 46, 72) != arr[0].shape) \
             # and the prod/loss reduced grid
             and ((72, 46, 59) != arr[0].shape) \
@@ -3833,13 +3833,13 @@ def get_avg_trop_conc_of_X(spec='O3', wd=None, s_area=None, res='4x5',
 
 
 def get_default_variable_dict(wd=None,
-                              full_vertical_grid=False, limit_vertical_dim=False):
+                              full_vert_grid=False, limit_vertical_dim=False):
     """
     Get a dictionary of default analysis variables.
 
     Parameters
     ----
-    full_vertical_grid (bool): usings all levels of grid (e.g. 72 or 47)
+    full_vert_grid (bool): usings all levels of grid (e.g. 72 or 47)
     wd (str): Specify the wd to get the results from a run.
 
     Returns
@@ -3869,17 +3869,17 @@ def get_default_variable_dict(wd=None,
     Var_rc['verbose'] = False
     # --- Analysis settings?
     # Consider just troposphere or consider full atmosphere?
-    if full_vertical_grid:
+    if full_vert_grid:
         Var_rc['trop_limit'] = False  # limit arrays to 38 levels...
         Var_rc['rm_strat'] = False  # This is for convert_molec_cm3_s_2_g_X_s
-        Var_rc['full_vertical_grid'] = full_vertical_grid  # for get_dims4res
+        Var_rc['full_vert_grid'] = full_vert_grid  # for get_dims4res
         Var_rc['limit_Prod_loss_dim_to'] = 59  # limit of levels for chemistry?
         # apply dim. limiting?
         Var_rc['limit_vertical_dim'] = limit_vertical_dim
     else:
         Var_rc['trop_limit'] = True  # limit arrays to 38 levels...
         Var_rc['rm_strat'] = True  # This is for convert_molec_cm3_s_2_g_X_s
-        Var_rc['full_vertical_grid'] = full_vertical_grid  # for get_dims4res
+        Var_rc['full_vert_grid'] = full_vert_grid  # for get_dims4res
         Var_rc['limit_Prod_loss_dim_to'] = 38  # limit of levels for chemistry
         # only consider boxes that are 100 % tropospheric
         Var_rc['tight_constraints'] = False
@@ -3891,7 +3891,7 @@ def get_default_variable_dict(wd=None,
 
 
 def get_shared_data_as_dict(Var_rc=None, var_list=[],
-                            full_vertical_grid=False, Data_rc={}):
+                            full_vert_grid=False, Data_rc={}):
     """
     Returns (requested) common vairables as a dictionary object. Give requested
     variables as a list of strings ("var_list").
@@ -3901,7 +3901,7 @@ def get_shared_data_as_dict(Var_rc=None, var_list=[],
     Var_rc (dict): dictionary containing variables for working directory ('wd')
     Data_rc (dict): dictionary containing model data (default intiallised empty)
     var_list (list): list of names (strings) of variables to extract
-    full_vertical_grid (bool): usings all levels of grid (e.g. 72 or 47)
+    full_vert_grid (bool): usings all levels of grid (e.g. 72 or 47)
 
     Returns
     ----
@@ -3910,7 +3910,7 @@ def get_shared_data_as_dict(Var_rc=None, var_list=[],
     # Use default variable dictionary if non given
     if isinstance(Var_rc, type(None)):
         Var_rc = get_default_variable_dict(
-            full_vertical_grid=full_vertical_grid)
+            full_vert_grid=full_vert_grid)
     # --- Extract basic variables by default
     # Resolution?
     Data_rc['res'] = get_gc_res(wd=Var_rc['wd'], filename=Var_rc['filename'])
@@ -4002,7 +4002,7 @@ def get_shared_data_as_dict(Var_rc=None, var_list=[],
         # Why is this variable extracted from an offline dictionary?
         # UPDATE to use NetCDF coordinate variable.
         lon, lat, NIU = get_latlonalt4res(res=Data_rc['res'], wd=Var_rc['wd'],
-                                          full_vertical_grid=Var_rc['full_vertical_grid'],
+                                          full_vert_grid=Var_rc['full_vert_grid'],
                                           filename=Var_rc['filename'])
         Data_rc['lon'] = lon
         Data_rc['lat'] = lat
