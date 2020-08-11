@@ -3601,7 +3601,7 @@ def convert_molec_cm3_s_2_g_X_s(ars=None, specs=None, ref_spec=None,
                                 res='4x5',
                                 multiply_method=True, use_time_in_trop=True,
                                 conbine_ars=True,
-                                month_eq=False, limit_Prod_loss_dim_to=38,
+                                month_eq=False, limit_PL_dim2=38,
                                 verbose=False,  debug=False):
     """
     Convert molec/cm3/s to g/grid box. This is used for converting prod/loss
@@ -3619,7 +3619,7 @@ def convert_molec_cm3_s_2_g_X_s(ars=None, specs=None, ref_spec=None,
      ( (bool) options for this include using multiply_method and use_time_in_trop )
     conbine_ars (bool): return arrays as a single array?
     month_eq (bool): convert units to monthly equiivlents.
-    limit_Prod_loss_dim_to (int): level to cut off arrays at
+    limit_PL_dim2 (int): level to cut off arrays at
      (38 in <v10, 59 in >=v11-1)
 
     Returns
@@ -3652,8 +3652,8 @@ def convert_molec_cm3_s_2_g_X_s(ars=None, specs=None, ref_spec=None,
         # convert from molec/cm3/s to  molec/s
         # limit arrays to the region of the atmosphere in which prod/loss is
         # calculated (38 in <v10, 59 in >=v11-1)
-        arr = arr[..., :limit_Prod_loss_dim_to, :] * \
-            vol[..., :limit_Prod_loss_dim_to, :]
+        arr = arr[..., :limit_PL_dim2, :] * \
+            vol[..., :limit_PL_dim2, :]
         # conver to to molec/s = > Gg/s
         arr = arr / constants('AVG') * species_mass(ref_spec)
         # to / yr
@@ -3878,14 +3878,14 @@ def get_default_variable_dict(wd=None,
         Var_rc['trop_limit'] = False  # limit arrays to 38 levels...
         Var_rc['rm_strat'] = False  # This is for convert_molec_cm3_s_2_g_X_s
         Var_rc['full_vert_grid'] = full_vert_grid  # for get_dims4res
-        Var_rc['limit_Prod_loss_dim_to'] = 59  # limit of levels for chemistry?
+        Var_rc['limit_PL_dim2'] = 59  # limit of levels for chemistry?
         # apply dim. limiting?
         Var_rc['limit_vertical_dim'] = limit_vertical_dim
     else:
         Var_rc['trop_limit'] = True  # limit arrays to 38 levels...
         Var_rc['rm_strat'] = True  # This is for convert_molec_cm3_s_2_g_X_s
         Var_rc['full_vert_grid'] = full_vert_grid  # for get_dims4res
-        Var_rc['limit_Prod_loss_dim_to'] = 38  # limit of levels for chemistry
+        Var_rc['limit_PL_dim2'] = 38  # limit of levels for chemistry
         # only consider boxes that are 100 % tropospheric
         Var_rc['tight_constraints'] = False
         if Var_rc['trop_limit']:
@@ -3988,7 +3988,7 @@ def get_shared_data_as_dict(Var_rc=None, var_list=[],
         # limit_vertical_dim=True
         if Var_rc['limit_vertical_dim'] or Var_rc['trop_limit']:
             Data_rc['molecs'] = Data_rc['molecs'][...,
-                                                  :Var_rc['limit_Prod_loss_dim_to'], :]
+                                                  :Var_rc['limit_PL_dim2'], :]
     # Air mass? ("a_m")
     if 'a_m' in var_list:
         Data_rc['a_m'] = get_air_mass_np(wd=Var_rc['wd'],
@@ -3998,10 +3998,10 @@ def get_shared_data_as_dict(Var_rc=None, var_list=[],
         # Get altitude
         Data_rc['alt'] = gchemgrid('c_km_geos5')
         if Var_rc['trop_limit']:
-            Data_rc['alt'] = Data_rc['alt'][:Var_rc['limit_Prod_loss_dim_to']]
+            Data_rc['alt'] = Data_rc['alt'][:Var_rc['limit_PL_dim2']]
         elif (Data_rc['output_vertical_grid'] == 'Full_72') and \
                 (Var_rc['limit_vertical_dim']):
-            Data_rc['alt'] = Data_rc['alt'][:Var_rc['limit_Prod_loss_dim_to']]
+            Data_rc['alt'] = Data_rc['alt'][:Var_rc['limit_PL_dim2']]
     # Latitude (lat) and longitude (lon)?
     if ('lon' in var_list) or ('lat' in var_list):
         # Why is this variable extracted from an offline dictionary?
