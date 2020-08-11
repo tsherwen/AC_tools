@@ -2214,7 +2214,7 @@ def get_wet_dep(months=None, years=None, vol=None,
                                for i in dep_w], axis=-1).sum(axis=-1)
 
 
-def molec_weighted_avg(arr, wd=None, vol=None, t_p=None,
+def molec_weighted_avg_BPCH(arr, wd=None, vol=None, t_p=None,
                        trop_limit=True, multiply_method=False, rm_strat=True, molecs=None,
                        weight_lon=False, weight_lat=False, LON_axis=0, LAT_axis=1,
                        n_air=None,
@@ -2253,7 +2253,7 @@ def molec_weighted_avg(arr, wd=None, vol=None, t_p=None,
        air mass [kg] / RMM [kg mol^-1] * Avogadros [mol^-1] )
     """
     logging.info(
-        'molec_weighted_avg called for arr.shape={}'.format(arr.shape))
+        'molec_weighted_avg_BPCH called for arr.shape={}'.format(arr.shape))
     if isinstance(molecs, type(None)):
         if not isinstance(n_air, np.ndarray):  # [molec air/m3]
             n_air = get_number_density_variable(wd=wd, trop_limit=trop_limit)
@@ -2280,7 +2280,7 @@ def molec_weighted_avg(arr, wd=None, vol=None, t_p=None,
         try:
             molecs = np.ma.array(molecs, mask=arr.mask)
         except:  # MaskError:
-            print(("MaskError for array shapes in 'molec_weighted_avg': ",
+            print(("MaskError for array shapes in 'molec_weighted_avg_BPCH': ",
                    [i.shape for i in (molecs, arr)]))
     # Weight over which axis?
     if weight_lon and (not weight_lat):  # 1st axis
@@ -3594,7 +3594,7 @@ def convert_molec_cm3_s2_molec_per_yr(ars=None, vol=None):
     return ars
 
 
-def convert_molec_cm3_s_2_g_X_s(ars=None, specs=None, ref_spec=None,
+def convert_molec_cm3_s_2_g_X_s_BPCH(ars=None, specs=None, ref_spec=None,
                                 months=None, years=None, vol=None, t_ps=None,
                                 trop_limit=True,
                                 s_area=None, rm_strat=True, wd=None,
@@ -3634,7 +3634,7 @@ def convert_molec_cm3_s_2_g_X_s(ars=None, specs=None, ref_spec=None,
      - It is most efficency to provide shared variables as arguements if this
         function is call more that once by a single driver
     """
-    logging.info('convert_molec_cm3_s_2_g_X_s called')
+    logging.info('convert_molec_cm3_s_2_g_X_s_BPCH called')
     # --- Extract core model variables not provide
     if (not isinstance(months, list)) and month_eq:
         months = get_gc_months(wd=wd)
@@ -3679,7 +3679,8 @@ def convert_molec_cm3_s_2_g_X_s(ars=None, specs=None, ref_spec=None,
 
 
 def prt_2D_vals_by_region(specs=None, res='4x5', arrs=None, prt_pcent=False,
-                          add_total=False, months=list(range(12)), summate=True,
+                          add_total=False, months=list(range(12)),
+                          summate=True,
                           csv_title='regional_vals.csv', save2csv=False,
                           debug=False):
     """
@@ -3798,9 +3799,11 @@ def get_avg_surface_conc_of_X(spec='O3', wd=None, s_area=None, res='4x5'):
 
 
 def get_avg_trop_conc_of_X(spec='O3', wd=None, s_area=None, res='4x5',
-                           vol=None, t_p=None, n_air=None, molecs=None, units='v/v',
+                           vol=None, t_p=None, n_air=None, molecs=None,
+                           units='v/v',
                            mols=None,
-                           multiply_method=False, rm_strat=True, trop_limit=True,
+                           multiply_method=False, rm_strat=True,
+                           trop_limit=True,
                            a_m=None, annual_mean=True, rtn_units=False):
     """
     Get average (molecule weighted) concentration of Y (mean over time)
@@ -3828,7 +3831,7 @@ def get_avg_trop_conc_of_X(spec='O3', wd=None, s_area=None, res='4x5',
     if annual_mean:
         arr = arr.mean(axis=-1)
     # Area weight and return
-    val = molec_weighted_avg(arr, res=res, trop_limit=trop_limit, \
+    val = molec_weighted_avg_BPCH(arr, res=res, trop_limit=trop_limit, \
                              #        vol=vol, t_p=t_p, n_air=n_air, molecs=molecs,
                              rm_strat=rm_strat, wd=wd, annual_mean=annual_mean)
     if rtn_units:
@@ -3876,14 +3879,14 @@ def get_default_variable_dict(wd=None,
     # Consider just troposphere or consider full atmosphere?
     if full_vert_grid:
         Var_rc['trop_limit'] = False  # limit arrays to 38 levels...
-        Var_rc['rm_strat'] = False  # This is for convert_molec_cm3_s_2_g_X_s
+        Var_rc['rm_strat'] = False  # This is for convert_molec_cm3_s_2_g_X_s_BPCH
         Var_rc['full_vert_grid'] = full_vert_grid  # for get_dims4res
         Var_rc['limit_PL_dim2'] = 59  # limit of levels for chemistry?
         # apply dim. limiting?
         Var_rc['limit_vertical_dim'] = limit_vertical_dim
     else:
         Var_rc['trop_limit'] = True  # limit arrays to 38 levels...
-        Var_rc['rm_strat'] = True  # This is for convert_molec_cm3_s_2_g_X_s
+        Var_rc['rm_strat'] = True  # This is for convert_molec_cm3_s_2_g_X_s_BPCH
         Var_rc['full_vert_grid'] = full_vert_grid  # for get_dims4res
         Var_rc['limit_PL_dim2'] = 38  # limit of levels for chemistry
         # only consider boxes that are 100 % tropospheric
@@ -4090,11 +4093,11 @@ def process_to_X_per_s(spec=None, ars=None, tags=None, ref_spec=None,
     """
     # Covert units based on whether model output is monthly
     if Data_rc['output_freq'] == 'Monthly':
-        month_eq = True  # use conversion in convert_molec_cm3_s_2_g_X_s
+        month_eq = True  # use conversion in convert_molec_cm3_s_2_g_X_s_BPCH
     else:
         month_eq = False
     # Convert to g X/s
-    ars = convert_molec_cm3_s_2_g_X_s(ars=ars, ref_spec=ref_spec, \
+    ars = convert_molec_cm3_s_2_g_X_s_BPCH(ars=ars, ref_spec=ref_spec, \
                                       # shared settings...
                                       months=Data_rc['months'], years=Data_rc['years'],
                                       vol=Data_rc['vol'], t_ps=Data_rc['t_ps'], \
@@ -4158,7 +4161,8 @@ def concvert_df_VOC_C2v(df=None, verbose=True):
 
 def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
                                      filename='ctm.nc',
-                                     folder=None, ext_str='_TEST_', file_prefix='ctm_',
+                                     folder=None, ext_str='_TEST_',
+                                     file_prefix='ctm_',
                                      split_by_month=False, mk_single_file=True,
                                      mk_monthly_files=False,
                                      mk_weekly_files=False,
@@ -4320,7 +4324,8 @@ def process_all_bpch_files_in_dir(folder=None, ext_str=None):
     # process *ctm*bpch* to NetCDF
     process_bpch_files_in_dir2NetCDF(folder=folder, filename=filename,
                                      ext_str=ext_str, file_prefix=file_prefix,
-                                     bpch_file_type=bpch_file_type, split_by_month=True)
+                                     bpch_file_type=bpch_file_type,
+                                     split_by_month=True)
     # - Process *ts*bpch* files
     # Temporary variables
     bpch_file_type = 'ts*bpch*'
@@ -4329,7 +4334,8 @@ def process_all_bpch_files_in_dir(folder=None, ext_str=None):
     # Process *ts*bpch* to netCDF4
     process_bpch_files_in_dir2NetCDF(folder=folder, filename=filename,
                                      ext_str=ext_str, file_prefix=file_prefix,
-                                     bpch_file_type=bpch_file_type, split_by_month=True)
+                                     bpch_file_type=bpch_file_type,
+                                     split_by_month=True)
 
 
 def get_Lightning_NOx_source(Var_rc=None, Data_rc=None, debug=False):
@@ -4549,10 +4555,12 @@ def get_model_run_stats(wd=None, file_type='*geos.log*', debug=False):
         sys.exit()
 
 
-def get_general_stats4run_dict_as_df_bpch(run_dict=None, extra_str='', REF1=None,
+def get_general_stats4run_dict_as_df_bpch(run_dict=None, extra_str='',
+                                          REF1=None,
                                           REF2=None, REF_wd=None, res='4x5',
                                           trop_limit=True,
-                                          save2csv=True, prefix='GC_', run_names=None,
+                                          save2csv=True, prefix='GC_',
+                                          run_names=None,
                                           extra_burden_specs=['NIT', 'NITs'],
                                           extra_surface_specs=['NIT', 'NITs'],
                                           GC_version='v11-02d',
@@ -4817,8 +4825,10 @@ def get_O3_burden_bpch(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None,
     if trop_limit:
         total_atmos = True
     # --- just call existing function
-    return get_trop_burden(wd=wd, total_atmos=False, all_data=all_data, res=res,
-                           trop_limit=trop_limit, spec=spec, a_m=a_m, t_p=t_p, arr=O3_arr,
+    return get_trop_burden(wd=wd, total_atmos=False, all_data=all_data,
+                           res=res,
+                           trop_limit=trop_limit, spec=spec, a_m=a_m, t_p=t_p,
+                           arr=O3_arr,
                            debug=debug)
 
 
@@ -4826,14 +4836,15 @@ def get_O3_burden_bpch(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None,
 # -------- below function is redundant.
 #
 def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None,
-                           Iodine=False, I=False, IO=False, months=None, years=None,
+                           Iodine=False, I=False, IO=False, months=None,
+                           years=None,
                            wd=None,
                            year_eq=True, month_eq=False, spec=None, res='4x5',
                            debug=False):
     """
     Convert species/tag prod/loss from "molec/cm3/s" to "Gg (Ox) yr^-1".
 
-    !!! This is redundant. use convert_molec_cm3_s_2_g_X_s instead. !!!
+    !!! This is redundant. use convert_molec_cm3_s_2_g_X_s_BPCH instead. !!!
     ( temporarily here for get_POxLOx )
 
     NOTES:

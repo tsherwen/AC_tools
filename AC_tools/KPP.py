@@ -62,12 +62,12 @@ def get_PL_ars4mech_NetCDF(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
     (None)
     """
     # - Get KPP production/loss tags
-    fam_dict = Ox_fam_dict['fam_dict']
+#    fam_dict = Ox_fam_dict['fam_dict']
     RR_dict_fam_stioch = Ox_fam_dict['RR_dict_fam_stioch']
-    RR_dict = Ox_fam_dict['RR_dict']
+#    RR_dict = Ox_fam_dict['RR_dict']
     tags2_rxn_num = Ox_fam_dict['tags2_rxn_num']
     tags = Ox_fam_dict['tags']
-    tags_dict = Ox_fam_dict['tags_dict']
+#    tags_dict = Ox_fam_dict['tags_dict']
     # - Get model output for fluxes through these tagged routes
     # Get prod/loss arrays
     ars = get_GC_output(wd=Var_rc['wd'], r_list=True,
@@ -77,11 +77,11 @@ def get_PL_ars4mech_NetCDF(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
     limit_PL_dim2 = Var_rc['limit_PL_dim2']
     # Covert units based on whether model output is monthly
     if Data_rc['output_freq'] == 'Monthly':
-        month_eq = True  # use conversion in convert_molec_cm3_s_2_g_X_s
+        month_eq = True  # use conversion in convert_molec_cm3_s_2_g_X_s_BPCH
     else:
         month_eq = False
     # Now convert the units (to G/s)
-    ars = convert_molec_cm3_s_2_g_X_s(ars=ars, ref_spec=ref_spec,
+    ars = convert_molec_cm3_s_2_g_X_s_BPCH(ars=ars, ref_spec=ref_spec,
                                       # Shared settings...
                                       months=Data_rc['months'],
                                       years=Data_rc['years'],
@@ -129,7 +129,7 @@ def get_PL_ars4mech_NetCDF(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
         sys.exit()
     else:
         if weight_by_molecs:
-            ars = [molec_weighted_avg(i, weight_lon=True, res=Data_rc['res'],
+            ars = [molec_weighted_avg_BPCH(i, weight_lon=True, res=Data_rc['res'],
                                       weight_lat=True, wd=Var_rc['wd'],
                                       trop_limit=Var_rc['trop_limit'],
                                       rm_strat=Var_rc['rm_strat'], \
@@ -176,12 +176,12 @@ def get_PL_ars4mech_BPCH(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
     (None)
     """
     # - Get KPP production/loss tags
-    fam_dict = Ox_fam_dict['fam_dict']
+#    fam_dict = Ox_fam_dict['fam_dict']
     RR_dict_fam_stioch = Ox_fam_dict['RR_dict_fam_stioch']
-    RR_dict = Ox_fam_dict['RR_dict']
+#    RR_dict = Ox_fam_dict['RR_dict']
     tags2_rxn_num = Ox_fam_dict['tags2_rxn_num']
     tags = Ox_fam_dict['tags']
-    tags_dict = Ox_fam_dict['tags_dict']
+#    tags_dict = Ox_fam_dict['tags_dict']
     # - Get model output for fluxes through these tagged routes
     # Get prod/loss arrays
     ars = get_GC_output(wd=Var_rc['wd'], r_list=True,
@@ -191,11 +191,11 @@ def get_PL_ars4mech_BPCH(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
     limit_PL_dim2 = Var_rc['limit_PL_dim2']
     # Covert units based on whether model output is monthly
     if Data_rc['output_freq'] == 'Monthly':
-        month_eq = True  # use conversion in convert_molec_cm3_s_2_g_X_s
+        month_eq = True  # use conversion in convert_molec_cm3_s_2_g_X_s_BPCH
     else:
         month_eq = False
     # Now convert the units (to G/s)
-    ars = convert_molec_cm3_s_2_g_X_s(ars=ars, ref_spec=ref_spec,
+    ars = convert_molec_cm3_s_2_g_X_s_BPCH(ars=ars, ref_spec=ref_spec,
                                       # Shared settings...
                                       months=Data_rc['months'],
                                       years=Data_rc['years'],
@@ -243,7 +243,7 @@ def get_PL_ars4mech_BPCH(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
         sys.exit()
     else:
         if weight_by_molecs:
-            ars = [molec_weighted_avg(i, weight_lon=True, res=Data_rc['res'],
+            ars = [molec_weighted_avg_BPCH(i, weight_lon=True, res=Data_rc['res'],
                                       weight_lat=True, wd=Var_rc['wd'],
                                       trop_limit=Var_rc['trop_limit'],
                                       rm_strat=Var_rc['rm_strat'], \

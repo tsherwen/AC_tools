@@ -806,7 +806,7 @@ def plot_zonal_figure(arr, fixcb=None, cb_sigfig=2, ax=None,
     # If lon, lat, alt array provided then take mean of lon
     if any([arr.shape[0] == i for i in (72, 144, 121, 177)]):
         #        arr = arr.mean(axis=0)
-        arr = molec_weighted_avg(arr, weight_lon=True, res=res,
+        arr = molec_weighted_avg_BPCH(arr, weight_lon=True, res=res,
                                  trop_limit=trop_limit, rm_strat=False, wd=wd)
 
     # Create figure if not provided
