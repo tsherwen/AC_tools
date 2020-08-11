@@ -395,7 +395,7 @@ def extract_GEOSCF_assim4df(df=None, ds=None,
 
     Parameters
     -------
-    df (pd.DataFrame):
+    df (pd.DataFrame): dataframe with locations to extract as rows
 
     Returns
     -------
@@ -467,10 +467,11 @@ def extract_GEOSCF_assim4df(df=None, ds=None,
     dfN = pd.DataFrame()
     # Extraction of data points in a bulk manner
     for nval, var in enumerate( vars2extract ):
-        print(var)
         # Now extract values
         dims2use = list(ds[var].coords)
         idx_list = [idx_dict[df2ds_dict_r[i]] for i in dims2use]
+        if debug:
+            print(var, ds[var].dims, ds[var].coords, dims2use, idx_list)
         vals = ds[var].values[tuple(idx_list)]
         dfN[vars2extract[nval]] = vals
     # Also save model time variable to dataframe

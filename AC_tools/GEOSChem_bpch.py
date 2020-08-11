@@ -59,6 +59,11 @@ from .planeflight import *
 from .variables import *
 from .bpch2netCDF import convert_to_netCDF
 
+# include the redundant files for now
+from . obsolete.plotting_REDUNDANT import *
+from . obsolete.variables_REDUNDANT import *
+from . obsolete.misc_REDUNDANT import *
+
 
 def get_surface_area(res=None, wd=None, debug=False):
     """
@@ -797,7 +802,7 @@ def get_GC_output(wd, vars=None, species=None, category=None, r_cubes=False,
             # -- '4x5'
             and ((72, 46, 47) != arr[0].shape) \
             and ((72, 46, 38) != arr[0].shape) \
-            # also consider for vertical levels=72 (full_vertical_grid=True)
+            # also consider for vertical levels=72 (full_vert_grid=True)
             and ((72, 46, 72) != arr[0].shape) \
             # and the prod/loss reduced grid
             and ((72, 46, 59) != arr[0].shape) \
@@ -2209,7 +2214,7 @@ def get_wet_dep(months=None, years=None, vol=None,
                                for i in dep_w], axis=-1).sum(axis=-1)
 
 
-def molec_weighted_avg(arr, wd=None, vol=None, t_p=None,
+def molec_weighted_avg_BPCH(arr, wd=None, vol=None, t_p=None,
                        trop_limit=True, multiply_method=False, rm_strat=True, molecs=None,
                        weight_lon=False, weight_lat=False, LON_axis=0, LAT_axis=1,
                        n_air=None,
@@ -2248,7 +2253,7 @@ def molec_weighted_avg(arr, wd=None, vol=None, t_p=None,
        air mass [kg] / RMM [kg mol^-1] * Avogadros [mol^-1] )
     """
     logging.info(
-        'molec_weighted_avg called for arr.shape={}'.format(arr.shape))
+        'molec_weighted_avg_BPCH called for arr.shape={}'.format(arr.shape))
     if isinstance(molecs, type(None)):
         if not isinstance(n_air, np.ndarray):  # [molec air/m3]
             n_air = get_number_density_variable(wd=wd, trop_limit=trop_limit)
@@ -2275,7 +2280,7 @@ def molec_weighted_avg(arr, wd=None, vol=None, t_p=None,
         try:
             molecs = np.ma.array(molecs, mask=arr.mask)
         except:  # MaskError:
-            print(("MaskError for array shapes in 'molec_weighted_avg': ",
+            print(("MaskError for array shapes in 'molec_weighted_avg_BPCH': ",
                    [i.shape for i in (molecs, arr)]))
     # Weight over which axis?
     if weight_lon and (not weight_lat):  # 1st axis
@@ -3589,14 +3594,14 @@ def convert_molec_cm3_s2_molec_per_yr(ars=None, vol=None):
     return ars
 
 
-def convert_molec_cm3_s_2_g_X_s(ars=None, specs=None, ref_spec=None,
+def convert_molec_cm3_s_2_g_X_s_BPCH(ars=None, specs=None, ref_spec=None,
                                 months=None, years=None, vol=None, t_ps=None,
                                 trop_limit=True,
                                 s_area=None, rm_strat=True, wd=None,
                                 res='4x5',
                                 multiply_method=True, use_time_in_trop=True,
                                 conbine_ars=True,
-                                month_eq=False, limit_Prod_loss_dim_to=38,
+                                month_eq=False, limit_PL_dim2=38,
                                 verbose=False,  debug=False):
     """
     Convert molec/cm3/s to g/grid box. This is used for converting prod/loss
@@ -3614,7 +3619,7 @@ def convert_molec_cm3_s_2_g_X_s(ars=None, specs=None, ref_spec=None,
      ( (bool) options for this include using multiply_method and use_time_in_trop )
     conbine_ars (bool): return arrays as a single array?
     month_eq (bool): convert units to monthly equiivlents.
-    limit_Prod_loss_dim_to (int): level to cut off arrays at
+    limit_PL_dim2 (int): level to cut off arrays at
      (38 in <v10, 59 in >=v11-1)
 
     Returns
@@ -3629,7 +3634,7 @@ def convert_molec_cm3_s_2_g_X_s(ars=None, specs=None, ref_spec=None,
      - It is most efficency to provide shared variables as arguements if this
         function is call more that once by a single driver
     """
-    logging.info('convert_molec_cm3_s_2_g_X_s called')
+    logging.info('convert_molec_cm3_s_2_g_X_s_BPCH called')
     # --- Extract core model variables not provide
     if (not isinstance(months, list)) and month_eq:
         months = get_gc_months(wd=wd)
@@ -3647,8 +3652,8 @@ def convert_molec_cm3_s_2_g_X_s(ars=None, specs=None, ref_spec=None,
         # convert from molec/cm3/s to  molec/s
         # limit arrays to the region of the atmosphere in which prod/loss is
         # calculated (38 in <v10, 59 in >=v11-1)
-        arr = arr[..., :limit_Prod_loss_dim_to, :] * \
-            vol[..., :limit_Prod_loss_dim_to, :]
+        arr = arr[..., :limit_PL_dim2, :] * \
+            vol[..., :limit_PL_dim2, :]
         # conver to to molec/s = > Gg/s
         arr = arr / constants('AVG') * species_mass(ref_spec)
         # to / yr
@@ -3674,7 +3679,8 @@ def convert_molec_cm3_s_2_g_X_s(ars=None, specs=None, ref_spec=None,
 
 
 def prt_2D_vals_by_region(specs=None, res='4x5', arrs=None, prt_pcent=False,
-                          add_total=False, months=list(range(12)), summate=True,
+                          add_total=False, months=list(range(12)),
+                          summate=True,
                           csv_title='regional_vals.csv', save2csv=False,
                           debug=False):
     """
@@ -3793,9 +3799,11 @@ def get_avg_surface_conc_of_X(spec='O3', wd=None, s_area=None, res='4x5'):
 
 
 def get_avg_trop_conc_of_X(spec='O3', wd=None, s_area=None, res='4x5',
-                           vol=None, t_p=None, n_air=None, molecs=None, units='v/v',
+                           vol=None, t_p=None, n_air=None, molecs=None,
+                           units='v/v',
                            mols=None,
-                           multiply_method=False, rm_strat=True, trop_limit=True,
+                           multiply_method=False, rm_strat=True,
+                           trop_limit=True,
                            a_m=None, annual_mean=True, rtn_units=False):
     """
     Get average (molecule weighted) concentration of Y (mean over time)
@@ -3823,7 +3831,7 @@ def get_avg_trop_conc_of_X(spec='O3', wd=None, s_area=None, res='4x5',
     if annual_mean:
         arr = arr.mean(axis=-1)
     # Area weight and return
-    val = molec_weighted_avg(arr, res=res, trop_limit=trop_limit, \
+    val = molec_weighted_avg_BPCH(arr, res=res, trop_limit=trop_limit, \
                              #        vol=vol, t_p=t_p, n_air=n_air, molecs=molecs,
                              rm_strat=rm_strat, wd=wd, annual_mean=annual_mean)
     if rtn_units:
@@ -3833,13 +3841,13 @@ def get_avg_trop_conc_of_X(spec='O3', wd=None, s_area=None, res='4x5',
 
 
 def get_default_variable_dict(wd=None,
-                              full_vertical_grid=False, limit_vertical_dim=False):
+                              full_vert_grid=False, limit_vertical_dim=False):
     """
     Get a dictionary of default analysis variables.
 
     Parameters
     ----
-    full_vertical_grid (bool): usings all levels of grid (e.g. 72 or 47)
+    full_vert_grid (bool): usings all levels of grid (e.g. 72 or 47)
     wd (str): Specify the wd to get the results from a run.
 
     Returns
@@ -3869,18 +3877,18 @@ def get_default_variable_dict(wd=None,
     Var_rc['verbose'] = False
     # --- Analysis settings?
     # Consider just troposphere or consider full atmosphere?
-    if full_vertical_grid:
+    if full_vert_grid:
         Var_rc['trop_limit'] = False  # limit arrays to 38 levels...
-        Var_rc['rm_strat'] = False  # This is for convert_molec_cm3_s_2_g_X_s
-        Var_rc['full_vertical_grid'] = full_vertical_grid  # for get_dims4res
-        Var_rc['limit_Prod_loss_dim_to'] = 59  # limit of levels for chemistry?
+        Var_rc['rm_strat'] = False  # This is for convert_molec_cm3_s_2_g_X_s_BPCH
+        Var_rc['full_vert_grid'] = full_vert_grid  # for get_dims4res
+        Var_rc['limit_PL_dim2'] = 59  # limit of levels for chemistry?
         # apply dim. limiting?
         Var_rc['limit_vertical_dim'] = limit_vertical_dim
     else:
         Var_rc['trop_limit'] = True  # limit arrays to 38 levels...
-        Var_rc['rm_strat'] = True  # This is for convert_molec_cm3_s_2_g_X_s
-        Var_rc['full_vertical_grid'] = full_vertical_grid  # for get_dims4res
-        Var_rc['limit_Prod_loss_dim_to'] = 38  # limit of levels for chemistry
+        Var_rc['rm_strat'] = True  # This is for convert_molec_cm3_s_2_g_X_s_BPCH
+        Var_rc['full_vert_grid'] = full_vert_grid  # for get_dims4res
+        Var_rc['limit_PL_dim2'] = 38  # limit of levels for chemistry
         # only consider boxes that are 100 % tropospheric
         Var_rc['tight_constraints'] = False
         if Var_rc['trop_limit']:
@@ -3891,7 +3899,7 @@ def get_default_variable_dict(wd=None,
 
 
 def get_shared_data_as_dict(Var_rc=None, var_list=[],
-                            full_vertical_grid=False, Data_rc={}):
+                            full_vert_grid=False, Data_rc={}):
     """
     Returns (requested) common vairables as a dictionary object. Give requested
     variables as a list of strings ("var_list").
@@ -3901,7 +3909,7 @@ def get_shared_data_as_dict(Var_rc=None, var_list=[],
     Var_rc (dict): dictionary containing variables for working directory ('wd')
     Data_rc (dict): dictionary containing model data (default intiallised empty)
     var_list (list): list of names (strings) of variables to extract
-    full_vertical_grid (bool): usings all levels of grid (e.g. 72 or 47)
+    full_vert_grid (bool): usings all levels of grid (e.g. 72 or 47)
 
     Returns
     ----
@@ -3910,7 +3918,7 @@ def get_shared_data_as_dict(Var_rc=None, var_list=[],
     # Use default variable dictionary if non given
     if isinstance(Var_rc, type(None)):
         Var_rc = get_default_variable_dict(
-            full_vertical_grid=full_vertical_grid)
+            full_vert_grid=full_vert_grid)
     # --- Extract basic variables by default
     # Resolution?
     Data_rc['res'] = get_gc_res(wd=Var_rc['wd'], filename=Var_rc['filename'])
@@ -3983,7 +3991,7 @@ def get_shared_data_as_dict(Var_rc=None, var_list=[],
         # limit_vertical_dim=True
         if Var_rc['limit_vertical_dim'] or Var_rc['trop_limit']:
             Data_rc['molecs'] = Data_rc['molecs'][...,
-                                                  :Var_rc['limit_Prod_loss_dim_to'], :]
+                                                  :Var_rc['limit_PL_dim2'], :]
     # Air mass? ("a_m")
     if 'a_m' in var_list:
         Data_rc['a_m'] = get_air_mass_np(wd=Var_rc['wd'],
@@ -3993,16 +4001,16 @@ def get_shared_data_as_dict(Var_rc=None, var_list=[],
         # Get altitude
         Data_rc['alt'] = gchemgrid('c_km_geos5')
         if Var_rc['trop_limit']:
-            Data_rc['alt'] = Data_rc['alt'][:Var_rc['limit_Prod_loss_dim_to']]
+            Data_rc['alt'] = Data_rc['alt'][:Var_rc['limit_PL_dim2']]
         elif (Data_rc['output_vertical_grid'] == 'Full_72') and \
                 (Var_rc['limit_vertical_dim']):
-            Data_rc['alt'] = Data_rc['alt'][:Var_rc['limit_Prod_loss_dim_to']]
+            Data_rc['alt'] = Data_rc['alt'][:Var_rc['limit_PL_dim2']]
     # Latitude (lat) and longitude (lon)?
     if ('lon' in var_list) or ('lat' in var_list):
         # Why is this variable extracted from an offline dictionary?
         # UPDATE to use NetCDF coordinate variable.
         lon, lat, NIU = get_latlonalt4res(res=Data_rc['res'], wd=Var_rc['wd'],
-                                          full_vertical_grid=Var_rc['full_vertical_grid'],
+                                          full_vert_grid=Var_rc['full_vert_grid'],
                                           filename=Var_rc['filename'])
         Data_rc['lon'] = lon
         Data_rc['lat'] = lat
@@ -4085,11 +4093,11 @@ def process_to_X_per_s(spec=None, ars=None, tags=None, ref_spec=None,
     """
     # Covert units based on whether model output is monthly
     if Data_rc['output_freq'] == 'Monthly':
-        month_eq = True  # use conversion in convert_molec_cm3_s_2_g_X_s
+        month_eq = True  # use conversion in convert_molec_cm3_s_2_g_X_s_BPCH
     else:
         month_eq = False
     # Convert to g X/s
-    ars = convert_molec_cm3_s_2_g_X_s(ars=ars, ref_spec=ref_spec, \
+    ars = convert_molec_cm3_s_2_g_X_s_BPCH(ars=ars, ref_spec=ref_spec, \
                                       # shared settings...
                                       months=Data_rc['months'], years=Data_rc['years'],
                                       vol=Data_rc['vol'], t_ps=Data_rc['t_ps'], \
@@ -4153,7 +4161,8 @@ def concvert_df_VOC_C2v(df=None, verbose=True):
 
 def process_bpch_files_in_dir2NetCDF(bpch_file_type="*tra*avg*",
                                      filename='ctm.nc',
-                                     folder=None, ext_str='_TEST_', file_prefix='ctm_',
+                                     folder=None, ext_str='_TEST_',
+                                     file_prefix='ctm_',
                                      split_by_month=False, mk_single_file=True,
                                      mk_monthly_files=False,
                                      mk_weekly_files=False,
@@ -4315,7 +4324,8 @@ def process_all_bpch_files_in_dir(folder=None, ext_str=None):
     # process *ctm*bpch* to NetCDF
     process_bpch_files_in_dir2NetCDF(folder=folder, filename=filename,
                                      ext_str=ext_str, file_prefix=file_prefix,
-                                     bpch_file_type=bpch_file_type, split_by_month=True)
+                                     bpch_file_type=bpch_file_type,
+                                     split_by_month=True)
     # - Process *ts*bpch* files
     # Temporary variables
     bpch_file_type = 'ts*bpch*'
@@ -4324,7 +4334,8 @@ def process_all_bpch_files_in_dir(folder=None, ext_str=None):
     # Process *ts*bpch* to netCDF4
     process_bpch_files_in_dir2NetCDF(folder=folder, filename=filename,
                                      ext_str=ext_str, file_prefix=file_prefix,
-                                     bpch_file_type=bpch_file_type, split_by_month=True)
+                                     bpch_file_type=bpch_file_type,
+                                     split_by_month=True)
 
 
 def get_Lightning_NOx_source(Var_rc=None, Data_rc=None, debug=False):
@@ -4544,10 +4555,12 @@ def get_model_run_stats(wd=None, file_type='*geos.log*', debug=False):
         sys.exit()
 
 
-def get_general_stats4run_dict_as_df_bpch(run_dict=None, extra_str='', REF1=None,
+def get_general_stats4run_dict_as_df_bpch(run_dict=None, extra_str='',
+                                          REF1=None,
                                           REF2=None, REF_wd=None, res='4x5',
                                           trop_limit=True,
-                                          save2csv=True, prefix='GC_', run_names=None,
+                                          save2csv=True, prefix='GC_',
+                                          run_names=None,
                                           extra_burden_specs=['NIT', 'NITs'],
                                           extra_surface_specs=['NIT', 'NITs'],
                                           GC_version='v11-02d',
@@ -4812,8 +4825,10 @@ def get_O3_burden_bpch(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None,
     if trop_limit:
         total_atmos = True
     # --- just call existing function
-    return get_trop_burden(wd=wd, total_atmos=False, all_data=all_data, res=res,
-                           trop_limit=trop_limit, spec=spec, a_m=a_m, t_p=t_p, arr=O3_arr,
+    return get_trop_burden(wd=wd, total_atmos=False, all_data=all_data,
+                           res=res,
+                           trop_limit=trop_limit, spec=spec, a_m=a_m, t_p=t_p,
+                           arr=O3_arr,
                            debug=debug)
 
 
@@ -4821,14 +4836,15 @@ def get_O3_burden_bpch(wd=None, spec='O3', a_m=None, t_p=None, O3_arr=None,
 # -------- below function is redundant.
 #
 def molec_cm3_s_2_Gg_Ox_np(arr, rxn=None, vol=None, ctm_f=None,
-                           Iodine=False, I=False, IO=False, months=None, years=None,
+                           Iodine=False, I=False, IO=False, months=None,
+                           years=None,
                            wd=None,
                            year_eq=True, month_eq=False, spec=None, res='4x5',
                            debug=False):
     """
     Convert species/tag prod/loss from "molec/cm3/s" to "Gg (Ox) yr^-1".
 
-    !!! This is redundant. use convert_molec_cm3_s_2_g_X_s instead. !!!
+    !!! This is redundant. use convert_molec_cm3_s_2_g_X_s_BPCH instead. !!!
     ( temporarily here for get_POxLOx )
 
     NOTES:

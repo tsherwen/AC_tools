@@ -806,7 +806,7 @@ def plot_zonal_figure(arr, fixcb=None, cb_sigfig=2, ax=None,
     # If lon, lat, alt array provided then take mean of lon
     if any([arr.shape[0] == i for i in (72, 144, 121, 177)]):
         #        arr = arr.mean(axis=0)
-        arr = molec_weighted_avg(arr, weight_lon=True, res=res,
+        arr = molec_weighted_avg_BPCH(arr, weight_lon=True, res=res,
                                  trop_limit=trop_limit, rm_strat=False, wd=wd)
 
     # Create figure if not provided
@@ -2190,4 +2190,119 @@ def get_CB_color_cycle():
     ]
     return CB_color_cycle
 
+def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3',
+                                    wd=None, Mechanism='Halogens',
+                                    rm_strat=False,
+                                    weight_by_molecs=True, CODE_wd=None,
+                                    full_vert_grid=True, dpi=320,
+                                    suffix='',
+                                    save_plot=True, show_plot=False,
+                                    limit_plotted_alititude=True, lw=16,
+                                    Ox_fam_dict=None, fontsize=10,
+                                    cmap=plt.cm.jet, alt_array=None,
+                                    verbose=True, debug=False):
+    """
+    Plot vertical odd oxygen (Ox) loss via route (chemical family)
+
+    Parameters
+    -------
+    fam (str): tagged family to track (already compiled in KPP mechanism)
+    ref_spec (str): reference species to normalise to
+    wd (str): working directory ("wd") of model output
+    CODE_wd (str): root of code directory containing the tagged KPP mechanism
+    Mechanism (str): name of the KPP mechanism (and folder) of model output
+    weight_by_molecs (bool): weight grid boxes by number of molecules
+    rm_strat (bool): (fractionally) replace values in statosphere with zeros
+    debug, verbose (bool): switches to turn on/set verbosity of output to screen
+    alt_array (np.array): array of altitudes for model grid boxes
+    full_vert_grid (bool): use the full vertical grid for analysis
+    limit_plotted_alititude (bool): limit the plotted vertical extend to troposphere
+    suffix (str): suffix in filename for saved plot
+    dpi (int): resolution to use for saved image (dots per square inch)
+    Ox_fam_dict (dict), dictionary of Ox loss variables/data (from KPP.py)
+
+    Returns
+    -------
+    (None)
+
+    Notes
+    -----
+     - AC_tools includes equivlent functions for smvgear mechanisms
+    """
+    # - Local variables/ Plot extraction / Settings
+    # extract variables from data/variable dictionary
+    sorted_fam_names = Ox_fam_dict['sorted_fam_names']
+    fam_dict = Ox_fam_dict['fam_dict']
+    ars = Ox_fam_dict['ars']
+    RR_dict_fam_stioch = Ox_fam_dict['RR_dict_fam_stioch']
+    RR_dict = Ox_fam_dict['RR_dict']
+    tags2_rxn_num = Ox_fam_dict['tags2_rxn_num']
+    tags = Ox_fam_dict['tags']
+    tags_dict = Ox_fam_dict['tags_dict']
+    # Combine to a single array
+    arr = np.array(ars)
+    if debug:
+        print((arr.shape))
+    # - Process data for plotting
+    fam_tag = [fam_dict[i] for i in tags]
+    fam_ars = []
+    for fam_ in sorted_fam_names:
+        # Get indices for routes of family
+        fam_ind = [n for n, i in enumerate(fam_tag) if (i == fam_)]
+        if debug:
+            print((fam_ind, len(fam_ind)))
+        # Select these ...
+        fam_ars += [arr[fam_ind, ...]]
+    # Recombine and sum by family...
+    if debug:
+        print(([i.shape for i in fam_ars], len(fam_ars)))
+    arr = np.array([i.sum(axis=0) for i in fam_ars])
+    if debug:
+        print((arr.shape))
+    # - Plot up as a stack-plot...
+    # Normalise to total and conver to % (*100)
+    arr = (arr / arr.sum(axis=0)) * 100
+    # Add zeros array to beginning (for stack/area plot )
+    arr_ = np.vstack((np.zeros((1, arr.shape[-1])), arr))
+    # Setup figure
+    fig, ax = plt.subplots(figsize=(9, 6), dpi=dpi,
+                           facecolor='w', edgecolor='w')
+    # Plot by family
+    for n, label in enumerate(sorted_fam_names):
+        # Print out some summary stats
+        if verbose:
+            print(n, label, arr[:n, 0].sum(axis=0),
+                  arr[:n+1, 0].sum(axis=0), end=' ')
+            print(arr[:n, :].sum(), arr[:n+1, :].sum())
+            print([i.shape for i in (alt_array, arr)])
+        # Fill between X
+        plt.fill_betweenx(alt_array, arr[:n, :].sum(axis=0),
+                          arr[:n+1, :].sum(axis=0),
+                          color=cmap(1.*n/len(sorted_fam_names)))
+        # Plot the line too
+        plt.plot(arr[:n, :].sum(axis=0), alt_array, label=label,
+                 color=cmap(1.*n/len(sorted_fam_names)), alpha=0,
+                 lw=lw,)
+    # Beautify the plot
+    plt.xlim(0, 100)
+    xlabel = '% of total O$_{\\rm x}$ loss'
+    plt.xlabel(xlabel, fontsize=fontsize*.75)
+    plt.yticks(fontsize=fontsize*.75)
+    plt.xticks(fontsize=fontsize*.75)
+    plt.ylabel('Altitude (km)', fontsize=fontsize*.75)
+    leg = plt.legend(loc='upper center', fontsize=fontsize)
+    # Update lengnd line sizes ( + update line sizes)
+    for legobj in leg.legendHandles:
+        legobj.set_linewidth(lw/2)
+        legobj.set_alpha(1)
+    plt.ylim(alt_array[0], alt_array[-1])
+    # Limit plot y axis to 12km?
+    if limit_plotted_alititude:
+        plt.ylim(alt_array[0], 12)
+    # Show plot or save?
+    if save_plot:
+        filename = 'Ox_loss_plot_by_vertical_{}_{}'.format(Mechanism, suffix)
+        plt.savefig(filename, dpi=dpi)
+    if show_plot:
+        plt.show()
 

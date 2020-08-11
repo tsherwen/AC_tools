@@ -31,15 +31,12 @@ from .GEOSChem_bpch import *
 from .GEOSChem_nc import *
 
 
-def get_fam_prod_loss4tagged_mech(wd=None, fam='LOx', ref_spec='O3',
-                                  tags=None, RR_dict=None, Data_rc=None,
-                                  Var_rc=None, tags2_rxn_num=None,
-                                  RR_dict_fam_stioch=None, region=None,
-                                  rm_strat=False,
-                                  weight_by_molecs=False, verbose=True,
-                                  debug=False):
+def get_PL_ars4mech_NetCDF(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
+                           Data_rc=None, Var_rc=None,
+                           region=None, rm_strat=False, GC_version='v12.9.1',
+                           weight_by_molecs=False, verbose=True, debug=False):
     """
-    Extract prod/loss for family from wd and code directory
+    Extract prod/loss for family from wd (BPCH files) and code directory
 
     Parameters
     -------
@@ -64,33 +61,27 @@ def get_fam_prod_loss4tagged_mech(wd=None, fam='LOx', ref_spec='O3',
     -------
     (None)
     """
-    # --- Get tags
-    # Get dictionaries (reaction, tags, stoichiometry ) if not provided
-    if isinstance(RR_dict, type(None)):
-        RR_dict = get_dict_of_KPP_mech(wd=CODE_wd,
-                                       GC_version=Data_rc['GC_version'],
-                                       Mechanism=Mechanism)
-        if debug:
-            print(len(RR_dict), [RR_dict[i] for i in RR_dict.keys()[:5]])
-    if isinstance(tags2_rxn_num, type(None)):
-        tags2_rxn_num = {v: k for k, v in tags_dict.items()}
-    if isinstance(RR_dict_fam_stioch, type(None)):
-        RR_dict_fam_stioch = get_stioch4family_rxns(
-            fam=fam, RR_dict=RR_dict, Mechanism=Mechanism)
-    # --- Get data
+    # - Get KPP production/loss tags
+#    fam_dict = Ox_fam_dict['fam_dict']
+    RR_dict_fam_stioch = Ox_fam_dict['RR_dict_fam_stioch']
+#    RR_dict = Ox_fam_dict['RR_dict']
+    tags2_rxn_num = Ox_fam_dict['tags2_rxn_num']
+    tags = Ox_fam_dict['tags']
+#    tags_dict = Ox_fam_dict['tags_dict']
+    # - Get model output for fluxes through these tagged routes
     # Get prod/loss arrays
     ars = get_GC_output(wd=Var_rc['wd'], r_list=True,
                         vars=['PORL_L_S__'+i for i in tags],
                         trop_limit=Var_rc['trop_limit'])
     # Limit prod/loss vertical dimension?
-    limit_Prod_loss_dim_to = Var_rc['limit_Prod_loss_dim_to']
+    limit_PL_dim2 = Var_rc['limit_PL_dim2']
     # Covert units based on whether model output is monthly
     if Data_rc['output_freq'] == 'Monthly':
-        month_eq = True  # use conversion in convert_molec_cm3_s_2_g_X_s
+        month_eq = True  # use conversion in convert_molec_cm3_s_2_g_X_s_BPCH
     else:
         month_eq = False
     # Now convert the units (to G/s)
-    ars = convert_molec_cm3_s_2_g_X_s(ars=ars, ref_spec=ref_spec,
+    ars = convert_molec_cm3_s_2_g_X_s_BPCH(ars=ars, ref_spec=ref_spec,
                                       # Shared settings...
                                       months=Data_rc['months'],
                                       years=Data_rc['years'],
@@ -99,7 +90,7 @@ def get_fam_prod_loss4tagged_mech(wd=None, fam='LOx', ref_spec='O3',
                                       rm_strat=Var_rc['rm_strat'],
                                       # There are 59 levels of computation for P/l in
                                       # v11-1+ (so limit to 59)
-                                      limit_Prod_loss_dim_to=limit_Prod_loss_dim_to,
+                                      limit_PL_dim2=limit_PL_dim2,
                                       # ... and function specific settings...
                                       month_eq=month_eq,
                                       conbine_ars=False)
@@ -121,10 +112,10 @@ def get_fam_prod_loss4tagged_mech(wd=None, fam='LOx', ref_spec='O3',
     # Get time in troposphere diagnostic
     print(Data_rc['t_ps'].shape)
     print(Data_rc['t_ps'].mean(axis=-1).shape)
-    t_ps = Data_rc['t_ps'].mean(axis=-1)[..., :limit_Prod_loss_dim_to]
+    t_ps = Data_rc['t_ps'].mean(axis=-1)[..., :limit_PL_dim2]
     # Check tropospheric LOx total
     arr = np.ma.array(ars)
-    print(arr.shape, t_ps.shape, limit_Prod_loss_dim_to)
+    print(arr.shape, t_ps.shape, limit_PL_dim2)
     LOx_trop = (arr * t_ps[None, ...]).sum() / 1E12
     if verbose:
         print('Annual tropospheric Ox loss (Tg O3): ', LOx_trop)
@@ -138,7 +129,7 @@ def get_fam_prod_loss4tagged_mech(wd=None, fam='LOx', ref_spec='O3',
         sys.exit()
     else:
         if weight_by_molecs:
-            ars = [molec_weighted_avg(i, weight_lon=True, res=Data_rc['res'],
+            ars = [molec_weighted_avg_BPCH(i, weight_lon=True, res=Data_rc['res'],
                                       weight_lat=True, wd=Var_rc['wd'],
                                       trop_limit=Var_rc['trop_limit'],
                                       rm_strat=Var_rc['rm_strat'], \
@@ -146,14 +137,128 @@ def get_fam_prod_loss4tagged_mech(wd=None, fam='LOx', ref_spec='O3',
                                       molecs=Data_rc['molecs'].mean(axis=-1),
                                       t_p=t_ps) \
                    for i in ars]
+        else:
+            pass
+    if debug:
+        print([i.shape for i in ars])
+    return ars
+
+
+
+def get_PL_ars4mech_BPCH(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
+                         Data_rc=None, Var_rc=None,
+                         region=None, rm_strat=False, GC_version='v12.9.1',
+                         weight_by_molecs=False, verbose=True, debug=False):
+    """
+    Extract prod/loss for family from wd (BPCH files) and code directory
+
+    Parameters
+    -------
+    fam (str): tagged family to track (already compiled in KPP mechanism)
+    ref_spec (str): reference species to normalise to
+    region (str): region to consider (by masking all but this location)
+    wd (str): working directory ("wd") of model output
+    debug, verbose (bool): switches to turn on/set verbosity of output to screen
+    RR_dict (dict): dictionary of KPP rxn. mechanism (from get_dict_of_KPP_mech)
+    RR_dict_fam_stioch (dict): dictionary of stoichiometries for
+        get_stioch4family_rxns
+    tags2_rxn_num (dict): dicionary mapping tags to reaction numbers
+    tags (list): list of prod/loss tags to extract
+    Var_rc (dict): dictionary containing variables for working directory ('wd')
+        ( made by AC_tools' get_default_variable_dict function)
+    Data_rc (dict): dictionary containing model data
+        (made by AC_tools' get_shared_data_as_dict function )
+    rm_strat (bool): (fractionally) replace values in statosphere with zeros
+    weight_by_molecs (bool): weight grid boxes by number of molecules
+
+    Returns
+    -------
+    (None)
+    """
+    # - Get KPP production/loss tags
+#    fam_dict = Ox_fam_dict['fam_dict']
+    RR_dict_fam_stioch = Ox_fam_dict['RR_dict_fam_stioch']
+#    RR_dict = Ox_fam_dict['RR_dict']
+    tags2_rxn_num = Ox_fam_dict['tags2_rxn_num']
+    tags = Ox_fam_dict['tags']
+#    tags_dict = Ox_fam_dict['tags_dict']
+    # - Get model output for fluxes through these tagged routes
+    # Get prod/loss arrays
+    ars = get_GC_output(wd=Var_rc['wd'], r_list=True,
+                        vars=['PORL_L_S__'+i for i in tags],
+                        trop_limit=Var_rc['trop_limit'])
+    # Limit prod/loss vertical dimension?
+    limit_PL_dim2 = Var_rc['limit_PL_dim2']
+    # Covert units based on whether model output is monthly
+    if Data_rc['output_freq'] == 'Monthly':
+        month_eq = True  # use conversion in convert_molec_cm3_s_2_g_X_s_BPCH
+    else:
+        month_eq = False
+    # Now convert the units (to G/s)
+    ars = convert_molec_cm3_s_2_g_X_s_BPCH(ars=ars, ref_spec=ref_spec,
+                                      # Shared settings...
+                                      months=Data_rc['months'],
+                                      years=Data_rc['years'],
+                                      vol=Data_rc['vol'], t_ps=Data_rc['t_ps'],
+                                      trop_limit=Var_rc['trop_limit'],
+                                      rm_strat=Var_rc['rm_strat'],
+                                      # There are 59 levels of computation for P/l in
+                                      # v11-1+ (so limit to 59)
+                                      limit_PL_dim2=limit_PL_dim2,
+                                      # ... and function specific settings...
+                                      month_eq=month_eq,
+                                      conbine_ars=False)
+    # Add stoichiometric scaling (# of Ox losses per tagged rxn. )
+    ars = [i*RR_dict_fam_stioch[tags2_rxn_num[tags[n]]]
+           for n, i in enumerate(ars)]
+    # Scale to annual
+    if Data_rc['output_freq'] == 'Monthly':
+        # Should this be summated then divided adjusted to time points.
+        # Sum over time
+        ars = [i.sum(axis=-1) for i in ars]
+        # Adjust to equivalent months.
+        ars = [i/len(Data_rc['months'])*12 for i in ars]
+    else:
+        # Average over time?
+        ars = [i.mean(axis=-1) for i in ars]
+        # Scale to annual
+        ars = [i*60.*60.*24.*365. for i in ars]
+    # Get time in troposphere diagnostic
+    print(Data_rc['t_ps'].shape)
+    print(Data_rc['t_ps'].mean(axis=-1).shape)
+    t_ps = Data_rc['t_ps'].mean(axis=-1)[..., :limit_PL_dim2]
+    # Check tropospheric LOx total
+    arr = np.ma.array(ars)
+    print(arr.shape, t_ps.shape, limit_PL_dim2)
+    LOx_trop = (arr * t_ps[None, ...]).sum() / 1E12
+    if verbose:
+        print('Annual tropospheric Ox loss (Tg O3): ', LOx_trop)
+    # Remove the stratosphere by multiplication through by "time in troposphere"
+    if rm_strat:
+        ars = [i*t_ps for i in ars]
+    # Select data by location or average globally?
+    if not isinstance(region, type(None)):
+        # Also allow for applying masks here...
+        print('NOT SETUP!!!')
+        sys.exit()
+    else:
+        if weight_by_molecs:
+            ars = [molec_weighted_avg_BPCH(i, weight_lon=True, res=Data_rc['res'],
+                                      weight_lat=True, wd=Var_rc['wd'],
+                                      trop_limit=Var_rc['trop_limit'],
+                                      rm_strat=Var_rc['rm_strat'], \
+                                      # provide shared data arrays averaged over time...
+                                      molecs=Data_rc['molecs'].mean(axis=-1),
+                                      t_p=t_ps) \
+                   for i in ars]
+        else:
+            pass
     if debug:
         print([i.shape for i in ars])
     return ars
 
 
 # -------------- Functions to produce KPP ***input*** file(s)
-
-
 def print_out_dfs2KPP_eqn_file(species_df=None, headers=None,
                                extr_str='OUTPUT', rxn_dicts=None):
     """
@@ -259,12 +364,15 @@ def KPP_eqn_file_headers(folder=None, filename=None):
 
 
 def get_reactants_and_products4tagged_fam(fam='LOx', KPP_output_mech=None,
-                                          folder=None):
-    """ Return a list of reactants and products of reactions making fam tag """
+                                          folder=None, GC_version='v12.9.1'):
+    """
+    Return a list of reactants and products of reactions making fam tag
+    """
     import pandas as pd
     # Get the outputted KPP mechanism if not provided.
     if isinstance(KPP_output_mech, type(None)):
-        KPP_output_mech = get_dict_of_KPP_mech(wd=folder)
+        KPP_output_mech = get_dict_of_KPP_mech(wd=folder,
+                                               GC_version=GC_version)
     # Make a DataFrame from the dictionary
     s = pd.Series(KPP_output_mech)
     df = pd.DataFrame()
@@ -306,7 +414,8 @@ def get_reactants_and_products4tagged_fam(fam='LOx', KPP_output_mech=None,
 
 
 def get_KPP_tagged_rxns(fam='LOx', filename='gckpp_Monitor.F90',
-                        Mechanism='Halogens', RR_dict=None, wd=None):
+                        Mechanism='Halogens', RR_dict=None, wd=None,
+                        GC_version='v12.9.1'):
     """
     Search compiled KPP mechanism for reactions with a certain tag ("fam") in
     their mechanism (e.g. LOx for loss of Ox)
@@ -325,7 +434,7 @@ def get_KPP_tagged_rxns(fam='LOx', filename='gckpp_Monitor.F90',
     # Get dictionary of reactions in Mechanism
     if isinstance(RR_dict, type(None)):
         RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename,
-                                       wd=wd)
+                                       wd=wd, GC_version=GC_version)
     # Loop dictionary of reactions and save those that contain tag
     tagged_RR_dummies = []
     for key_ in list(RR_dict.keys()):
@@ -346,7 +455,7 @@ def KPP_eqn_file_species(folder=None, filename=None, debug=False):
     """
     import pandas as pd
     import numpy as np
-    # ----open file and loop by line
+    # Open file and loop by line
     with open(folder+filename, 'r') as file_:
         specs = []
         num2read_line_from = 999999
@@ -405,6 +514,7 @@ def get_dicts_of_KPP_eqn_file_reactions(folder=None, filename=None,
     'GC_RO2NO', 'GC_OHHNO3', 'GC_RO2HO2', 'GC_HACOHA',
     'GC_RO2HO2', 'GC_HACOHB', 'GC_TBRANCH', 'GCJPLEQ',
     'GC_GLYCOHA', 'GC_GLYCOHB', 'GC_DMSOH', 'GC_GLYXNO3',
+    'GC_HO2NO3',
     # Include ISOP reaction functions (inc. GC)
     'GC_ALK', 'GC_NIT', 'GC_PAN', 'GC_EPO', 'GC_ISO1', 'GC_ISO2',
     # KPP function without GC prefix
@@ -455,9 +565,9 @@ def get_dicts_of_KPP_eqn_file_reactions(folder=None, filename=None,
                 # Stop reading lines at end of section
                 if ("//" in line_) and len(eqns) > 3:
                     break
-                print(n_line, line_)
+                if debug:
+                    print(n_line, line_)
             # Remove spacing errors in KPP eqn entries
-
             def remove_KPP_spacing_errors(input):
                 """ Remove differences in spacing in KPP """
                 # Numbers
@@ -488,7 +598,6 @@ def split_KPP_rxn_str_into_chunks(rxn, KPP_line_max=43, debug=False):
     """
     print(rxn)
     # Sub-function to cut strings to last " +"
-
     def return_string_in_parts_ending_with_plus(input):
         """ return string upto last ' +'  in string """
         # Find the last ' + ' in string
@@ -528,7 +637,8 @@ def split_KPP_rxn_str_into_chunks(rxn, KPP_line_max=43, debug=False):
                 print(new_str)
         else:
             break
-    print(sub_strs)
+    if debug:
+        print(sub_strs)
     return sub_strs
 
 
@@ -578,8 +688,8 @@ def update_KPP_rxn_str(input, rtn_as_list=False):
     return input.strip()
 
 
-def process_KPP_rxn_dicts2DataFrames(rxn_dicts=None, debug=False,
-                                     Use_FORTRAN_KPP_numbering=True):
+def process_KPP_rxn_dicts2dfs(rxn_dicts=None, Use_FORTRAN_KPP_numbering=True,
+                              debug=False,):
     """
     Process lists of strings of KPP mechanism into organised DataFrame
     """
@@ -608,13 +718,14 @@ def process_KPP_rxn_dicts2DataFrames(rxn_dicts=None, debug=False,
         # Force use of index numbers from FORTRAN / KPP
         if Use_FORTRAN_KPP_numbering:
             df.index = df.index + 1
-            print('WARNING - updated DataFrame dictionary to start @1 (not 0)')
+            if debug:
+                print('WARNING - updated DataFrame index to start @1 (not 0)')
         # Overwrite dictionary with dataframe
         rxn_dicts[key_] = df
     return rxn_dicts
 
 
-def split_combined_KPP_eqns(list_in):
+def split_combined_KPP_eqns(list_in, debug=False ):
     """ Split combined KPP eqn strings  """
     # Indices of KPP eqn strings with more than one "="
     inds = []
@@ -622,7 +733,8 @@ def split_combined_KPP_eqns(list_in):
         if str.count('=') > 1:
             inds += [n]
     strs = [list_in[i] for i in inds]
-    print('WARNING: found {} combined strings:'.format(len(inds)), strs)
+    if len(inds) > 0:
+        print('WARNING: found {} combined strings:'.format(len(inds)), strs)
     # If there are any combined eqn strings, then split them
     if len(inds) > 0:
         new_eqns = []
@@ -659,7 +771,7 @@ def split_combined_KPP_eqns(list_in):
 
 def get_stioch4family_rxns(fam='LOx', filename='gckpp_Monitor.F90',
                            Mechanism='Halogens', RR_dict=None, wd=None,
-                           debug=False):
+                           GC_version='v12.9.1', debug=False):
     """
     Get the stiochmetery for each reaction in family from compiled KPP file
 
@@ -677,7 +789,7 @@ def get_stioch4family_rxns(fam='LOx', filename='gckpp_Monitor.F90',
     # Get dictionary of reactions in Mechanism
     if isinstance(RR_dict, type(None)):
         RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename,
-                                       wd=wd)
+                                       wd=wd, GC_version=GC_version)
     # Assume unity if no coeffeicent
     unity = 1.0
     # Loop dictionary of reactions and save those that contain tag
@@ -710,7 +822,7 @@ def get_stioch4family_rxns(fam='LOx', filename='gckpp_Monitor.F90',
 
 def get_tags4family(fam='LOx', filename='gckpp_Monitor.F90',
                     Mechanism='Halogens', tag_prefix='PT', RR_dict=None,
-                    wd=None,
+                    wd=None, GC_version='v12.9.1',
                     get_one_tag_per_fam=True, debug=False):
     """
     For a P/L family tag (e.g. LOx), if there are individual tags then these
@@ -730,7 +842,7 @@ def get_tags4family(fam='LOx', filename='gckpp_Monitor.F90',
     # Get dictionary of reactions in Mechanism
     if isinstance(RR_dict, type(None)):
         RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename,
-                                       wd=wd)
+                                       wd=wd, GC_version=GC_version)
     # Loop dictionary of reactions and save those that contain tag
     tagged_rxns = []
     tagged_rxn_tags = []
@@ -767,8 +879,8 @@ def get_tags4family(fam='LOx', filename='gckpp_Monitor.F90',
     return dict(list(zip(tagged_rxns, tagged_rxn_tags)))
 
 
-def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90',
-                         Mechanism='Halogens', GC_version='v11-01', wd=None):
+def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90', wd=None,
+                         Mechanism='Halogens', GC_version='v12.9.1', ):
     """
     Get a dictionary of KPP mechansim from compile mechanism
 
@@ -787,11 +899,6 @@ def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90',
     logging.info(log_str.format(Mechanism, GC_version, wd))
     # Get base working code directory
     if isinstance(wd, type(None)):
-        #        wd = sys.agrv[1]
-        # Hardwire for testing
-        #         wd = '/work/home/ts551/data/all_model_simulations/iodine_runs/'
-        #         wd += 'iGEOSChem_5.0/code_TMS_new/'
-        #         wd += '/KPP/{}/'.format(Mechanism)
         print('wd with code must be provided')
     MECH_start_str = 'INTEGER, DIMENSION(1) :: MONITOR'
 #    rxn_line_ind = '! index'
@@ -843,9 +950,9 @@ def get_dict_of_KPP_mech(filename='gckpp_Monitor.F90',
     return RR_dict
 
 
-def prt_families4rxns_to_input_to_PROD_LOSS(fam='LOx', rxns=None, wd=None,
-                                            filename='gckpp_Monitor.F90',
-                                            Mechanism='Halogens'):
+def prt_families4rxns_to_input_to_PL(fam='LOx', rxns=None, wd=None,
+                                     filename='gckpp_Monitor.F90',
+                                     Mechanism='Halogens'):
     """
     Takes a list of reaction numbers or (fam) and prints out prod/loss in
     a form that can be copy/pasted into KPP (gckpp.kpp)
@@ -875,10 +982,9 @@ def prt_families4rxns_to_input_to_PROD_LOSS(fam='LOx', rxns=None, wd=None,
         print((pstr.format(rxn, rxn)))
 
 
-def prt_families4rxns_to_input_to_PROD_LOSS_globchem_spec(fam='LOx',
-                                                          rxns=None, wd=None,
-                                                          filename='gckpp_Monitor.F90',
-                                                          Mechanism='Halogens'):
+def prt_fam4rxns2input2PL_globchem_spec(fam='LOx', rxns=None, wd=None,
+                                        filename='gckpp_Monitor.F90',
+                                        Mechanism='Halogens'):
     """
     Takes a list of reaction numbers or (fam) and prints out prod/loss in
     a form that can be copy/pasted into KPP (globchem.spc)
@@ -904,7 +1010,7 @@ def prt_families4rxns_to_input_to_PROD_LOSS_globchem_spec(fam='LOx',
     if isinstance(rxns, type(None)):
         rxns = get_KPP_tagged_rxns(fam=fam, filename=filename,
                                    Mechanism=Mechanism, wd=wd)
-    # --- Print to screen
+    #  Print to screen
     header_Str = '#DEFVAR'
     pstr = '     {:<10}      =          IGNORE;'
     print('>>>> Copy and paste the below text into globchem.spc <<<')
@@ -914,7 +1020,8 @@ def prt_families4rxns_to_input_to_PROD_LOSS_globchem_spec(fam='LOx',
 
 
 def get_KKP_mech_from_eqn_file_as_dicts(folder=None, Mechanism='Tropchem',
-                                        filename=None):
+                                        filename=None, verbose=True,
+                                        debug=False):
     """
     Get KPP mechanism as a dictionary of dictionaries
     """
@@ -922,12 +1029,14 @@ def get_KKP_mech_from_eqn_file_as_dicts(folder=None, Mechanism='Tropchem',
     if isinstance(filename, type(None)):
         filename = '{}.eqn'.format(Mechanism)
     # Get dictionaries of all reactions
-    print('get_KKP_mech_from_eqn_file_as_dicts', folder, filename)
-    rxn_dicts = get_dicts_of_KPP_eqn_file_reactions(
-        folder=folder, filename=filename)
+    if verbose:
+        print('get_KKP_mech_from_eqn_file_as_dicts', folder, filename)
+    rxn_dicts = get_dicts_of_KPP_eqn_file_reactions(folder=folder,
+                                                    filename=filename,
+                                                    debug=debug,)
     # Process rxns to be in dictionaries of DataFrames
     # (with extra diagnostic columns, inc. reactants, products, metadata,...)
-    rxn_dicts = process_KPP_rxn_dicts2DataFrames(rxn_dicts=rxn_dicts)
+    rxn_dicts = process_KPP_rxn_dicts2dfs(rxn_dicts=rxn_dicts, debug=debug)
     # Update the numbering of DataFrame indexes...
     Gas_dict = rxn_dicts['Gas-phase']
     Het_dict = rxn_dicts['Heterogeneous']
@@ -942,18 +1051,21 @@ def get_KKP_mech_from_eqn_file_as_dicts(folder=None, Mechanism='Tropchem',
 
 
 def get_KKP_mech_from_eqn_file_as_df(folder=None, Mechanism='Tropchem',
-                                     filename=None):
+                                     filename=None, verbose=True,
+                                     debug=False):
     """
     Get KPP mechanism as a pandas DataFrame
     """
     # Set the filename if not provided
     if isinstance(filename, type(None)):
         filename = '{}.eqn'.format(Mechanism)
-    print('get_KKP_mech_from_eqn_file_as_df', folder, filename)
+    if verbose:
+        print('get_KKP_mech_from_eqn_file_as_df', folder, filename)
     # Get dictionary of dictionaries
     dicts = get_KKP_mech_from_eqn_file_as_dicts(folder=folder,
                                                 Mechanism=Mechanism,
-                                                filename=filename)
+                                                filename=filename,
+                                                debug=debug)
     # Add a flag for reaction type
     for key in dicts.keys():
         df = dicts[key]
@@ -979,7 +1091,8 @@ def get_dictionary_of_tagged_reactions(filename='globchem.eqn',
     if isinstance(wd, type(None)):
         #        wd = sys.agrv[1]
         # Hardwire for testing
-        wd = '/work/home/ts551/data/all_model_simulations/iodine_runs/iGEOSChem_5.0/code_TMS_new/'
+        wd = '/work/home/ts551/data/all_model_simulations/iodine_runs/'
+        wd += 'iGEOSChem_5.0/code_TMS_new/'
         wd += '/KPP/{}/'.format(Mechanism)
     # Local variable
     tracer_names_like_tag = ['TRO2']
@@ -1014,11 +1127,10 @@ def get_dictionary_of_tagged_reactions(filename='globchem.eqn',
 
 
 def get_Ox_fam_based_on_reactants(filename='gckpp_Monitor.F90',
-                                  Mechanism='Halogens', wd=None,  fam='LOx',
-                                  tag_prefix='PT',
+                                  Mechanism='Halogens', wd=None, fam='LOx',
+                                  GC_version='v12.9.1', tag_prefix='PT',
                                   tags=None, input_KPP_mech=None, RR_dict=None,
-                                  GC_version='v11-01',
-                                  debug=False):
+                                  verbose=False, debug=False):
     """
     Get Ox famiy of reaction tag using KPP reaction string.
 
@@ -1034,10 +1146,11 @@ def get_Ox_fam_based_on_reactants(filename='gckpp_Monitor.F90',
     -------
     (None)
     """
-    # --- Local variables
+    # - Local variables
     # Get dictionary of reactions in Mechanism
     if isinstance(RR_dict, type(None)):
         RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism,
+                                       GC_version=GC_version,
                                        filename=filename, wd=wd)
     if isinstance(input_KPP_mech, type(None)):
         input_KPP_mech = get_KKP_mech_from_eqn_file_as_df(
@@ -1047,7 +1160,7 @@ def get_Ox_fam_based_on_reactants(filename='gckpp_Monitor.F90',
         tags = get_tags4family(wd=wd, fam=fam, filename=filename,
                                Mechanism=Mechanism, tag_prefix=tag_prefix,
                                RR_dict=RR_dict)
-    # --- Extra local variables
+    # - Extra local variables
     HOx = ['OH', 'HO2', 'H2O2']
     # Temporarily add to definition of HOx
     HOx += ['O1D', 'O', 'O3', 'NO3']
@@ -1062,15 +1175,6 @@ def get_Ox_fam_based_on_reactants(filename='gckpp_Monitor.F90',
         'LIMO2'
     ]
     # Get list of tagged hv reactions
-#    all_rxns = sorted(RR_dict.keys())
-#    all_rxns = sorted(RR_hv_dict.keys()) # This also give the same list as above line
-#     hv_rxns_tags = []
-#     for rxn_ in all_rxns:
-#         rxn_str = input_KPP_mech.loc[input_KPP_mech.index == rxn_,:]['rxn_str'].values[0]
-#         if ('hv' in rxn_str):
-#             hv_rxns_tags += [rxn_]
-#         else:
-#             pass
     hv_rxns = input_KPP_mech.loc[input_KPP_mech['Type'] == 'Photolysis', :]
     hv_rxns = hv_rxns.index.astype(list)
 
@@ -1178,7 +1282,8 @@ def get_Ox_fam_based_on_reactants(filename='gckpp_Monitor.F90',
 #    if mk_family_names_readable:
     name_dict = {
         'ClOx-BrOx': 'Cl+Br', 'BrOx-IOx': 'Br+I', 'BrOx': 'Bromine',
-        'ClOx-IOx': 'Cl+I', 'IOx': 'Iodine', 'ClOx': 'Chlorine', 'HOx': 'HO$_{\\rm x}$',
+        'ClOx-IOx': 'Cl+I', 'IOx': 'Iodine', 'ClOx': 'Chlorine',
+        'HOx': 'HO$_{\\rm x}$',
         'hv': 'Photolysis', 'NOx': 'NO$_{\\rm x}$',
         # Allow unassigned reactions to pass (to be caught later)
         'NOT ASSIGNED!!!': 'NOT ASSIGNED!!!'
@@ -1188,10 +1293,9 @@ def get_Ox_fam_based_on_reactants(filename='gckpp_Monitor.F90',
     return dict(list(zip(tag_l, fam_l)))
 
 
-def get_tags_in_rxn_numbers(rxn_nums=[], RR_dict=None,
-                            filename='gckpp_Monitor.F90', Mechanism='Halogens',
-                            wd=None,
-                            debug=False):
+def get_tags_in_rxn_numbers(rxn_nums=[], RR_dict=None, Mechanism='Halogens',
+                            filename='gckpp_Monitor.F90', wd=None,
+                            GC_version='v12.9.1', debug=False):
     """
     Get tags in given list of reactions
 
@@ -1208,7 +1312,7 @@ def get_tags_in_rxn_numbers(rxn_nums=[], RR_dict=None,
     # Get dictionary of reactions in Mechanism
     if isinstance(RR_dict, type(None)):
         RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename,
-                                       wd=wd)
+                                       GC_version=GC_version, wd=wd)
     # Loop dictionary of reactions and save those that contain tag
     tagged_rxns = []
     tags_for_rxns = []
@@ -1237,8 +1341,8 @@ def get_tags_in_rxn_numbers(rxn_nums=[], RR_dict=None,
     return dict(list(zip(tagged_rxns, tags_for_rxns)))
 
 
-def get_oxidative_release4specs(filename='gckpp_Monitor.F90',
-                                Mechanism='Halogens', wd=None):
+def get_oxidative_release4specs(filename='gckpp_Monitor.F90', wd=None,
+                                GC_version='v12.9.1', Mechanism='Halogens',):
     """
     Certain species have a fixed concentration in the model, for these speices
     the source value is calculated by the summ of the oxidative release
@@ -1258,7 +1362,7 @@ def get_oxidative_release4specs(filename='gckpp_Monitor.F90',
     specs = ['CHBr3', 'CH3Cl', 'CH2Cl2', 'CHCl3']
     # Get dictionary of reactions in Mechanism
     RR_dict = get_dict_of_KPP_mech(Mechanism=Mechanism, filename=filename,
-                                   wd=wd)
+                                   wd=wd, GC_version=GC_version)
     # Loop species
     RR_rxn_dummies = []
     for spec in specs:
@@ -1272,12 +1376,47 @@ def get_oxidative_release4specs(filename='gckpp_Monitor.F90',
     return RR_rxn_dummies
 
 
-def get_Ox_loss_dicts(fam='LOx', ref_spec='O3',
-                      wd=None, Mechanism='Halogens', rm_strat=False,
-                      weight_by_molecs=True, CODE_wd=None,
-                      dpi=320, suffix='', full_vertical_grid=False,
-                      save_plot=True, show_plot=False,
+def get_Ox_fam_dicts(fam='LOx', ref_spec='O3', GC_version='v12.9.1',
+                     CODE_wd=None, wd=None, Mechanism='Halogens',
                       verbose=True, debug=False):
+    # Get reaction dictionary
+    RR_dict = get_dict_of_KPP_mech(wd=CODE_wd, GC_version=GC_version,
+                                   Mechanism=Mechanism)
+    if debug:
+        print((len(RR_dict), [RR_dict[i] for i in list(RR_dict.keys())[:5]]))
+    # Get tags for family
+    tags_dict = get_tags4family(fam=fam, wd=CODE_wd, RR_dict=RR_dict)
+    tags = list(sorted(tags_dict.values()))
+    tags2_rxn_num = {v: k for k, v in list(tags_dict.items())}
+    if debug:
+        print(tags)
+    # Get stiochiometry of reactions for family
+    RR_dict_fam_stioch = get_stioch4family_rxns(fam=fam,
+                                                RR_dict=RR_dict,
+                                                Mechanism=Mechanism,
+                                                debug=debug)
+    # Get dictionary of families that a tag belongs to
+    fam_dict = get_Ox_fam_based_on_reactants(fam=fam, tags=tags_dict,
+                                             RR_dict=RR_dict, wd=CODE_wd,
+                                             Mechanism=Mechanism,
+                                             GC_version=GC_version,
+                                             debug=debug)
+    # Convert this to a dictionary and return
+    d = {
+        'fam_dict': fam_dict,
+        'RR_dict_fam_stioch': RR_dict_fam_stioch,
+        'RR_dict': RR_dict,
+        'tags2_rxn_num': tags2_rxn_num,
+        'tags': tags,
+        'tags_dict': tags_dict,
+    }
+    return d
+
+
+def get_Ox_fam_dicts_BPCH(fam='LOx', ref_spec='O3', wd=None, CODE_wd=None,
+                          Mechanism='Halogens', weight_by_molecs=True,
+                          rm_strat=False, full_vert_grid=False,
+                          verbose=True, debug=False):
     """
     Get Ox loss data and variables as a dictionary (rxn. by rxn.)
 
@@ -1291,19 +1430,15 @@ def get_Ox_loss_dicts(fam='LOx', ref_spec='O3',
     weight_by_molecs (bool): weight grid boxes by number of molecules
     rm_strat (bool): (fractionally) replace values in statosphere with zeros
     debug, verbose (bool): switches to turn on/set verbosity of output to screen
-    full_vertical_grid (bool): use the full vertical grid for analysis
+    full_vert_grid (bool): use the full vertical grid for analysis
 
     Returns
     -------
     (None)
-
-    Notes
-    -----
-
     """
     # - Get key model variables, model settings, etc
     # Setup dictionary for shared variables
-    Var_rc = get_default_variable_dict(full_vertical_grid=full_vertical_grid)
+    Var_rc = get_default_variable_dict(full_vert_grid=full_vert_grid)
     # Get locations of model output/core
     assert os.path.exists(wd), 'working directory not found @: {}'.format(wd)
     CODE_wd = '/{}/KPP/{}/'.format(CODE_wd, Mechanism)
@@ -1318,59 +1453,44 @@ def get_Ox_loss_dicts(fam='LOx', ref_spec='O3',
         'alt'
     ]
     Data_rc = get_shared_data_as_dict(Var_rc=Var_rc, var_list=var_list)
-    # Get reaction dictionary
-    RR_dict = get_dict_of_KPP_mech(wd=CODE_wd,
-                                   GC_version=Data_rc['GC_version'],
-                                   Mechanism=Mechanism)
-    if debug:
-        print((len(RR_dict), [RR_dict[i] for i in list(RR_dict.keys())[:5]]))
-    # Get tags for family
-    tags_dict = get_tags4family(fam=fam, wd=CODE_wd, RR_dict=RR_dict)
-    tags = list(sorted(tags_dict.values()))
-    tags2_rxn_num = {v: k for k, v in list(tags_dict.items())}
-    if debug:
-        print(tags)
-    # Get stiochiometry of reactions for family
-    RR_dict_fam_stioch = get_stioch4family_rxns(fam=fam,
-                                                RR_dict=RR_dict,
-                                                Mechanism=Mechanism)
+    GC_version = Data_rc['GC_version']
+    # Retrieve the Ox loss information from KPP mechanism as a dictionary
+    Ox_fam_dict = get_Ox_fam_dicts(fam=fam, ref_spec=ref_spec,
+                                   Mechanism=Mechanism,
+                                   wd=wd, CODE_wd=CODE_wd,
+                                   verbose=verbose, debug=debug)
+
     # - Extract data for Ox loss for family from model
-    ars = get_fam_prod_loss4tagged_mech(RR_dict=RR_dict,
-                                        tags=tags, rm_strat=rm_strat,
-                                        Var_rc=Var_rc, Data_rc=Data_rc, wd=wd,
-                                        fam=fam, ref_spec=ref_spec,
-                                        tags2_rxn_num=tags2_rxn_num,
-                                        RR_dict_fam_stioch=RR_dict_fam_stioch,
-                                        weight_by_molecs=weight_by_molecs)
-    # Get dictionary of families that a tag belongs to
-    fam_dict = get_Ox_fam_based_on_reactants(fam=fam, tags=tags_dict,
-                                             RR_dict=RR_dict, wd=CODE_wd,
-                                             Mechanism=Mechanism,
-                                             GC_version=Data_rc['GC_version'])
-    # Get indices of array for family.
+    ars = get_PL_ars4mech_BPCH(Ox_fam_dict=Ox_fam_dict,
+                               rm_strat=rm_strat,
+                               Var_rc=Var_rc, Data_rc=Data_rc,
+                               fam=fam, ref_spec=ref_spec,
+                               weight_by_molecs=weight_by_molecs)
+
+    # Setup lists of sorted family names
     sorted_fam_names = ['Photolysis', 'HO$_{\\rm x}$', 'NO$_{\\rm x}$']
     halogen_fams = ['Chlorine', 'Cl+Br', 'Bromine', 'Br+I', 'Cl+I', 'Iodine', ]
     sorted_fam_names += halogen_fams
-    # - Place all variables/data of share us into a dictionary and return this
-    d = {
-        'sorted_fam_names': sorted_fam_names,
-        'fam_dict': fam_dict,
-        'ars': ars,
-        'RR_dict_fam_stioch': RR_dict_fam_stioch,
-        'RR_dict': RR_dict,
-        'tags2_rxn_num': tags2_rxn_num,
-        'tags': tags,
-        'tags_dict': tags_dict,
-        'Data_rc': Data_rc,
-        'Var_rc': Var_rc,
-        'halogen_fams': halogen_fams,
-    }
-    return d
+    # Place new variables/data to share into a dictionary and return this
+    Ox_fam_dict['sorted_fam_names'] = sorted_fam_names
+    Ox_fam_dict['ars'] = ars
+    Ox_fam_dict['Data_rc'] = Data_rc
+    Ox_fam_dict['Var_rc'] = Var_rc
+    Ox_fam_dict['halogen_fams'] = halogen_fams
+    return Ox_fam_dict
 
 
-def print_lines4species_database_yml(tags, extr_str=''):
+def prt_lines4species_database_yml(tags, extr_str=''):
     """
     Print lines for tags to paste into the species_database.yml file
+
+    Parameters
+    -------
+    tags (list): list of production/loss tags in KPP file and in gckpp.kpp
+
+    Returns
+    -------
+    (None)
     """
     # Create a *.kpp file for lines to be saved to
     FileStr = 'species_database_extra_lines_for_tagged_mech_{}'
@@ -1380,3 +1500,93 @@ def print_lines4species_database_yml(tags, extr_str=''):
     for tag in tags:
         print(pstr1.format(tag), file=a)
         print(pstr2, file=a)
+
+
+def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
+                           rm_strat=True, Mechanism='Halogens',
+                           Ox_fam_dict=None,
+                           weight_by_molecs=False, full_vert_grid=False,
+                           rtn_by_rxn=True, rtn_by_fam=False,
+                           CODE_wd=None,
+                           verbose=True, debug=False):
+    """
+    Build an Ox budget table like table 4 in Sherwen et al 2016b
+
+    Parameters
+    -------
+    fam (str): tagged family to track (already compiled in KPP mechanism)
+    ref_spec (str): reference species to normalise to
+    wd (str): working directory ("wd") of model output
+    CODE_wd (str): root of code directory containing the tagged KPP mechanism
+    rm_strat (bool): (fractionally) replace values in statosphere with zeros
+    Ox_fam_dict (dict), dictionary of Ox loss variables/data (from get_Ox_fam_dicts)
+    Mechanism (str): name of the KPP mechanism (and folder) of model output
+    weight_by_molecs (bool): weight grid boxes by number of molecules
+    full_vert_grid (bool): use the full vertical grid for analysis
+    debug, verbose (bool): switches to turn on/set verbosity of output to screen
+
+    Returns
+    -------
+    (None)
+
+    Notes
+    -----
+     - AC_tools includes equivlent functions for smvgear mechanisms
+    """
+    # - Local variables/ Plot extraction / Settings
+    # Extract variables from data/variable dictionary
+    fam_dict = Ox_fam_dict['fam_dict']
+    ars = Ox_fam_dict['ars']
+    RR_dict_fam_stioch = Ox_fam_dict['RR_dict_fam_stioch']
+    RR_dict = Ox_fam_dict['RR_dict']
+    tags2_rxn_num = Ox_fam_dict['tags2_rxn_num']
+    tags = Ox_fam_dict['tags']
+    tags_dict = Ox_fam_dict['tags_dict']
+    halogen_fams = Ox_fam_dict['halogen_fams']
+    # --- Do analysis on model output
+    # Sum the total mass fluxes for each reaction
+    ars = [i.sum() for i in ars]
+    # Sum all the Ox loss routes
+    total = np.array(ars).sum()
+    # Create a dictionary of values of interest
+    dict_ = {
+        'Total flux': [i.sum(axis=0) for i in ars],
+        'Total of flux (%)': [i.sum(axis=0)/total*100 for i in ars],
+        'Family': [fam_dict[i] for i in tags],
+        'rxn #': [tags2_rxn_num[i] for i in tags],
+        'rxn str': [RR_dict[tags2_rxn_num[i]] for i in tags],
+        'stoich': [RR_dict_fam_stioch[tags2_rxn_num[i]] for i in tags],
+        'tags': tags,
+    }
+    # Create pandas dataframe
+    df = pd.DataFrame(dict_)
+    # Sort the data and have a look...
+    df = df.sort_values('Total flux', ascending=False)
+    if debug:
+        print(df.head())
+    # Sort values again and save...
+    df = df.sort_values(['Family', 'Total flux'], ascending=False)
+    if debug:
+        print(df.head())
+    df.to_csv('Ox_loss_budget_by_rxn_for_{}_mechanism.csv'.format(Mechanism))
+    # Now select the most important routes
+    grp = df[['Family', 'Total flux']].groupby('Family')
+    total = grp.sum().sum()
+    # Print the contribution by family to screen
+    print((grp.sum() / total * 100))
+    # Print the contribution of all the halogen routes
+    hal_LOx = (grp.sum().T[halogen_fams].sum().sum() / total * 100).values[0]
+    if verbose:
+        print(('Total contribution of halogens is: {:.2f} %'.format(hal_LOx)))
+    # Add Halogen total and general total to DataFrame
+    dfFam = grp.sum().T
+    dfFam['Total'] = dfFam.sum().sum()
+    dfFam['Halogens'] = dfFam[halogen_fams].sum().sum()
+    # Update units to Tg O3
+    dfFam = dfFam.T / 1E12
+    # return dictionaries of LOx by reaction or by family (in Tg O3)
+    if rtn_by_rxn:
+        df.loc[:,'Total flux'] = df.loc[:,'Total flux'] /1E12
+        return df
+    if rtn_by_fam:
+        return dfFam
