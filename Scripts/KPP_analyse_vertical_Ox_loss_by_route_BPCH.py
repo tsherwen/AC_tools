@@ -19,11 +19,11 @@ import os
 
 def main(wd=None, CODE_wd=None):
     """
-    Driver for analysis of LOx via KPP in GEOS-Chem
+    Driver for Ox loss analysis via KPP in GEOS-Chem from bpch output
 
     Notes
     -----
-     - comment/uncommet functions as required
+     - comment/uncomment functions as required
     """
     # Manually let locations of Ox loss here
     root = '/users/ts551/scratch/GC/'
@@ -170,6 +170,7 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
                            rm_strat=True, Mechanism='Halogens',
                            Ox_loss_dict=None,
                            weight_by_molecs=False, full_vert_grid=False,
+                           rtn_by_rxn=True, rtn_by_fam=False,
                            CODE_wd=None, verbose=True, debug=False):
     """
     Build an Ox budget table like table 4 in Sherwen et al 2016b
@@ -256,7 +257,8 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
     dfFam = dfFam.T / 1E12
     # return dictionaries of LOx by reaction or by family (in Tg O3)
     if rtn_by_rxn:
-        return df / 1E12
+        df.loc[:,'Total flux'] = df.loc[:,'Total flux'] /1E12
+        return df
     if rtn_by_fam:
         return dfFam
 

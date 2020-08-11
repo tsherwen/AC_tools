@@ -59,6 +59,11 @@ from .planeflight import *
 from .variables import *
 from .bpch2netCDF import convert_to_netCDF
 
+# include the redundant files for now
+from . obsolete.plotting_REDUNDANT import *
+from . obsolete.variables_REDUNDANT import *
+from . obsolete.misc_REDUNDANT import *
+
 
 def get_surface_area(res=None, wd=None, debug=False):
     """
