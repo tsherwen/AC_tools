@@ -65,12 +65,13 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
     import glob
     # Check input
     assert type(wd) == str, 'Working directory (wd) provided must be a string!'
-    # Get files
+    # Get files (and check if the a HEMCO collection is being requested)
     if isinstance(collection, str):
         glob_pattern = '{}/*.{}.*'.format(wd, collection)
-
+        is_HEMCO_collection = ('hemco' in collection.lower())
     else:
         glob_pattern = '{}/{}'.format(wd, file_str)
+        is_HEMCO_collection = ('hemco' in file_str.lower())
     files = glob.glob(glob_pattern)
     assert len(files) >= 1, 'No files found matching-{}'.format(wd+file_str)
     # Sort the files based on their name (which contains a regular datastring)
@@ -80,8 +81,13 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
         FileRootsVar = 'FileRoots'
         df = pd.DataFrame(files)
         df = pd.DataFrame({FileRootsVar:files})
+        # Which date format to look for in filenames?
+        if is_HEMCO_collection:
+            format='%Y%m%d%H%M'
+        else:
+            format='%Y%m%d_%H%Mz'
         # Setup a helper function to extract dates from file strings
-        def get_date_from_filename(x, format='%Y%m%d%H%M'):
+        def get_date_from_filename(x, format=format):
             """
             Extract Dates from filenames
 
@@ -89,7 +95,6 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
             -------
              - It is assumed that the date ends the file string before the
              format identifier
-             - time format is assumed to be YYYYMMDDHHMM
             """
             date_str = x.split('.')[-2]
             dt = datetime_.strptime(date_str, format)
