@@ -1590,3 +1590,73 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
         return df
     if rtn_by_fam:
         return dfFam
+
+
+def GCARR(A0, B0, C0, TEMP=273.15):
+    """
+    Reproduction of GEOS-Chem's KPP function GCARR in Python
+
+    Notes
+    -------
+     - Original function copied below:
+  REAL(kind=dp) FUNCTION AC.GCARR( A0,B0,C0 )
+      REAL A0,B0,C0
+      GCARR =  DBLE(A0) * EXP(DBLE(C0)/TEMP) * (300._dp/TEMP)**DBLE(B0)
+  END FUNCTION GCARR
+    """
+    return float(A0) * np.exp(float(C0)/TEMP) * (300.0/TEMP)**float(B0)
+
+
+def GC_OHCO(A0, B0, C0, NUMDEN=1E4, TEMP=273.15, PRESS=1000):
+    """
+    Reproduction of GEOS-Chem's KPP function GC_OHCO in Python
+
+    Notes
+    -------
+     - Original function copied below:
+  REAL(kind=dp) FUNCTION AC.GC_OHCO( A0,B0,C0 )
+
+    REAL A0,B0,C0,R0
+    REAL KLO1,KLO2,KHI1,KHI2,XYRAT1,XYRAT2,BLOG1,BLOG2,FEXP1,FEXP2
+    REAL KCO1,KCO2,KCO
+
+    R0 =  DBLE(A0) * EXP(DBLE(C0)/TEMP) * (300._dp/TEMP)**DBLE(B0)
+    R0 = R0 * (1.E+0_dp + 0.6e+0_dp*9.871E7_dp*PRESS)
+
+    ! new OH+CO rate from JPL2006.
+    KLO1=5.9E-33_dp*(300._dp/TEMP)**(1.E+0_dp)
+    KHI1=1.1E-12_dp*(300._dp/TEMP)**(-1.3E0_dp)
+    XYRAT1=KLO1*NUMDEN/KHI1
+    BLOG1=LOG10(XYRAT1)
+    FEXP1=1.E+0_dp/(1.E+0_dp+BLOG1*BLOG1)
+    KCO1=KLO1*NUMDEN*0.6**FEXP1/(1.e+0_dp+XYRAT1)
+    KLO2=1.5E-13_dp*(300._dp/TEMP)**(0.E+0_dp)
+    KHI2=2.1e+09_dp *(300._dp/TEMP)**(-6.1E+0_dp)
+    XYRAT2=KLO2*NUMDEN/KHI2
+    BLOG2=LOG10(XYRAT2)
+    FEXP2=1.E+0_dp/(1.E+0_dp+BLOG2*BLOG2)
+    KCO2=KLO2*0.6**FEXP2/(1.e+0_dp+XYRAT2)
+    KCO=KCO1+KCO2
+    GC_OHCO=KCO
+
+  END FUNCTION GC_OHCO
+
+    """
+    R0 = float(A0) * np.exp(float(C0)/TEMP) * (300./TEMP)**float(B0)
+    R0 = R0 * (1.E+0 + 0.6E+0 * 9.871E7 * PRESS)
+
+    # new OH+CO rate from JPL2006.
+    KLO1 = 5.9E-33*(300./TEMP)**(1.E+0)
+    KHI1 = 1.1E-12*(300./TEMP)**(-1.3E0)
+    XYRAT1 = KLO1 * NUMDEN / KHI1
+    BLOG1 = np.log10(XYRAT1)
+    FEXP1 = 1.E+0/(1.E+0 + BLOG1*BLOG1 )
+    KCO1 = KLO1 * NUMDEN * 0.6**FEXP1/(1.e+0+XYRAT1)
+    KLO2 = 1.5E-13 * (300/TEMP)**(0.E+0)
+    KHI2 = 2.1e+09 * (300/TEMP)**(-6.1E+0)
+    XYRAT2 = KLO2*NUMDEN/KHI2
+    BLOG2 = np.log10(XYRAT2)
+    FEXP2 = 1.E+0/(1.E+0+BLOG2*BLOG2)
+    KCO2 = KLO2*0.6**FEXP2/(1.e+0+XYRAT2)
+    KCO = KCO1+KCO2
+    return KCO

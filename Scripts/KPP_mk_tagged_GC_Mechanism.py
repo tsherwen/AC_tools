@@ -201,7 +201,7 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
     re5 = '(\\s+)'    # White Space 2
     rg = re.compile(re1+re2+re3+re4, re.IGNORECASE | re.DOTALL)
     # reactant to use as "family" to search for
-    fams = ' OH ', # OH reactivity
+    fams = 'OH ', # OH reactivity
     for fam in fams:
         for key_ in list(rxn_dicts.keys()):
             df_tmp = rxn_dicts[key_]
