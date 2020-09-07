@@ -2401,7 +2401,7 @@ def plt_box_area_on_global_map(ds=None, var2use='DXYP__DXYP',
     # Force global perspective
     ax.set_global() # this will force a global perspective
     # Remove the colour-bar and force a tighter layout around map
-    fig.delaxes(fig.axes[-1])]
+    fig.delaxes(fig.axes[-1])
     plt.tight_layout()
     # Save to png
     if isinstance(savename, type(None)):
