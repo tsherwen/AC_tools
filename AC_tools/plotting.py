@@ -43,10 +43,10 @@ import scipy
 #from option_d import test_cm as cmd
 
 
-def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson(),
+def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson,
                    save_plot=True, show_plot=False, savename=None, title=None,
                    LatVar='lat', LonVar='lon', fig=None, ax=None, dpi=320,
-                   set_global=True):
+                   set_global=True, buffer_degrees=0, ):
     """
     Plot up a quick spatial plot of data using cartopy
 
@@ -76,13 +76,25 @@ def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson(),
     if isinstance(fig, type(None)):
         fig = plt.figure(figsize=(10, 6))
     if isinstance(ax, type(None)):
-        ax = fig.add_subplot(111, projection=projection, aspect='auto')
+        ax = fig.add_subplot(111, projection=projection(), aspect='auto')
     ds[var2plot].plot.imshow(x=LonVar, y=LatVar, ax=ax,
                              transform=ccrs.PlateCarree())
     # Beautify the figure/plot
     ax.coastlines()
     if set_global:
         ax.set_global()
+    else:
+        x0, x1, y0, y1 = ax.get_extent()
+        if buffer_degrees != 0:
+            lons = ds[LonVar].values
+            lats = ds[LatVar].values
+            x0 = myround(lons.min()-buffer_degrees, buffer_degrees, )
+            x1 = myround(lons.max()+buffer_degrees, buffer_degrees,
+                         round_up=True)
+            y0 = myround(lats.min()-buffer_degrees, buffer_degrees, )
+            y1 = myround(lats.max()+buffer_degrees, buffer_degrees,
+                         round_up=True)
+        ax.set_extent((x0, x1, y0, y1), projection())
     # Add a generic title if one is not provided
     if isinstance(title, type(None)):
         plt.title('Spatial plot of {}'.format(var2plot))
@@ -94,6 +106,7 @@ def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson(),
         plt.savefig(savename+'.png', dpi=dpi)
     if show_plot:
         plt.show()
+    return ax
 
 
 def plt_df_X_vs_Y(df=None, x_var='', y_var='', x_label=None, y_label=None,
@@ -243,6 +256,8 @@ def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
                            stat2plot='50%', title=None,
                            dpi=320, plt_legend=True, units=None,
                            show_plot=False, save_plot=False, verbose=False,
+                           context='paper', font_scale=0.75,
+                           tight_layout=False, use_letters4months=False,
                            debug=False):
     """
     Plot up mulitplot of diel cycle by "season" for given dictionary of DataFrames
@@ -269,22 +284,29 @@ def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
     """
     import seaborn as sns
     sns.set(color_codes=True)
-    sns.set_context("paper", font_scale=0.75)
+    sns.set_context(context, font_scale=font_scale)
     # Local variables
     seasons = ('DJF', 'MAM', 'JJA',  'SON')
+    month2season = np.array([
+        None,
+        'DJF', 'DJF',
+        'MAM', 'MAM', 'MAM',
+        'JJA', 'JJA', 'JJA',
+        'SON', 'SON', 'SON',
+        'DJF'
+    ])
+    season2text = {
+    'DJF':'Dec-Jan-Feb', 'MAM': 'Mar-Apr-May', 'JJA': 'Jun-Jul-Aug', 'SON':'Sep-Oct-Nov', None: None,
+    }
+    if use_letters4months:
+        pass
+    else:
+        seasons = [season2text[i] for i in seasons]
+        month2season = np.array([season2text[i] for i in month2season])
     # Split data by season
     for key_ in list(dfs.keys()):
         # Now assign "Seasons"
-        month_to_season_lu = np.array([
-            None,
-            'DJF', 'DJF',
-            'MAM', 'MAM', 'MAM',
-            'JJA', 'JJA', 'JJA',
-            'SON', 'SON', 'SON',
-            'DJF'
-        ])
-        dfs[key_]['Season'] = month_to_season_lu[dfs[key_].index.month]
-
+        dfs[key_]['Season'] = month2season[dfs[key_].index.month]
     # - Loop seasons and Plot data
     # Setup figure and PDF
     if isinstance(fig, type(None)):
@@ -300,9 +322,9 @@ def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
             ax = fig.add_subplot(2, 2, n_season+1, sharey=ax1)
         else:
             ax = ax1
-        plt_legend = False
+        _plt_legend = False
         if (n_season+1) == len(seasons):
-            plt_legend = True
+            _plt_legend = True
         plt_xlabel = True
         do_not_plt_xlabel_on_subplot = [1, 2]
         if (n_season+1) in do_not_plt_xlabel_on_subplot:
@@ -326,8 +348,10 @@ def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
                 color = None
             # Add a legend to plot?
             legend = False
-            if plt_legend and (n_key == len(list(dfs.keys()))-1):
+            if _plt_legend and (n_key == len(list(dfs.keys()))-1):
                 legend = True
+            if plt_legend == False:
+                legend = False
             # Plot up using the basic plotter function
             BASIC_diel_plot(fig=fig, ax=ax, data=data_, units=units,
                             dates=dates_, label=key_, stat2plot=stat2plot,
@@ -348,6 +372,8 @@ def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
         fig.suptitle(suptitle.format(specname, sub_str))
     else:
         fig.suptitle(title)
+    if tight_layout:
+        plt.tight_layout()
     png_filename = 'Seasonal_diel_{}_{}.png'.format(sub_str, spec)
     if save_plot:
         plt.savefig(png_filename, dpi=dpi)
@@ -429,6 +455,9 @@ def BASIC_diel_plot(fig=None, ax=None, dates=None, data=None, color='red',
     if debug:
         print((df.head(), df.index[:5], df.shape))
     time_labels = df['data'][stat2plot].index.values
+    time_labels = [str(int(i)) for i in time_labels]
+
+
     # make sure the values with leading zeros drop these
     index = [float(i) for i in time_labels]
     if debug:
@@ -2306,3 +2335,54 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3',
     if show_plot:
         plt.show()
 
+
+def plt_box_area_on_global_map(x0=-30, x1=-10, y0=0, y1=25, savename=None,
+                               dpi=320):
+    """
+    Plot a global map with a region (x0,x1,y0,y1) outlined with a box
+    """
+    # Get AC_tools location, then set example data folder location
+    import os
+    import xarray as xr
+    import inspect
+    filename = inspect.getframeinfo(inspect.currentframe()).filename
+    path = os.path.dirname(os.path.abspath(filename))
+    folder = path+'/../data/LM/LANDMAP_LWI_ctm_0125x0125/'
+    # Get coords from LWI 0.125x0.125 data and remove the time dimension
+    ds = xr.open_dataset(folder+'ctm.nc')
+    # - Select the data
+    # Just get an example dataset
+    var2use = 'DXYP__DXYP'
+    ds = ds[[var2use]]
+    # Check input values for lat and lon range to highlight
+    assert y0<y1, 'y0 must be less than y1'
+    assert x0<x1, 'x0 must be less than x1'
+    # Set values region
+    bool1 = ((ds.lon >= x0) & (ds.lon <= x1)).values
+    bool2 = ((ds.lat >= y0) & (ds.lat <= y1)).values
+    # Cut by lon, then lat
+    ds = ds.isel(lon=bool1)
+    ds = ds.isel(lat=bool2)
+    # Set all values to 1
+    arr = ds[var2use].values
+    arr[:] = 1
+    ds[var2use].values = arr
+    # Plot the data
+    projection = ccrs.Robinson()
+    fig = plt.figure(figsize=(10, 6))
+    ax = fig.add_subplot(111, projection=projection, aspect='auto', alpha=0.5)
+    LatVar = 'lat'
+    LonVar = 'lon'
+    ds[var2use].plot.imshow(x=LonVar, y=LatVar, ax=ax,
+                             transform=ccrs.PlateCarree())
+    # Beautify the figure/plot
+    ax.coastlines()
+    # Force global perspective
+    ax.set_global() # this will force a global perspective
+    # Remove the colourbar
+    fig.delaxes(fig.axes[-1])
+    plt.tight_layout()
+    # Save
+    if isinstance(savename, type(None)):
+        savename = 'spatial_plot_of_region'
+    plt.savefig(savename+'.png', dpi=dpi)
