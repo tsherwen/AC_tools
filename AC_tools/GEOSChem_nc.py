@@ -47,6 +47,7 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
                              parallel=True, data_vars="minimal",
                              coords="minimal", compat="override",
                              combine='by_coords',
+                             open_with_coords_dropped=False,
                              debug=False):
     """
     Extract GEOS-Chem NetCDF files that match file string format to a xr.dataset
@@ -103,14 +104,22 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
         df[dtVar] = df[FileRootsVar].map(get_date_from_filename)
         bool = df[dtVar].isin(dates2use)
         files = list(df.loc[bool,FileRootsVar].values)
-    # open all of these files as single Dataset
-    # NOTE: Updated to use faster opening settings for files sharing the same coords
-    # https://github.com/pydata/xarray/issues/1823
-    ds = xr.open_mfdataset(files,
-#                           concat_dim='time',
-                           combine=combine,
-                           data_vars=data_vars, coords=coords,
-                           compat=compat, parallel=parallel)
+    # Open all of these files as single Dataset
+    if open_with_coords_dropped:
+        def drop_all_coords(ds):
+            return ds.reset_coords(drop=True)
+        ds = xr.open_mfdataset(files, combine='by_coords',
+                               preprocess=drop_all_coords)
+    else:
+        # NOTE: Updated to use faster opening settings for files sharing the same coords
+        # https://github.com/pydata/xarray/issues/1823
+        ds = xr.open_mfdataset(files,
+    #                           concat_dim='time',
+                               combine=combine,
+                               data_vars=data_vars, coords=coords,
+                               compat=compat, parallel=parallel)
+        #
+
     return ds
 
 
