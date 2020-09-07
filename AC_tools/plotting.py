@@ -10,6 +10,9 @@ NOTE(S):
  - Where external code is used credit is given.
 """
 # - Required modules:
+import os
+import xarray as xr
+import inspect
 import sys
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -2336,25 +2339,45 @@ def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3',
         plt.show()
 
 
-def plt_box_area_on_global_map(x0=-30, x1=-10, y0=0, y1=25, savename=None,
+def plt_box_area_on_global_map(ds=None, var2use='DXYP__DXYP',
+                               LatVar='lat', LonVar='lon',
+                               x0=-30, x1=-10, y0=0, y1=25,
+                               savename=None, cmap=plt.get_cmap('viridis'),
+                               projection=ccrs.Robinson(), alpha=0.5,
+                               aspect='auto', figsize=(10, 6),
                                dpi=320):
     """
     Plot a global map with a region (x0,x1,y0,y1) outlined with a box
+
+    Parameters
+    -------
+    x0, x1 (float): longitude min and max to set box extents to
+    y0, y1 (float): latitude min and max to set box extents to
+    ds (xr.Dataset): dataset to use to for plotting global map
+    var2use (str): variable to use from dataset (ds)
+    dpi (int): resolution to use for saved image (dots per square inch)
+    savename (str): name for file to save image to
+    cmap (cmap object): colour map to use for plotting
+    aspect (str): aspect ratio for plot
+    alpha (float): transparency of plotted box
+    figsize (tuple): figure size to use for plot
+
+    Returns
+    -------
+    (None)
     """
-    # Get AC_tools location, then set example data folder location
-    import os
-    import xarray as xr
-    import inspect
-    filename = inspect.getframeinfo(inspect.currentframe()).filename
-    path = os.path.dirname(os.path.abspath(filename))
-    folder = path+'/../data/LM/LANDMAP_LWI_ctm_0125x0125/'
-    # Get coords from LWI 0.125x0.125 data and remove the time dimension
-    ds = xr.open_dataset(folder+'ctm.nc')
+    # Use a generic dataset from AC_tools data files if not provide with one
+    if isinstance(ds, type(None)):
+        # Get AC_tools location, then set example data folder location
+        filename = inspect.getframeinfo(inspect.currentframe()).filename
+        path = os.path.dirname(os.path.abspath(filename))
+        folder = path+'/../data/LM/LANDMAP_LWI_ctm_0125x0125/'
+        # Get coords from LWI 0.125x0.125 data and remove the time dimension
+        ds = xr.open_dataset(folder+'ctm.nc')
     # - Select the data
     # Just get an example dataset
-    var2use = 'DXYP__DXYP'
     ds = ds[[var2use]]
-    # Check input values for lat and lon range to highlight
+    # Check input values for lat and lon range to plotting box extent
     assert y0<y1, 'y0 must be less than y1'
     assert x0<x1, 'x0 must be less than x1'
     # Set values region
@@ -2368,21 +2391,19 @@ def plt_box_area_on_global_map(x0=-30, x1=-10, y0=0, y1=25, savename=None,
     arr[:] = 1
     ds[var2use].values = arr
     # Plot the data
-    projection = ccrs.Robinson()
-    fig = plt.figure(figsize=(10, 6))
-    ax = fig.add_subplot(111, projection=projection, aspect='auto', alpha=0.5)
-    LatVar = 'lat'
-    LonVar = 'lon'
-    ds[var2use].plot.imshow(x=LonVar, y=LatVar, ax=ax,
+    fig = plt.figure(figsize=figsize)
+    ax = fig.add_subplot(111, projection=projection, aspect=aspect,
+                         alpha=alpha)
+    ds[var2use].plot.imshow(x=LonVar, y=LatVar, ax=ax, cmap=cmap,
                              transform=ccrs.PlateCarree())
     # Beautify the figure/plot
     ax.coastlines()
     # Force global perspective
     ax.set_global() # this will force a global perspective
-    # Remove the colourbar
-    fig.delaxes(fig.axes[-1])
+    # Remove the colour-bar and force a tighter layout around map
+    fig.delaxes(fig.axes[-1])]
     plt.tight_layout()
-    # Save
+    # Save to png
     if isinstance(savename, type(None)):
         savename = 'spatial_plot_of_region'
     plt.savefig(savename+'.png', dpi=dpi)
