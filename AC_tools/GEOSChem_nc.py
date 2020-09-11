@@ -584,7 +584,9 @@ def convert_pyGChem_iris_ds2COARDS_ds(ds=None, transpose_dims=True):
 
 
 def convert_HEMCO_ds2Gg_per_yr(ds, vars2convert=None, var_species_dict=None,
-                               output_freq='End', verbose=False, debug=False):
+                               output_freq='End',
+                               convert_unaveraged_time=False,
+                               verbose=False, debug=False):
     """
     Convert emissions in HEMCO dataset to mass/unit time
 
@@ -632,18 +634,21 @@ def convert_HEMCO_ds2Gg_per_yr(ds, vars2convert=None, var_species_dict=None,
         elif ds[var_].units == 'kg/m2/s':
             arr = arr * ds['AREA']
             # now remove seconds
-            if output_freq == 'Hourly':
-                arr = arr*60.*60.
-            elif output_freq == 'Daily':
-                arr = arr*60.*60.*24.
-            elif output_freq == 'Weekly':
-                arr = arr*60.*60.*24.*(365./52.)
-            elif (output_freq == 'Monthly') or (output_freq == 'End'):
-                arr = arr*60.*60.*24.*(365./12.)
+            if convert_unaveraged_time:
+                if output_freq == 'Hourly':
+                    arr = arr*60.*60.
+                elif output_freq == 'Daily':
+                    arr = arr*60.*60.*24.
+                elif output_freq == 'Weekly':
+                    arr = arr*60.*60.*24.*(365./52.)
+                elif (output_freq == 'Monthly') or (output_freq == 'End'):
+                    arr = arr*60.*60.*24.*(365./12.)
+                else:
+                    print('WARNING: ({}) output convert. unknown'.format(
+                        output_freq))
+                    sys.exit()
             else:
-                print('WARNING: ({}) output convert. unknown'.format(
-                    output_freq))
-                sys.exit()
+                arr = arr*60.*60.*24.*365.
         elif ds[var_].units == 'kg':
             pass  # units are already in kg .
         else:
