@@ -660,7 +660,8 @@ def get_spec_properties():
     pass
 
 def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
-                C=False, Br=False, Cl=False, S=False, ref_spec=None, debug=False):
+                C=False, Br=False, Cl=False, S=False, ref_spec=None,
+                debug=False):
     """
     Returns unit equivalent of X ( e.g. I ) for a given species. This can be automatically
     set by providing a reference species or by setting boolean input parametiers.
@@ -1229,7 +1230,7 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
         'IxOy': ['IO', 'OIO',  'I2O2', 'I2O3', 'I2O4'],
         'Iy+AERO': [ \
             'I2', 'HOI', 'IO', 'OIO', 'HI', 'INO', 'IONO', 'IONO2', 'I2O2', \
-            'I2O3', 'I2O4', 'I', ]+['ICl', 'IBr']+['AERI'+'ISALA'+'ISALC'],
+            'I2O3', 'I2O4', 'I', ]+['ICl', 'IBr']+['AERI','ISALA','ISALC'],
         'Iy1.1': [ \
             'I2', 'HOI', 'IO', 'OIO', 'HI', 'IONO', 'IONO2', 'I2O2', \
             'I2O4', 'I', 'INO'],
@@ -1495,3 +1496,22 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
         return GC_var_dict[input_x]
 
 
+def get_conversion_factor_kgX2kgREF(spec=None, ref_spec=None, stioch=None,
+                                    debug=False):
+    """
+    Return conversion factor for mass (e.g. kg) X to mass ref_spec
+    """
+    # Get the reference species if not provided and calculate the mass ratio
+    if isinstance(ref_spec, type(None)):
+        ref_spec = get_ref_spec(spec)
+        if debug:
+            print("ref_spec for '{}': {}".format(spec, ref_spec))
+    factor = 1/species_mass(spec)*species_mass(ref_spec)
+    # Consider if there is a stoichiometry between ref_spec and species
+    if isinstance(stioch, type(None)):
+        stioch = spec_stoich(spec, ref_spec=ref_spec)
+        if debug:
+            print("stoich for '{}': {}".format(spec, stioch))
+    if stioch != 1.0:
+        factor = factor * stioch
+    return factor

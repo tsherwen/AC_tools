@@ -130,7 +130,8 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None,
                        sum_patially=True, rm_trop=True, use_time_in_trop=True,
                        trop_mask=None, spec_conc_prefix='SpeciesConc_',
                        time_in_trop_var='N/A', vars2use=None,
-                       sum_spatially=True
+                       sum_spatially=True,
+                       debug=False,
                        ):
     """
     Get Tropospheric burden for given/or all species in dataset
@@ -172,7 +173,9 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None,
     # Create mask for stratosphere if not provided
     if isinstance(trop_mask, type(None)) and not use_time_in_trop:
         trop_mask = create4Dmask4trop_level(StateMet=StateMet)
-    # only allow "SpeciesConc" species
+    # Only allow "SpeciesConc" species
+    ass_Str = 'WARNING: Duplicates found in vars2use list!'
+    assert len(set(vars2use)) == len(vars2use), ass_Str
     if isinstance(vars2use, type(None)):
         vars2use = [i for i in dsL.data_vars if 'SpeciesConc' in i]
     dsL = dsL[vars2use]
@@ -183,19 +186,19 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None,
         for spec_var in vars2use:
             # Remove diagnostic prefix from chemical species
             spec = spec_var.replace(spec_conc_prefix, '')
+            if debug:
+                PStr = 'Attempting in ds conversion of {} ({})'
+                print( PStr.format(spec, spec_var) )
             # Check units
             SpecUnits = dsL[spec_var].units
             MixingRatioUnits = MXUnits == SpecUnits
             assert_str = "Units must be in '{}' terms! (They are: '{}')"
             assert MixingRatioUnits, assert_str.format(MXUnits, SpecUnits)
             # v/v * (mass total of air (kg)/ 1E3 (converted kg to g)) = moles of tracer
-            dsL[spec_var] = dsL[spec_var] * \
-                (AirMass*1E3 / constants('RMM_air'))
+            conversion_factor = (AirMass*1E3 / constants('RMM_air'))
+            dsL[spec_var] = dsL[spec_var] * conversion_factor
             # Convert moles to mass (* RMM) , then to Gg
             dsL[spec_var] = dsL[spec_var] * float(species_mass(spec)) / 1E9
-        # Return values averaged over time if requested
-        if avg_over_time:
-            dsL = dsL.mean(dim='time')
         # Remove the tropospheric values?
         if rm_trop:
             # Loop by spec
@@ -219,9 +222,6 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None,
         dsL[spec_var] = dsL[spec_var] * (AirMass*1E3 / constants('RMM_air'))
         # Convert moles to mass (* RMM) , then to Gg
         dsL[spec_var] = dsL[spec_var] * float(species_mass(spec)) / 1E9
-        # Return values averaged over time if requested
-        if avg_over_time:
-            dsL = dsL.mean(dim='time')
         # remove the tropospheric values?
         if rm_trop:
             # Loop by spec
@@ -231,6 +231,9 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None,
             else:
                 for spec_var in vars2use:
                     dsL[spec_var] = dsL[spec_var].where(trop_mask)
+    # Return values averaged over time if requested
+    if avg_over_time:
+        dsL = dsL.mean(dim='time')
     # Sum the values spatially?
     if sum_spatially:
         dsL = dsL.sum()
@@ -453,6 +456,42 @@ def get_DryDep_ds(file_str='GEOSChem.DryDep.*', wd=None,
                                     dates2use=dates2use)
 
 
+def get_WetLossConv_ds(file_str='GEOSChem.WetLossConv.*', wd=None,
+                  dates2use=None):
+    """
+    Wrapper to get NetCDF Wet Loss via Convection output as a dataset
+
+    Parameters
+    ----------
+    wd (str): Specify the wd to get the results from a run.
+    file_str (str): a str for file format with wildcards (?, *)
+
+    Returns
+    -------
+    (dataset)
+    """
+    return get_GEOSChem_files_as_ds(file_str=file_str, wd=wd,
+                                    dates2use=dates2use)
+
+
+def get_WetLossLS_ds(file_str='GEOSChem.WetLossLS.*', wd=None,
+                  dates2use=None):
+    """
+    Wrapper to get Wet Loss via large-scale Convection NetCDF output as a ds
+
+    Parameters
+    ----------
+    wd (str): Specify the wd to get the results from a run.
+    file_str (str): a str for file format with wildcards (?, *)
+
+    Returns
+    -------
+    (dataset)
+    """
+    return get_GEOSChem_files_as_ds(file_str=file_str, wd=wd,
+                                    dates2use=dates2use)
+
+
 def get_ProdLoss_ds(file_str='GEOSChem.ProdLoss.*', wd=None,
                     dates2use=None):
     """
@@ -545,7 +584,9 @@ def convert_pyGChem_iris_ds2COARDS_ds(ds=None, transpose_dims=True):
 
 
 def convert_HEMCO_ds2Gg_per_yr(ds, vars2convert=None, var_species_dict=None,
-                               output_freq='End', verbose=False, debug=False):
+                               output_freq='End',
+                               convert_unaveraged_time=False,
+                               verbose=False, debug=False):
     """
     Convert emissions in HEMCO dataset to mass/unit time
 
@@ -593,18 +634,21 @@ def convert_HEMCO_ds2Gg_per_yr(ds, vars2convert=None, var_species_dict=None,
         elif ds[var_].units == 'kg/m2/s':
             arr = arr * ds['AREA']
             # now remove seconds
-            if output_freq == 'Hourly':
-                arr = arr*60.*60.
-            elif output_freq == 'Daily':
-                arr = arr*60.*60.*24.
-            elif output_freq == 'Weekly':
-                arr = arr*60.*60.*24.*(365./52.)
-            elif (output_freq == 'Monthly') or (output_freq == 'End'):
-                arr = arr*60.*60.*24.*(365./12.)
+            if convert_unaveraged_time:
+                if output_freq == 'Hourly':
+                    arr = arr*60.*60.
+                elif output_freq == 'Daily':
+                    arr = arr*60.*60.*24.
+                elif output_freq == 'Weekly':
+                    arr = arr*60.*60.*24.*(365./52.)
+                elif (output_freq == 'Monthly') or (output_freq == 'End'):
+                    arr = arr*60.*60.*24.*(365./12.)
+                else:
+                    print('WARNING: ({}) output convert. unknown'.format(
+                        output_freq))
+                    sys.exit()
             else:
-                print('WARNING: ({}) output convert. unknown'.format(
-                    output_freq))
-                sys.exit()
+                arr = arr*60.*60.*24.*365.
         elif ds[var_].units == 'kg':
             pass  # units are already in kg .
         else:
@@ -777,6 +821,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     dsD = [GetSpeciesConcDataset(wd=run_dict[run]) for run in run_names]
     dsD = dict(zip(run_names, dsD))
     # - Get burdens for core species
+    avg_over_time = True # Note: burdens area averaged overtime
     core_burden_specs = ['O3', 'CO', 'NO', 'NO2']
     specs2use = core_burden_specs+extra_burden_specs
     prefix = 'SpeciesConc_'
@@ -786,6 +831,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
         ds = dsD[run]#.mean(dim='time', keep_attrs=True)
         S = get_Gg_trop_burden(ds, vars2use=vars2use, StateMet=StateMet,
                                use_time_in_trop=use_time_in_trop,
+                               avg_over_time=avg_over_time,
                                rm_trop=rm_trop)
         # convert to ref spec equivalent (e.g. N for NO2, C for ACET)
         for spec in specs2use:

@@ -1049,7 +1049,8 @@ def calc_surface_area_in_grid(res='1x1', lon_e=None, lat_e=None,
 
 
 def get_chem_fam_v_v_X(wd=None, fam='Iy', res='4x5', ver='3.0', specs=None,
-                       trop_limit=True, N=False, I=False, Cl=False, Br=False, t_ps=None,
+                       trop_limit=True, N=False, I=False, Cl=False, Br=False,
+                       t_ps=None,
                        a_m=None,
                        vol=None, verbose=True, rm_strat=False, debug=False):
     """
@@ -1074,8 +1075,8 @@ def get_chem_fam_v_v_X(wd=None, fam='Iy', res='4x5', ver='3.0', specs=None,
     if isinstance(specs, type(None)):
         # get species in family
         d = {
-            'NOy': 'N_specs', 'Iy': 'Iy',  'Bry': 'Bry', 'Cly': 'Cly', 'HOx': 'HOx',
-            'SOx': 'SOx', 'NOx': 'NOx'
+            'NOy': 'N_specs', 'Iy': 'Iy',  'Bry': 'Bry', 'Cly': 'Cly',
+            'HOx': 'HOx', 'SOx': 'SOx', 'NOx': 'NOx'
         }
         specs = GC_var(d[fam])
     # Use correct stiochmetry
@@ -1314,8 +1315,11 @@ def get_mod_WIND_dir(sdate=datetime.datetime(2012, 8, 1, 0),
         #                loc=loc, spec=spec, scale=scale,adjustby=adjustby, \
         #                period=period, units=None, debug=debug)
         data, dates, units = get_NetCDF_mod_data(sdate=sdate,
-                                                 edate=edate, loc=loc, spec=spec, scale=scale,
-                                                 adjustby=adjustby, period=period, EOHemisions=True,
+                                                 edate=edate, loc=loc,
+                                                 spec=spec, scale=scale,
+                                                 adjustby=adjustby,
+                                                 period=period,
+                                                 EOHemisions=True,
                                                  units=None, debug=debug)
         datal += [data]
     # Make dataframe to allow for function mapping
@@ -1352,7 +1356,8 @@ def get_gc_months(wd=None, filename='ctm.nc',
 
 
 def get_gc_datetime(wd=None, spec='O3', cat='IJ-AVG-$',
-                    filename='ctm.nc', date_str='hours since %Y-%m-%d %H:%M:%S',
+                    filename='ctm.nc',
+                    date_str='hours since %Y-%m-%d %H:%M:%S',
                     verbose=False, debug=False):
     """
     Return list of months in GEOS-Chem output (ctm.bpch or NetCDF)
@@ -1431,7 +1436,8 @@ def get_gc_datetime(wd=None, spec='O3', cat='IJ-AVG-$',
 
 
 def get_frequency_of_model_output(wd=None, months=None, years=None,
-                                  datetimes=None, filename='ctm.nc', debug=False):
+                                  datetimes=None, filename='ctm.nc',
+                                  debug=False):
     """
     Get frequency of GEOS-Chem model output (e.g. monthly, weekly, daily )
 
@@ -1575,11 +1581,15 @@ def get_frequency_of_model_output(wd=None, months=None, years=None,
 
 
 def get_CH4_lifetime(wd=None, res='4x5',
-                     vol=None, a_m=None, t_ps=None, K=None, t_lvl=None, n_air=None,
+                     vol=None, a_m=None, t_ps=None, K=None, t_lvl=None,
+                     n_air=None,
                      years=None, months=None, monthly=False, trop_limit=True,
-                     use_OH_from_geos_log=False, average_value=True, LCH4_Cl=None,
-                     use_time_in_trop=True, masktrop=False, include_Cl_ox=False,
-                     OHVar='CHEM_L_S__OH', ClVar='IJ_AVG_S__Cl', TempVar='DAO_3D_S__TMPU',
+                     use_OH_from_geos_log=False, average_value=True,
+                     LCH4_Cl=None,
+                     use_time_in_trop=True, masktrop=False,
+                     include_Cl_ox=False,
+                     OHVar='CHEM_L_S__OH', ClVar='IJ_AVG_S__Cl',
+                     TempVar='DAO_3D_S__TMPU',
                      TimeInTropVar='TIME_TPS__TIMETROP',
                      RateCl_CH4Var='PORL_L_S__PD354',
                      TropLevelVar='TR_PAUSE__TP_LEVEL',
@@ -1932,7 +1942,8 @@ def spec_dep(wd=None, spec='O3', s_area=None, months=None,
     arr = get_GC_output(wd, category='DRYD-FLX', species=spec+'df')
     DebugStr = 'arr (len=={}) descrp: {}'
     logging.debug(DebugStr.format(len(arr), *[str(ii)
-                                              for ii in [(i.shape, i.sum(), i.mean())
+                                              for ii in
+                                              [(i.shape, i.sum(), i.mean())
                                                          for i in [arr]]])
                   )
     # Convert to Gg "Ox" (Gg X /s)
@@ -1952,7 +1963,8 @@ def spec_dep(wd=None, spec='O3', s_area=None, months=None,
 
 
 def molec_cm2_s_2_Gg_Ox_np(arr, spec='O3', s_area=None,
-                           Iodine=False, res='4x5', year_eq=False, debug=False):
+                           Iodine=False, res='4x5', year_eq=False,
+                           debug=False):
     """
     Convert 2D depositional array from [molec/cm2/s] to Gg Ox yr^-1
 
@@ -2001,7 +2013,8 @@ def molec_cm2_s_2_Gg_Ox_np(arr, spec='O3', s_area=None,
     return arr
 
 
-def get_DU_mean(spec='O3', s_area=None, a_m=None, t_p=None, O3_arr=None, wd=None,
+def get_DU_mean(spec='O3', s_area=None, a_m=None, t_p=None, O3_arr=None,
+                wd=None,
                 area_weight=True, res='4x5', trop_limit=True, debug=False):
     """
     Get mean DU value weighed by grid box area
@@ -2123,7 +2136,8 @@ def get_POxLOx(ctms=None, vol=None, all_data=False, t_p=None, ver='1.6',
 def get_wet_dep(months=None, years=None, vol=None,
                 scale=1E9, s_area=None, res='4x5', wd=None, specs=None,
                 Iodine=False, all_wdep=False, sep_rxn=False, ref_spec=None,
-                ver='1.6', trop_limit=True, output_freq='Monthly', debug=False):
+                ver='1.6', trop_limit=True, output_freq='Monthly',
+                debug=False):
     """
     Extract wet deposition for given species in terms of X Gg of ref_spec.
 
@@ -2215,8 +2229,10 @@ def get_wet_dep(months=None, years=None, vol=None,
 
 
 def molec_weighted_avg_BPCH(arr, wd=None, vol=None, t_p=None,
-                       trop_limit=True, multiply_method=False, rm_strat=True, molecs=None,
-                       weight_lon=False, weight_lat=False, LON_axis=0, LAT_axis=1,
+                       trop_limit=True, multiply_method=False, rm_strat=True,
+                       molecs=None,
+                       weight_lon=False, weight_lat=False, LON_axis=0,
+                       LAT_axis=1,
                        n_air=None,
                        annual_mean=True, res='4x5', debug=False):
     """
@@ -2422,7 +2438,8 @@ def convert_v_v2ugm3(arr, wd=None, spec='AERI', trop_limit=True,
 
 
 def prt_seaonal_values(arr=None, res='4x5', area_weight=True, zonal=False,
-                       region='All', monthly=False, mask3D=True, trop_limit=True,
+                       region='All', monthly=False, mask3D=True,
+                       trop_limit=True,
                        prt_by_3D_region=False, hPa=None, wd=None,
                        verbose=True, debug=False):
     """ Print zonal/surface area weighted values for seasons """
@@ -2534,7 +2551,8 @@ def prt_seaonal_values(arr=None, res='4x5', area_weight=True, zonal=False,
 
 
 def fam_data_extractor(wd=None, fam=None, trop_limit=True, ver='3.0',
-                       annual_mean=True, t_ps=None, a_m=None, vol=None, res='4x5',
+                       annual_mean=True, t_ps=None, a_m=None, vol=None,
+                       res='4x5',
                        title=None, rtn_list=False, use_time_in_trop=True,
                        multiply_method=True, rtn_specs=False, verbose=False,
                        rtn_units=False,
@@ -3459,7 +3477,8 @@ def convert_molec_cm3_2_v_v(arr=None, wd=None, vol=None, a_m=None,
 
 
 def mask4troposphere(ars=[], wd=None, t_ps=None, trop_limit=False,
-                     t_lvl=None, masks4stratosphere=False, use_time_in_trop=True,
+                     t_lvl=None, masks4stratosphere=False,
+                     use_time_in_trop=True,
                      multiply_method=True, res='4x5', debug=False):
     """ Mask for the troposphere using either the time in troposphere
     diagnostic ( use_time_in_trop=True ) or troposphere level
@@ -4142,6 +4161,8 @@ def concvert_df_VOC_C2v(df=None, verbose=True):
 
     Notes
     -------
+     - This function should not be used in GEOS-Chem v13+, as carbon units
+    have been retired
     """
     # List of GEOS-Chem pptC/ppbC species
     C_equiv_species = [
@@ -4716,7 +4737,8 @@ def get_general_stats4run_dict_as_df_bpch(run_dict=None, extra_str='',
     try:
         CH4_lifetime_varname = 'CH4 lifetime (yr)'
         ars = [get_CH4_lifetime(wd=i, use_OH_from_geos_log=False, K=K,
-                                t_ps=t_p, average_value=True, use_time_in_trop=True,
+                                t_ps=t_p, average_value=True,
+                                use_time_in_trop=True,
                                 a_m=a_m)
                for i in wds]
         df[CH4_lifetime_varname] = ars
