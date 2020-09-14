@@ -33,6 +33,7 @@ def main(wd=None, CODE_wd=None, verbose=False, debug=False):
     CODE_wd = root + '/Code/Code.BleedingEdge/'
     wd = root + '/rundirs/'
     wd += 'merra2_4x5_standard.v12.9.1.BASE.Oi.MacDonald2014.tagged/'
+    wd += '/OutputDir/'
 #    Mechanism = 'Tropchem'
     Mechanism = 'Standard'
     # Get locations of model output/core
@@ -50,47 +51,47 @@ def main(wd=None, CODE_wd=None, verbose=False, debug=False):
     full_vert_grid = True
     VarDict = AC.get_default_variable_dict(full_vert_grid=full_vert_grid,
                                            wd=wd)
-
-    # Get the prod/loss netCDFs
-    dsPL = get_ProdLoss_ds(wd=wd)
-
     # Now Get the StateMet object... for time in troposphere diagnostic
-
+    StateMet = AC.get_StateMet_ds(wd=wd)
 
     # - KPP mechanism
+    # - Analyse the Ox loss budget's numerical terms
     # Get the dictionary of the KPP mechanism.
     Ox_fam_dict = AC.get_Ox_fam_dicts(fam=fam, ref_spec=ref_spec,
                                       Mechanism=Mechanism,
+#                                      tag_prefix=tag_prefix,
                                       wd=wd, CODE_wd=CODE_wd,
+                                      StateMet=StateMet,
+                                      rm_strat=True,
+                                      weight_by_molecs=True,
+                                      )
+
+    LatLonAlt_dict = AC.gchemgrid(rtn_dict=True)
+    alt_array = LatLonAlt_dict['c_km_geos5']
+    # Plot vertical odd oxygen (Ox) loss via route (chemical family)
+    suffix = 'v12.9.1_.png'
+    AC.plot_vertical_fam_loss_by_route(Ox_fam_dict=Ox_fam_dict,
+                                       alt_array=alt_array,
+                                       Mechanism=Mechanism,
+                                       suffix=suffix)
+
+    # - Analyse the Ox loss budget's numerical terms
+    # Get the dictionary of the KPP mechanism.
+    Ox_fam_dict = AC.get_Ox_fam_dicts(fam=fam, ref_spec=ref_spec,
+                                      Mechanism=Mechanism,
+#                                      tag_prefix=tag_prefix,
+                                      wd=wd, CODE_wd=CODE_wd,
+                                      StateMet=StateMet,
+                                      rm_strat=True,
+                                      weight_by_molecs=False,
                                       )
 
 
-    # - Now process the tagged model output using the info extracted from KPP
-    #
-    # Convert the units from molec/cm3/s to Gg/s
-
-    # Update for stoichiometry of the reaction routes
-
-    # If requested, remove the troposphere
-
-    # If monthly output, scale to once per month?
-    # For now, just use the average over time?
-    # NO. (as later functions require by month)
-
-    #
-    ars = get_PL_ars4mech_NetCDF(wd=wd,
-                                )
-
-    # Add this to a common KPP/model dictionary and pass this to a function to be analysed
-    Ox_loss_dict['ars'] = ars
-
-    # - Now plot up/do analysis
-
-    # Plot vertical odd oxygen (Ox) loss via route (chemical family)
-    plot_vertical_fam_loss_by_route(Ox_loss_dict=Ox_loss_dict,
-                                    Mechanism=Mechanism)
     # Analyse odd oxygen (Ox) loss budget via route (chemical family)
-    calc_fam_loss_by_route(Ox_loss_dict=Ox_loss_dict, Mechanism=Mechanism)
+    suffix = 'v12.9.1'
+    df = AC.calc_fam_loss_by_route(Ox_fam_dict=Ox_fam_dict,
+                                   Mechanism=Mechanism,
+                                   suffix=suffix)
 
 
 
