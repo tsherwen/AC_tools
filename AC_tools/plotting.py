@@ -49,7 +49,8 @@ import scipy
 def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson,
                    save_plot=True, show_plot=False, savename=None, title=None,
                    LatVar='lat', LonVar='lon', fig=None, ax=None, dpi=320,
-                   set_global=True, buffer_degrees=0, ):
+                   set_global=True, buffer_degrees=0,
+                   verbose=False, debug=False, **kwargs):
     """
     Plot up a quick spatial plot of data using cartopy
 
@@ -70,18 +71,30 @@ def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson,
     Returns
     -------
     (None)
+
+    Notes
+    -------
+     - pass customisation for matplotlib via **kwargs (to 'plot.imshow')
     """
     # Use the 1st data variable if not variable given
     if isinstance(var2plot, type(None)):
-        print('WARNING: No variable to plot was set (var2plot), trying 1st data_var')
+        print("WARNING: No 'var2plot' set, trying 1st data_var")
         var2plot = list(ds.data_vars)[0]
     # Setup figure and axis and plot
     if isinstance(fig, type(None)):
         fig = plt.figure(figsize=(10, 6))
     if isinstance(ax, type(None)):
         ax = fig.add_subplot(111, projection=projection(), aspect='auto')
+    # print out the min and max of plotted values
+    if verbose:
+        Pstr = "In spatial plot of {}, min={} and max={}"
+        min_ = float(ds[var2plot].values.min())
+        max_ = float(ds[var2plot].values.max())
+        print(Pstr.format(var2plot, min_, max_ ) )
+    # Call plot via imshow...
     ds[var2plot].plot.imshow(x=LonVar, y=LatVar, ax=ax,
-                             transform=ccrs.PlateCarree())
+                             transform=ccrs.PlateCarree(),
+                             **kwargs)
     # Beautify the figure/plot
     ax.coastlines()
     if set_global:
