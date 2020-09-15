@@ -943,3 +943,73 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     return df
 
 
+def add_molec_den2ds(ds, MolecVar='Met_MOLCES', AirDenVar='Met_AIRDEN'):
+    """
+    Add molecules/cm3 to xr.dataset (must contain AirDenVar)
+    """
+    # Calculate number of molecules
+    try:
+        ds[MolecVar]
+    except KeyError:
+        RMM_air = constants('RMM_air') / 1E3 # g/mol => kg/mol
+        ds[MolecVar] = ds[AirDenVar].copy() / 1E6 # kg/m3 => kg/cm3
+        values = ds[MolecVar].values
+        values = values / RMM_air  # kg/cm3 / kg/mol
+        values = values * constants('AVG') # mol/cm3 => molecules/cm3
+        ds[MolecVar].values = values
+    return ds
+
+
+def add_Cly_Bry_Iy_2ds(ds=None, prefix='SpeciesConc_',
+                       add_ind_specs2ds=False, verbose=False):
+    """
+    Add all Xy (X=Cl, Br, I) variables to xr.dataset (e.g. SpeciesConc* )
+    """
+    fams = 'Cly', 'Bry', 'Iy'
+    for fam in fams:
+        ds = add_Xy_2ds(ds, var2add=fam, prefix=prefix,
+                        add_ind_specs2ds=add_ind_specs2ds,
+                        verbose=verbose)
+    return ds
+
+
+def add_Xy_2ds(ds=None, var2add='Cly', prefix='SpeciesConc_',
+               add_ind_specs2ds=False,  verbose=False):
+    """
+    Add an Xy (X=Cl, Br, I) to xr.dataset (e.g. SpeciesConc* )
+    """
+    # Get the reference species
+    ref_spec = get_ref_spec(var2add)
+    # Get Xy species
+    specs2use = GC_var(var2add)
+    # Remove HCl from list of species (if present) as it is a reservoir species
+    if var2add == 'Cly':
+        try:
+            idx = specs2use.index('HCl')
+            specs2use.pop(idx)
+            print('WARNING: removed HCl from Cly definition')
+        except ValueError:
+            pass
+    if verbose:
+        Pstr = "Using species for '{}' family (ref_spec: {}): {}"
+        print( Pstr.format(var2add, ref_spec, specs2use) )
+    # Setup Xy variable as template of 1st Xy species
+    spec2use = specs2use[0]
+    var2use = '{}{}'.format(prefix, spec2use)
+    stioch = spec_stoich(spec2use, ref_spec=ref_spec)
+    ds[var2add] = ds[var2use].copy() * stioch
+    # Also save the individual species in reference species terms?
+    if add_ind_specs2ds:
+        Var2Save = '{}-in-{}-units'.format(spec2use,ref_spec)
+        ds[Var2Save] = ds[var2use].copy() * stioch
+    # Add rest of Xy species and scale to stoichiometry
+    for spec2use in specs2use[1:]:
+        var2use = '{}{}'.format(prefix, spec2use)
+        values = ds[var2use].values * stioch
+        ds[var2add].values = ds[var2add].values + values
+        # Also save the individual species in reference species terms?
+        if add_ind_specs2ds:
+            Var2Save = '{}-in-{}-units'.format(spec2use,ref_spec)
+            ds[Var2Save] = ds[var2use].copy() * stioch
+    return ds
+
