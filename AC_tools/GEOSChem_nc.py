@@ -127,7 +127,7 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None,
                        wd=None,
                        trop_level_var='Met_TropLev', air_mass_var='Met_AD',
                        avg_over_time=False,
-                       sum_patially=True, rm_trop=True, use_time_in_trop=True,
+                       sum_patially=True, rm_strat=True, use_time_in_trop=True,
                        trop_mask=None, spec_conc_prefix='SpeciesConc_',
                        time_in_trop_var='N/A', vars2use=None,
                        sum_spatially=True,
@@ -141,7 +141,7 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None,
     wd (str): Specify the wd to get the results from a run.
     StateMet (dataset): Dataset object containing time in troposphere
     trop_mask (nd.array): 3D or 4D boolean array where stratosphere is False
-    rm_trop (bool): remove the troposphere
+    rm_strat (bool): remove the stratospheric values
     spec (str): Name of the species (optional)
     spec_var (str):  Name of the species inc. Diagnostic prefix (optional)
     spec_conc_prefix (str): the diagnostic prefix for concentration
@@ -199,8 +199,8 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None,
             dsL[spec_var] = dsL[spec_var] * conversion_factor
             # Convert moles to mass (* RMM) , then to Gg
             dsL[spec_var] = dsL[spec_var] * float(species_mass(spec)) / 1E9
-        # Remove the tropospheric values?
-        if rm_trop:
+        # Remove the non-tropospheric values?
+        if rm_strat:
             # Loop by spec
             if use_time_in_trop:
                 dsL = rm_fractional_troposphere(dsL, vars2use=vars2use,
@@ -222,8 +222,8 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None,
         dsL[spec_var] = dsL[spec_var] * (AirMass*1E3 / constants('RMM_air'))
         # Convert moles to mass (* RMM) , then to Gg
         dsL[spec_var] = dsL[spec_var] * float(species_mass(spec)) / 1E9
-        # remove the tropospheric values?
-        if rm_trop:
+        # remove the non-tropospheric values?
+        if rm_strat:
             # Loop by spec
             if use_time_in_trop:
                 dsL = rm_fractional_troposphere(dsL, vars2use=vars2use,
@@ -771,7 +771,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
                                      extra_burden_specs=[],
                                      extra_surface_specs=[],
                                      GC_version='v12.6.0',
-                                     use_time_in_trop=True, rm_trop=True,
+                                     use_time_in_trop=True, rm_strat=True,
                                      debug=False):
     """
     Get various stats on a set of runs in a dictionary ({name: location})
@@ -832,7 +832,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
         S = get_Gg_trop_burden(ds, vars2use=vars2use, StateMet=StateMet,
                                use_time_in_trop=use_time_in_trop,
                                avg_over_time=avg_over_time,
-                               rm_trop=rm_trop)
+                               rm_strat=rm_strat)
         # convert to ref spec equivalent (e.g. N for NO2, C for ACET)
         for spec in specs2use:
             ref_spec = get_ref_spec(spec)
@@ -941,3 +941,5 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
         df.to_csv(csv_filename)
     # Return the DataFrame too
     return df
+
+
