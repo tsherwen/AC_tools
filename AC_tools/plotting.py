@@ -92,9 +92,9 @@ def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson,
         max_ = float(ds[var2plot].values.max())
         print(Pstr.format(var2plot, min_, max_ ) )
     # Call plot via imshow...
-    ds[var2plot].plot.imshow(x=LonVar, y=LatVar, ax=ax,
-                             transform=ccrs.PlateCarree(),
-                             **kwargs)
+    im = ds[var2plot].plot.imshow(x=LonVar, y=LatVar, ax=ax,
+                                  transform=ccrs.PlateCarree(),
+                                  **kwargs)
     # Beautify the figure/plot
     ax.coastlines()
     if set_global:
@@ -122,7 +122,69 @@ def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson,
         plt.savefig(savename+'.png', dpi=dpi)
     if show_plot:
         plt.show()
-    return ax
+    return im
+
+
+def ds2zonal_plot(ds=None, var2plot=None, StateMet=None, AltVar='lev',
+                  LatVar='lat', fig=None, ax=None, limit_yaxis2=20,
+                  plt_ylabel=True, rm_strat=False,
+                  verbose=False, debug=False, **kwargs):
+    """
+    Make a zonal plot (lat vs. alt) from a xr.dataset object
+    """
+    # Setup figure and axis if not provided
+    if isinstance(fig, type(None)):
+        fig = plt.figure()
+    if isinstance(ax, type(None)):
+        ax = fig.add_subplot(1, 1, 1)
+    # Calculate number of molecules
+    MolecVar = 'Met_MOLCES'
+    StateMet = add_molec_den2ds(StateMet, MolecVar=MolecVar)
+    # Remove troposphere
+    if rm_strat:
+        ds2plot = rm_fractional_troposphere(ds[[var2plot]].copy(),
+                                            vars2use=[var2plot],
+                                            StateMet=StateMet)
+    else:
+        ds2plot = ds[[var2plot]].copy()
+    # Weight by molecules over lon
+    ds2plot = ds2plot * StateMet[MolecVar]
+    ds2plot = ds2plot.sum(dim=['lon']) / StateMet[MolecVar].sum(dim=['lon'])
+    # Update units of lev (vertical/z axis) to be in km
+#    StateMet['Met_PMID']
+    LatLonAlt_dict = gchemgrid(rtn_dict=True)
+    alt_array = LatLonAlt_dict['c_km_geos5']
+    ds2plot = ds2plot.assign_coords({'lev':alt_array[:len(ds.lev.values)]})
+    # print out the min and max of plotted values
+    if verbose:
+        Pstr = "In zonal plot of {}, min={}, max={}"
+        min_ = float(ds2plot[var2plot].values.min())
+        max_ = float(ds2plot[var2plot].values.max())
+        print(Pstr.format(var2plot, min_, max_ ) )
+    # Now call plot via xr.dataset
+    lat = np.array(ds2plot.lat.values)
+    alt = np.array(ds2plot.lev.values)
+    im = ax.pcolor(lat, alt, ds2plot[var2plot].values, **kwargs)
+#    im = ds2plot[var2plot].plot.imshow(ax=ax, **kwargs)
+    # Limit the axis to a value (e.g. 18km to just show tropospheric values)
+    if limit_yaxis2:
+        plt.ylim(0, limit_yaxis2)
+
+    # TODO
+    # plot up second y axis with pressure altitude ?
+
+    # Update axis labels
+    ax.set_xlabel('Latitude ($^{\circ}$N)')
+    if debug:
+        print( 'plt_ylabel', plt_ylabel)
+    if plt_ylabel:
+        ax.set_ylabel('Altitude (km)')
+    else:
+        ax.set_ylabel('')
+        ax.tick_params(axis='y', which='both', labelleft='off')
+        yticks_labels = ax.get_yticklabels()
+        ax.set_yticklabels([None for i in range(len(yticks_labels))])
+    return im
 
 
 def plt_df_X_vs_Y(df=None, x_var='', y_var='', x_label=None, y_label=None,
@@ -2177,9 +2239,9 @@ def close_plot():
 
 
 def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'],
-              tight=False):
+              tight=False, dpi=320):
     """
-    Save a plot to disk.
+    Save a plot to disk
 
     Parameters
     ----------
@@ -2201,7 +2263,7 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'],
 
     for extension in extensions:
         filename = os.path.join(location, title+"."+extension)
-        plt.savefig(filename)
+        plt.savefig(filename, dpi=dpi)
         logging.info("Plot saved to {location}".format(location=filename))
     return
 
