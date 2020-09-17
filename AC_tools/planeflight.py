@@ -448,9 +448,9 @@ def get_pf_from_folder(folder='./', dates2use=None, debug=False):
         bool = df[dtVar].isin(dates2use)
         files = list(df.loc[bool,FileRootsVar].values)
     # Get headers
-    ALL_vars, sites = AC.get_pf_headers(files[0], debug=debug)
+    ALL_vars, sites = get_pf_headers(files[0], debug=debug)
     # Extract dfs
-    dfs = [AC.pf_csv2pandas(i, vars=ALL_vars) for i in files]
+    dfs = [pf_csv2pandas(i, vars=ALL_vars) for i in files]
     # Append the dataframes together
     df = dfs[0].append(dfs[1:])
     return df
@@ -508,3 +508,24 @@ def get_pf_data_from_NetCDF_table(ncfile=None, req_var='TRA_69', spec='IO',
         dates = dates[np.where((dates < edate) & (dates >= sdate))]
 
     return dates, data
+
+
+def reprocess_split_pf_output_over_2_lines(folder, save_original_file=False):
+    """
+    Combine planeflight dat file lines where output split over 2 lines
+    """
+    files2use = list(sorted(glob.glob(folder+'*plane.log*')))
+    for file2use in files2use:
+        with open(file2use, 'r') as file:
+            lines = [i.strip() for i in file]
+        if save_original_file:
+            os.rename(file2use, file2use+'.orig')
+        else:
+            os.remove(file2use)
+        first_part = lines[0::2]
+        second_part = lines[1::2]
+        a = open(file2use, 'w')
+        for n_line, line in enumerate(first_part):
+            Newline = '{} {}'.format(first_part[n_line], second_part[n_line])
+            print(Newline, file=a)
+        a.close()
