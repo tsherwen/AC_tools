@@ -1013,3 +1013,23 @@ def add_Xy_2ds(ds=None, var2add='Cly', prefix='SpeciesConc_',
             ds[Var2Save] = ds[var2use].copy() * stioch
     return ds
 
+
+def get_specieslist_from_input_geos(folder=None, filename='input.geos'):
+    """
+    Extract the species list from the input.geos file
+    """
+    line2start_read = '%%% ADVECTED SPECIES MENU %%%'
+    line2end_read = '------------------------+--------------------------------'
+    species_lines = []
+    with open(folder+filename, 'r') as file:
+        save_line = False
+        for line in file:
+            if line2end_read in line:
+                save_line = False
+            if save_line:
+                species_lines += [line]
+            if line2start_read in line:
+                save_line = True
+
+    species = [i.split(':')[-1].strip() for i in species_lines ]
+    return species
