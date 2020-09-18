@@ -347,8 +347,6 @@ def print_out_dfs2KPP_eqn_file(species_df=None, headers=None,
 
 
 # -------------- Extract rxn data from KPP ***output*** files
-
-
 def KPP_eqn_file_headers(folder=None, filename=None):
     """
     Get headers from KPP *.eqn file
@@ -447,8 +445,6 @@ def get_KPP_tagged_rxns(fam='LOx', filename='gckpp_Monitor.F90',
 
 
 # -------------- Extract rxn data from KPP ***input*** file(s)
-
-
 def KPP_eqn_file_species(folder=None, filename=None, debug=False):
     """
     Get species from *.eqn file
@@ -642,12 +638,12 @@ def split_KPP_rxn_str_into_chunks(rxn, KPP_line_max=43, debug=False):
     return sub_strs
 
 
-def get_KPP_PL_tag(last_tag, tag_prefix='T'):
+def get_next_KPP_PL_tag(last_tag, tag_prefix='T'):
     """
     Get the next P/L tag in a format T???
     """
     assert (len(last_tag) == 4), "Tag must be 4 characers long! (e.g. T???)"
-    last_tag_num = int(last_tag[1:])
+    last_tag_num = int(last_tag.split(tag_prefix)[-1])
     return '{}{:0>3}'.format(tag_prefix, last_tag_num+1)
 
 
@@ -1620,6 +1616,83 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
     if rtn_by_fam:
         return dfFam
 
+def add_tags4strs2mech(rxn_dicts, tagged_rxns={},
+                       search_strs=None, counter=0,
+                       search_reactants=False,
+                       search_products=False,
+                       tag_prefix='T'):
+    """
+    Tag reactions in provided string found in KPP reaction string
+
+    Parameters
+    -------
+    search_reactants (bool): just search for strings in reaction reactants
+    search_products (bool): just search for strings in reaction products
+    search_strs (list): list of strings to search for in reactions
+    tagged_rxns (dict): dictionary of tagged reactions
+    rxn_dicts (dict): dictionary of KPP reaction mechanisms
+    counter (int): number of reactions already tagged
+    tag_prefix (str): the prefix to use for tags added to mechansism
+
+    Returns
+    -------
+    (dict, dict)
+    """
+    if isinstance(search_strs, type(None)):
+        search_strs = 'BrSAL', 'CH3Br', 'CH3Cl', 'CH2Cl2', 'CHCl3', '0.150IBr',
+        search_strs += 'HOBr','ClNO2',
+    # Setup regex to find existing tags in reaction strings
+    re1 = '(\\+)'                    # Any Single Character 1
+    re2 = '(\\s+)'                   # White Space 1
+    re3 = '({})'.format(tag_prefix)  # Any Single Character 2
+    re4 = '(\d{3})'                  # Integer Number 1
+    re5 = '(\\s+)'                   # White Space 2
+    rg = re.compile(re1+re2+re3+re4, re.IGNORECASE | re.DOTALL)
+    # ( Or just all reactions that contain a species of interest )
+    current_tag = '{}{}'.format(tag_prefix, counter)
+    for search_str in search_strs:
+        for key_ in list(rxn_dicts.keys()):
+            df = rxn_dicts[key_]
+            for idx in df.index:
+                # retrive the reaction string and check if the family is in it
+                rxn_str = df.loc[idx]['rxn_str']
+                reactant_str = rxn_str.split('= ')[0]
+                product_str = rxn_str.split('= ')[-1]
+                if search_reactants:
+                    str2search4search_str = reactant_str
+                elif search_products:
+                    str2search4search_str = product_str
+                else:
+                    str2search4search_str = rxn_str
+                if search_str in str2search4search_str:
+                    # Update the counter (NOTE: counter starts from 1)
+                    counter += 1
+                    # Check if rxn already tagged, if so just use that tag.
+                    m = rg.search(rxn_str)
+                    if m:
+                        # Extract tag from regex matched groups
+                        existing_tag = m.group(3)+m.group(4)
+                        # For # rxn tagged save the rxn., its tag and its family
+                        tmp_dict = {
+                            'tag': existing_tag, 'search_str': search_str,
+                            'rxn_str': rxn_str
+                        }
+                        tagged_rxns[counter] = tmp_dict
+                    else:
+                        # Get a new tag and add to the reaction string
+                        current_tag = get_next_KPP_PL_tag(current_tag)
+                        rxn_str += ' + ' + current_tag
+                        df.loc[idx, 'rxn_str'] = rxn_str
+                        # Save the reaction, its tag and its family
+                        tmp_dict = {
+                            'tag': current_tag, 'search_str': search_str,
+                            'rxn_str': rxn_str
+                        }
+                        tagged_rxns[counter] = tmp_dict
+            # Now update the DataFrame in the rxn_dicts dictionary
+            rxn_dicts[key_] = df
+    return rxn_dicts, tagged_rxns
+
 
 def GCARR(A0, B0, C0, TEMP=273.15):
     """
@@ -1628,7 +1701,7 @@ def GCARR(A0, B0, C0, TEMP=273.15):
     Notes
     -------
      - Original function copied below:
-  REAL(kind=dp) FUNCTION AC.GCARR( A0,B0,C0 )
+  REAL(kind=dp) FUNCTION GCARR( A0,B0,C0 )
       REAL A0,B0,C0
       GCARR =  DBLE(A0) * EXP(DBLE(C0)/TEMP) * (300._dp/TEMP)**DBLE(B0)
   END FUNCTION GCARR
@@ -1643,7 +1716,7 @@ def GC_OHCO(A0, B0, C0, NUMDEN=1E4, TEMP=273.15, PRESS=1000):
     Notes
     -------
      - Original function copied below:
-  REAL(kind=dp) FUNCTION AC.GC_OHCO( A0,B0,C0 )
+  REAL(kind=dp) FUNCTION GC_OHCO( A0,B0,C0 )
 
     REAL A0,B0,C0,R0
     REAL KLO1,KLO2,KHI1,KHI2,XYRAT1,XYRAT2,BLOG1,BLOG2,FEXP1,FEXP2

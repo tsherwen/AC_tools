@@ -1,8 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-Automatically tag reactions in a GEOS-Chem (KPP) mechansim for a given family
-
+Automatically tag reactions in a GEOS-Chem (KPP) mechanism for a family/string
 
 Notes
 -------
@@ -11,9 +10,6 @@ Notes
      - When using P/L tagging, the output P/L information (e.g. rxns in family and their stoichiometry in gckpp_Monitor.F90) can be used to add more specific tags/for post-processing
 
 """
-# Compatibility with both python 2 and 3
-
-# Import modules used within the script
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -63,20 +59,23 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
      - Please note that you may need to update "MAX_FAMILIES" in kpp (as on the wiki)
     """
     import re
-    # ---- Local settings
+    # - Local settings
     # GEOS-chem version?
     if isinstance(GC_version, type(None)):
         # TODO - get this online from log files
         # (already implemented in AC_Tools)
         #        GC_version = 'v11-2'
         GC_version = 'v12.9.1'
-    # Add mechanism name to string (and KPP folder)
-    folder += 'KPP/{}/'.format(mechanism)
+    # Add mechanism name to string (and KPP folder) if not in folder string
+    if not all([i in folder for i in ['KPP', mechanism]]):
+        folder += 'KPP/{}/'.format(mechanism)
 
-    # ---- Process input files
+    # - Process input files
     # Create a dictionary to store various (e.g. gas-phase, Heterogeneous)
     KPP_dicts = {}
     # Get the mechanism KPP file
+    if debug:
+        print(folder, glob.glob(folder+'/*.eqn'))
     filename = glob.glob(folder+'/*.eqn')[0].split('/')[-1]
     # Get header lines from *.eqn file
     headers = AC.KPP_eqn_file_headers(folder=folder, filename=filename)
@@ -98,7 +97,7 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
     rxn_dicts['Heterogeneous'] = Het_dict
     rxn_dicts['Photolysis'] = Hv_dict
 
-    # --- Print out input KPP files with updated formatting (prior to tagging)
+    # - Print out input KPP files with updated formatting (prior to tagging)
     # (Uniform formatting required for parsing - this step may not be required)
     if print_formatted_KPP_file:
         extr_str='EXISTING_MECH_{}_{}'.format(mechanism, GC_version)
@@ -106,139 +105,105 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
                                       rxn_dicts=rxn_dicts, extr_str=extr_str,
                                       )
 
-    # ---- Get outputted KPP files and process these...
+    # - Get outputted KPP files and process these...
     # Get outputted KPP mechanism
     KPP_mech = AC.get_dict_of_KPP_mech(wd=folder, GC_version=GC_version)
 
-    # ---------------------- Tagging of Mechanism
+    # ---------------------- Tagging of KPP Mechanism
     # Initialise dictionary to store tags used for reactions
     tagged_rxns = {}
     current_tag = 'T000'
     tag_prefix = 'T'
+    AttrsVar = 'search_str'
     # Use a counter to track number of reactions tagged (NOTE: not tags)
     counter = 0
 
-    # --- Tag LOx reactions
-    # Get tagged reactions (as a dictionary)
+    # - Tag LOx reactions
+    # Get tagged LOx family reactions (as a dictionary)
     fam = 'LOx'
     df_fam = AC.get_reactants_and_products4tagged_fam(folder=folder,
                                                       KPP_output_mech=KPP_mech,
                                                       fam=fam)
-    # Loop reaction indexes for LOx family
+    # Loop reaction indexes for LOx family and add tags
     for n_key_, key_ in enumerate(rxn_dicts.keys()):
         df_tmp = rxn_dicts[key_].copy()
         # Get indices of rxnes in tagged family
         rxns_in_mech = sorted(df_tmp[df_tmp.index.isin(df_fam.index)].index)
         print(len(rxns_in_mech))
-        for n_ix, ix in enumerate(rxns_in_mech):
+        for idx in rxns_in_mech:
             # Update the counter (NOTE: counter starts from 1)
             counter += 1
             # retrive the reaction string
-            rxn_str = df_tmp.loc[ix]['rxn_str']
+            rxn_str = df_tmp.loc[idx]['rxn_str']
             # Get a new tag and add to the reaction string
-            current_tag = AC.get_KPP_PL_tag(current_tag, tag_prefix=tag_prefix)
+            current_tag = AC.get_next_KPP_PL_tag(current_tag,
+                                                 tag_prefix=tag_prefix)
             rxn_str += ' + ' + current_tag
-            df_tmp.loc[ix, 'rxn_str'] = rxn_str
+            df_tmp.loc[idx, 'rxn_str'] = rxn_str
             # For # rxn tagged - save the reaction, its tag and its family
-            tmp_dict = {'tag': current_tag, 'fam': fam, 'rxn_str': rxn_str}
+            tmp_dict = {'tag': current_tag, AttrsVar: fam, 'rxn_str': rxn_str}
             tagged_rxns[counter] = tmp_dict
         # Now update the DataFrame in the rxn_dicts dictionary
         rxn_dicts[key_] = df_tmp
 
-    # --- Add tags for Other families too?
-    # number of reactions already tagged?
+    # - Add tags for other species too?
+    # Number of reactions already tagged?
     counter = max(tagged_rxns.keys())
-    # setup regex to find existing tags in reaction strings
-    re1 = '(\\+)'     # Any Single Character 1
-    re2 = '(\\s+)'    # White Space 1
-    re3 = '(T)'       # Any Single Character 2
-    re4 = '(\d{3})'   # Integer Number 1
-    re5 = '(\\s+)'    # White Space 2
-    rg = re.compile(re1+re2+re3+re4, re.IGNORECASE | re.DOTALL)
-    # ( Or just all reactions that contain a species of interest )
-    fams = 'BrSAL', 'CH3Br', 'CH3Cl', 'CH2Cl2', 'CHCl3', '0.150IBr', 'ClNO2',
-    fams += 'HOBr',
-    for fam in fams:
-        for key_ in list(rxn_dicts.keys()):
-            df_tmp = rxn_dicts[key_]
-            for ix in df_tmp.index:
-                # retrive the reaction string and check if the family is in it
-                rxn_str = df_tmp.loc[ix]['rxn_str']
-                if fam in rxn_str:
-                    # Update the counter (NOTE: counter starts from 1)
-                    counter += 1
-                    # check if rxn already tagged, if so just use that tag.
-                    m = rg.search(rxn_str)
-                    if m:
-                        # extract tag from regex matched groups
-                        existing_tag = m.group(3)+m.group(4)
-                        # For # rxn tagged save the rxn., its tag and its family
-                        tmp_dict = {
-                            'tag': existing_tag, 'fam': fam, 'rxn_str': rxn_str
-                        }
-                        tagged_rxns[counter] = tmp_dict
-                    else:
-                        # Get a new tag and add to the reaction string
-                        current_tag = AC.get_KPP_PL_tag(current_tag)
-                        rxn_str += ' + ' + current_tag
-                        df_tmp.loc[ix, 'rxn_str'] = rxn_str
-                        # save the reaction, its tag and its family
-                        tmp_dict = {
-                            'tag': current_tag, 'fam': fam, 'rxn_str': rxn_str
-                        }
-                        tagged_rxns[counter] = tmp_dict
-            # Now update the DataFrame in the rxn_dicts dictionary
-            rxn_dicts[key_] = df_tmp
-
-    # --- Add tags for when a species is a reactant
-    # number of reactions already tagged?
+    current_tag = '{}{}'.format(tag_prefix, counter)
+    search_strs = 'BrSAL', 'CH3Br', 'CH3Cl', 'CH2Cl2', 'CHCl3', '0.150IBr',
+    search_strs += 'HOBr','ClNO2',
+    # Add tags for halogen families
+    rxn_dicts, tagged_rxns = AC.add_tags4strs2mech(rxn_dicts, counter=counter,
+                                                   search_strs=search_strs,
+                                                   tagged_rxns=tagged_rxns, )
     counter = max(tagged_rxns.keys())
-    # setup regex to find existing tags in reaction strings
-    re1 = '(\\+)'     # Any Single Character 1
-    re2 = '(\\s+)'    # White Space 1
-    re3 = '(T)'       # Any Single Character 2
-    re4 = '(\d{3})'   # Integer Number 1
-    re5 = '(\\s+)'    # White Space 2
-    rg = re.compile(re1+re2+re3+re4, re.IGNORECASE | re.DOTALL)
-    # reactant to use as "family" to search for
-    fams = 'OH ', # OH reactivity
-    for fam in fams:
-        for key_ in list(rxn_dicts.keys()):
-            df_tmp = rxn_dicts[key_]
-            for ix in df_tmp.index:
-                # retrive the reaction string and check if the family is in it
-                rxn_str = df_tmp.loc[ix]['rxn_str']
-                reactant_str = rxn_str.split('= ')[0]
-                if fam in reactant_str:
-                    if debug:
-                        print(reactant_str, (fam in reactant_str), '-', rxn_str)
-                    # Update the counter (NOTE: counter starts from 1)
-                    counter += 1
-                    # check if rxn already tagged, if so just use that tag.
-                    m = rg.search(rxn_str)
-                    if m:
-                        # extract tag from regex matched groups
-                        existing_tag = m.group(3)+m.group(4)
-                        # For # rxn tagged save the rxn., its tag and its family
-                        tmp_dict = {
-                            'tag': existing_tag, 'fam': fam, 'rxn_str': rxn_str
-                        }
-                        tagged_rxns[counter] = tmp_dict
-                    else:
-                        # Get a new tag and add to the reaction string
-                        current_tag = AC.get_KPP_PL_tag(current_tag)
-                        rxn_str += ' + ' + current_tag
-                        df_tmp.loc[ix, 'rxn_str'] = rxn_str
-                        # save the reaction, its tag and its family
-                        tmp_dict = {
-                            'tag': current_tag, 'fam': fam, 'rxn_str': rxn_str
-                        }
-                        tagged_rxns[counter] = tmp_dict
-            # Now update the DataFrame in the rxn_dicts dictionary
-            rxn_dicts[key_] = df_tmp
+    current_tag = '{}{}'.format(tag_prefix, counter)
 
-    # --- Add the species to the species_df
-    # number of reactions tagged
+    # --------------------------------
+    # ---  A couple of additional examples of functionality are pasted below
+    # - Add tags for when a species is a reactant
+    # Number of reactions already tagged?
+#    counter = max(tagged_rxns.keys())
+    # Add tags for OH reactivity
+#     search_strs = [ 'OH ', ]
+#     rxn_dicts, tagged_rxns = AC.add_tags4strs2mech(rxn_dicts,
+#                                                     counter=counter,
+#                                                    search_reactants=True,
+#                                                    search_strs=search_strs,
+#                                                    tagged_rxns=tagged_rxns, )
+#    counter = max(tagged_rxns.keys())
+
+    # - Add tags for when a species is a product
+    # Number of reactions already tagged?
+#    counter = max(tagged_rxns.keys())
+    # Add tags for OH reactivity
+#     search_strs = [ 'ACET ', ]
+#     rxn_dicts, tagged_rxns = AC.add_tags4strs2mech(rxn_dicts,
+#                                                     counter=counter,
+#                                                    search_products=True,
+#                                                    search_strs=search_strs,
+#                                                    tagged_rxns=tagged_rxns, )
+#    counter = max(tagged_rxns.keys())
+    # --------------------------------
+
+    counter = max(tagged_rxns.keys())
+    current_tag = '{}{}'.format(tag_prefix, counter)
+    search_strs = [
+    'CH4', 'C2H6', 'C3H8', 'ACET', 'MOH', 'PRPE', 'ALK4', 'CH2O', 'CH2O',
+    'ALD2', 'ISOP'
+    ]
+    search_strs = [i+' ' for i in search_strs]
+    # Add tags for halogen families
+    rxn_dicts, tagged_rxns = AC.add_tags4strs2mech(rxn_dicts, counter=counter,
+                                                   search_strs=search_strs,
+                                                   tagged_rxns=tagged_rxns,
+                                                   search_reactants=True, )
+    counter = max(tagged_rxns.keys())
+    current_tag = '{}{}'.format(tag_prefix, counter)
+
+
+    # - Add the species to the species_df
+    # Number of reactions tagged
     alltags = [tagged_rxns[i]['tag'] for i in list(tagged_rxns.keys())]
     tags = list(sorted(set(alltags)))
     ptr_str = '# of rxns tagged = {} (of which unique = {})'
@@ -250,30 +215,30 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
     df_spec_tmp = pd.DataFrame([[False]]*len(tags), columns=['inactive'])
     df_spec_tmp.index = tags
     for tag in df_spec_tmp.index:
-        infams = df_tags.loc[df_tags['tag'] == tag]['fam'].values.tolist()
-        Description = 'Prod. tag for fams: {}'.format(', '.join(infams))
+        infams = df_tags.loc[df_tags['tag'] == tag][AttrsVar].values.tolist()
+        Description = 'Prod. tag description: {}'.format(', '.join(infams))
         print(tag, infams, Description)
         df_spec_tmp.loc[df_spec_tmp.index == tag, 'Description'] = Description
     df_spec_tmp.sort_values('Description')
     # Add to existing DataFrame
     species_df = pd.concat([species_df, df_spec_tmp])
 
-    # --- Print out updated KPP .eqn file (with tags)
+    # - Print out updated KPP .eqn file (with tags)
     extr_str = 'TAGGED_MECH_{}_{}'.format(mechanism, GC_version)
     AC.print_out_dfs2KPP_eqn_file(headers=headers, species_df=species_df,
                                   rxn_dicts=rxn_dicts,
                                   extr_str=extr_str)
 
-    # --- Save out the tags and the reactions tagged
+    # - Save out the tags and the reactions tagged
     # (to use for post-processing of tagged output)
-    savetitle = 'Tagged_reactions_in_{}_{}.csv'.format(mechanism, GC_version)
+    extr_str = '{}_{}'.format(mechanism, GC_version)
+    savetitle = 'Tagged_reactions_in_{}.csv'.format(extr_str)
     df_tags.to_csv(savetitle)
 
-    # --- Save out lines that need to be added to the gckpp.kpp file
-    AC.print_out_lines_for_gckpp_file(tags=tags, extr_str=mechanism)
+    # - Save out lines that need to be added to the gckpp.kpp file
+    AC.print_out_lines_for_gckpp_file(tags=tags, extr_str=extr_str)
 
     # - Save out the lines to be pasted into the GC species database yaml file
-    extr_str = '{}_{}'.format(mechanism, GC_version)
     range = np.arange(1, int(current_tag[1:]))
     tags = ['P{}{:0>3}'.format(tag_prefix,i) for i in range ]
     tags += ['{}{:0>3}'.format(tag_prefix,i) for i in range ]
