@@ -391,6 +391,39 @@ def DF_YYYYMMDD_HHMM_2_dt(df, date_header='YYYYMMDD', time_header='HHMM',
     return df
 
 
+def get_TZ4loc(lat=50, lon=0):
+    """
+    Get the UTC offset (timezone/TZ) in hours for a given location
+
+    Parameters
+    -------
+    lon (float): longitude in decimal degrees North
+    lat (float): latitude in decimal degrees east
+
+    Notes
+    -------
+     - Original file with timezone boundaries can be found here  http://ftp.as.harvard.edu/gcgrid/geos-chem/data/ExtData/HEMCO/TIMEZONES/v2015-02/
+     - This may not include all locations (e.g. Cape Verde) and at somepoint should be updated to use the latest best data (linked below)
+    https://github.com/evansiroky/timezone-boundary-builder
+
+    Notes
+    -------
+    (float)
+    """
+    import os
+    import xarray as xr
+    import inspect
+    filename = inspect.getframeinfo(inspect.currentframe()).filename
+    path = os.path.dirname(os.path.abspath(filename))
+    folder = path+'/../data/'
+    filename = 'timezones_voronoi_1x1.nc'
+    folder = '/users/ts551/scratch/data/TIMEZONES/v2015-02/'
+    ds = xr.open_dataset(folder+filename)
+    UTC_offset = ds.sel(lat=lat, lon=lon, method='nearest').squeeze()
+    UTC_offset = UTC_offset['UTC_OFFSET'].values.astype('timedelta64[h]')
+    return UTC_offset.astype(float)
+
+
 def unix_time(dt):
     """
     Convert datetime to Unix time.
@@ -553,7 +586,7 @@ def solartime(observer, sun=None):
     """
     import ephem
     if isinstance(sun, type(None)):
-        ephem.Sun()
+        sun = ephem.Sun()
     # Astronomical math - compute the angle between the sun and observe
     sun.compute(observer)
     # sidereal time == ra (right ascension) is the highest point (noon)
