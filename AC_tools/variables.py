@@ -554,7 +554,47 @@ def latex_spec_name(input_x, debug=False):
         'PM2.5(SSA)': 'PM$_{2.5}$(SSA)',
         'PM2.5(BC)': 'PM$_{2.5}$(BC)',
         'PM2.5(OC))': 'PM$_{2.5}$(OC)',
-    }
+        # Extra GEOS-chem advected tracers - in standard as of v12.9.1
+        # TODO - complete expanding species
+        # http://wiki.seas.harvard.edu/geos-chem/index.php/Species_in_GEOS-Chem
+        'ACTA': 'ACTA', 'ATOOH': 'ATOOH', 'BENZ': 'Benzene',
+        'CCl4': 'CCl4', 'CFC11': 'CFC11', 'CFC113': 'CFC113',
+        'CFC114': 'CFC114', 'CFC115': 'CFC115', 'CFC12': 'CFC12',
+        'CH3CCl3': 'CH3CCl3', 'ETHLN': 'ETHLN', 'ETNO3': 'ETNO3',
+        'ETP': 'ETP', 'GLYX': 'GLYX', 'H1211': 'H1211',
+        'H1301': 'H1301', 'H2402': 'H2402', 'H2O': 'H2O',
+        'HC5A': 'HC5A', 'HCFC123': 'HCFC123', 'HCFC141b': 'HCFC141b',
+        'HCFC142b': 'HCFC142b', 'HCFC22': 'HCFC22', 'HCOOH': 'HCOOH',
+        'HMHP': 'HMHP', 'HMML': 'HMML', 'HONIT': 'HONIT',
+        'HPALD1': 'HPALD1', 'HPALD2': 'HPALD2', 'HPALD3': 'HPALD3',
+        'HPALD4': 'HPALD4', 'HPETHNL': 'HPETHNL', 'ICHE': 'ICHE',
+        'ICN': 'ICN', 'ICPDH': 'ICPDH', 'IDC': 'IDC',
+        'IDCHP': 'IDCHP', 'IDHDP': 'IDHDP', 'IDHPE': 'IDHPE',
+        'IDN': 'IDN', 'IEPOXA': 'IEPOXA', 'IEPOXB': 'IEPOXB',
+        'IEPOXD': 'IEPOXD', 'IHN1': 'IHN1', 'IHN2': 'IHN2',
+        'IHN3': 'IHN3', 'IHN4': 'IHN4', 'INDIOL': 'INDIOL',
+        'INPB': 'INPB', 'INPD': 'INPD', 'IONITA': 'IONITA',
+        'IPRNO3': 'IPRNO3', 'ITCN': 'ITCN', 'ITHN': 'ITHN',
+        'LIMO': 'LIMO', 'LVOC': 'LVOC', 'LVOCOA': 'LVOCOA',
+        'MACR1OOH': 'MACR1OOH', 'MCRDH': 'MCRDH', 'MCRENOL': 'MCRENOL',
+        'MCRHN': 'MCRHN', 'MCRHNB': 'MCRHNB', 'MCRHP': 'MCRHP',
+        'MENO3': 'MENO3', 'MGLY': 'MGLY', 'MONITA': 'MONITA',
+        'MONITS': 'MONITS', 'MONITU': 'MONITU', 'MPAN': 'MPAN',
+        'MTPA': 'MTPA', 'MTPO': 'MTPO', 'MVKDH': 'MVKDH',
+        'MVKHC': 'MVKHC', 'MVKHCB': 'MVKHCB', 'MVKHP': 'MVKHP',
+        'MVKN': 'MVKN', 'MVKPC': 'MVKPC', 'N2O': 'N2O',
+        'NPRNO3': 'NPRNO3', 'OCS': 'OCS', 'pFe': 'pFe',
+        'PIP': 'PIP', 'PP': 'PP', 'PRPN': 'PRPN',
+        'PYAC': 'PYAC', 'R4P': 'R4P', 'RA3P': 'RA3P',
+        'RB3P': 'RB3P', 'RIPA': 'RIPA', 'RIPB': 'RIPB',
+        'RIPC': 'RIPC', 'RIPD': 'RIPD', 'RP': 'RP',
+        'SALAAL': 'SALAAL', 'SALACL': 'SALACL', 'SALCAL': 'SALCAL',
+        'SALCCL': 'SALCCL', 'SOAGX': 'SOAGX', 'SOAIE': 'SOAIE',
+        'SOAP': 'SOAP', 'SOAS': 'SOAS', 'TOLU': 'TOLU',
+        'XYLE': 'Xylene',
+        # Extra GEOS-chem species - in standard as of v12.9.1
+        'O1D' : 'O($^{1}$D)',
+        }
     return spec_dict[input_x]
 
 
