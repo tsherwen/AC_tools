@@ -1209,3 +1209,20 @@ def merge_two_dicts(x, y):
     z.update(y)
     return z
 
+
+def merge_dicts_list(x):
+    """
+    Given two dictionaries, merge them into a new dict as a shallow copy.
+
+    Returns
+    -------
+    (dict)
+
+    Notes
+    -------
+     - Credit for function Aaron Hall (link below) https://stackoverflow.com/questions/38987/how-do-i-merge-two-dictionaries-in-a-single-expression-in-python-taking-union-o
+    """
+    z = x[0].copy()
+    for i in x[1:]:
+        z.update(i)
+    return z
