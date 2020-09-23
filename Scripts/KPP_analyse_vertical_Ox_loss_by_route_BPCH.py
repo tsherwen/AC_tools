@@ -32,15 +32,21 @@ def main(wd=None, CODE_wd=None):
     Mechanism = 'Tropchem'
     # Get all the necessary data as as a dictionary object
     Ox_fam_dict = AC.get_Ox_fam_dicts_BPCH(wd=wd, CODE_wd=CODE_wd,
+                                           weight_by_molecs=True,
                                            Mechanism=Mechanism)
-    # Additionally retrieve the BPCH issues
-
     # Plot vertical odd oxygen (Ox) loss via route (chemical family)
     Data_rc = Ox_fam_dict['Data_rc']
     alt_array = Data_rc['alt']
     AC.plot_vertical_fam_loss_by_route(Ox_fam_dict=Ox_fam_dict,
                                        Mechanism=Mechanism,
                                        alt_array=alt_array)
+
+    # Get all the necessary data as as a dictionary object
+    # (Not weighted by molecules)
+    Ox_fam_dict = AC.get_Ox_fam_dicts_BPCH(wd=wd, CODE_wd=CODE_wd,
+                                           weight_by_molecs=False,
+                                           rm_strat=True,
+                                           Mechanism=Mechanism)
     # Analyse odd oxygen (Ox) loss budget via route (chemical family)
     AC.calc_fam_loss_by_route(Ox_fam_dict=Ox_fam_dict, Mechanism=Mechanism)
 

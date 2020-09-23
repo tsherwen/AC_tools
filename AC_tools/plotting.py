@@ -49,7 +49,8 @@ import scipy
 def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson,
                    save_plot=True, show_plot=False, savename=None, title=None,
                    LatVar='lat', LonVar='lon', fig=None, ax=None, dpi=320,
-                   set_global=True, buffer_degrees=0, ):
+                   set_global=True, buffer_degrees=0,
+                   verbose=False, debug=False, **kwargs):
     """
     Plot up a quick spatial plot of data using cartopy
 
@@ -70,18 +71,30 @@ def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson,
     Returns
     -------
     (None)
+
+    Notes
+    -------
+     - pass customisation for matplotlib via **kwargs (to 'plot.imshow')
     """
     # Use the 1st data variable if not variable given
     if isinstance(var2plot, type(None)):
-        print('WARNING: No variable to plot was set (var2plot), trying 1st data_var')
+        print("WARNING: No 'var2plot' set, trying 1st data_var")
         var2plot = list(ds.data_vars)[0]
     # Setup figure and axis and plot
     if isinstance(fig, type(None)):
         fig = plt.figure(figsize=(10, 6))
     if isinstance(ax, type(None)):
         ax = fig.add_subplot(111, projection=projection(), aspect='auto')
-    ds[var2plot].plot.imshow(x=LonVar, y=LatVar, ax=ax,
-                             transform=ccrs.PlateCarree())
+    # print out the min and max of plotted values
+    if verbose:
+        Pstr = "In spatial plot of {}, min={} and max={}"
+        min_ = float(ds[var2plot].values.min())
+        max_ = float(ds[var2plot].values.max())
+        print(Pstr.format(var2plot, min_, max_ ) )
+    # Call plot via imshow...
+    im = ds[var2plot].plot.imshow(x=LonVar, y=LatVar, ax=ax,
+                                  transform=ccrs.PlateCarree(),
+                                  **kwargs)
     # Beautify the figure/plot
     ax.coastlines()
     if set_global:
@@ -109,7 +122,69 @@ def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson,
         plt.savefig(savename+'.png', dpi=dpi)
     if show_plot:
         plt.show()
-    return ax
+    return im
+
+
+def ds2zonal_plot(ds=None, var2plot=None, StateMet=None, AltVar='lev',
+                  LatVar='lat', fig=None, ax=None, limit_yaxis2=20,
+                  plt_ylabel=True, rm_strat=False,
+                  verbose=False, debug=False, **kwargs):
+    """
+    Make a zonal plot (lat vs. alt) from a xr.dataset object
+    """
+    # Setup figure and axis if not provided
+    if isinstance(fig, type(None)):
+        fig = plt.figure()
+    if isinstance(ax, type(None)):
+        ax = fig.add_subplot(1, 1, 1)
+    # Calculate number of molecules
+    MolecVar = 'Met_MOLCES'
+    StateMet = add_molec_den2ds(StateMet, MolecVar=MolecVar)
+    # Remove troposphere
+    if rm_strat:
+        ds2plot = rm_fractional_troposphere(ds[[var2plot]].copy(),
+                                            vars2use=[var2plot],
+                                            StateMet=StateMet)
+    else:
+        ds2plot = ds[[var2plot]].copy()
+    # Weight by molecules over lon
+    ds2plot = ds2plot * StateMet[MolecVar]
+    ds2plot = ds2plot.sum(dim=['lon']) / StateMet[MolecVar].sum(dim=['lon'])
+    # Update units of lev (vertical/z axis) to be in km
+#    StateMet['Met_PMID']
+    LatLonAlt_dict = gchemgrid(rtn_dict=True)
+    alt_array = LatLonAlt_dict['c_km_geos5']
+    ds2plot = ds2plot.assign_coords({'lev':alt_array[:len(ds.lev.values)]})
+    # print out the min and max of plotted values
+    if verbose:
+        Pstr = "In zonal plot of {}, min={}, max={}"
+        min_ = float(ds2plot[var2plot].values.min())
+        max_ = float(ds2plot[var2plot].values.max())
+        print(Pstr.format(var2plot, min_, max_ ) )
+    # Now call plot via xr.dataset
+    lat = np.array(ds2plot.lat.values)
+    alt = np.array(ds2plot.lev.values)
+    im = ax.pcolor(lat, alt, ds2plot[var2plot].values, **kwargs)
+#    im = ds2plot[var2plot].plot.imshow(ax=ax, **kwargs)
+    # Limit the axis to a value (e.g. 18km to just show tropospheric values)
+    if limit_yaxis2:
+        plt.ylim(0, limit_yaxis2)
+
+    # TODO
+    # plot up second y axis with pressure altitude ?
+
+    # Update axis labels
+    ax.set_xlabel('Latitude ($^{\circ}$N)')
+    if debug:
+        print( 'plt_ylabel', plt_ylabel)
+    if plt_ylabel:
+        ax.set_ylabel('Altitude (km)')
+    else:
+        ax.set_ylabel('')
+        ax.tick_params(axis='y', which='both', labelleft='off')
+        yticks_labels = ax.get_yticklabels()
+        ax.set_yticklabels([None for i in range(len(yticks_labels))])
+    return im
 
 
 def plt_df_X_vs_Y(df=None, x_var='', y_var='', x_label=None, y_label=None,
@@ -2164,9 +2239,9 @@ def close_plot():
 
 
 def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'],
-              tight=False):
+              tight=False, dpi=320):
     """
-    Save a plot to disk.
+    Save a plot to disk
 
     Parameters
     ----------
@@ -2188,7 +2263,7 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'],
 
     for extension in extensions:
         filename = os.path.join(location, title+"."+extension)
-        plt.savefig(filename)
+        plt.savefig(filename, dpi=dpi)
         logging.info("Plot saved to {location}".format(location=filename))
     return
 

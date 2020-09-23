@@ -42,7 +42,8 @@ def update_Planeflight_files(wd=None, num_tracers=103, verbose=True):
     output_data_str = 'Now give the times and locations of the flight'
     #
     met_vars = [
-        'GMAO_ABSH', 'GMAO_PSFC', 'GMAO_SURF', 'GMAO_TEMP', 'GMAO_UWND', 'GMAO_VWND'
+        'GMAO_ABSH', 'GMAO_PSFC', 'GMAO_SURF', 'GMAO_TEMP', 'GMAO_UWND',
+        'GMAO_VWND'
     ]
     assert isinstance(num_tracers, int), 'num_tracers must be an integer'
     slist = ['TRA_{:0>3}'.format(i) for i in np.arange(1, num_tracers+1)]
@@ -108,7 +109,8 @@ def update_Planeflight_files(wd=None, num_tracers=103, verbose=True):
 
 
 def prt_PlaneFlight_files(df=None, LAT_var='LAT', LON_var='LON',
-                          PRESS_var='PRESS', loc_var='TYPE', Username='Tomas Sherwen',
+                          PRESS_var='PRESS', loc_var='TYPE',
+                          Username='Tomas Sherwen',
                           Date_var='datetime', slist=None, num_tracers=85,
                           Extra_spacings=False,
                           verbose=False, debug=False):
@@ -177,11 +179,13 @@ def prt_PlaneFlight_files(df=None, LAT_var='LAT', LON_var='LON',
         # Create/Open up pf.dat setup
         a = open('Planeflight.dat.'+date_.strftime('%Y%m%d'), 'w')
         # Print out file headers to pf.dat file
-        print('Planeflight.dat -- input file for ND40 diagnostic GEOS_FP', file=a)
+        print('Planeflight.dat -- input file for ND40 diagnostic GEOS_FP',
+              file=a)
         print(Username, file=a)
         print(strftime("%B %d %Y", gmtime()), file=a)
         print('-----------------------------------------------', file=a)
-        print('{:<4}'.format(nvar), '! Number of variables to be output', file=a)
+        print('{:<4}'.format(nvar), '! Number of variables to be output',
+              file=a)
         print('-----------------------------------------------', file=a)
         # Print out species for GEOS-Chem to output to pf.dat file
         for n in range(0, len(slist)):
@@ -209,10 +213,13 @@ def prt_PlaneFlight_files(df=None, LAT_var='LAT', LON_var='LON',
 
 
 def prt_PlaneFlight_files_v12_plus(df=None, LAT_var='LAT', LON_var='LON',
-                                   PRESS_var='PRESS', loc_var='TYPE', OBS_var='OBS',
-                                   Date_var='datetime', slist=None, num_tracers=85,
+                                   PRESS_var='PRESS', loc_var='TYPE',
+                                   OBS_var='OBS',
+                                   Date_var='datetime', slist=None,
+                                   num_tracers=85,
                                    Extra_spacings=False,
-                                   Username='Tomas Sherwen', verbose=False, debug=False):
+                                   Username='Tomas Sherwen', verbose=False,
+                                   debug=False):
     """
     Takes a dataframe of lats, lons, alts, and times and makes Planeflight.dat.*
     files
@@ -288,11 +295,13 @@ def prt_PlaneFlight_files_v12_plus(df=None, LAT_var='LAT', LON_var='LON',
         # Create/Open up pf.dat setup
         a = open('Planeflight.dat.'+date_.strftime('%Y%m%d'), 'w')
         # Print out file headers to pf.dat file
-        print('Planeflight.dat -- input file for ND40 diagnostic GEOS_FP', file=a)
+        print('Planeflight.dat -- input file for ND40 diagnostic GEOS_FP',
+              file=a)
         print(Username, file=a)
         print(strftime("%B %d %Y", gmtime()), file=a)
         print('-----------------------------------------------', file=a)
-        print('{:<4}'.format(nvar), '! Number of variables to be output', file=a)
+        print('{:<4}'.format(nvar), '! Number of variables to be output',
+              file=a)
         print('-----------------------------------------------', file=a)
         # Print out species for GEOS-Chem to output to pf.dat file
         for n in range(0, len(slist)):
@@ -302,7 +311,8 @@ def prt_PlaneFlight_files_v12_plus(df=None, LAT_var='LAT', LON_var='LON',
         print('Now give the times and locations of the flight', file=a)
         print('-------------------------------------------------', file=a)
         header = [
-            'Point', 'Type', 'DD-MM-YYYY', 'HH:MM', 'LAT', 'LON', 'PRESS', 'OBS'
+            'Point', 'Type', 'DD-MM-YYYY', 'HH:MM', 'LAT', 'LON', 'PRESS',
+            'OBS'
         ]
         h_pstr = '{:>5}{:>7} {:>10} {:>5}  {:>6} {:>7} {:>7} {:>10}'
 
@@ -405,6 +415,46 @@ def pf_csv2pandas(file=None, vars=None, epoch=False, r_vars=False,
     else:
         return df
 
+def get_pf_from_folder(folder='./', dates2use=None, debug=False):
+    """
+    Get GEOS-Chem planeflight output from folder
+    """
+    # Which files to use?
+    files = list(sorted(glob.glob(folder+'/*plane.*')))
+    if debug:
+        print(files)
+    # Only open dates for certain dates?
+    if not isinstance(dates2use, type(None)):
+        FileRootsVar = 'FileRoots'
+        df = pd.DataFrame(files)
+        df = pd.DataFrame({FileRootsVar:files})
+        # Which date format to look for in filenames?
+        format='%Y%m%d%H%M'
+        # Setup a helper function to extract dates from file strings
+        def get_date_from_filename(x, format=format):
+            """
+            Extract Dates from filenames
+
+            Notes
+            -------
+             - It is assumed that the date ends the file string before the
+             format identifier
+            """
+            date_str = x.split('.')[-2]
+            dt = datetime_.strptime(date_str, format)
+            return dt
+        dtVar = 'datetime'
+        df[dtVar] = df[FileRootsVar].map(get_date_from_filename)
+        bool = df[dtVar].isin(dates2use)
+        files = list(df.loc[bool,FileRootsVar].values)
+    # Get headers
+    ALL_vars, sites = get_pf_headers(files[0], debug=debug)
+    # Extract dfs
+    dfs = [pf_csv2pandas(i, vars=ALL_vars) for i in files]
+    # Append the dataframes together
+    df = dfs[0].append(dfs[1:])
+    return df
+
 
 def get_pf_data_from_NetCDF_table(ncfile=None, req_var='TRA_69', spec='IO',
                                   loc='CVO', start=None, end=None, ver='1.7',
@@ -458,3 +508,24 @@ def get_pf_data_from_NetCDF_table(ncfile=None, req_var='TRA_69', spec='IO',
         dates = dates[np.where((dates < edate) & (dates >= sdate))]
 
     return dates, data
+
+
+def reprocess_split_pf_output_over_2_lines(folder, save_original_file=False):
+    """
+    Combine planeflight dat file lines where output split over 2 lines
+    """
+    files2use = list(sorted(glob.glob(folder+'*plane.log*')))
+    for file2use in files2use:
+        with open(file2use, 'r') as file:
+            lines = [i.strip() for i in file]
+        if save_original_file:
+            os.rename(file2use, file2use+'.orig')
+        else:
+            os.remove(file2use)
+        first_part = lines[0::2]
+        second_part = lines[1::2]
+        a = open(file2use, 'w')
+        for n_line, line in enumerate(first_part):
+            Newline = '{} {}'.format(first_part[n_line], second_part[n_line])
+            print(Newline, file=a)
+        a.close()

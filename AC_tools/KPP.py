@@ -32,11 +32,13 @@ from .GEOSChem_nc import *
 
 
 def get_PL_ars4mech_NetCDF(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
-                           Data_rc=None, Var_rc=None,
-                           region=None, rm_strat=False, GC_version='v12.9.1',
-                           weight_by_molecs=False, verbose=True, debug=False):
+                           region=None, rm_strat=False, use_time_in_trop=True,
+                           GC_version='v12.9.1',
+                           weight_by_molecs=False, dates2use=None,
+                           StateMet=None, wd=None,
+                           verbose=True, debug=False):
     """
-    Extract prod/loss for family from wd (BPCH files) and code directory
+    Extract prod/loss for family from wd (NetCDF files)
 
     Parameters
     -------
@@ -50,10 +52,6 @@ def get_PL_ars4mech_NetCDF(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
         get_stioch4family_rxns
     tags2_rxn_num (dict): dicionary mapping tags to reaction numbers
     tags (list): list of prod/loss tags to extract
-    Var_rc (dict): dictionary containing variables for working directory ('wd')
-        ( made by AC_tools' get_default_variable_dict function)
-    Data_rc (dict): dictionary containing model data
-        (made by AC_tools' get_shared_data_as_dict function )
     rm_strat (bool): (fractionally) replace values in statosphere with zeros
     weight_by_molecs (bool): weight grid boxes by number of molecules
 
@@ -62,87 +60,88 @@ def get_PL_ars4mech_NetCDF(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
     (None)
     """
     # - Get KPP production/loss tags
-#    fam_dict = Ox_fam_dict['fam_dict']
     RR_dict_fam_stioch = Ox_fam_dict['RR_dict_fam_stioch']
-#    RR_dict = Ox_fam_dict['RR_dict']
     tags2_rxn_num = Ox_fam_dict['tags2_rxn_num']
     tags = Ox_fam_dict['tags']
-#    tags_dict = Ox_fam_dict['tags_dict']
     # - Get model output for fluxes through these tagged routes
-    # Get prod/loss arrays
-    ars = get_GC_output(wd=Var_rc['wd'], r_list=True,
-                        vars=['PORL_L_S__'+i for i in tags],
-                        trop_limit=Var_rc['trop_limit'])
-    # Limit prod/loss vertical dimension?
-    limit_PL_dim2 = Var_rc['limit_PL_dim2']
-    # Covert units based on whether model output is monthly
-    if Data_rc['output_freq'] == 'Monthly':
-        month_eq = True  # use conversion in convert_molec_cm3_s_2_g_X_s_BPCH
-    else:
-        month_eq = False
-    # Now convert the units (to G/s)
-    ars = convert_molec_cm3_s_2_g_X_s_BPCH(ars=ars, ref_spec=ref_spec,
-                                      # Shared settings...
-                                      months=Data_rc['months'],
-                                      years=Data_rc['years'],
-                                      vol=Data_rc['vol'], t_ps=Data_rc['t_ps'],
-                                      trop_limit=Var_rc['trop_limit'],
-                                      rm_strat=Var_rc['rm_strat'],
-                                      # There are 59 levels of computation for P/l in
-                                      # v11-1+ (so limit to 59)
-                                      limit_PL_dim2=limit_PL_dim2,
-                                      # ... and function specific settings...
-                                      month_eq=month_eq,
-                                      conbine_ars=False)
-    # Add stoichiometric scaling (# of Ox losses per tagged rxn. )
-    ars = [i*RR_dict_fam_stioch[tags2_rxn_num[tags[n]]]
-           for n, i in enumerate(ars)]
-    # Scale to annual
-    if Data_rc['output_freq'] == 'Monthly':
-        # Should this be summated then divided adjusted to time points.
-        # Sum over time
-        ars = [i.sum(axis=-1) for i in ars]
-        # Adjust to equivalent months.
-        ars = [i/len(Data_rc['months'])*12 for i in ars]
-    else:
-        # Average over time?
-        ars = [i.mean(axis=-1) for i in ars]
-        # Scale to annual
-        ars = [i*60.*60.*24.*365. for i in ars]
-    # Get time in troposphere diagnostic
-    print(Data_rc['t_ps'].shape)
-    print(Data_rc['t_ps'].mean(axis=-1).shape)
-    t_ps = Data_rc['t_ps'].mean(axis=-1)[..., :limit_PL_dim2]
-    # Check tropospheric LOx total
-    arr = np.ma.array(ars)
-    print(arr.shape, t_ps.shape, limit_PL_dim2)
-    LOx_trop = (arr * t_ps[None, ...]).sum() / 1E12
+    # Get the prod/loss netCDFs
+    dsPL = get_ProdLoss_ds(wd=wd, dates2use=dates2use)
+    prefix = 'Prod_'
+    diag_tag_prefix = '{}{}'.format(prefix, 'T')
+    vars2use = [i.replace('PT', diag_tag_prefix) for i in Ox_fam_dict['tags'] ]
+    dsPL = dsPL[vars2use]
+    # Rename back into old format for now - Update this?
+    rename_dict = dict(zip(vars2use, Ox_fam_dict['tags']))
+    dsPL = dsPL.rename(rename_dict)
+    # Convert seconds to per month (assuming monthly output)
+    months = list(dsPL['time.month'].values.flatten())
+    years = list(dsPL['time.year'].values.flatten())
+    month2sec = secs_in_month(years=years, months=months)
+    # Convert the units from molec/cm3/s to g/s
+    # Remove volume (*cm3)
+    dsPL = dsPL * StateMet['Met_AIRVOL'] * 1E6
+    # Update for stoichiometry of the reaction routes
+    # (to consider any stoichiometeric scalling on Ox)
+    AVG = constants('AVG')
+    for var2use in Ox_fam_dict['tags']:
+        if debug:
+            print(var2use)
+        values = dsPL[var2use]
+        # Convert molecules to moles
+        values = values / AVG
+        # Convert to g mass
+        values = (values * species_mass('O3'))
+        # Account for stiochiometrey of reaction
+        values = values * RR_dict_fam_stioch[ tags2_rxn_num[var2use] ]
+        # Convert to /month from /s
+        values = values * month2sec[:, None, None, None]
+        dsPL[var2use].values = values
+    # Save data dataset and reload
+    savename = 'TEMP_ProdLoss_Ox_budget_{}.nc'.format('dsPL')
+    dsPL = save_ds2disk_then_reload(ds=dsPL, savename=savename,
+                                    folder='~/tmp/')
+    # Remove the stratosphere by multiplication through by "time in troposphere"
+    # Remove stratosphere?
+    if rm_strat:
+        # Loop by spec
+        if use_time_in_trop:
+            dsPL = rm_fractional_troposphere(dsPL, StateMet=StateMet,
+                                             vars2use=Ox_fam_dict['tags'])
+        else:
+            trop_mask = create4Dmask4trop_level(StateMet=StateMet)
+            for spec_var in vars2use:
+                dsPL[spec_var] = dsPL[spec_var].where(trop_mask)
+    # Check the total tropospheric Ox loss
+    # Extract the arrays (to follow same approach as for BPCH files)
+    ars = [dsPL[i].values for i in Ox_fam_dict['tags']]
+    arr = np.ma.array(ars).sum(axis=0)
+    var2use = Ox_fam_dict['tags'][0]
+    ds_TEMP = dsPL[[var2use]].copy()
+    print(arr.shape, dsPL[var2use].values.shape )
+    print(arr.sum())
+    ds_TEMP[var2use].values = arr
+    LOx_trop = rm_fractional_troposphere(ds_TEMP, vars2use=[var2use],
+                                         StateMet=StateMet)
+    LOx_trop = float(ds_TEMP[var2use].values.sum()) / 1E12
     if verbose:
         print('Annual tropospheric Ox loss (Tg O3): ', LOx_trop)
-    # Remove the stratosphere by multiplication through by "time in troposphere"
-    if rm_strat:
-        ars = [i*t_ps for i in ars]
-    # Select data by location or average globally?
-    if not isinstance(region, type(None)):
-        # Also allow for applying masks here...
-        print('NOT SETUP!!!')
-        sys.exit()
-    else:
-        if weight_by_molecs:
-            ars = [molec_weighted_avg_BPCH(i, weight_lon=True, res=Data_rc['res'],
-                                      weight_lat=True, wd=Var_rc['wd'],
-                                      trop_limit=Var_rc['trop_limit'],
-                                      rm_strat=Var_rc['rm_strat'], \
-                                      # provide shared data arrays averaged over time...
-                                      molecs=Data_rc['molecs'].mean(axis=-1),
-                                      t_p=t_ps) \
-                   for i in ars]
-        else:
-            pass
-    if debug:
-        print([i.shape for i in ars])
+    # Weight by molecules?
+    if weight_by_molecs:
+        # Calculate number of molecules
+        MolecVar = 'Met_MOLCES'
+        RMM_air = constants('RMM_air')
+        StateMet[MolecVar] = StateMet['Met_AIRDEN'].copy()
+        # kg/m3 => molecs/cm3
+        StateMet[MolecVar].values = StateMet[MolecVar].values / RMM_air /1E6
+        # Multiply values through by # molecules
+        dsPL = dsPL * StateMet[MolecVar]
+        # sum over lat and lon
+        dsPL = dsPL.sum(dim=['lat', 'lon', 'time'])
+        # divide by the total number of molecules
+        dsPL = dsPL / StateMet[MolecVar].sum(dim=['lat', 'lon', 'time'])
+    # Extract the arrays (to follow same approach as for BPCH files)
+    ars = [dsPL[i].values for i in Ox_fam_dict['tags']]
     return ars
-
 
 
 def get_PL_ars4mech_BPCH(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
@@ -243,13 +242,14 @@ def get_PL_ars4mech_BPCH(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
         sys.exit()
     else:
         if weight_by_molecs:
-            ars = [molec_weighted_avg_BPCH(i, weight_lon=True, res=Data_rc['res'],
-                                      weight_lat=True, wd=Var_rc['wd'],
-                                      trop_limit=Var_rc['trop_limit'],
-                                      rm_strat=Var_rc['rm_strat'], \
+            ars = [molec_weighted_avg_BPCH(i, weight_lon=True,
+                                           res=Data_rc['res'],
+                                           weight_lat=True, wd=Var_rc['wd'],
+                                           trop_limit=Var_rc['trop_limit'],
+                                           rm_strat=Var_rc['rm_strat'], \
                                       # provide shared data arrays averaged over time...
-                                      molecs=Data_rc['molecs'].mean(axis=-1),
-                                      t_p=t_ps) \
+                                       molecs=Data_rc['molecs'].mean(axis=-1),
+                                            t_p=t_ps) \
                    for i in ars]
         else:
             pass
@@ -347,8 +347,6 @@ def print_out_dfs2KPP_eqn_file(species_df=None, headers=None,
 
 
 # -------------- Extract rxn data from KPP ***output*** files
-
-
 def KPP_eqn_file_headers(folder=None, filename=None):
     """
     Get headers from KPP *.eqn file
@@ -447,8 +445,6 @@ def get_KPP_tagged_rxns(fam='LOx', filename='gckpp_Monitor.F90',
 
 
 # -------------- Extract rxn data from KPP ***input*** file(s)
-
-
 def KPP_eqn_file_species(folder=None, filename=None, debug=False):
     """
     Get species from *.eqn file
@@ -642,12 +638,12 @@ def split_KPP_rxn_str_into_chunks(rxn, KPP_line_max=43, debug=False):
     return sub_strs
 
 
-def get_KPP_PL_tag(last_tag, tag_prefix='T'):
+def get_next_KPP_PL_tag(last_tag, tag_prefix='T'):
     """
     Get the next P/L tag in a format T???
     """
     assert (len(last_tag) == 4), "Tag must be 4 characers long! (e.g. T???)"
-    last_tag_num = int(last_tag[1:])
+    last_tag_num = int(last_tag.split(tag_prefix)[-1])
     return '{}{:0>3}'.format(tag_prefix, last_tag_num+1)
 
 
@@ -1173,6 +1169,11 @@ def get_Ox_fam_based_on_reactants(filename='gckpp_Monitor.F90',
         # Add species in v11-2d (benchmarks)
         'IMAO3', 'IPMN', 'MONITS', 'MONITU', 'ISNP', 'LIMO', 'ISNOOB', 'PIO2',
         'LIMO2'
+        # in v12...
+        'ICN', 'ICPDH', 'IDC', 'IDCHP', 'IDHDP', 'IDHPE', 'IDN', 'IEPOXA',
+        'IEPOXB', 'IEPOXD', 'IHN1', 'IHN2', 'IHN3', 'IHN4', 'INDIOL', 'INO',
+        'INPB', 'INPD', 'IPRNO3', 'ITCN', 'ITHN', 'MONITA', 'PIP', 'RIPA',
+        'RIPB', 'RIPC', 'RIPD', 'SOAIE'
     ]
     # Get list of tagged hv reactions
     hv_rxns = input_KPP_mech.loc[input_KPP_mech['Type'] == 'Photolysis', :]
@@ -1378,14 +1379,19 @@ def get_oxidative_release4specs(filename='gckpp_Monitor.F90', wd=None,
 
 def get_Ox_fam_dicts(fam='LOx', ref_spec='O3', GC_version='v12.9.1',
                      CODE_wd=None, wd=None, Mechanism='Halogens',
-                      verbose=True, debug=False):
+                     tag_prefix='PT', weight_by_molecs=False,
+                     StateMet=None, rm_strat=False,
+                     verbose=True, debug=False):
+    """
+    """
     # Get reaction dictionary
     RR_dict = get_dict_of_KPP_mech(wd=CODE_wd, GC_version=GC_version,
                                    Mechanism=Mechanism)
     if debug:
         print((len(RR_dict), [RR_dict[i] for i in list(RR_dict.keys())[:5]]))
     # Get tags for family
-    tags_dict = get_tags4family(fam=fam, wd=CODE_wd, RR_dict=RR_dict)
+    tags_dict = get_tags4family(fam=fam, wd=CODE_wd, RR_dict=RR_dict,
+                                tag_prefix=tag_prefix)
     tags = list(sorted(tags_dict.values()))
     tags2_rxn_num = {v: k for k, v in list(tags_dict.items())}
     if debug:
@@ -1401,8 +1407,8 @@ def get_Ox_fam_dicts(fam='LOx', ref_spec='O3', GC_version='v12.9.1',
                                              Mechanism=Mechanism,
                                              GC_version=GC_version,
                                              debug=debug)
-    # Convert this to a dictionary and return
-    d = {
+    # Place new variables/data to share into a dictionary and return this
+    Ox_fam_dict = {
         'fam_dict': fam_dict,
         'RR_dict_fam_stioch': RR_dict_fam_stioch,
         'RR_dict': RR_dict,
@@ -1410,7 +1416,22 @@ def get_Ox_fam_dicts(fam='LOx', ref_spec='O3', GC_version='v12.9.1',
         'tags': tags,
         'tags_dict': tags_dict,
     }
-    return d
+    # - Extract data for Ox loss for family from model
+    ars = get_PL_ars4mech_NetCDF(Ox_fam_dict=Ox_fam_dict,
+                                rm_strat=rm_strat, wd=wd,
+                                fam=fam, ref_spec=ref_spec,
+                                StateMet=StateMet,
+                                weight_by_molecs=weight_by_molecs)
+
+    # Convert this to a dictionary and return
+    # Inc. lists of sorted family names and ars in returned dictionary
+    sorted_fam_names = ['Photolysis', 'HO$_{\\rm x}$', 'NO$_{\\rm x}$']
+    halogen_fams = ['Chlorine', 'Cl+Br', 'Bromine', 'Br+I', 'Cl+I', 'Iodine', ]
+    sorted_fam_names += halogen_fams
+    Ox_fam_dict['ars'] = ars
+    Ox_fam_dict['halogen_fams'] = halogen_fams
+    Ox_fam_dict['sorted_fam_names'] = sorted_fam_names
+    return Ox_fam_dict
 
 
 def get_Ox_fam_dicts_BPCH(fam='LOx', ref_spec='O3', wd=None, CODE_wd=None,
@@ -1466,7 +1487,6 @@ def get_Ox_fam_dicts_BPCH(fam='LOx', ref_spec='O3', wd=None, CODE_wd=None,
                                Var_rc=Var_rc, Data_rc=Data_rc,
                                fam=fam, ref_spec=ref_spec,
                                weight_by_molecs=weight_by_molecs)
-
     # Setup lists of sorted family names
     sorted_fam_names = ['Photolysis', 'HO$_{\\rm x}$', 'NO$_{\\rm x}$']
     halogen_fams = ['Chlorine', 'Cl+Br', 'Bromine', 'Br+I', 'Cl+I', 'Iodine', ]
@@ -1507,7 +1527,7 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
                            Ox_fam_dict=None,
                            weight_by_molecs=False, full_vert_grid=False,
                            rtn_by_rxn=True, rtn_by_fam=False,
-                           CODE_wd=None,
+                           CODE_wd=None, suffix='',
                            verbose=True, debug=False):
     """
     Build an Ox budget table like table 4 in Sherwen et al 2016b
@@ -1524,6 +1544,7 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
     weight_by_molecs (bool): weight grid boxes by number of molecules
     full_vert_grid (bool): use the full vertical grid for analysis
     debug, verbose (bool): switches to turn on/set verbosity of output to screen
+    suffix (str): suffix in filename for saved plot
 
     Returns
     -------
@@ -1549,10 +1570,12 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
     # Sum all the Ox loss routes
     total = np.array(ars).sum()
     # Create a dictionary of values of interest
+    TotalFluxVar = 'Total flux (Tg)'
+    FamilyVar = 'Family'
     dict_ = {
-        'Total flux': [i.sum(axis=0) for i in ars],
+        TotalFluxVar: [i.sum(axis=0)/1E12 for i in ars],
         'Total of flux (%)': [i.sum(axis=0)/total*100 for i in ars],
-        'Family': [fam_dict[i] for i in tags],
+        FamilyVar: [fam_dict[i] for i in tags],
         'rxn #': [tags2_rxn_num[i] for i in tags],
         'rxn str': [RR_dict[tags2_rxn_num[i]] for i in tags],
         'stoich': [RR_dict_fam_stioch[tags2_rxn_num[i]] for i in tags],
@@ -1561,16 +1584,17 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
     # Create pandas dataframe
     df = pd.DataFrame(dict_)
     # Sort the data and have a look...
-    df = df.sort_values('Total flux', ascending=False)
+    df = df.sort_values(TotalFluxVar, ascending=False)
     if debug:
         print(df.head())
     # Sort values again and save...
-    df = df.sort_values(['Family', 'Total flux'], ascending=False)
+    df = df.sort_values([FamilyVar, TotalFluxVar], ascending=False)
     if debug:
         print(df.head())
-    df.to_csv('Ox_loss_budget_by_rxn_for_{}_mechanism.csv'.format(Mechanism))
+    filename = 'Ox_loss_budget_by_rxn_for_{}_mechanism{}.csv'
+    df.to_csv(filename.format(Mechanism, suffix))
     # Now select the most important routes
-    grp = df[['Family', 'Total flux']].groupby('Family')
+    grp = df[[FamilyVar, TotalFluxVar]].groupby(FamilyVar)
     total = grp.sum().sum()
     # Print the contribution by family to screen
     print((grp.sum() / total * 100))
@@ -1583,13 +1607,91 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
     dfFam['Total'] = dfFam.sum().sum()
     dfFam['Halogens'] = dfFam[halogen_fams].sum().sum()
     # Update units to Tg O3
-    dfFam = dfFam.T / 1E12
+    dfFam = dfFam.T
+    print(dfFam)
     # return dictionaries of LOx by reaction or by family (in Tg O3)
     if rtn_by_rxn:
-        df.loc[:,'Total flux'] = df.loc[:,'Total flux'] /1E12
+#        df.loc[:,TotalFluxVar] = df.loc[:,TotalFluxVar] /1E12
         return df
     if rtn_by_fam:
         return dfFam
+
+def add_tags4strs2mech(rxn_dicts, tagged_rxns={},
+                       search_strs=None, counter=0,
+                       search_reactants=False,
+                       search_products=False,
+                       tag_prefix='T'):
+    """
+    Tag reactions in provided string found in KPP reaction string
+
+    Parameters
+    -------
+    search_reactants (bool): just search for strings in reaction reactants
+    search_products (bool): just search for strings in reaction products
+    search_strs (list): list of strings to search for in reactions
+    tagged_rxns (dict): dictionary of tagged reactions
+    rxn_dicts (dict): dictionary of KPP reaction mechanisms
+    counter (int): number of reactions already tagged
+    tag_prefix (str): the prefix to use for tags added to mechansism
+
+    Returns
+    -------
+    (dict, dict)
+    """
+    if isinstance(search_strs, type(None)):
+        search_strs = 'BrSAL', 'CH3Br', 'CH3Cl', 'CH2Cl2', 'CHCl3', '0.150IBr',
+        search_strs += 'HOBr','ClNO2',
+    # Setup regex to find existing tags in reaction strings
+    re1 = '(\\+)'                    # Any Single Character 1
+    re2 = '(\\s+)'                   # White Space 1
+    re3 = '({})'.format(tag_prefix)  # Any Single Character 2
+    re4 = '(\d{3})'                  # Integer Number 1
+    re5 = '(\\s+)'                   # White Space 2
+    rg = re.compile(re1+re2+re3+re4, re.IGNORECASE | re.DOTALL)
+    # ( Or just all reactions that contain a species of interest )
+    current_tag = '{}{}'.format(tag_prefix, counter)
+    for search_str in search_strs:
+        for key_ in list(rxn_dicts.keys()):
+            df = rxn_dicts[key_]
+            for idx in df.index:
+                # retrive the reaction string and check if the family is in it
+                rxn_str = df.loc[idx]['rxn_str']
+                reactant_str = rxn_str.split('= ')[0]
+                product_str = rxn_str.split('= ')[-1]
+                if search_reactants:
+                    str2search4search_str = reactant_str
+                elif search_products:
+                    str2search4search_str = product_str
+                else:
+                    str2search4search_str = rxn_str
+                if search_str in str2search4search_str:
+                    # Update the counter (NOTE: counter starts from 1)
+                    counter += 1
+                    # Check if rxn already tagged, if so just use that tag.
+                    m = rg.search(rxn_str)
+                    if m:
+                        # Extract tag from regex matched groups
+                        existing_tag = m.group(3)+m.group(4)
+                        # For # rxn tagged save the rxn., its tag and its family
+                        tmp_dict = {
+                            'tag': existing_tag, 'search_str': search_str,
+                            'rxn_str': rxn_str
+                        }
+                        tagged_rxns[counter] = tmp_dict
+                    else:
+                        # Get a new tag and add to the reaction string
+                        current_tag = get_next_KPP_PL_tag(current_tag)
+                        rxn_str += ' + ' + current_tag
+                        df.loc[idx, 'rxn_str'] = rxn_str
+                        # Save the reaction, its tag and its family
+                        tmp_dict = {
+                            'tag': current_tag, 'search_str': search_str,
+                            'rxn_str': rxn_str
+                        }
+                        tagged_rxns[counter] = tmp_dict
+            # Now update the DataFrame in the rxn_dicts dictionary
+            rxn_dicts[key_] = df
+    return rxn_dicts, tagged_rxns
 
 
 def GCARR(A0, B0, C0, TEMP=273.15):
@@ -1599,7 +1701,7 @@ def GCARR(A0, B0, C0, TEMP=273.15):
     Notes
     -------
      - Original function copied below:
-  REAL(kind=dp) FUNCTION AC.GCARR( A0,B0,C0 )
+  REAL(kind=dp) FUNCTION GCARR( A0,B0,C0 )
       REAL A0,B0,C0
       GCARR =  DBLE(A0) * EXP(DBLE(C0)/TEMP) * (300._dp/TEMP)**DBLE(B0)
   END FUNCTION GCARR
@@ -1614,7 +1716,7 @@ def GC_OHCO(A0, B0, C0, NUMDEN=1E4, TEMP=273.15, PRESS=1000):
     Notes
     -------
      - Original function copied below:
-  REAL(kind=dp) FUNCTION AC.GC_OHCO( A0,B0,C0 )
+  REAL(kind=dp) FUNCTION GC_OHCO( A0,B0,C0 )
 
     REAL A0,B0,C0,R0
     REAL KLO1,KLO2,KHI1,KHI2,XYRAT1,XYRAT2,BLOG1,BLOG2,FEXP1,FEXP2

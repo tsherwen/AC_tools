@@ -127,7 +127,7 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None,
                        wd=None,
                        trop_level_var='Met_TropLev', air_mass_var='Met_AD',
                        avg_over_time=False,
-                       sum_patially=True, rm_trop=True, use_time_in_trop=True,
+                       sum_patially=True, rm_strat=True, use_time_in_trop=True,
                        trop_mask=None, spec_conc_prefix='SpeciesConc_',
                        time_in_trop_var='N/A', vars2use=None,
                        sum_spatially=True,
@@ -141,7 +141,7 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None,
     wd (str): Specify the wd to get the results from a run.
     StateMet (dataset): Dataset object containing time in troposphere
     trop_mask (nd.array): 3D or 4D boolean array where stratosphere is False
-    rm_trop (bool): remove the troposphere
+    rm_strat (bool): remove the stratospheric values
     spec (str): Name of the species (optional)
     spec_var (str):  Name of the species inc. Diagnostic prefix (optional)
     spec_conc_prefix (str): the diagnostic prefix for concentration
@@ -199,8 +199,8 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None,
             dsL[spec_var] = dsL[spec_var] * conversion_factor
             # Convert moles to mass (* RMM) , then to Gg
             dsL[spec_var] = dsL[spec_var] * float(species_mass(spec)) / 1E9
-        # Remove the tropospheric values?
-        if rm_trop:
+        # Remove the non-tropospheric values?
+        if rm_strat:
             # Loop by spec
             if use_time_in_trop:
                 dsL = rm_fractional_troposphere(dsL, vars2use=vars2use,
@@ -222,8 +222,8 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None,
         dsL[spec_var] = dsL[spec_var] * (AirMass*1E3 / constants('RMM_air'))
         # Convert moles to mass (* RMM) , then to Gg
         dsL[spec_var] = dsL[spec_var] * float(species_mass(spec)) / 1E9
-        # remove the tropospheric values?
-        if rm_trop:
+        # remove the non-tropospheric values?
+        if rm_strat:
             # Loop by spec
             if use_time_in_trop:
                 dsL = rm_fractional_troposphere(dsL, vars2use=vars2use,
@@ -771,7 +771,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
                                      extra_burden_specs=[],
                                      extra_surface_specs=[],
                                      GC_version='v12.6.0',
-                                     use_time_in_trop=True, rm_trop=True,
+                                     use_time_in_trop=True, rm_strat=True,
                                      debug=False):
     """
     Get various stats on a set of runs in a dictionary ({name: location})
@@ -832,7 +832,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
         S = get_Gg_trop_burden(ds, vars2use=vars2use, StateMet=StateMet,
                                use_time_in_trop=use_time_in_trop,
                                avg_over_time=avg_over_time,
-                               rm_trop=rm_trop)
+                               rm_strat=rm_strat)
         # convert to ref spec equivalent (e.g. N for NO2, C for ACET)
         for spec in specs2use:
             ref_spec = get_ref_spec(spec)
@@ -941,3 +941,95 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
         df.to_csv(csv_filename)
     # Return the DataFrame too
     return df
+
+
+def add_molec_den2ds(ds, MolecVar='Met_MOLCES', AirDenVar='Met_AIRDEN'):
+    """
+    Add molecules/cm3 to xr.dataset (must contain AirDenVar)
+    """
+    # Calculate number of molecules
+    try:
+        ds[MolecVar]
+    except KeyError:
+        RMM_air = constants('RMM_air') / 1E3 # g/mol => kg/mol
+        ds[MolecVar] = ds[AirDenVar].copy() / 1E6 # kg/m3 => kg/cm3
+        values = ds[MolecVar].values
+        values = values / RMM_air  # kg/cm3 / kg/mol
+        values = values * constants('AVG') # mol/cm3 => molecules/cm3
+        ds[MolecVar].values = values
+    return ds
+
+
+def add_Cly_Bry_Iy_2ds(ds=None, prefix='SpeciesConc_',
+                       add_ind_specs2ds=False, verbose=False):
+    """
+    Add all Xy (X=Cl, Br, I) variables to xr.dataset (e.g. SpeciesConc* )
+    """
+    fams = 'Cly', 'Bry', 'Iy'
+    for fam in fams:
+        ds = add_Xy_2ds(ds, var2add=fam, prefix=prefix,
+                        add_ind_specs2ds=add_ind_specs2ds,
+                        verbose=verbose)
+    return ds
+
+
+def add_Xy_2ds(ds=None, var2add='Cly', prefix='SpeciesConc_',
+               add_ind_specs2ds=False,  verbose=False):
+    """
+    Add an Xy (X=Cl, Br, I) to xr.dataset (e.g. SpeciesConc* )
+    """
+    # Get the reference species
+    ref_spec = get_ref_spec(var2add)
+    # Get Xy species
+    specs2use = GC_var(var2add)
+    # Remove HCl from list of species (if present) as it is a reservoir species
+    if var2add == 'Cly':
+        try:
+            idx = specs2use.index('HCl')
+            specs2use.pop(idx)
+            print('WARNING: removed HCl from Cly definition')
+        except ValueError:
+            pass
+    if verbose:
+        Pstr = "Using species for '{}' family (ref_spec: {}): {}"
+        print( Pstr.format(var2add, ref_spec, specs2use) )
+    # Setup Xy variable as template of 1st Xy species
+    spec2use = specs2use[0]
+    var2use = '{}{}'.format(prefix, spec2use)
+    stioch = spec_stoich(spec2use, ref_spec=ref_spec)
+    ds[var2add] = ds[var2use].copy() * stioch
+    # Also save the individual species in reference species terms?
+    if add_ind_specs2ds:
+        Var2Save = '{}-in-{}-units'.format(spec2use,ref_spec)
+        ds[Var2Save] = ds[var2use].copy() * stioch
+    # Add rest of Xy species and scale to stoichiometry
+    for spec2use in specs2use[1:]:
+        var2use = '{}{}'.format(prefix, spec2use)
+        values = ds[var2use].values * stioch
+        ds[var2add].values = ds[var2add].values + values
+        # Also save the individual species in reference species terms?
+        if add_ind_specs2ds:
+            Var2Save = '{}-in-{}-units'.format(spec2use,ref_spec)
+            ds[Var2Save] = ds[var2use].copy() * stioch
+    return ds
+
+
+def get_specieslist_from_input_geos(folder=None, filename='input.geos'):
+    """
+    Extract the species list from the input.geos file
+    """
+    line2start_read = '%%% ADVECTED SPECIES MENU %%%'
+    line2end_read = '------------------------+--------------------------------'
+    species_lines = []
+    with open(folder+filename, 'r') as file:
+        save_line = False
+        for line in file:
+            if line2end_read in line:
+                save_line = False
+            if save_line:
+                species_lines += [line]
+            if line2start_read in line:
+                save_line = True
+
+    species = [i.split(':')[-1].strip() for i in species_lines ]
+    return species
