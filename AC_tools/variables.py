@@ -593,7 +593,7 @@ def latex_spec_name(input_x, debug=False):
         'SOAP': 'SOAP', 'SOAS': 'SOAS', 'TOLU': 'TOLU',
         'XYLE': 'Xylene',
         # Extra GEOS-chem species - in standard as of v12.9.1
-        'O1D' : 'O($^{1}$D)', 'O', 'O'
+        'O1D' : 'O($^{1}$D)', 'O': 'O',
         }
     return spec_dict[input_x]
 
