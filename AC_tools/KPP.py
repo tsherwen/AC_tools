@@ -1694,7 +1694,7 @@ def add_tags4strs2mech(rxn_dicts, tagged_rxns={},
     return rxn_dicts, tagged_rxns
 
 
-def GCARR(A0, B0, C0, TEMP=273.15):
+def GCARR(A0, B0, C0, TEMP=298.0):
     """
     Reproduction of GEOS-Chem's KPP function GCARR in Python
 
@@ -1709,7 +1709,7 @@ def GCARR(A0, B0, C0, TEMP=273.15):
     return float(A0) * np.exp(float(C0)/TEMP) * (300.0/TEMP)**float(B0)
 
 
-def GC_OHCO(A0, B0, C0, NUMDEN=1E4, TEMP=273.15, PRESS=1000):
+def GC_OHCO(A0, B0, C0, NUMDEN=1E4, TEMP=298.0, PRESS=1000.0):
     """
     Reproduction of GEOS-Chem's KPP function GC_OHCO in Python
 
