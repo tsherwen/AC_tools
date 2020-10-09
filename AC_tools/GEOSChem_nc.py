@@ -774,7 +774,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
                                      extra_surface_specs=[],
                                      GC_version='v12.6.0',
                                      use_time_in_trop=True, rm_strat=True,
-                                     dates2use=None,
+                                     dates2use=None, round=3,
                                      verbose=False, debug=False):
     """
     Get various stats on a set of runs in a dictionary ({name: location})
@@ -792,6 +792,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     extra_burden_specs (list): list of extra species to give trop. burden stats on
     extra_surface_specs (list): list of extra species to give surface conc. stats on
     res (str): resolution of the modul output (e.g. 4x5, 2x2.5, 0.125x0.125)
+    round (int): number of decimal places to round dataframe too
 
     Returns
     -------
@@ -921,8 +922,6 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
             df.loc[:, col_] = df.loc[:, col_].values*ppbv_scale
         if 'ppt' in col_:
             df.loc[:, col_] = df.loc[:, col_].values*pptv_scale
-    # Transpose back to variables as index
-    df = df.T
 
     # - OH concentrations
 
@@ -939,12 +938,14 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
             pcent_var = col_+' (% vs. {})'.format(REF2)
             df[pcent_var] = (df[col_]-df[col_][REF2]) / df[col_][REF2] * 100
 
+    # Transpose back to variables as index
+    df = df.T
     # Re-order columns
     df = df.reindex(sorted(df.columns), axis=1)
     # Reorder index
     df = df.T.reindex(sorted(df.T.columns), axis=1).T
     # Now round the numbers
-    df = df.round(3)
+    df = df.round(round)
     # Save csv to disk
     if save2csv:
         csv_filename = '{}_summary_statistics{}.csv'.format(prefix, extra_str)
