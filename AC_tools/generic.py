@@ -1226,3 +1226,70 @@ def merge_dicts_list(x):
     for i in x[1:]:
         z.update(i)
     return z
+
+
+def get_table_from_copernicus_article(URL=None, TableNum=5,
+                                      debug=False):
+    """
+    Retrieve a specific table from a copernicus articles XML link
+
+    Parameters
+    ----------
+    URL (str): URL for a copernicus XML file
+    TableNum (int): number of the table to extract
+
+    Returns
+    -------
+    (pd.DataFrame)
+
+    Notes
+    -------
+     - More details on specific XML format used at link below
+    https://jats.nlm.nih.gov/
+     - More useful info on using Xpath options of Elementree below
+     http://effbot.org/zone/element-index.htm
+    """
+    import xml.etree.ElementTree as ET
+    import urllib
+    # Use an example paper and table if one not specify
+    if isinstance(URL, type(None)):
+        URL = 'https://acp.copernicus.org/articles/20/10865/2020/'
+        URL += 'acp-20-10865-2020.xml'
+
+    # Get the whole tree and root
+    tree = ET.parse(urllib.request.urlopen(URL))
+    root = tree.getroot()
+    # Tables for Copernicus publications are in the Oasis namespace
+    tags = [elem.tag for elem in root.iter() ]
+    tags2use = [i for i in tags if 'oasis' in i.lower()]
+    TableTag = '{http://docs.oasis-open.org/ns/oasis-exchange/table}table'
+    ColNameVar = 'colname'
+    NcolsVar = 'cols'
+    tables = [i for i in root.iter(tag=TableTag)]
+    # Select table from list (update article number to python index)
+    AssStr = 'WARNING: Table # {} requested, but only {} tables in article.'
+    assert TableNum<=len(tables), AssStr.format(TableNum, len(tables))
+    table = tables[ TableNum-1 ]
+    if debug:
+        print(table)
+    table_dict = {}
+    for child in table:
+        for elem in child.iter():
+            attrib = elem.attrib
+            if NcolsVar in attrib.keys():
+                table_dict[NcolsVar] = attrib[NcolsVar]
+            if ColNameVar in attrib.keys():
+                colname = attrib[ColNameVar]
+                table_dict[colname] = elem.text
+
+    # Convert to a pandas dataframe and return
+    NCols = table_dict[NcolsVar]
+    del table_dict[NcolsVar]
+    df = pd.DataFrame()
+    for key in table_dict.keys():
+        if debug:
+            print(key, table_dict[key])
+        df[key] = table_dict[key].split()
+    return df
+
+
