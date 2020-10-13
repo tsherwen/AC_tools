@@ -74,7 +74,7 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
         glob_pattern = '{}/{}'.format(wd, file_str)
         is_HEMCO_collection = ('hemco' in file_str.lower())
     files = glob.glob(glob_pattern)
-    assert len(files) >= 1, 'No files found matching-{}'.format(wd+file_str)
+    assert len(files) >= 1, 'No files found matching-{}'.format(glob_pattern)
     # Sort the files based on their name (which contains a regular datastring)
     files = list(sorted(files))
     # Only open dates for certain dates?
