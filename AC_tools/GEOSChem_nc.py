@@ -775,6 +775,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
                                      GC_version='v12.6.0',
                                      use_time_in_trop=True, rm_strat=True,
                                      dates2use=None, round=3,
+                                     use_REF_wd4Met=False,
                                      verbose=False, debug=False):
     """
     Get various stats on a set of runs in a dictionary ({name: location})
@@ -782,7 +783,8 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     Parameters
     ----------
     run_dict (dict): dicionary of run names and locations
-    REF_wd (str): name of run in dictionary to use to extract shared variables
+    use_REF_wd4Met (bool): use a reference working directory for shared values?
+    REF_wd (str): directory to use to extract shared variables
     REF1 (str): name of (1st) run in dictionary to to % change calculations from
     REF2 (str): name of (2nd) run in dictionary to to % change calculations from
     prefix (str):  string to include as a prefix in saved csv's filename
@@ -807,14 +809,9 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     ppbv_scale = 1E9
     pptv_unit = 'pptv'
     pptv_scale = 1E12
-    # Get shared variables from a single model run
-    if isinstance(REF_wd, type(None)):
-        REF_wd = run_dict[ list(run_dict.keys())[0] ]
     # Core dataframe for storing calculated stats on runs
     df = pd.DataFrame()
     # - Get core data required
-    # Get StateMet object for 1st of the runs and use this for all runs
-    StateMet = get_StateMet_ds(wd=REF_wd, dates2use=dates2use)
     # Get all of the speciesConcs for runs as list of datasets
     dsD = {}
     for key in run_dict.keys():
@@ -826,6 +823,14 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     prefix = 'SpeciesConc_'
     vars2use = [prefix+i for i in specs2use]
     for key in run_dict.keys():
+        # Get StateMet object for 1st of the runs and use this for all runs
+        if use_REF_wd4Met:
+            # Set working directory for shared variables
+            if isinstance(REF_wd, type(None)):
+                REF_wd = run_dict[ list(run_dict.keys())[0] ]
+            StateMet = get_StateMet_ds(wd=REF_wd, dates2use=dates2use)
+        else:
+            StateMet = get_StateMet_ds(wd=run_dict[key], dates2use=dates2use)
         # Average burden over time
         ds = dsD[key]#.mean(dim='time', keep_attrs=True)
         S = get_Gg_trop_burden(ds, vars2use=vars2use, StateMet=StateMet,
