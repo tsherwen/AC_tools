@@ -510,7 +510,61 @@ def get_pf_data_from_NetCDF_table(ncfile=None, req_var='TRA_69', spec='IO',
     return dates, data
 
 
-def reprocess_split_pf_output_over_2_lines(folder, save_original_file=False):
+def mk_planeflight_input4FAAM_flight(folder=None, ds=None,
+                                     flight_ID='C216',
+                                     folder4csv=None,
+                                     PressVar="PS_RVSM",
+                                     LonVar='LON_GIN',
+                                     LatVar='LAT_GIN', TimeVar='Time',
+                                     LocVar='TYPE', LocName='B-146',
+                                     DateVar='datetime',
+                                     testing_mode=True, csv_suffix='',
+                                     num_tracers=203,
+                                     Username='Tomas Sherwen',
+                                     slist=None,
+                                     Extra_spacings=False
+                                     ):
+    """
+    Extract the GEOS-CF model for a given FAAM BAe146 flight
+
+    Parameters
+    -------
+
+    Returns
+    -------
+    (None)
+    """
+    # Retrieve FAAM BAe146 Core NetCDF files
+    if isinstance(ds, type(None)):
+        filename = 'core_faam_*_{}_1hz.nc'.format(flight_ID.lower())
+        file2use = glob.glob(folder+filename)
+        if len(file2use) > 1:
+            print('WARNING: more that one file found! (so using latest file)' )
+            print(file2use)
+        ds = xr.open_dataset( file2use[0] )
+    # Only select the variable of intereest and drop where these are NaNs
+    df = ds[ [PressVar, LatVar, LonVar, TimeVar] ].to_dataframe()
+    df = df.dropna()
+    # Add a location name (as Type)
+    df[LocVar] = LocName
+    # remove the index name and add index values to a column
+    df.index.name = None
+    try:
+        df[DateVar]
+    except KeyError:
+        df['datetime'] = df.index.values
+    # If doing a test, then just extract the first 150 points of flight track
+    if testing_mode:
+        df = df.head(150)
+    # Call planeflight maker...
+    prt_PlaneFlight_files_v12_plus(df=df, slist=slist,
+                                   Extra_spacings=Extra_spacings,
+                                   LON_var=LonVar, LAT_var=LatVar,
+                                   PRESS_var=PressVar, loc_var=LocVar,
+                                   num_tracers=num_tracers,
+                                   Username=Username,)
+
+def reprocess_split_pf_output_over_2_lines(folder, save_original_file=True):
     """
     Combine planeflight dat file lines where output split over 2 lines
     """
@@ -518,6 +572,7 @@ def reprocess_split_pf_output_over_2_lines(folder, save_original_file=False):
     for file2use in files2use:
         with open(file2use, 'r') as file:
             lines = [i.strip() for i in file]
+        file.close() # Force close
         if save_original_file:
             os.rename(file2use, file2use+'.orig')
         else:
@@ -526,6 +581,7 @@ def reprocess_split_pf_output_over_2_lines(folder, save_original_file=False):
         second_part = lines[1::2]
         a = open(file2use, 'w')
         for n_line, line in enumerate(first_part):
-            Newline = '{} {}'.format(first_part[n_line], second_part[n_line])
+            Str2use = '{}     {}'
+            Newline = Str2use.format(first_part[n_line], second_part[n_line])
             print(Newline, file=a)
         a.close()
