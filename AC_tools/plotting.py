@@ -10,6 +10,9 @@ NOTE(S):
  - Where external code is used credit is given.
 """
 # - Required modules:
+import os
+import xarray as xr
+import inspect
 import sys
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -43,10 +46,11 @@ import scipy
 #from option_d import test_cm as cmd
 
 
-def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson(),
+def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson,
                    save_plot=True, show_plot=False, savename=None, title=None,
                    LatVar='lat', LonVar='lon', fig=None, ax=None, dpi=320,
-                   set_global=True):
+                   set_global=True, buffer_degrees=0,
+                   verbose=False, debug=False, **kwargs):
     """
     Plot up a quick spatial plot of data using cartopy
 
@@ -67,22 +71,46 @@ def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson(),
     Returns
     -------
     (None)
+
+    Notes
+    -------
+     - pass customisation for matplotlib via **kwargs (to 'plot.imshow')
     """
     # Use the 1st data variable if not variable given
     if isinstance(var2plot, type(None)):
-        print('WARNING: No variable to plot was set (var2plot), trying 1st data_var')
+        print("WARNING: No 'var2plot' set, trying 1st data_var")
         var2plot = list(ds.data_vars)[0]
     # Setup figure and axis and plot
     if isinstance(fig, type(None)):
         fig = plt.figure(figsize=(10, 6))
     if isinstance(ax, type(None)):
-        ax = fig.add_subplot(111, projection=projection, aspect='auto')
-    ds[var2plot].plot.imshow(x=LonVar, y=LatVar, ax=ax,
-                             transform=ccrs.PlateCarree())
+        ax = fig.add_subplot(111, projection=projection(), aspect='auto')
+    # print out the min and max of plotted values
+    if verbose:
+        Pstr = "In spatial plot of {}, min={} and max={}"
+        min_ = float(ds[var2plot].values.min())
+        max_ = float(ds[var2plot].values.max())
+        print(Pstr.format(var2plot, min_, max_ ) )
+    # Call plot via imshow...
+    im = ds[var2plot].plot.imshow(x=LonVar, y=LatVar, ax=ax,
+                                  transform=ccrs.PlateCarree(),
+                                  **kwargs)
     # Beautify the figure/plot
     ax.coastlines()
     if set_global:
         ax.set_global()
+    else:
+        x0, x1, y0, y1 = ax.get_extent()
+        if buffer_degrees != 0:
+            lons = ds[LonVar].values
+            lats = ds[LatVar].values
+            x0 = myround(lons.min()-buffer_degrees, buffer_degrees, )
+            x1 = myround(lons.max()+buffer_degrees, buffer_degrees,
+                         round_up=True)
+            y0 = myround(lats.min()-buffer_degrees, buffer_degrees, )
+            y1 = myround(lats.max()+buffer_degrees, buffer_degrees,
+                         round_up=True)
+        ax.set_extent((x0, x1, y0, y1), projection())
     # Add a generic title if one is not provided
     if isinstance(title, type(None)):
         plt.title('Spatial plot of {}'.format(var2plot))
@@ -94,6 +122,69 @@ def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson(),
         plt.savefig(savename+'.png', dpi=dpi)
     if show_plot:
         plt.show()
+    return im
+
+
+def ds2zonal_plot(ds=None, var2plot=None, StateMet=None, AltVar='lev',
+                  LatVar='lat', fig=None, ax=None, limit_yaxis2=20,
+                  plt_ylabel=True, rm_strat=False,
+                  verbose=False, debug=False, **kwargs):
+    """
+    Make a zonal plot (lat vs. alt) from a xr.dataset object
+    """
+    # Setup figure and axis if not provided
+    if isinstance(fig, type(None)):
+        fig = plt.figure()
+    if isinstance(ax, type(None)):
+        ax = fig.add_subplot(1, 1, 1)
+    # Calculate number of molecules
+    MolecVar = 'Met_MOLCES'
+    StateMet = add_molec_den2ds(StateMet, MolecVar=MolecVar)
+    # Remove troposphere
+    if rm_strat:
+        ds2plot = rm_fractional_troposphere(ds[[var2plot]].copy(),
+                                            vars2use=[var2plot],
+                                            StateMet=StateMet)
+    else:
+        ds2plot = ds[[var2plot]].copy()
+    # Weight by molecules over lon
+    ds2plot = ds2plot * StateMet[MolecVar]
+    ds2plot = ds2plot.sum(dim=['lon']) / StateMet[MolecVar].sum(dim=['lon'])
+    # Update units of lev (vertical/z axis) to be in km
+#    StateMet['Met_PMID']
+    LatLonAlt_dict = gchemgrid(rtn_dict=True)
+    alt_array = LatLonAlt_dict['c_km_geos5']
+    ds2plot = ds2plot.assign_coords({'lev':alt_array[:len(ds.lev.values)]})
+    # print out the min and max of plotted values
+    if verbose:
+        Pstr = "In zonal plot of {}, min={}, max={}"
+        min_ = float(ds2plot[var2plot].values.min())
+        max_ = float(ds2plot[var2plot].values.max())
+        print(Pstr.format(var2plot, min_, max_ ) )
+    # Now call plot via xr.dataset
+    lat = np.array(ds2plot.lat.values)
+    alt = np.array(ds2plot.lev.values)
+    im = ax.pcolor(lat, alt, ds2plot[var2plot].values, **kwargs)
+#    im = ds2plot[var2plot].plot.imshow(ax=ax, **kwargs)
+    # Limit the axis to a value (e.g. 18km to just show tropospheric values)
+    if limit_yaxis2:
+        plt.ylim(0, limit_yaxis2)
+
+    # TODO
+    # plot up second y axis with pressure altitude ?
+
+    # Update axis labels
+    ax.set_xlabel('Latitude ($^{\circ}$N)')
+    if debug:
+        print( 'plt_ylabel', plt_ylabel)
+    if plt_ylabel:
+        ax.set_ylabel('Altitude (km)')
+    else:
+        ax.set_ylabel('')
+        ax.tick_params(axis='y', which='both', labelleft='off')
+        yticks_labels = ax.get_yticklabels()
+        ax.set_yticklabels([None for i in range(len(yticks_labels))])
+    return im
 
 
 def plt_df_X_vs_Y(df=None, x_var='', y_var='', x_label=None, y_label=None,
@@ -243,6 +334,8 @@ def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
                            stat2plot='50%', title=None,
                            dpi=320, plt_legend=True, units=None,
                            show_plot=False, save_plot=False, verbose=False,
+                           context='paper', font_scale=0.75,
+                           tight_layout=False, use_letters4months=False,
                            debug=False):
     """
     Plot up mulitplot of diel cycle by "season" for given dictionary of DataFrames
@@ -269,22 +362,29 @@ def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
     """
     import seaborn as sns
     sns.set(color_codes=True)
-    sns.set_context("paper", font_scale=0.75)
+    sns.set_context(context, font_scale=font_scale)
     # Local variables
     seasons = ('DJF', 'MAM', 'JJA',  'SON')
+    month2season = np.array([
+        None,
+        'DJF', 'DJF',
+        'MAM', 'MAM', 'MAM',
+        'JJA', 'JJA', 'JJA',
+        'SON', 'SON', 'SON',
+        'DJF'
+    ])
+    season2text = {
+    'DJF':'Dec-Jan-Feb', 'MAM': 'Mar-Apr-May', 'JJA': 'Jun-Jul-Aug', 'SON':'Sep-Oct-Nov', None: None,
+    }
+    if use_letters4months:
+        pass
+    else:
+        seasons = [season2text[i] for i in seasons]
+        month2season = np.array([season2text[i] for i in month2season])
     # Split data by season
     for key_ in list(dfs.keys()):
         # Now assign "Seasons"
-        month_to_season_lu = np.array([
-            None,
-            'DJF', 'DJF',
-            'MAM', 'MAM', 'MAM',
-            'JJA', 'JJA', 'JJA',
-            'SON', 'SON', 'SON',
-            'DJF'
-        ])
-        dfs[key_]['Season'] = month_to_season_lu[dfs[key_].index.month]
-
+        dfs[key_]['Season'] = month2season[dfs[key_].index.month]
     # - Loop seasons and Plot data
     # Setup figure and PDF
     if isinstance(fig, type(None)):
@@ -300,9 +400,9 @@ def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
             ax = fig.add_subplot(2, 2, n_season+1, sharey=ax1)
         else:
             ax = ax1
-        plt_legend = False
+        _plt_legend = False
         if (n_season+1) == len(seasons):
-            plt_legend = True
+            _plt_legend = True
         plt_xlabel = True
         do_not_plt_xlabel_on_subplot = [1, 2]
         if (n_season+1) in do_not_plt_xlabel_on_subplot:
@@ -326,8 +426,10 @@ def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
                 color = None
             # Add a legend to plot?
             legend = False
-            if plt_legend and (n_key == len(list(dfs.keys()))-1):
+            if _plt_legend and (n_key == len(list(dfs.keys()))-1):
                 legend = True
+            if plt_legend == False:
+                legend = False
             # Plot up using the basic plotter function
             BASIC_diel_plot(fig=fig, ax=ax, data=data_, units=units,
                             dates=dates_, label=key_, stat2plot=stat2plot,
@@ -348,6 +450,8 @@ def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
         fig.suptitle(suptitle.format(specname, sub_str))
     else:
         fig.suptitle(title)
+    if tight_layout:
+        plt.tight_layout()
     png_filename = 'Seasonal_diel_{}_{}.png'.format(sub_str, spec)
     if save_plot:
         plt.savefig(png_filename, dpi=dpi)
@@ -429,6 +533,9 @@ def BASIC_diel_plot(fig=None, ax=None, dates=None, data=None, color='red',
     if debug:
         print((df.head(), df.index[:5], df.shape))
     time_labels = df['data'][stat2plot].index.values
+    time_labels = [str(int(i)) for i in time_labels]
+
+
     # make sure the values with leading zeros drop these
     index = [float(i) for i in time_labels]
     if debug:
@@ -806,7 +913,7 @@ def plot_zonal_figure(arr, fixcb=None, cb_sigfig=2, ax=None,
     # If lon, lat, alt array provided then take mean of lon
     if any([arr.shape[0] == i for i in (72, 144, 121, 177)]):
         #        arr = arr.mean(axis=0)
-        arr = molec_weighted_avg(arr, weight_lon=True, res=res,
+        arr = molec_weighted_avg_BPCH(arr, weight_lon=True, res=res,
                                  trop_limit=trop_limit, rm_strat=False, wd=wd)
 
     # Create figure if not provided
@@ -2132,9 +2239,9 @@ def close_plot():
 
 
 def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'],
-              tight=False):
+              tight=False, dpi=320):
     """
-    Save a plot to disk.
+    Save a plot to disk
 
     Parameters
     ----------
@@ -2156,7 +2263,7 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'],
 
     for extension in extensions:
         filename = os.path.join(location, title+"."+extension)
-        plt.savefig(filename)
+        plt.savefig(filename, dpi=dpi)
         logging.info("Plot saved to {location}".format(location=filename))
     return
 
@@ -2190,4 +2297,188 @@ def get_CB_color_cycle():
     ]
     return CB_color_cycle
 
+def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3',
+                                    wd=None, Mechanism='Halogens',
+                                    rm_strat=False,
+                                    weight_by_molecs=True, CODE_wd=None,
+                                    full_vert_grid=True, dpi=320,
+                                    suffix='',
+                                    save_plot=True, show_plot=False,
+                                    limit_plotted_alititude=True, lw=16,
+                                    Ox_fam_dict=None, fontsize=10,
+                                    cmap=plt.cm.jet, alt_array=None,
+                                    verbose=True, debug=False):
+    """
+    Plot vertical odd oxygen (Ox) loss via route (chemical family)
 
+    Parameters
+    -------
+    fam (str): tagged family to track (already compiled in KPP mechanism)
+    ref_spec (str): reference species to normalise to
+    wd (str): working directory ("wd") of model output
+    CODE_wd (str): root of code directory containing the tagged KPP mechanism
+    Mechanism (str): name of the KPP mechanism (and folder) of model output
+    weight_by_molecs (bool): weight grid boxes by number of molecules
+    rm_strat (bool): (fractionally) replace values in statosphere with zeros
+    debug, verbose (bool): switches to turn on/set verbosity of output to screen
+    alt_array (np.array): array of altitudes for model grid boxes
+    full_vert_grid (bool): use the full vertical grid for analysis
+    limit_plotted_alititude (bool): limit the plotted vertical extend to troposphere
+    suffix (str): suffix in filename for saved plot
+    dpi (int): resolution to use for saved image (dots per square inch)
+    Ox_fam_dict (dict), dictionary of Ox loss variables/data (from KPP.py)
+
+    Returns
+    -------
+    (None)
+
+    Notes
+    -----
+     - AC_tools includes equivlent functions for smvgear mechanisms
+    """
+    # - Local variables/ Plot extraction / Settings
+    # extract variables from data/variable dictionary
+    sorted_fam_names = Ox_fam_dict['sorted_fam_names']
+    fam_dict = Ox_fam_dict['fam_dict']
+    ars = Ox_fam_dict['ars']
+    RR_dict_fam_stioch = Ox_fam_dict['RR_dict_fam_stioch']
+    RR_dict = Ox_fam_dict['RR_dict']
+    tags2_rxn_num = Ox_fam_dict['tags2_rxn_num']
+    tags = Ox_fam_dict['tags']
+    tags_dict = Ox_fam_dict['tags_dict']
+    # Combine to a single array
+    arr = np.array(ars)
+    if debug:
+        print((arr.shape))
+    # - Process data for plotting
+    fam_tag = [fam_dict[i] for i in tags]
+    fam_ars = []
+    for fam_ in sorted_fam_names:
+        # Get indices for routes of family
+        fam_ind = [n for n, i in enumerate(fam_tag) if (i == fam_)]
+        if debug:
+            print((fam_ind, len(fam_ind)))
+        # Select these ...
+        fam_ars += [arr[fam_ind, ...]]
+    # Recombine and sum by family...
+    if debug:
+        print(([i.shape for i in fam_ars], len(fam_ars)))
+    arr = np.array([i.sum(axis=0) for i in fam_ars])
+    if debug:
+        print((arr.shape))
+    # - Plot up as a stack-plot...
+    # Normalise to total and conver to % (*100)
+    arr = (arr / arr.sum(axis=0)) * 100
+    # Add zeros array to beginning (for stack/area plot )
+    arr_ = np.vstack((np.zeros((1, arr.shape[-1])), arr))
+    # Setup figure
+    fig, ax = plt.subplots(figsize=(9, 6), dpi=dpi,
+                           facecolor='w', edgecolor='w')
+    # Plot by family
+    for n, label in enumerate(sorted_fam_names):
+        # Print out some summary stats
+        if verbose:
+            print(n, label, arr[:n, 0].sum(axis=0),
+                  arr[:n+1, 0].sum(axis=0), end=' ')
+            print(arr[:n, :].sum(), arr[:n+1, :].sum())
+            print([i.shape for i in (alt_array, arr)])
+        # Fill between X
+        plt.fill_betweenx(alt_array, arr[:n, :].sum(axis=0),
+                          arr[:n+1, :].sum(axis=0),
+                          color=cmap(1.*n/len(sorted_fam_names)))
+        # Plot the line too
+        plt.plot(arr[:n, :].sum(axis=0), alt_array, label=label,
+                 color=cmap(1.*n/len(sorted_fam_names)), alpha=0,
+                 lw=lw,)
+    # Beautify the plot
+    plt.xlim(0, 100)
+    xlabel = '% of total O$_{\\rm x}$ loss'
+    plt.xlabel(xlabel, fontsize=fontsize*.75)
+    plt.yticks(fontsize=fontsize*.75)
+    plt.xticks(fontsize=fontsize*.75)
+    plt.ylabel('Altitude (km)', fontsize=fontsize*.75)
+    leg = plt.legend(loc='upper center', fontsize=fontsize)
+    # Update lengnd line sizes ( + update line sizes)
+    for legobj in leg.legendHandles:
+        legobj.set_linewidth(lw/2)
+        legobj.set_alpha(1)
+    plt.ylim(alt_array[0], alt_array[-1])
+    # Limit plot y axis to 12km?
+    if limit_plotted_alititude:
+        plt.ylim(alt_array[0], 12)
+    # Show plot or save?
+    if save_plot:
+        filename = 'Ox_loss_plot_by_vertical_{}_{}'.format(Mechanism, suffix)
+        plt.savefig(filename, dpi=dpi)
+    if show_plot:
+        plt.show()
+
+
+def plt_box_area_on_global_map(ds=None, var2use='DXYP__DXYP',
+                               LatVar='lat', LonVar='lon',
+                               x0=-30, x1=-10, y0=0, y1=25,
+                               savename=None, cmap=plt.get_cmap('viridis'),
+                               projection=ccrs.Robinson(), alpha=0.5,
+                               aspect='auto', figsize=(10, 6),
+                               dpi=320):
+    """
+    Plot a global map with a region (x0,x1,y0,y1) outlined with a box
+
+    Parameters
+    -------
+    x0, x1 (float): longitude min and max to set box extents to
+    y0, y1 (float): latitude min and max to set box extents to
+    ds (xr.Dataset): dataset to use to for plotting global map
+    var2use (str): variable to use from dataset (ds)
+    dpi (int): resolution to use for saved image (dots per square inch)
+    savename (str): name for file to save image to
+    cmap (cmap object): colour map to use for plotting
+    aspect (str): aspect ratio for plot
+    alpha (float): transparency of plotted box
+    figsize (tuple): figure size to use for plot
+
+    Returns
+    -------
+    (None)
+    """
+    # Use a generic dataset from AC_tools data files if not provide with one
+    if isinstance(ds, type(None)):
+        # Get AC_tools location, then set example data folder location
+        filename = inspect.getframeinfo(inspect.currentframe()).filename
+        path = os.path.dirname(os.path.abspath(filename))
+        folder = path+'/../data/LM/LANDMAP_LWI_ctm_0125x0125/'
+        # Get coords from LWI 0.125x0.125 data and remove the time dimension
+        ds = xr.open_dataset(folder+'ctm.nc')
+    # - Select the data
+    # Just get an example dataset
+    ds = ds[[var2use]]
+    # Check input values for lat and lon range to plotting box extent
+    assert y0<y1, 'y0 must be less than y1'
+    assert x0<x1, 'x0 must be less than x1'
+    # Set values region
+    bool1 = ((ds.lon >= x0) & (ds.lon <= x1)).values
+    bool2 = ((ds.lat >= y0) & (ds.lat <= y1)).values
+    # Cut by lon, then lat
+    ds = ds.isel(lon=bool1)
+    ds = ds.isel(lat=bool2)
+    # Set all values to 1
+    arr = ds[var2use].values
+    arr[:] = 1
+    ds[var2use].values = arr
+    # Plot the data
+    fig = plt.figure(figsize=figsize)
+    ax = fig.add_subplot(111, projection=projection, aspect=aspect,
+                         alpha=alpha)
+    ds[var2use].plot.imshow(x=LonVar, y=LatVar, ax=ax, cmap=cmap,
+                             transform=ccrs.PlateCarree())
+    # Beautify the figure/plot
+    ax.coastlines()
+    # Force global perspective
+    ax.set_global() # this will force a global perspective
+    # Remove the colour-bar and force a tighter layout around map
+    fig.delaxes(fig.axes[-1])
+    plt.tight_layout()
+    # Save to png
+    if isinstance(savename, type(None)):
+        savename = 'spatial_plot_of_region'
+    plt.savefig(savename+'.png', dpi=dpi)

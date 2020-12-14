@@ -554,7 +554,47 @@ def latex_spec_name(input_x, debug=False):
         'PM2.5(SSA)': 'PM$_{2.5}$(SSA)',
         'PM2.5(BC)': 'PM$_{2.5}$(BC)',
         'PM2.5(OC))': 'PM$_{2.5}$(OC)',
-    }
+        # Extra GEOS-chem advected tracers - in standard as of v12.9.1
+        # TODO - complete expanding species
+        # http://wiki.seas.harvard.edu/geos-chem/index.php/Species_in_GEOS-Chem
+        'ACTA': 'ACTA', 'ATOOH': 'ATOOH', 'BENZ': 'Benzene',
+        'CCl4': 'CCl4', 'CFC11': 'CFC11', 'CFC113': 'CFC113',
+        'CFC114': 'CFC114', 'CFC115': 'CFC115', 'CFC12': 'CFC12',
+        'CH3CCl3': 'CH3CCl3', 'ETHLN': 'ETHLN', 'ETNO3': 'ETNO3',
+        'ETP': 'ETP', 'GLYX': 'GLYX', 'H1211': 'H1211',
+        'H1301': 'H1301', 'H2402': 'H2402', 'H2O': 'H2O',
+        'HC5A': 'HC5A', 'HCFC123': 'HCFC123', 'HCFC141b': 'HCFC141b',
+        'HCFC142b': 'HCFC142b', 'HCFC22': 'HCFC22', 'HCOOH': 'HCOOH',
+        'HMHP': 'HMHP', 'HMML': 'HMML', 'HONIT': 'HONIT',
+        'HPALD1': 'HPALD1', 'HPALD2': 'HPALD2', 'HPALD3': 'HPALD3',
+        'HPALD4': 'HPALD4', 'HPETHNL': 'HPETHNL', 'ICHE': 'ICHE',
+        'ICN': 'ICN', 'ICPDH': 'ICPDH', 'IDC': 'IDC',
+        'IDCHP': 'IDCHP', 'IDHDP': 'IDHDP', 'IDHPE': 'IDHPE',
+        'IDN': 'IDN', 'IEPOXA': 'IEPOXA', 'IEPOXB': 'IEPOXB',
+        'IEPOXD': 'IEPOXD', 'IHN1': 'IHN1', 'IHN2': 'IHN2',
+        'IHN3': 'IHN3', 'IHN4': 'IHN4', 'INDIOL': 'INDIOL',
+        'INPB': 'INPB', 'INPD': 'INPD', 'IONITA': 'IONITA',
+        'IPRNO3': 'IPRNO3', 'ITCN': 'ITCN', 'ITHN': 'ITHN',
+        'LIMO': 'LIMO', 'LVOC': 'LVOC', 'LVOCOA': 'LVOCOA',
+        'MACR1OOH': 'MACR1OOH', 'MCRDH': 'MCRDH', 'MCRENOL': 'MCRENOL',
+        'MCRHN': 'MCRHN', 'MCRHNB': 'MCRHNB', 'MCRHP': 'MCRHP',
+        'MENO3': 'MENO3', 'MGLY': 'MGLY', 'MONITA': 'MONITA',
+        'MONITS': 'MONITS', 'MONITU': 'MONITU', 'MPAN': 'MPAN',
+        'MTPA': 'MTPA', 'MTPO': 'MTPO', 'MVKDH': 'MVKDH',
+        'MVKHC': 'MVKHC', 'MVKHCB': 'MVKHCB', 'MVKHP': 'MVKHP',
+        'MVKN': 'MVKN', 'MVKPC': 'MVKPC', 'N2O': 'N2O',
+        'NPRNO3': 'NPRNO3', 'OCS': 'OCS', 'pFe': 'pFe',
+        'PIP': 'PIP', 'PP': 'PP', 'PRPN': 'PRPN',
+        'PYAC': 'PYAC', 'R4P': 'R4P', 'RA3P': 'RA3P',
+        'RB3P': 'RB3P', 'RIPA': 'RIPA', 'RIPB': 'RIPB',
+        'RIPC': 'RIPC', 'RIPD': 'RIPD', 'RP': 'RP',
+        'SALAAL': 'SALAAL', 'SALACL': 'SALACL', 'SALCAL': 'SALCAL',
+        'SALCCL': 'SALCCL', 'SOAGX': 'SOAGX', 'SOAIE': 'SOAIE',
+        'SOAP': 'SOAP', 'SOAS': 'SOAS', 'TOLU': 'TOLU',
+        'XYLE': 'Xylene',
+        # Extra GEOS-chem species - in standard as of v12.9.1
+        'O1D' : 'O($^{1}$D)', 'O': 'O', 'hv': '$h\\nu$',
+        }
     return spec_dict[input_x]
 
 
@@ -644,7 +684,10 @@ def species_mass(spec):
         u'SOAMG': 72.0, u'HCOOH': 46.0, u'ISN1': 147.0, u'ACTA': 60.0, \
         u'SOAP': 150.0, u'SOAS': 150.0,
         # Temporary species or values where numbers not known for certain.
-        'pFe': 55.85, 'EOH': 46.07
+        'pFe': 55.85, 'EOH': 46.07,
+        # Dust species
+        'NITD1': 62.0, 'NITD2': 62.0, 'NITD3': 62.0, 'NITD4': 62.0,
+        'SO4D1': 96.0, 'SO4D2': 96.0, 'SO4D3': 96.0, 'SO4D4': 96.0,
     }
 
     return d[spec]
@@ -660,10 +703,10 @@ def get_spec_properties():
     pass
 
 def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
-                C=False, Br=False, Cl=False, S=False, ref_spec=None, debug=False):
+                C=False, Br=False, Cl=False, S=False, ref_spec=None,
+                debug=False):
     """
-    Returns unit equivalent of X ( e.g. I ) for a given species. This can be automatically
-    set by providing a reference species or by setting boolean input parametiers.
+    Returns unit equivalent of X ( e.g. I ) for a given species
 
     Parameters
     ----------
@@ -672,7 +715,7 @@ def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
     wd (str): Specify the wd to get the results from a run.
     res (str): the resolution if wd not given (e.g. '4x5' )
     debug (bool): legacy debug option, replaced by python logging
-    IO, I, NO, OH, N, C, Br, Cl, S (bool): reference species to use (defualt = I)
+    IO, I, NO, OH, N, C, Br, Cl, S (bool): reference species to use (default=I)
 
     Returns
     -------
@@ -680,13 +723,16 @@ def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
 
     Notes
     -----
-     - Update Needed: re-write to take stioch species (e.g. OH, I instead of booleans )
+     - This can be automatically set by providing a reference species or by
+     setting boolean input parametiers.
+     - Update Needed: re-write to take stioch species
+     (e.g. OH, I instead of booleans )
      - asssume I == True as default
      - C3H5I == C2H5I
-        (this is a vestigle typo, left in to allow for use of older model runs )
+     (this is a vestigle typo, left in to allow for use of older model runs)
      - aerosol cycling specs
     # 'LO3_36' : (2.0/3.0) , 'LO3_37' : (2.0/4.0),  # aersol loss rxns... 'LO3_37' isn't true loss, as I2O4 is regen. temp
-     - Aerosol loss rxns ( corrected stoichio for Ox, adjsutment need for I )
+     - Aerosol loss rxns ( corrected stoich. for Ox, adjsutment need for I )
     """
     # If reference species provided automatically select family
     if not isinstance(ref_spec, type(None)):
@@ -717,14 +763,17 @@ def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
     # Select dictionary ( I=True is the default... )
     if IO:
         d = {
-            'RD11': 2.0, 'RD10': 1.0, 'RD12': 2.0, 'LO3_36': 1./3., 'RD09': 1.0,
-            'RD66': 1.0, 'RD23': 1.0, 'RD37': 1.0, 'LO3_24': 1.0/2.0, 'RD56': 1.0,
+            'RD11': 2.0, 'RD10': 1.0, 'RD12': 2.0, 'LO3_36': 1./3.,
+            'RD09': 1.0,
+            'RD66': 1.0, 'RD23': 1.0, 'RD37': 1.0, 'LO3_24': 1.0/2.0,
+            'RD56': 1.0,
             'RD01': 1.0, 'RD08': 1.0, 'RD46': 2.0, 'RD30': 1.0, 'RD25': 1.0,
             'RD27': 1.0, 'RD97': 1.0
         }
     elif NO:
         d = {
-            'NO2': 1.0, 'NO3': 1.0, 'N2O5': 2.0, 'NO': 1.0, 'PPN': 1.0, 'R4N2': 1.0,
+            'NO2': 1.0, 'NO3': 1.0, 'N2O5': 2.0, 'NO': 1.0, 'PPN': 1.0,
+            'R4N2': 1.0,
             'BrNO3': 1.0, 'INO': 1.0, 'PAN': 1.0, 'PMN': 1.0, 'HNO3': 1.0,
             'HNO2': 1.0, 'NH3': 1.0, 'HNO4': 1.0, 'BrNO2': 1.0,
             'IONO': 1.0, 'PROPNN': 1.0, 'NH4': 1.0, 'MPN': 1.0, 'MMN': 1.0,
@@ -732,7 +781,8 @@ def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
         }
     elif OH:
         d = {
-            'LO3_18': 2.0, 'LO3_03': 1.0,  'PO3_14': 1.0, 'RD65': 1.0, 'LR25': 1.0,
+            'LO3_18': 2.0, 'LO3_03': 1.0,  'PO3_14': 1.0, 'RD65': 1.0,
+            'LR25': 1.0,
             'LOH': 1.0, 'POH': 1.0, 'LO3_86': 1.0, 'RD98': 1.0, \
             # Redundant: 'RD95': 1.0,
             # also include HO2 and OH for HOx calculations
@@ -740,7 +790,9 @@ def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
         }
     elif S:
         d = {
-            'S': 1.0, 'SO4': 1.0, 'SO4s': 1.0, 'SO4S': 1.0, 'SO2': 1.0, 'DMS': 1.0,
+            'S': 1.0, 'SO4': 1.0, 'SO4s': 1.0, 'SO4S': 1.0, 'SO2': 1.0,
+            'DMS': 1.0,
+            'SO4D1': 1.0, 'SO4D2': 1.0, 'SO4D3': 1.0, 'SO4D4': 1.0,
         }
     elif N:
         d = {
@@ -757,19 +809,23 @@ def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
             'IONO': 1.0, 'PROPNN': 1.0, 'NH4': 1.0, 'MPN': 1.0, 'MMN': 1.0, \
             'ISOPN': 1.0, 'IONO2': 1.0, 'ClNO2': 1.0, 'ClNO3': 1.0,
             'NIT': 1.0, 'NITs': 1.0, 'NITS': 1.0, \
+            #
+            'NITD1': 1.0, 'NITD2': 1.0, 'NITD3': 1.0, 'NITD4': 1.0,
         }
     elif C:
         d = {
             'ACET': 3.0, 'ALD2': 2.0, 'C2H6': 2.0, 'C3H8': 3.0, 'ISOP': 5.0,
             'PRPE': 3.0, 'ALK4': 4.0, 'MEK': 4.0,
-            'APINE': 10.0, 'BPINE': 10.0, 'LIMON': 10.0, 'SABIN': 10.0, 'MYRCN': 10.0,
+            'APINE': 10.0, 'BPINE': 10.0, 'LIMON': 10.0, 'SABIN': 10.0,
+            'MYRCN': 10.0,
             'CAREN': 10.0, 'OCIMN': 10.0, 'XYLE': 8.0,
         }
     elif Br:
         d = {
             'CH3Br': 1.0, 'HOBr': 1.0, 'BrO': 1.0, 'CHBr3': 3.0, 'Br2': 2.0,
-            'BrSALC': 1.0, 'CH2IBr': 1.0, 'BrCl': 1.0, 'Br': 1.0, 'CH2Br2': 2.0,
-            'IBr': 1.0, 'BrSALA': 1.0, 'BrNO2': 1.0, 'BrNO3': 1.0, 'HBr': 1.0, \
+            'BrSALC': 1.0, 'CH2IBr': 1.0, 'BrCl': 1.0, 'Br': 1.0,
+            'CH2Br2': 2.0,
+            'IBr': 1.0, 'BrSALA': 1.0, 'BrNO2': 1.0, 'BrNO3': 1.0, 'HBr': 1.0,
             # for ease of processing also include Seasalt Br2
             'SSBr2': 2.0,
             # Also have reaction tracers
@@ -787,7 +843,8 @@ def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
         d = {
             'ClO': 1.0, 'Cl': 1.0, 'ClOO': 1.0, 'ClNO3': 1.0, 'ClNO2': 1.0,
             'Cl2': 2.0, 'OClO': 1.0, 'HOCl': 1.0, 'HCl': 1.0, 'Cl2O2': 2.0,
-            'BrCl': 1.0, 'ICl': 1.0, 'CH2Cl2': 2.0, 'CHCl3': 3.0, 'CH2ICl': 1.0,
+            'BrCl': 1.0, 'ICl': 1.0, 'CH2Cl2': 2.0, 'CHCl3': 3.0,
+            'CH2ICl': 1.0,
             'CH3Cl': 1.0,
             # Also have reaction tracers
             'LR62': 3.0, 'LR107': 3.0,
@@ -811,7 +868,8 @@ def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
         d = {
             'RD11': 1.0, 'RD10': 1.0, 'HIO3': 1.0, 'RD15': 1.0, 'RD62': 2.0,
             'RD17': 1.0, 'RD16': 1.0, 'RD19': 1.0, 'LO3_37': 0.5, 'CH2I2': 2.0,
-            'AERII': 1.0, 'CH2ICl': 1.0, 'PIOx': 1.0, 'C3H7I': 1.0, 'RD73': 1.0,
+            'AERII': 1.0, 'CH2ICl': 1.0, 'PIOx': 1.0, 'C3H7I': 1.0,
+            'RD73': 1.0,
             'RD72': 2.0, 'RD71': 1.0, 'RD70': 1.0, 'C3H5I': 1.0, 'RD57': 1.0,
             'CH3IT': 1.0, 'IO': 1.0, 'LO3_38': 1.0, 'RD61': 1.0, 'RD68': 1.0,
             'I2': 2.0, 'IONO': 1.0, 'LO3_36': 0.6666666666666666, 'INO': 1.0,
@@ -833,7 +891,8 @@ def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
             'RD02': 1.0, 'RD16': 1.0, 'RD19': 1.0, 'RD24': 1.0, 'RD09': 1.0, \
             'RD23': 1.0, 'RD37': 1.0, 'RD97': 1.0, \
             # kludge for test analysis (HEMCO emissions )
-            'ACET': 1.0, 'ISOP': 1.0, 'CH2Br2': 1.0, 'CHBr3': 1.0, 'CH3Br': 1.0, \
+            'ACET': 1.0, 'ISOP': 1.0, 'CH2Br2': 1.0, 'CHBr3': 1.0,
+            'CH3Br': 1.0, \
             # Iodine in het loss/cycling reactions
             # loss to SSA/other aerosols
             # HOI
@@ -857,13 +916,14 @@ def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
     # Kludge for testing. Allow values to equal 1.0 if not defined.
     try:
         if debug:
-            print(('{} (ref_spec: {}) stoichiometry : {}'.format(spec,
-                                                                 ref_spec,  d[spec])))
+            prt_str = '{} (ref_spec: {}) stoichiometry : {}'
+            print((prt_str.format(spec, ref_spec,  d[spec])))
         return d[spec]
 
     except:
-        print(('!'*20, 'WARNING - Kludge assumming stoichiometry = 1.0, for' +
-               ' {} (ref_spec given as: {})'.format(spec, ref_spec)))
+        prt_str = '!!!!!!! WARNING - Kludge assumming stoichiometry = 1.0, for'
+        prt_str += ' {} (ref_spec given as: {})'
+        print(( prt_str.format(spec, ref_spec)) )
         return 1.0
 
 
@@ -1229,7 +1289,7 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
         'IxOy': ['IO', 'OIO',  'I2O2', 'I2O3', 'I2O4'],
         'Iy+AERO': [ \
             'I2', 'HOI', 'IO', 'OIO', 'HI', 'INO', 'IONO', 'IONO2', 'I2O2', \
-            'I2O3', 'I2O4', 'I', ]+['ICl', 'IBr']+['AERI'+'ISALA'+'ISALC'],
+            'I2O3', 'I2O4', 'I', ]+['ICl', 'IBr']+['AERI','ISALA','ISALC'],
         'Iy1.1': [ \
             'I2', 'HOI', 'IO', 'OIO', 'HI', 'IONO', 'IONO2', 'I2O2', \
             'I2O4', 'I', 'INO'],
@@ -1495,3 +1555,22 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
         return GC_var_dict[input_x]
 
 
+def get_conversion_factor_kgX2kgREF(spec=None, ref_spec=None, stioch=None,
+                                    debug=False):
+    """
+    Return conversion factor for mass (e.g. kg) X to mass ref_spec
+    """
+    # Get the reference species if not provided and calculate the mass ratio
+    if isinstance(ref_spec, type(None)):
+        ref_spec = get_ref_spec(spec)
+        if debug:
+            print("ref_spec for '{}': {}".format(spec, ref_spec))
+    factor = 1/species_mass(spec)*species_mass(ref_spec)
+    # Consider if there is a stoichiometry between ref_spec and species
+    if isinstance(stioch, type(None)):
+        stioch = spec_stoich(spec, ref_spec=ref_spec)
+        if debug:
+            print("stoich for '{}': {}".format(spec, stioch))
+    if stioch != 1.0:
+        factor = factor * stioch
+    return factor

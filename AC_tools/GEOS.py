@@ -395,7 +395,7 @@ def extract_GEOSCF_assim4df(df=None, ds=None,
 
     Parameters
     -------
-    df (pd.DataFrame):
+    df (pd.DataFrame): dataframe with locations to extract as rows
 
     Returns
     -------
@@ -467,10 +467,11 @@ def extract_GEOSCF_assim4df(df=None, ds=None,
     dfN = pd.DataFrame()
     # Extraction of data points in a bulk manner
     for nval, var in enumerate( vars2extract ):
-        print(var)
         # Now extract values
         dims2use = list(ds[var].coords)
         idx_list = [idx_dict[df2ds_dict_r[i]] for i in dims2use]
+        if debug:
+            print(var, ds[var].dims, ds[var].coords, dims2use, idx_list)
         vals = ds[var].values[tuple(idx_list)]
         dfN[vars2extract[nval]] = vals
     # Also save model time variable to dataframe
@@ -499,59 +500,6 @@ def extract_GEOSCF_assim4df(df=None, ds=None,
     rm_file(folder='./', filename=TEMP_nc_name)
     # Return the extracted dataframe of flighttrack points
     return dfN
-
-
-def mk_planeflight_input4FAAM_flight(folder=None, flight_ID='C216',
-                                     folder4csv=None,
-                                     PressVar="PS_RVSM",
-                                     LonVar='LON_GIN',
-                                     LatVar='LAT_GIN', TimeVar='Time',
-                                     LocVar='TYPE', LocName='B-146',
-                                     DateVar='datetime',
-                                     testing_mode=True, csv_suffix='',
-                                     num_tracers=203,
-                                     Username='Tomas Sherwen',
-                                     slist=None,
-                                     Extra_spacings=False
-                                     ):
-    """
-    Extract the GEOS-CF model for a given FAAM BAe146 flight
-
-    Parameters
-    -------
-
-    Returns
-    -------
-    (None)
-    """
-    # Retrieve FAAM BAe146 Core NetCDF files
-    filename = 'core_faam_*_{}_1hz.nc'.format(flight_ID.lower())
-    file2use = glob.glob(folder+filename)
-    if len(file2use) > 1:
-        print( 'WARNING: more that one file found! (so using latest file)' )
-        print(file2use)
-    ds = xr.open_dataset( file2use[0] )
-    # Only select the variable of intereest and drop where these are NaNs
-    df = ds[ [PressVar, LatVar, LonVar, TimeVar] ].to_dataframe()
-    df = df.dropna()
-    # Add a location name (as Type)
-    df[LocVar] = LocName
-    # remove the index name and add index values to a column
-    df.index.name = None
-    try:
-        df[DateVar]
-    except KeyError:
-        df['datetime'] = df.index.values
-    # If doing a test, then just extract the first 150 points of flight track
-    if testing_mode:
-        df = df.head(150)
-    # Call planeflight maker...
-    prt_PlaneFlight_files_v12_plus(df=df, slist=slist,
-                                   Extra_spacings=Extra_spacings,
-                                   LON_var=LonVar, LAT_var=LatVar,
-                                   PRESS_var=PressVar, loc_var=LocVar,
-                                   num_tracers=num_tracers,
-                                   Username=Username,)
 
 
 def regrid_restart_file4flexgrid(dsA, OutFile=None, lons=None,

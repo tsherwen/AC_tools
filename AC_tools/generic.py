@@ -1104,6 +1104,74 @@ def calc_4D_idx_in_ds(ds=None, df=None, LonVar='lon', LatVar='lat',
     return {LatVar:lat_idx, LonVar:lon_idx, TimeVar:time_idx, AltVar:hPa_idx}
 
 
+def extract_ds4df_locs(ds=None, df=None, LonVar='lon', LatVar='lat',
+                       TimeVar='time',
+                       AltVar='hPa', dsAltVar='hPa',
+                       dsLonVar='lon', dsLatVar='lat', dsTimeVar='time',
+                       vars2extract=None, debug=False, testing_mode=False):
+    """
+    Extract a xr.Dataset as for given locations (aka offline planeflight)
+
+    Parameters
+    ----------
+    df (pd.DataFrame): dataframe containing coordinates (lon, lat, alt, time)
+    ds (xr.dataset): dataset to calculate indexes within
+    LonVar (str): Variable name in DataFrame for Longitude
+    dsLonVar (str): Variable name in dataset for Longitude
+    LatVar (str): Variable name in DataFrame for latitude
+    dsLatVar (str): Variable name in dataset for latitude
+    AltVar (str): Variable name in DataFrame for pressure (hPa)
+    dsAltVar (str): Variable name in dataset for pressure (hPa)
+    TimeVar (str): Variable name in DataFrame for time
+    dsTimeVar (str): Variable name in dataset for time
+
+    Returns
+    -------
+    (pd.DataFrame)
+    """
+    # Check the DataFrame index is datetime.datetime
+    ass_str = 'WARNING: DataFrame index is not of datetime.datetime dtype'
+#    assert df.index.dtype == datetime.datetime, ass_str
+    # Extract all of the data variables unless a specific list is provided
+    if isinstance(vars2extract, type(None)):
+        vars2extract = list(ds.data_vars)
+    # - Create a data frame for values
+    dfN = pd.DataFrame()
+    # get indexes en masse then extract with these
+    d = calc_4D_idx_in_ds(ds=ds, df=df, LonVar=LonVar, LatVar=LatVar,
+                          TimeVar=TimeVar, AltVar=AltVar, dsAltVar=dsAltVar,
+                          dsLonVar=dsLonVar, dsLatVar=dsLatVar,
+                          dsTimeVar=dsTimeVar)
+    # Loop by timestamp
+    times2use =  df.index.values
+    for n, time in enumerate( times2use ):
+        # get the times for a specific data
+        lat_idx = d[LatVar][n]
+        lon_idx = d[LonVar][n]
+        lev_idx = d[AltVar][n]
+        time_idx = d[TimeVar][n]
+        # en masse extract indexes
+        ds_tmp = ds.isel(lat=lat_idx, lon=lon_idx, time=time_idx,
+                         lev=lev_idx)
+        vals = [ ds_tmp[i].data for i in vars2extract ]
+        vals = np.array(vals)
+        for nval, val in enumerate(vals):
+            dfN.loc[vars2extract[nval], time] = vals[nval]
+        # Add the model position coordinates...
+        dfN.loc['ds-lat', time] = float(ds_tmp['lat'].values)
+        dfN.loc['ds-lon', time] = float(ds_tmp['lon'].values)
+        dfN.loc['ds-lev', time] = float(ds_tmp['lev'].values)
+        dfN.loc['ds-time', time] = float(ds_tmp['time'].values)
+        del ds_tmp, vals
+    # Make datetime the index
+    dfN = dfN.transpose()
+    # Save the datetime as a column too
+    dfN['Datetime'] = dfN.index.values
+    # Update the model datetime to be in datetime units
+    dfN['ds-time'] = pd.to_datetime(dfN['ds-time'].values)
+    return dfN
+
+
 def save_ds2disk_then_reload(ds, savename='TEMP_NetCDF.nc', folder='./',
                              delete_ds=True, debug=False):
     """
@@ -1140,4 +1208,88 @@ def merge_two_dicts(x, y):
     z = x.copy()
     z.update(y)
     return z
+
+
+def merge_dicts_list(x):
+    """
+    Given two dictionaries, merge them into a new dict as a shallow copy.
+
+    Returns
+    -------
+    (dict)
+
+    Notes
+    -------
+     - Credit for function Aaron Hall (link below) https://stackoverflow.com/questions/38987/how-do-i-merge-two-dictionaries-in-a-single-expression-in-python-taking-union-o
+    """
+    z = x[0].copy()
+    for i in x[1:]:
+        z.update(i)
+    return z
+
+
+def get_table_from_copernicus_article(URL=None, TableNum=5,
+                                      debug=False):
+    """
+    Retrieve a specific table from a copernicus articles XML link
+
+    Parameters
+    ----------
+    URL (str): URL for a copernicus XML file
+    TableNum (int): number of the table to extract
+
+    Returns
+    -------
+    (pd.DataFrame)
+
+    Notes
+    -------
+     - More details on specific XML format used at link below
+    https://jats.nlm.nih.gov/
+     - More useful info on using Xpath options of Elementree below
+     http://effbot.org/zone/element-index.htm
+    """
+    import xml.etree.ElementTree as ET
+    import urllib
+    # Use an example paper and table if one not specify
+    if isinstance(URL, type(None)):
+        URL = 'https://acp.copernicus.org/articles/20/10865/2020/'
+        URL += 'acp-20-10865-2020.xml'
+
+    # Get the whole tree and root
+    tree = ET.parse(urllib.request.urlopen(URL))
+    root = tree.getroot()
+    # Tables for Copernicus publications are in the Oasis namespace
+    tags = [elem.tag for elem in root.iter() ]
+    tags2use = [i for i in tags if 'oasis' in i.lower()]
+    TableTag = '{http://docs.oasis-open.org/ns/oasis-exchange/table}table'
+    ColNameVar = 'colname'
+    NcolsVar = 'cols'
+    tables = [i for i in root.iter(tag=TableTag)]
+    # Select table from list (update article number to python index)
+    AssStr = 'WARNING: Table # {} requested, but only {} tables in article.'
+    assert TableNum<=len(tables), AssStr.format(TableNum, len(tables))
+    table = tables[ TableNum-1 ]
+    if debug:
+        print(table)
+    table_dict = {}
+    for child in table:
+        for elem in child.iter():
+            attrib = elem.attrib
+            if NcolsVar in attrib.keys():
+                table_dict[NcolsVar] = attrib[NcolsVar]
+            if ColNameVar in attrib.keys():
+                colname = attrib[ColNameVar]
+                table_dict[colname] = elem.text
+
+    # Convert to a pandas dataframe and return
+    NCols = table_dict[NcolsVar]
+    del table_dict[NcolsVar]
+    df = pd.DataFrame()
+    for key in table_dict.keys():
+        if debug:
+            print(key, table_dict[key])
+        df[key] = table_dict[key].split()
+    return df
+
 
