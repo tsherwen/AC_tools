@@ -48,9 +48,9 @@ def main(wd=None, CODE_wd=None, verbose=False, debug=False):
 
     # Get a dictionary of information about the model run
     # NOTE: Should this approach be retired? Yes.
-    full_vert_grid = True
-    VarDict = AC.get_default_variable_dict(full_vert_grid=full_vert_grid,
-                                           wd=wd)
+#    full_vert_grid = True
+#    VarDict = AC.get_default_variable_dict(full_vert_grid=full_vert_grid,
+#                                           wd=wd)
     # Now Get the StateMet object... for time in troposphere diagnostic
     StateMet = AC.get_StateMet_ds(wd=wd)
 

@@ -819,7 +819,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     # - Get burdens for core species
     avg_over_time = True # Note: burdens area averaged overtime
     core_burden_specs = ['O3', 'CO', 'NO', 'NO2']
-    specs2use = core_burden_specs+extra_burden_specs
+    specs2use = list(set(core_burden_specs+extra_burden_specs))
     prefix = 'SpeciesConc_'
     vars2use = [prefix+i for i in specs2use]
     for key in run_dict.keys():
@@ -885,11 +885,9 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     # - Add Ozone production and loss...
 
     # - Surface concentrations
-    core_surface_specs = [
-        'O3', 'NO', 'NO2', 'N2O5'
-    ]
+    core_surface_specs = ['O3', 'NO', 'NO2', 'N2O5']
     prefix = 'SpeciesConc_'
-    specs2use = core_surface_specs+extra_surface_specs
+    specs2use = list(set(core_surface_specs+extra_surface_specs))
     # Loop by run and get stats
     for key in run_dict.keys():
         if debug:
