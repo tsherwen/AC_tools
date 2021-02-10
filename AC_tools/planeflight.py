@@ -216,7 +216,7 @@ def prt_PlaneFlight_files_v12_plus(df=None, LAT_var='LAT', LON_var='LON',
                                    PRESS_var='PRESS', loc_var='TYPE',
                                    OBS_var='OBS',
                                    Date_var='datetime', slist=None,
-                                   num_tracers=85,
+                                   num_tracers=85, rxn_nums=[],
                                    Extra_spacings=False,
                                    Username='Tomas Sherwen', verbose=False,
                                    debug=False):
@@ -270,6 +270,11 @@ def prt_PlaneFlight_files_v12_plus(df=None, LAT_var='LAT', LON_var='LON',
         slist = ['TRA_{:0>3}'.format(i) for i in np.arange(1, num_tracers+1)]
         species = ['OH', 'HO2']
         slist = slist + species + met_vars
+        # Add list of reactions to extract too
+        if len(rxn_nums) > 0:
+            rxns_are_nums = [(type(i) == int) for i in rxn_nums]
+            assert all(rxns_are_nums), 'All rxn numbers must be integers!'
+            slist += ['REA_{:0>3}'.format(i) for i in rxn_nums]
     # Number of variables to output (needed for fortran read of *dat files)
     nvar = len(slist)
     # --- Make sure an altitude is defined in df if not provided
@@ -519,7 +524,7 @@ def mk_planeflight_input4FAAM_flight(folder=None, ds=None,
                                      LocVar='TYPE', LocName='B-146',
                                      DateVar='datetime',
                                      testing_mode=True, csv_suffix='',
-                                     num_tracers=203,
+                                     num_tracers=203, rxn_nums=[],
                                      Username='Tomas Sherwen',
                                      slist=None,
                                      Extra_spacings=False
@@ -561,7 +566,7 @@ def mk_planeflight_input4FAAM_flight(folder=None, ds=None,
                                    Extra_spacings=Extra_spacings,
                                    LON_var=LonVar, LAT_var=LatVar,
                                    PRESS_var=PressVar, loc_var=LocVar,
-                                   num_tracers=num_tracers,
+                                   num_tracers=num_tracers, rxn_nums=rxn_nums,
                                    Username=Username,)
 
 def reprocess_split_pf_output_over_2_lines(folder, save_original_file=True):
