@@ -155,7 +155,9 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
     # Add tags for halogen families
     rxn_dicts, tagged_rxns = AC.add_tags4strs2mech(rxn_dicts, counter=counter,
                                                    search_strs=search_strs,
-                                                   tagged_rxns=tagged_rxns, )
+                                                   tagged_rxns=tagged_rxns,
+#                                                   debug=debug
+                                                   )
     counter = max(tagged_rxns.keys())
     current_tag = '{}{}'.format(tag_prefix, counter)
 
@@ -200,7 +202,6 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
                                                    search_reactants=True, )
     counter = max(tagged_rxns.keys())
     current_tag = '{}{}'.format(tag_prefix, counter)
-
 
     # - Add the species to the species_df
     # Number of reactions tagged
