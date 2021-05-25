@@ -1616,11 +1616,13 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
     if rtn_by_fam:
         return dfFam
 
+
 def add_tags4strs2mech(rxn_dicts, tagged_rxns={},
                        search_strs=None, counter=0,
                        search_reactants=False,
                        search_products=False,
-                       tag_prefix='T'):
+                       tag_prefix='T',
+                       debug=False):
     """
     Tag reactions in provided string found in KPP reaction string
 
@@ -1649,7 +1651,7 @@ def add_tags4strs2mech(rxn_dicts, tagged_rxns={},
     re5 = '(\\s+)'                   # White Space 2
     rg = re.compile(re1+re2+re3+re4, re.IGNORECASE | re.DOTALL)
     # ( Or just all reactions that contain a species of interest )
-    current_tag = '{}{}'.format(tag_prefix, counter)
+    current_tag = '{}{:0>3}'.format(tag_prefix, counter)
     for search_str in search_strs:
         for key_ in list(rxn_dicts.keys()):
             df = rxn_dicts[key_]
@@ -1667,6 +1669,8 @@ def add_tags4strs2mech(rxn_dicts, tagged_rxns={},
                 if search_str in str2search4search_str:
                     # Update the counter (NOTE: counter starts from 1)
                     counter += 1
+                    if debug:
+                        print( counter, current_tag )
                     # Check if rxn already tagged, if so just use that tag.
                     m = rg.search(rxn_str)
                     if m:
