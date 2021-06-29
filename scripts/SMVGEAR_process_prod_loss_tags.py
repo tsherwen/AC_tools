@@ -58,8 +58,8 @@ def main(trop_limit=True, res='4x5',  debug=False):
     s_area = get_surface_area(res=res)[..., 0]  # m2 land map
     # convert to mass terms  ( in g X )
     fam_loss = convert_molec_cm3_s_2_g_X_s_BPCH(ars=fam_loss,
-                                           ref_spec=ref_spec, wd=wd, conbine_ars=False,
-                                           rm_strat=True, month_eq=True)
+                                                ref_spec=ref_spec, wd=wd, conbine_ars=False,
+                                                rm_strat=True, month_eq=True)
     print([i.shape for i in fam_loss])
 
     # sum and convert to Gg

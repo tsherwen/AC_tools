@@ -762,7 +762,7 @@ def get_GC_output(wd, vars=None, species=None, category=None, r_cubes=False,
 
         #        if not r_cubes:
 
-            # Extract data
+        # Extract data
         #            try:
         #                arr = [ cubes[i].data for i in range( len(vars) ) ]
         #            except:
@@ -770,7 +770,7 @@ def get_GC_output(wd, vars=None, species=None, category=None, r_cubes=False,
         #                print 'vars: >{}<'.format( ','.join(vars) )
         #                sys.exit( 0 )
 
-            #  restore to zero scaling (v/v instead of pptv etc ) - only for GC tracers
+        #  restore to zero scaling (v/v instead of pptv etc ) - only for GC tracers
         #            if restore_zero_scaling:
         #                if (category == 'IJ_AVG_S') or ('IJ_AVG_S' in vars[0] ):
         #                    print [ cubes[i].attributes['ctm_units'] for i in range( len(vars) ) ]
@@ -1944,7 +1944,7 @@ def spec_dep(wd=None, spec='O3', s_area=None, months=None,
     logging.debug(DebugStr.format(len(arr), *[str(ii)
                                               for ii in
                                               [(i.shape, i.sum(), i.mean())
-                                                         for i in [arr]]])
+                                               for i in [arr]]])
                   )
     # Convert to Gg "Ox" (Gg X /s)
     arr = molec_cm2_s_2_Gg_Ox_np(arr, spec, s_area=s_area, Iodine=Iodine,
@@ -2229,12 +2229,12 @@ def get_wet_dep(months=None, years=None, vol=None,
 
 
 def molec_weighted_avg_BPCH(arr, wd=None, vol=None, t_p=None,
-                       trop_limit=True, multiply_method=False, rm_strat=True,
-                       molecs=None,
-                       weight_lon=False, weight_lat=False, LON_axis=0,
-                       LAT_axis=1,
-                       n_air=None,
-                       annual_mean=True, res='4x5', debug=False):
+                            trop_limit=True, multiply_method=False, rm_strat=True,
+                            molecs=None,
+                            weight_lon=False, weight_lat=False, LON_axis=0,
+                            LAT_axis=1,
+                            n_air=None,
+                            annual_mean=True, res='4x5', debug=False):
     """
     Takes an array and retuns the average (molecular weighted) value
 
@@ -3614,14 +3614,14 @@ def convert_molec_cm3_s2_molec_per_yr(ars=None, vol=None):
 
 
 def convert_molec_cm3_s_2_g_X_s_BPCH(ars=None, specs=None, ref_spec=None,
-                                months=None, years=None, vol=None, t_ps=None,
-                                trop_limit=True,
-                                s_area=None, rm_strat=True, wd=None,
-                                res='4x5',
-                                multiply_method=True, use_time_in_trop=True,
-                                conbine_ars=True,
-                                month_eq=False, limit_PL_dim2=38,
-                                verbose=False,  debug=False):
+                                     months=None, years=None, vol=None, t_ps=None,
+                                     trop_limit=True,
+                                     s_area=None, rm_strat=True, wd=None,
+                                     res='4x5',
+                                     multiply_method=True, use_time_in_trop=True,
+                                     conbine_ars=True,
+                                     month_eq=False, limit_PL_dim2=38,
+                                     verbose=False,  debug=False):
     """
     Convert molec/cm3/s to g/grid box. This is used for converting prod/loss
     output units
@@ -3851,8 +3851,8 @@ def get_avg_trop_conc_of_X(spec='O3', wd=None, s_area=None, res='4x5',
         arr = arr.mean(axis=-1)
     # Area weight and return
     val = molec_weighted_avg_BPCH(arr, res=res, trop_limit=trop_limit, \
-                             #        vol=vol, t_p=t_p, n_air=n_air, molecs=molecs,
-                             rm_strat=rm_strat, wd=wd, annual_mean=annual_mean)
+                                  #        vol=vol, t_p=t_p, n_air=n_air, molecs=molecs,
+                                  rm_strat=rm_strat, wd=wd, annual_mean=annual_mean)
     if rtn_units:
         return val, units
     else:
@@ -3898,14 +3898,16 @@ def get_default_variable_dict(wd=None,
     # Consider just troposphere or consider full atmosphere?
     if full_vert_grid:
         Var_rc['trop_limit'] = False  # limit arrays to 38 levels...
-        Var_rc['rm_strat'] = False  # This is for convert_molec_cm3_s_2_g_X_s_BPCH
+        # This is for convert_molec_cm3_s_2_g_X_s_BPCH
+        Var_rc['rm_strat'] = False
         Var_rc['full_vert_grid'] = full_vert_grid  # for get_dims4res
         Var_rc['limit_PL_dim2'] = 59  # limit of levels for chemistry?
         # apply dim. limiting?
         Var_rc['limit_vertical_dim'] = limit_vertical_dim
     else:
         Var_rc['trop_limit'] = True  # limit arrays to 38 levels...
-        Var_rc['rm_strat'] = True  # This is for convert_molec_cm3_s_2_g_X_s_BPCH
+        # This is for convert_molec_cm3_s_2_g_X_s_BPCH
+        Var_rc['rm_strat'] = True
         Var_rc['full_vert_grid'] = full_vert_grid  # for get_dims4res
         Var_rc['limit_PL_dim2'] = 38  # limit of levels for chemistry
         # only consider boxes that are 100 % tropospheric
@@ -4117,15 +4119,15 @@ def process_to_X_per_s(spec=None, ars=None, tags=None, ref_spec=None,
         month_eq = False
     # Convert to g X/s
     ars = convert_molec_cm3_s_2_g_X_s_BPCH(ars=ars, ref_spec=ref_spec, \
-                                      # shared settings...
-                                      months=Data_rc['months'], years=Data_rc['years'],
-                                      vol=Data_rc['vol'], t_ps=Data_rc['t_ps'], \
-                                      trop_limit=Var_rc['trop_limit'],
-                                      rm_strat=Var_rc['rm_strat'],
-                                      # ... and function specific settings...
-                                      month_eq=month_eq,
-                                      #        month_eq=False,
-                                      conbine_ars=False)
+                                           # shared settings...
+                                           months=Data_rc['months'], years=Data_rc['years'],
+                                           vol=Data_rc['vol'], t_ps=Data_rc['t_ps'], \
+                                           trop_limit=Var_rc['trop_limit'],
+                                           rm_strat=Var_rc['rm_strat'],
+                                           # ... and function specific settings...
+                                           month_eq=month_eq,
+                                           #        month_eq=False,
+                                           conbine_ars=False)
     # Adjust for # of X in tag
     # is the broadcasting right here? should the array just be overwritten?
     if adjust_by_stiochiometry_of_tag:

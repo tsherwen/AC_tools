@@ -68,7 +68,7 @@ def get_PL_ars4mech_NetCDF(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
     dsPL = get_ProdLoss_ds(wd=wd, dates2use=dates2use)
     prefix = 'Prod_'
     diag_tag_prefix = '{}{}'.format(prefix, 'T')
-    vars2use = [i.replace('PT', diag_tag_prefix) for i in Ox_fam_dict['tags'] ]
+    vars2use = [i.replace('PT', diag_tag_prefix) for i in Ox_fam_dict['tags']]
     dsPL = dsPL[vars2use]
     # Rename back into old format for now - Update this?
     rename_dict = dict(zip(vars2use, Ox_fam_dict['tags']))
@@ -92,7 +92,7 @@ def get_PL_ars4mech_NetCDF(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
         # Convert to g mass
         values = (values * species_mass('O3'))
         # Account for stiochiometrey of reaction
-        values = values * RR_dict_fam_stioch[ tags2_rxn_num[var2use] ]
+        values = values * RR_dict_fam_stioch[tags2_rxn_num[var2use]]
         # Convert to /month from /s
         values = values * month2sec[:, None, None, None]
         dsPL[var2use].values = values
@@ -117,7 +117,7 @@ def get_PL_ars4mech_NetCDF(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
     arr = np.ma.array(ars).sum(axis=0)
     var2use = Ox_fam_dict['tags'][0]
     ds_TEMP = dsPL[[var2use]].copy()
-    print(arr.shape, dsPL[var2use].values.shape )
+    print(arr.shape, dsPL[var2use].values.shape)
     print(arr.sum())
     ds_TEMP[var2use].values = arr
     LOx_trop = rm_fractional_troposphere(ds_TEMP, vars2use=[var2use],
@@ -132,7 +132,7 @@ def get_PL_ars4mech_NetCDF(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
         RMM_air = constants('RMM_air')
         StateMet[MolecVar] = StateMet['Met_AIRDEN'].copy()
         # kg/m3 => molecs/cm3
-        StateMet[MolecVar].values = StateMet[MolecVar].values / RMM_air /1E6
+        StateMet[MolecVar].values = StateMet[MolecVar].values / RMM_air / 1E6
         # Multiply values through by # molecules
         dsPL = dsPL * StateMet[MolecVar]
         # sum over lat and lon
@@ -195,18 +195,18 @@ def get_PL_ars4mech_BPCH(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
         month_eq = False
     # Now convert the units (to G/s)
     ars = convert_molec_cm3_s_2_g_X_s_BPCH(ars=ars, ref_spec=ref_spec,
-                                      # Shared settings...
-                                      months=Data_rc['months'],
-                                      years=Data_rc['years'],
-                                      vol=Data_rc['vol'], t_ps=Data_rc['t_ps'],
-                                      trop_limit=Var_rc['trop_limit'],
-                                      rm_strat=Var_rc['rm_strat'],
-                                      # There are 59 levels of computation for P/l in
-                                      # v11-1+ (so limit to 59)
-                                      limit_PL_dim2=limit_PL_dim2,
-                                      # ... and function specific settings...
-                                      month_eq=month_eq,
-                                      conbine_ars=False)
+                                           # Shared settings...
+                                           months=Data_rc['months'],
+                                           years=Data_rc['years'],
+                                           vol=Data_rc['vol'], t_ps=Data_rc['t_ps'],
+                                           trop_limit=Var_rc['trop_limit'],
+                                           rm_strat=Var_rc['rm_strat'],
+                                           # There are 59 levels of computation for P/l in
+                                           # v11-1+ (so limit to 59)
+                                           limit_PL_dim2=limit_PL_dim2,
+                                           # ... and function specific settings...
+                                           month_eq=month_eq,
+                                           conbine_ars=False)
     # Add stoichiometric scaling (# of Ox losses per tagged rxn. )
     ars = [i*RR_dict_fam_stioch[tags2_rxn_num[tags[n]]]
            for n, i in enumerate(ars)]
@@ -247,9 +247,10 @@ def get_PL_ars4mech_BPCH(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
                                            weight_lat=True, wd=Var_rc['wd'],
                                            trop_limit=Var_rc['trop_limit'],
                                            rm_strat=Var_rc['rm_strat'], \
-                                      # provide shared data arrays averaged over time...
-                                       molecs=Data_rc['molecs'].mean(axis=-1),
-                                            t_p=t_ps) \
+                                           # provide shared data arrays averaged over time...
+                                           molecs=Data_rc['molecs'].mean(
+                                               axis=-1),
+                                           t_p=t_ps) \
                    for i in ars]
         else:
             pass
@@ -377,6 +378,7 @@ def get_reactants_and_products4tagged_fam(fam='LOx', KPP_output_mech=None,
     df['rxn str'] = s
 #    df.index = df.index - 1 # Adjust Fortran numbering in output to Pythonic #
     # Split apart reaction str to give products and reactants
+
     def extract_products(input):
         return str(input).split(' --> ')[-1].strip()
 
@@ -404,6 +406,7 @@ def get_reactants_and_products4tagged_fam(fam='LOx', KPP_output_mech=None,
                 if a__ != b_[n]:
                     print(a__, b_[n])
     # Only consider reaction that include family in the products
+
     def fam_in_rxn(input):
         return (fam in input)
     rtn_vars = ['react', 'prod', 'KPP input react']
@@ -476,6 +479,7 @@ def KPP_eqn_file_species(folder=None, filename=None, debug=False):
             if debug:
                 print(num2read_line_from)
     # Process extracted lines to dict of names and descriptions...
+
     def strip_line(line_):
         try:
             name, descrip = line_.strip().split('= IGNORE;')
@@ -502,21 +506,21 @@ def get_dicts_of_KPP_eqn_file_reactions(folder=None, filename=None,
     import string
     # Local vars
     KPP_rxn_funcs = (
-    # Main KPP functions
-    'HET', 'PHOTOL', 'GCARR','GCJPLPR',
-#    'GC_',
-    # Specialist KPP functions for mechanism
-    'GC_HO2HO2', 'GC_OHCO',
-    'GC_RO2NO', 'GC_OHHNO3', 'GC_RO2HO2', 'GC_HACOHA',
-    'GC_RO2HO2', 'GC_HACOHB', 'GC_TBRANCH', 'GCJPLEQ',
-    'GC_GLYCOHA', 'GC_GLYCOHB', 'GC_DMSOH', 'GC_GLYXNO3',
-    'GC_HO2NO3',
-    # Include ISOP reaction functions (inc. GC)
-    'GC_ALK', 'GC_NIT', 'GC_PAN', 'GC_EPO', 'GC_ISO1', 'GC_ISO2',
-    # KPP function without GC prefix
-#   'NIT', 'PAN', 'ALK', 'EPO',
-    'ARRPLUS', 'TUNPLUS',
-    '1.33E-13+3.82E-11*exp', # Why is this function not in gckpp.kpp?
+        # Main KPP functions
+        'HET', 'PHOTOL', 'GCARR', 'GCJPLPR',
+        #    'GC_',
+        # Specialist KPP functions for mechanism
+        'GC_HO2HO2', 'GC_OHCO',
+        'GC_RO2NO', 'GC_OHHNO3', 'GC_RO2HO2', 'GC_HACOHA',
+        'GC_RO2HO2', 'GC_HACOHB', 'GC_TBRANCH', 'GCJPLEQ',
+        'GC_GLYCOHA', 'GC_GLYCOHB', 'GC_DMSOH', 'GC_GLYXNO3',
+        'GC_HO2NO3',
+        # Include ISOP reaction functions (inc. GC)
+        'GC_ALK', 'GC_NIT', 'GC_PAN', 'GC_EPO', 'GC_ISO1', 'GC_ISO2',
+        # KPP function without GC prefix
+        #   'NIT', 'PAN', 'ALK', 'EPO',
+        'ARRPLUS', 'TUNPLUS',
+        '1.33E-13+3.82E-11*exp',  # Why is this function not in gckpp.kpp?
     )
     # Loop lines in file
     with open(folder+filename, 'r') as file_:
@@ -564,6 +568,7 @@ def get_dicts_of_KPP_eqn_file_reactions(folder=None, filename=None,
                 if debug:
                     print(n_line, line_)
             # Remove spacing errors in KPP eqn entries
+
             def remove_KPP_spacing_errors(input):
                 """ Remove differences in spacing in KPP """
                 # Numbers
@@ -594,6 +599,7 @@ def split_KPP_rxn_str_into_chunks(rxn, KPP_line_max=43, debug=False):
     """
     print(rxn)
     # Sub-function to cut strings to last " +"
+
     def return_string_in_parts_ending_with_plus(input):
         """ return string upto last ' +'  in string """
         # Find the last ' + ' in string
@@ -721,7 +727,7 @@ def process_KPP_rxn_dicts2dfs(rxn_dicts=None, Use_FORTRAN_KPP_numbering=True,
     return rxn_dicts
 
 
-def split_combined_KPP_eqns(list_in, debug=False ):
+def split_combined_KPP_eqns(list_in, debug=False):
     """ Split combined KPP eqn strings  """
     # Indices of KPP eqn strings with more than one "="
     inds = []
@@ -1418,10 +1424,10 @@ def get_Ox_fam_dicts(fam='LOx', ref_spec='O3', GC_version='v12.9.1',
     }
     # - Extract data for Ox loss for family from model
     ars = get_PL_ars4mech_NetCDF(Ox_fam_dict=Ox_fam_dict,
-                                rm_strat=rm_strat, wd=wd,
-                                fam=fam, ref_spec=ref_spec,
-                                StateMet=StateMet,
-                                weight_by_molecs=weight_by_molecs)
+                                 rm_strat=rm_strat, wd=wd,
+                                 fam=fam, ref_spec=ref_spec,
+                                 StateMet=StateMet,
+                                 weight_by_molecs=weight_by_molecs)
 
     # Convert this to a dictionary and return
     # Inc. lists of sorted family names and ars in returned dictionary
@@ -1611,7 +1617,7 @@ def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
     print(dfFam)
     # return dictionaries of LOx by reaction or by family (in Tg O3)
     if rtn_by_rxn:
-#        df.loc[:,TotalFluxVar] = df.loc[:,TotalFluxVar] /1E12
+        #        df.loc[:,TotalFluxVar] = df.loc[:,TotalFluxVar] /1E12
         return df
     if rtn_by_fam:
         return dfFam
@@ -1642,7 +1648,7 @@ def add_tags4strs2mech(rxn_dicts, tagged_rxns={},
     """
     if isinstance(search_strs, type(None)):
         search_strs = 'BrSAL', 'CH3Br', 'CH3Cl', 'CH2Cl2', 'CHCl3', '0.150IBr',
-        search_strs += 'HOBr','ClNO2',
+        search_strs += 'HOBr', 'ClNO2',
     # Setup regex to find existing tags in reaction strings
     re1 = '(\\+)'                    # Any Single Character 1
     re2 = '(\\s+)'                   # White Space 1
@@ -1670,7 +1676,7 @@ def add_tags4strs2mech(rxn_dicts, tagged_rxns={},
                     # Update the counter (NOTE: counter starts from 1)
                     counter += 1
                     if debug:
-                        print( counter, current_tag )
+                        print(counter, current_tag)
                     # Check if rxn already tagged, if so just use that tag.
                     m = rg.search(rxn_str)
                     if m:
@@ -1756,7 +1762,7 @@ def GC_OHCO(A0, B0, C0, NUMDEN=1E4, TEMP=298.0, PRESS=1000.0):
     KHI1 = 1.1E-12*(300./TEMP)**(-1.3E0)
     XYRAT1 = KLO1 * NUMDEN / KHI1
     BLOG1 = np.log10(XYRAT1)
-    FEXP1 = 1.E+0/(1.E+0 + BLOG1*BLOG1 )
+    FEXP1 = 1.E+0/(1.E+0 + BLOG1*BLOG1)
     KCO1 = KLO1 * NUMDEN * 0.6**FEXP1/(1.e+0+XYRAT1)
     KLO2 = 1.5E-13 * (300/TEMP)**(0.E+0)
     KHI2 = 2.1e+09 * (300/TEMP)**(-6.1E+0)

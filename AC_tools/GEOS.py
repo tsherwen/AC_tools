@@ -200,19 +200,19 @@ def get_GEOS5_online_diagnostic_plots(dt=None, ptype='wxmaps',
     # if no day given, use previous day
     if isinstance(dt, type(None)):
         # Just use yesterday for Now
-        TNow = time2datetime( [gmtime()] )[0]
+        TNow = time2datetime([gmtime()])[0]
         dt = datetime.datetime(TNow.year, TNow.month, TNow.day-1)
 
     # Which forecast to use
     if isinstance(fcst, type(None)):
         fcst_str = '{}{:0>2}{:0>2}T{:0>2}0000'
-        fcst = fcst_str.format( dt.year, dt.month, dt.day, dt.hour )
+        fcst = fcst_str.format(dt.year, dt.month, dt.day, dt.hour)
     # What is the website location for the data?
     site = 'https://fluid.nccs.nasa.gov/'
     if ptype == 'wxmaps':
-        type_root = '{}/{}'.format( site, ptype)
+        type_root = '{}/{}'.format(site, ptype)
     else:
-        type_root = '{}/wxmaps/{}'.format( site, ptype)
+        type_root = '{}/wxmaps/{}'.format(site, ptype)
 
     # What is the outline file structure?
     urlstr = '{}/?one_click=1&tau={:0>3}&stream={}&level={}&region={}&fcst={}&field={}'
@@ -239,13 +239,13 @@ def get_GEOS5_online_diagnostic_plots(dt=None, ptype='wxmaps',
                 # Download using Python wget
                 f = '{}_{}_{}_fcast_{}_{}_{}_{:0>2}_{:0>3}.png'
                 name = f.format(prefix, ptype, stream, fcst, field, region,
-                                level, tau )
+                                level, tau)
                 wget.download(image_URL, folder+name)
 
 
-def get_GEOS5_datagram_plots( dt=None, stream='G5FPFC', folder=None,
-                              prefix='ARNA', plts2get=['du_16.7_-23.0'],
-                              verbose=False, debug=False ):
+def get_GEOS5_datagram_plots(dt=None, stream='G5FPFC', folder=None,
+                             prefix='ARNA', plts2get=['du_16.7_-23.0'],
+                             verbose=False, debug=False):
     """
     Get GEOS5 datagram plots and save these locally
 
@@ -269,7 +269,7 @@ def get_GEOS5_datagram_plots( dt=None, stream='G5FPFC', folder=None,
     # if no day given, use previous day
     if isinstance(dt, type(None)):
         # Just use yesterday for Now
-        TNow = time2datetime( [gmtime()] )[0]
+        TNow = time2datetime([gmtime()])[0]
         dt = datetime.datetime(TNow.year, TNow.month, TNow.day-1)
     date_str = '{}_{:0>2}_{:0>2}'.format(dt.year, dt.month, dt.day)
     # get plots in list
@@ -277,10 +277,10 @@ def get_GEOS5_datagram_plots( dt=None, stream='G5FPFC', folder=None,
     gram_root = site+'/gram/static/plots/'
     # loop and retrieve the files
     for plt2get in plts2get:
-        url = '{}{}.png'.format( gram_root, plt2get )
+        url = '{}{}.png'.format(gram_root, plt2get)
         # Download using wget through python
         fstr = '{}_{}_{}_datagram_{}.png'
-        fstr = fstr.format( prefix, stream, date_str, plt2get )
+        fstr = fstr.format(prefix, stream, date_str, plt2get)
         filename = fstr.format(date_str, stream, )
         if debug:
             pstr = 'Getting {} and saving here: {}'
@@ -294,8 +294,8 @@ def get_GEOSCF_vertical_levels(print_equivalents=False, native_levels=False):
     """
     # Get a list of the pressure levels in GEOS-CF
     if native_levels:
-        HPa_l  = [
-        0.01, 0.02, 0.0327, 0.0476, 0.066, 0.0893, 0.1197, 0.1595, 0.2113, 0.2785, 0.365, 0.4758, 0.6168, 0.7951, 1.0194, 1.3005, 1.6508, 2.085, 2.6202, 3.2764, 4.0766, 5.0468, 6.2168, 7.6198, 9.2929, 11.2769, 13.6434, 16.4571, 19.7916, 23.7304, 28.3678, 33.81, 40.1754, 47.6439, 56.3879, 66.6034, 78.5123, 92.3657, 108.663, 127.837, 150.393, 176.93, 208.152, 244.875, 288.083, 337.5, 375.0, 412.5, 450.0, 487.5, 525.0, 562.5, 600.0, 637.5, 675.0, 700.0, 725.0, 750.0, 775.0, 800.0, 820.0, 835.0, 850.0, 865.0, 880.0, 895.0, 910.0, 925.0, 940.0, 955.0, 970.0, 985.0
+        HPa_l = [
+            0.01, 0.02, 0.0327, 0.0476, 0.066, 0.0893, 0.1197, 0.1595, 0.2113, 0.2785, 0.365, 0.4758, 0.6168, 0.7951, 1.0194, 1.3005, 1.6508, 2.085, 2.6202, 3.2764, 4.0766, 5.0468, 6.2168, 7.6198, 9.2929, 11.2769, 13.6434, 16.4571, 19.7916, 23.7304, 28.3678, 33.81, 40.1754, 47.6439, 56.3879, 66.6034, 78.5123, 92.3657, 108.663, 127.837, 150.393, 176.93, 208.152, 244.875, 288.083, 337.5, 375.0, 412.5, 450.0, 487.5, 525.0, 562.5, 600.0, 637.5, 675.0, 700.0, 725.0, 750.0, 775.0, 800.0, 820.0, 835.0, 850.0, 865.0, 880.0, 895.0, 910.0, 925.0, 940.0, 955.0, 970.0, 985.0
         ]
     else:
         HPa_l = [
@@ -340,11 +340,11 @@ def extract_GEOSCF4FAAM_flight(folder=None, flight_ID='C216', folder4csv=None,
     filename = 'core_faam_*_{}_1hz.nc'.format(flight_ID.lower())
     file2use = glob.glob(folder+filename)
     if len(file2use) > 1:
-        print( 'WARNING: more that one file found! (so using latest file)' )
+        print('WARNING: more that one file found! (so using latest file)')
         print(file2use)
-    ds = xr.open_dataset( file2use[0] )
+    ds = xr.open_dataset(file2use[0])
     # Only select the variable of intereest and drop where these are NaNs
-    df = ds[ [PressVar, LatVar, LonVar, TimeVar] ].to_dataframe()
+    df = ds[[PressVar, LatVar, LonVar, TimeVar]].to_dataframe()
     df = df.dropna()
     # If doing a test, then just extract the first 150 points of flight track
     if testing_mode:
@@ -365,10 +365,10 @@ def extract_GEOSCF4FAAM_flight(folder=None, flight_ID='C216', folder4csv=None,
     if inc_ds_vars_in_csv:
         FAAM_df = ds.to_dataframe()
         df = pd.concat([df, FAAM_df], axis=1)
-        duplicates = [i for i in FAAM_df.columns if i in df.columns ]
-        if len(duplicates)>1:
+        duplicates = [i for i in FAAM_df.columns if i in df.columns]
+        if len(duplicates) > 1:
             print('WARNING: duplicates in FAAM and GEOS-CF dataframe headers!')
-    df = df[ list(set(df.columns)) ]
+    df = df[list(set(df.columns))]
     # Save dateframe to a csv file
     if isinstance(folder4csv, type(None)):
         folder4csv = './'
@@ -421,34 +421,34 @@ def extract_GEOSCF_assim4df(df=None, ds=None,
     # Restrict the dataset to the day(s) of the flight
     dates = dt64_2_dt(ds.time.values)
 #    time_bool = [((i>=sdate) & (i<=edate)) for i in ds.time.values]
-    time_bool = [((i>=sdate) & (i<=edate)) for i in dates]
+    time_bool = [((i >= sdate) & (i <= edate)) for i in dates]
     ds = ds.isel(time=time_bool)
     # Reduce the dataset size to the spatial locations of the flight (+ buffer)
     if isinstance(spatial_buffer, type(None)):
-        spatial_buffer = 2 # degrees lat / lon
+        spatial_buffer = 2  # degrees lat / lon
     lat_min = df[LatVar].values.min() - spatial_buffer
     lat_max = df[LatVar].values.max() + spatial_buffer
-    lat_bool = [((i>=lat_min) & (i<=lat_max)) for i in ds[dsLatVar].values]
+    lat_bool = [((i >= lat_min) & (i <= lat_max)) for i in ds[dsLatVar].values]
     ds = ds.isel(lat=lat_bool)
     lon_min = df[LonVar].values.min() - spatial_buffer
     lon_max = df[LonVar].values.max() + spatial_buffer
-    lon_bool = [((i>=lon_min) & (i<=lon_max)) for i in ds[dsLonVar].values]
+    lon_bool = [((i >= lon_min) & (i <= lon_max)) for i in ds[dsLonVar].values]
     ds = ds.isel(lon=lon_bool)
     # Get a list of the levels that the data is present for
     # NOTE: GEOS-CF has 3 options (p23, interpolated; x1/v1, surface)
     if single_horizontal_level:
         HPa_l = get_GEOSCF_vertical_levels(native_levels=True)
-        HPa_l = [ HPa_l[-1] ]
+        HPa_l = [HPa_l[-1]]
     else:
         HPa_l = get_GEOSCF_vertical_levels(native_levels=False)
     # Save subset of dataset locally and then reload
     if isinstance(TEMP_nc_name, type(None)):
-         TEMP_nc_name = 'TEMP_NetCDF_{}.nc'.format(collection)
+        TEMP_nc_name = 'TEMP_NetCDF_{}.nc'.format(collection)
     ds = save_ds2disk_then_reload(ds, savename=TEMP_nc_name, debug=debug)
     # Resample the values to extract
     if resample_df2ds_freq:
         grads_step = ds.time.attrs['grads_step']
-        grads_step = grads_step.replace('mn', 'T' )
+        grads_step = grads_step.replace('mn', 'T')
         df = df.resample(grads_step).mean()
     # Get nearest indexes in 4D data from locations in dataframe
     idx_dict = calc_4D_idx_in_ds(ds_hPa=HPa_l, ds=ds, df=df,
@@ -460,13 +460,13 @@ def extract_GEOSCF_assim4df(df=None, ds=None,
                                  )
     # Make a dictionaries to convert between ds and df variable names
     df2ds_dict = {
-    LonVar:dsLonVar, LatVar:dsLatVar, TimeVar:dsTimeVar, PressVar:dsAltVar,
+        LonVar: dsLonVar, LatVar: dsLatVar, TimeVar: dsTimeVar, PressVar: dsAltVar,
     }
     df2ds_dict_r = {v: k for k, v in list(df2ds_dict.items())}
     # Create a data frame for values
     dfN = pd.DataFrame()
     # Extraction of data points in a bulk manner
-    for nval, var in enumerate( vars2extract ):
+    for nval, var in enumerate(vars2extract):
         # Now extract values
         dims2use = list(ds[var].coords)
         idx_list = [idx_dict[df2ds_dict_r[i]] for i in dims2use]
@@ -503,10 +503,10 @@ def extract_GEOSCF_assim4df(df=None, ds=None,
 
 
 def regrid_restart_file4flexgrid(dsA, OutFile=None, lons=None,
-                                lats=None, res='1x1', folder='./',
-                                vars2regrid=None, rm_regridder=True,
-                                save2netcdf=True, method='bilinear',
-                                debug=False):
+                                 lats=None, res='1x1', folder='./',
+                                 vars2regrid=None, rm_regridder=True,
+                                 save2netcdf=True, method='bilinear',
+                                 debug=False):
     """
     Regrid a GEOS-Chem restart file to a given resolution using xEMSF
 
@@ -535,9 +535,9 @@ def regrid_restart_file4flexgrid(dsA, OutFile=None, lons=None,
     ds_out = xr.Dataset(dsA.coords)
     # Replace the lat and lon coords
     del ds_out['lat']
-    ds_out = ds_out.assign_coords({'lat':lats})
+    ds_out = ds_out.assign_coords({'lat': lats})
     del ds_out['lon']
-    ds_out = ds_out.assign_coords({'lon':lons})
+    ds_out = ds_out.assign_coords({'lon': lons})
     # Create a regidder (to be reused )
     regridder = xe.Regridder(dsA, ds_out, method, reuse_weights=True)
     # Loop and regrid variables
@@ -546,7 +546,7 @@ def regrid_restart_file4flexgrid(dsA, OutFile=None, lons=None,
         vars2regrid = dsA.data_vars
     # Only regrid variables wit lon and lat in them
     vars2leave = [i for i in vars2regrid if 'lat' not in dsA[i].coords.keys()]
-    vars2regrid = [i for i in vars2regrid if 'lat' in dsA[i].coords.keys() ]
+    vars2regrid = [i for i in vars2regrid if 'lat' in dsA[i].coords.keys()]
     for var2use in vars2regrid:
         if debug:
             print(var2use)
@@ -554,9 +554,9 @@ def regrid_restart_file4flexgrid(dsA, OutFile=None, lons=None,
         ds_out = xr.Dataset(dsA.coords)
         # Replace the lat and lon coords with the ones to regrid to
         del ds_out['lat']
-        ds_out = ds_out.assign_coords({'lat':lats})
+        ds_out = ds_out.assign_coords({'lat': lats})
         del ds_out['lon']
-        ds_out = ds_out.assign_coords({'lon':lons})
+        ds_out = ds_out.assign_coords({'lon': lons})
         # Get a DataArray
         dr = dsA[var2use]
         # Build regridder
