@@ -37,6 +37,7 @@ def rm_eruptive_volcancos_from_files(dates=None, sdate=None, edate=None,
     if isinstance(output_folder, type(None)):
         output_folder = folder
     # Helper functions for processing volcano files
+
     def get_volc_subfolder4dt(folder=None, dt=None):
         """ Get the volcano folder for a specific datetime """
         year = dt.year
@@ -56,7 +57,7 @@ def rm_eruptive_volcancos_from_files(dates=None, sdate=None, edate=None,
         folder2use = get_volc_subfolder4dt(dt=dt, folder=folder)
         # Extract lines
         lines = read_lines_from_txt_file(filename=filename,
-                                            folder=folder2use)
+                                         folder=folder2use)
         return lines
 
     def rm_eruption_from_volc_file_lines(lines, skiplines=4, dt_str='',
@@ -83,14 +84,14 @@ def rm_eruptive_volcancos_from_files(dates=None, sdate=None, edate=None,
                     tmp_line = line.strip().split()
                     LAT = tmp_line[0]
                     LON = tmp_line[1]
-                    S = tmp_line[2] # SULFUR
-                    ELEV = tmp_line[3] # ELEVATION
-                    CLOUD = tmp_line[4] # CLOUD_COLUMN_HEIGHT
+                    S = tmp_line[2]  # SULFUR
+                    ELEV = tmp_line[3]  # ELEVATION
+                    CLOUD = tmp_line[4]  # CLOUD_COLUMN_HEIGHT
                     # If not equal, then EXCLUDE the line
                     if ELEV != CLOUD:
                         if verbose:
                             print(pstr1.format(S, dt_str, LAT, LON, ELEV,
-                                  CLOUD))
+                                               CLOUD))
                         include_line = False
                 except IndexError:
                     if debug:

@@ -324,7 +324,7 @@ def num2spec(num=69, rtn_dict=False, invert=False, ver='1.7'):
     # special case for dev version?
     if any([(ver == i) for i in ('1.6', '1.6.2',)]):
         d = GC_var('GCFP_d2TRA_justTRA_1.6')
-    if any([(ver == i) for i in('1.6.3', '1.6.4')]):
+    if any([(ver == i) for i in ('1.6.3', '1.6.4')]):
         d = GC_var('GCFP_d2TRA_justTRA_1.6.3')
     # Then slice
     nums = [int(i[4:]) for i in list(d.keys())]
@@ -401,8 +401,6 @@ def get_ctm_nc_var(variable):
     return d[variable]
 
 
-
-
 # -------------- Non-generic Functions
 #
 # NOTE(s):
@@ -445,7 +443,3 @@ def get_global_GAW_sites(f='gaw_site_list_global.h5'):
     ]
     [vars.pop(vars.index(i)) for i in sites2exclude]
     return vars
-
-
-
-

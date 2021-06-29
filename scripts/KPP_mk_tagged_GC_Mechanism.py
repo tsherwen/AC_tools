@@ -100,7 +100,7 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
     # - Print out input KPP files with updated formatting (prior to tagging)
     # (Uniform formatting required for parsing - this step may not be required)
     if print_formatted_KPP_file:
-        extr_str='EXISTING_MECH_{}_{}'.format(mechanism, GC_version)
+        extr_str = 'EXISTING_MECH_{}_{}'.format(mechanism, GC_version)
         AC.print_out_dfs2KPP_eqn_file(headers=headers, species_df=species_df,
                                       rxn_dicts=rxn_dicts, extr_str=extr_str,
                                       )
@@ -151,12 +151,12 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
     counter = max(tagged_rxns.keys())
     current_tag = '{}{}'.format(tag_prefix, counter)
     search_strs = 'BrSAL', 'CH3Br', 'CH3Cl', 'CH2Cl2', 'CHCl3', '0.150IBr',
-    search_strs += 'HOBr','ClNO2',
+    search_strs += 'HOBr', 'ClNO2',
     # Add tags for halogen families
     rxn_dicts, tagged_rxns = AC.add_tags4strs2mech(rxn_dicts, counter=counter,
                                                    search_strs=search_strs,
                                                    tagged_rxns=tagged_rxns,
-#                                                   debug=debug
+                                                   #                                                   debug=debug
                                                    )
     counter = max(tagged_rxns.keys())
     current_tag = '{}{}'.format(tag_prefix, counter)
@@ -191,8 +191,8 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
     counter = max(tagged_rxns.keys())
     current_tag = '{}{}'.format(tag_prefix, counter)
     search_strs = [
-    'CH4', 'C2H6', 'C3H8', 'ACET', 'MOH', 'PRPE', 'ALK4', 'CH2O', 'CH2O',
-    'ALD2', 'ISOP'
+        'CH4', 'C2H6', 'C3H8', 'ACET', 'MOH', 'PRPE', 'ALK4', 'CH2O', 'CH2O',
+        'ALD2', 'ISOP'
     ]
     search_strs = [i+' ' for i in search_strs]
     # Add tags for halogen families
@@ -241,8 +241,8 @@ def main(folder=None, print_formatted_KPP_file=True, GC_version=None,
 
     # - Save out the lines to be pasted into the GC species database yaml file
     range = np.arange(1, int(current_tag[1:]))
-    tags = ['P{}{:0>3}'.format(tag_prefix,i) for i in range ]
-    tags += ['{}{:0>3}'.format(tag_prefix,i) for i in range ]
+    tags = ['P{}{:0>3}'.format(tag_prefix, i) for i in range]
+    tags += ['{}{:0>3}'.format(tag_prefix, i) for i in range]
     AC.prt_lines4species_database_yml(tags, extr_str=extr_str)
 
 

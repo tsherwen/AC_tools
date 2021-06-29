@@ -81,13 +81,14 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
     if not isinstance(dates2use, type(None)):
         FileRootsVar = 'FileRoots'
         df = pd.DataFrame(files)
-        df = pd.DataFrame({FileRootsVar:files})
+        df = pd.DataFrame({FileRootsVar: files})
         # Which date format to look for in filenames?
         if is_HEMCO_collection:
-            format='%Y%m%d%H%M'
+            format = '%Y%m%d%H%M'
         else:
-            format='%Y%m%d_%H%Mz'
+            format = '%Y%m%d_%H%Mz'
         # Setup a helper function to extract dates from file strings
+
         def get_date_from_filename(x, format=format):
             """
             Extract Dates from filenames
@@ -103,7 +104,7 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
         dtVar = 'datetime'
         df[dtVar] = df[FileRootsVar].map(get_date_from_filename)
         bool = df[dtVar].isin(dates2use)
-        files = list(df.loc[bool,FileRootsVar].values)
+        files = list(df.loc[bool, FileRootsVar].values)
     # Open all of these files as single Dataset
     if open_with_coords_dropped:
         def drop_all_coords(ds):
@@ -114,7 +115,7 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
         # NOTE: Updated to use faster opening settings for files sharing the same coords
         # https://github.com/pydata/xarray/issues/1823
         ds = xr.open_mfdataset(files,
-    #                           concat_dim='time',
+                               #                           concat_dim='time',
                                combine=combine,
                                data_vars=data_vars, coords=coords,
                                compat=compat, parallel=parallel)
@@ -188,7 +189,7 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None,
             spec = spec_var.replace(spec_conc_prefix, '')
             if debug:
                 PStr = 'Attempting in ds conversion of {} ({})'
-                print( PStr.format(spec, spec_var) )
+                print(PStr.format(spec, spec_var))
             # Check units
             SpecUnits = dsL[spec_var].units
             MixingRatioUnits = MXUnits == SpecUnits
@@ -401,7 +402,6 @@ def GetSpeciesConcDataset(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
                                     dates2use=dates2use)
 
 
-
 def get_Inst1hr_ds(file_str='GEOSChem.inst1hr.*', wd=None,
                    dates2use=None):
     """
@@ -457,7 +457,7 @@ def get_DryDep_ds(file_str='GEOSChem.DryDep.*', wd=None,
 
 
 def get_WetLossConv_ds(file_str='GEOSChem.WetLossConv.*', wd=None,
-                  dates2use=None):
+                       dates2use=None):
     """
     Wrapper to get NetCDF Wet Loss via Convection output as a dataset
 
@@ -475,7 +475,7 @@ def get_WetLossConv_ds(file_str='GEOSChem.WetLossConv.*', wd=None,
 
 
 def get_WetLossLS_ds(file_str='GEOSChem.WetLossLS.*', wd=None,
-                  dates2use=None):
+                     dates2use=None):
     """
     Wrapper to get Wet Loss via large-scale Convection NetCDF output as a ds
 
@@ -817,7 +817,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     for key in run_dict.keys():
         dsD[key] = GetSpeciesConcDataset(wd=run_dict[key], dates2use=dates2use)
     # - Get burdens for core species
-    avg_over_time = True # Note: burdens area averaged overtime
+    avg_over_time = True  # Note: burdens area averaged overtime
     core_burden_specs = ['O3', 'CO', 'NO', 'NO2']
     specs2use = list(set(core_burden_specs+extra_burden_specs))
     prefix = 'SpeciesConc_'
@@ -827,12 +827,12 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
         if use_REF_wd4Met:
             # Set working directory for shared variables
             if isinstance(REF_wd, type(None)):
-                REF_wd = run_dict[ list(run_dict.keys())[0] ]
+                REF_wd = run_dict[list(run_dict.keys())[0]]
             StateMet = get_StateMet_ds(wd=REF_wd, dates2use=dates2use)
         else:
             StateMet = get_StateMet_ds(wd=run_dict[key], dates2use=dates2use)
         # Average burden over time
-        ds = dsD[key]#.mean(dim='time', keep_attrs=True)
+        ds = dsD[key]  # .mean(dim='time', keep_attrs=True)
         S = get_Gg_trop_burden(ds, vars2use=vars2use, StateMet=StateMet,
                                use_time_in_trop=use_time_in_trop,
                                avg_over_time=avg_over_time,
@@ -854,7 +854,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     # Get NOx burden
     BurdenStr = '{} burden ({})'
     NO2_varname = BurdenStr.format('NO2', mass_unit)
-    NO_varname =  BurdenStr.format('NO', mass_unit)
+    NO_varname = BurdenStr.format('NO', mass_unit)
     NOx_varname = BurdenStr.format('NOx', mass_unit)
     PtrStr = 'NOx family not added for trop. df columns: {}'
     try:
@@ -965,11 +965,11 @@ def add_molec_den2ds(ds, MolecVar='Met_MOLCES', AirDenVar='Met_AIRDEN'):
     try:
         ds[MolecVar]
     except KeyError:
-        RMM_air = constants('RMM_air') / 1E3 # g/mol => kg/mol
-        ds[MolecVar] = ds[AirDenVar].copy() / 1E6 # kg/m3 => kg/cm3
+        RMM_air = constants('RMM_air') / 1E3  # g/mol => kg/mol
+        ds[MolecVar] = ds[AirDenVar].copy() / 1E6  # kg/m3 => kg/cm3
         values = ds[MolecVar].values
         values = values / RMM_air  # kg/cm3 / kg/mol
-        values = values * constants('AVG') # mol/cm3 => molecules/cm3
+        values = values * constants('AVG')  # mol/cm3 => molecules/cm3
         ds[MolecVar].values = values
     return ds
 
@@ -1006,7 +1006,7 @@ def add_Xy_2ds(ds=None, var2add='Cly', prefix='SpeciesConc_',
             pass
     if verbose:
         Pstr = "Using species for '{}' family (ref_spec: {}): {}"
-        print( Pstr.format(var2add, ref_spec, specs2use) )
+        print(Pstr.format(var2add, ref_spec, specs2use))
     # Setup Xy variable as template of 1st Xy species
     spec2use = specs2use[0]
     var2use = '{}{}'.format(prefix, spec2use)
@@ -1014,7 +1014,7 @@ def add_Xy_2ds(ds=None, var2add='Cly', prefix='SpeciesConc_',
     ds[var2add] = ds[var2use].copy() * stioch
     # Also save the individual species in reference species terms?
     if add_ind_specs2ds:
-        Var2Save = '{}-in-{}-units'.format(spec2use,ref_spec)
+        Var2Save = '{}-in-{}-units'.format(spec2use, ref_spec)
         ds[Var2Save] = ds[var2use].copy() * stioch
     # Add rest of Xy species and scale to stoichiometry
     for spec2use in specs2use[1:]:
@@ -1023,7 +1023,7 @@ def add_Xy_2ds(ds=None, var2add='Cly', prefix='SpeciesConc_',
         ds[var2add].values = ds[var2add].values + values
         # Also save the individual species in reference species terms?
         if add_ind_specs2ds:
-            Var2Save = '{}-in-{}-units'.format(spec2use,ref_spec)
+            Var2Save = '{}-in-{}-units'.format(spec2use, ref_spec)
             ds[Var2Save] = ds[var2use].copy() * stioch
     return ds
 
@@ -1045,5 +1045,5 @@ def get_specieslist_from_input_geos(folder=None, filename='input.geos'):
             if line2start_read in line:
                 save_line = True
 
-    species = [i.split(':')[-1].strip() for i in species_lines ]
+    species = [i.split(':')[-1].strip() for i in species_lines]
     return species

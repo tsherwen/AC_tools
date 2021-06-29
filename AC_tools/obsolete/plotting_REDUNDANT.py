@@ -327,7 +327,7 @@ def plot_map(arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fal
 
     if not NEW_VERSION:
         ####################################################################################################
-            # Old version is here
+        # Old version is here
         ####################################################################################################
         # --------------  Linear plots -------------------------------
         # standard plot
@@ -2221,7 +2221,8 @@ def plot_specs_zonal_change_annual2pdf(Vars, res='4x5', dpi=160,
             arr = Vars[n, ...].mean(axis=0).mean(axis=-1)*scale
 
         if set_window:
-            arr = arr[..., get_gc_lat(lat_0, res=res): get_gc_lat(lat_1, res=res), :]
+            arr = arr[..., get_gc_lat(lat_0, res=res)
+                                      : get_gc_lat(lat_1, res=res), :]
 
         # plot up spatial surface change
         zonal_plot(arr, fig, ax=ax, title=None, debug=debug, tropics=False,

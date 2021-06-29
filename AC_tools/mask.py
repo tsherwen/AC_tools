@@ -743,7 +743,7 @@ def get_analysis_masks(masks='basic',  hPa=None, M_all=False, res='4x5',
         if use_multiply_method:
             maskes = [mask_all_but(i, trop_limit=trop_limit, mask3D=True,
                                    use_multiply_method=True, res=res)
-                                   for i in mtitles]
+                      for i in mtitles]
             # if comparison with saiz-lopez 2014,
             if M_all:
                 ind = [n for n, i in enumerate(mtitles) if not ('MBL' in i)]
@@ -753,7 +753,7 @@ def get_analysis_masks(masks='basic',  hPa=None, M_all=False, res='4x5',
         else:
             maskes = [mask_all_but(i, trop_limit=trop_limit, mask3D=True,
                                    use_multiply_method=False, res=res)
-                                   for i in mtitles]
+                      for i in mtitles]
             # If not 'use_multiply_method', then invert hPa masks
             sects3D = [np.logical_not(i) for i in sects3D]
         # Add to mask and mask title lists
@@ -942,11 +942,11 @@ def mask_all_but(region='All', M_all=False, saizlopez=False,
         elif case == 13:  # 'Oceanic Tropics'
             mask = np.ma.mask_or(ocean_unmasked(res=res),
                                  tropics_unmasked(res=res,
-                                 saizlopez=saizlopez))
+                                                  saizlopez=saizlopez))
         elif case == 14:  # 'Land Tropics'
             mask = np.ma.mask_or(land_unmasked(res=res),
                                  tropics_unmasked(res=res,
-                                 saizlopez=saizlopez))
+                                                  saizlopez=saizlopez))
         elif case == 15:  # 'All Sur.'
             mask = surface_unmasked(res=res)
         elif case == 16:  # 'Ocean Sur.'
@@ -1012,11 +1012,11 @@ def mask_all_but(region='All', M_all=False, saizlopez=False,
         elif case == 13:
             mask = np.ma.mask_or(ocean_unmasked(res=res),
                                  tropics_unmasked(res=res,
-                                 saizlopez=saizlopez))
+                                                  saizlopez=saizlopez))
         elif case == 14:
             mask = np.ma.mask_or(land_unmasked(res=res),
                                  tropics_unmasked(res=res,
-                                 saizlopez=saizlopez))
+                                                  saizlopez=saizlopez))
         elif case == 15:  # 'All Sur.'
             mask = surface_unmasked(res=res)
         elif case == 16:  # 'Ocean Sur.'

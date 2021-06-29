@@ -386,18 +386,19 @@ def get_loc(loc=None, rtn_dict=False, debug=False):
         'HFM': (-72.3000030518, 42.9000015259, 340.),
         # - ARNA locations
         'Dakar': (-17.467686, 14.716677, 22),
-        'DSS' : (-17.467686, 14.716677, 22), # Dakar airport code (as above)
+        'DSS': (-17.467686, 14.716677, 22),  # Dakar airport code (as above)
         'Sao Vicente Airport': (-25.0569, 16.8331, 20),
-        'VXE' : (-25.0569, 16.8331, 20), # Sao Vincite code (as above)
+        'VXE': (-25.0569, 16.8331, 20),  # Sao Vincite code (as above)
         'Praia Airport': (-23.4939, 14.9242, 70),
-        'RAI' : (-23.4939, 14.9242, 70), # Praia airport code (as above)
+        'RAI': (-23.4939, 14.9242, 70),  # Praia airport code (as above)
         # Other "nearby" airports
-        'Gran Canaria Airport' : (-15.386667, 27.931944, 24),
-        'LPA' : (-15.386667, 27.931944, 24), # Gran Canaria airport code (as above)
-        'Lisbon Airport' : (-9.134167, 38.774167, 114),
-        'LIS' : (-9.134167, 38.774167, 114), # Lisbon airport code (as above)
-        'Paris (Charles de Gaulle) Airport' : (-2.547778, 49.009722, 119),
-        'CDG' : (-2.547778, 49.009722, 119), # Paris airport code (as above)
+        'Gran Canaria Airport': (-15.386667, 27.931944, 24),
+        # Gran Canaria airport code (as above)
+        'LPA': (-15.386667, 27.931944, 24),
+        'Lisbon Airport': (-9.134167, 38.774167, 114),
+        'LIS': (-9.134167, 38.774167, 114),  # Lisbon airport code (as above)
+        'Paris (Charles de Gaulle) Airport': (-2.547778, 49.009722, 119),
+        'CDG': (-2.547778, 49.009722, 119),  # Paris airport code (as above)
     }
     if rtn_dict:
         return loc_dict
@@ -593,8 +594,8 @@ def latex_spec_name(input_x, debug=False):
         'SOAP': 'SOAP', 'SOAS': 'SOAS', 'TOLU': 'TOLU',
         'XYLE': 'Xylene',
         # Extra GEOS-chem species - in standard as of v12.9.1
-        'O1D' : 'O($^{1}$D)', 'O': 'O', 'hv': '$h\\nu$',
-        }
+        'O1D': 'O($^{1}$D)', 'O': 'O', 'hv': '$h\\nu$',
+    }
     return spec_dict[input_x]
 
 
@@ -698,9 +699,8 @@ def get_spec_properties():
     Get the species properties using the GEOS-Chem json files in GCPy
     """
 
-
-
     pass
+
 
 def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
                 C=False, Br=False, Cl=False, S=False, ref_spec=None,
@@ -923,7 +923,7 @@ def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
     except:
         prt_str = '!!!!!!! WARNING - Kludge assumming stoichiometry = 1.0, for'
         prt_str += ' {} (ref_spec given as: {})'
-        print(( prt_str.format(spec, ref_spec)) )
+        print((prt_str.format(spec, ref_spec)))
         return 1.0
 
 
@@ -1017,7 +1017,7 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,
         'HNO3/NOx': 'pptv', 'HNO3+NIT': 'pptv', 'HNO3+NO3': 'pptv',
         'NIT/NOx': 'pptv', 'HNO3/NIT': 'pptv',
         #
-        'Cl-': 'pptv', 'pFe':'pptv',
+        'Cl-': 'pptv', 'pFe': 'pptv',
         # PM
         'PM10': '$\mu$g m$^{-3}$', 'PM2.5': '$\mu$g m$^{-3}$',
         'PM2.5(dust)': '$\mu$g m$^{-3}$',
@@ -1289,7 +1289,7 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
         'IxOy': ['IO', 'OIO',  'I2O2', 'I2O3', 'I2O4'],
         'Iy+AERO': [ \
             'I2', 'HOI', 'IO', 'OIO', 'HI', 'INO', 'IONO', 'IONO2', 'I2O2', \
-            'I2O3', 'I2O4', 'I', ]+['ICl', 'IBr']+['AERI','ISALA','ISALC'],
+            'I2O3', 'I2O4', 'I', ]+['ICl', 'IBr']+['AERI', 'ISALA', 'ISALC'],
         'Iy1.1': [ \
             'I2', 'HOI', 'IO', 'OIO', 'HI', 'IONO', 'IONO2', 'I2O2', \
             'I2O4', 'I', 'INO'],

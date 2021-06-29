@@ -16,18 +16,18 @@ if on_rtd:
     INSTALL_REQUIRES = []
 else:
     INSTALL_REQUIRES = [
-                        'affine',
-                        'cartopy',
-                        'geopandas',
-                        'matplotlib',
-                        'netcdf4',
-                        'numpy',
-                        'pandas',
-                        'pytest',
-                        'rasterio',
-                        'scipy',
-                        'xarray'
-                       ]
+        'affine',
+        'cartopy',
+        'geopandas',
+        'matplotlib',
+        'netcdf4',
+        'numpy',
+        'pandas',
+        'pytest',
+        'rasterio',
+        'scipy',
+        'xarray'
+    ]
 
 CLASSIFIERS = [
     'Development Status :: 4 - Beta',

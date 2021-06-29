@@ -420,6 +420,7 @@ def pf_csv2pandas(file=None, vars=None, epoch=False, r_vars=False,
     else:
         return df
 
+
 def get_pf_from_folder(folder='./', dates2use=None, debug=False):
     """
     Get GEOS-Chem planeflight output from folder
@@ -432,10 +433,11 @@ def get_pf_from_folder(folder='./', dates2use=None, debug=False):
     if not isinstance(dates2use, type(None)):
         FileRootsVar = 'FileRoots'
         df = pd.DataFrame(files)
-        df = pd.DataFrame({FileRootsVar:files})
+        df = pd.DataFrame({FileRootsVar: files})
         # Which date format to look for in filenames?
-        format='%Y%m%d%H%M'
+        format = '%Y%m%d%H%M'
         # Setup a helper function to extract dates from file strings
+
         def get_date_from_filename(x, format=format):
             """
             Extract Dates from filenames
@@ -451,7 +453,7 @@ def get_pf_from_folder(folder='./', dates2use=None, debug=False):
         dtVar = 'datetime'
         df[dtVar] = df[FileRootsVar].map(get_date_from_filename)
         bool = df[dtVar].isin(dates2use)
-        files = list(df.loc[bool,FileRootsVar].values)
+        files = list(df.loc[bool, FileRootsVar].values)
     # Get headers
     ALL_vars, sites = get_pf_headers(files[0], debug=debug)
     # Extract dfs
@@ -544,11 +546,11 @@ def mk_planeflight_input4FAAM_flight(folder=None, ds=None,
         filename = 'core_faam_*_{}_1hz.nc'.format(flight_ID.lower())
         file2use = glob.glob(folder+filename)
         if len(file2use) > 1:
-            print('WARNING: more that one file found! (so using latest file)' )
+            print('WARNING: more that one file found! (so using latest file)')
             print(file2use)
-        ds = xr.open_dataset( file2use[0] )
+        ds = xr.open_dataset(file2use[0])
     # Only select the variable of intereest and drop where these are NaNs
-    df = ds[ [PressVar, LatVar, LonVar, TimeVar] ].to_dataframe()
+    df = ds[[PressVar, LatVar, LonVar, TimeVar]].to_dataframe()
     df = df.dropna()
     # Add a location name (as Type)
     df[LocVar] = LocName
@@ -569,6 +571,7 @@ def mk_planeflight_input4FAAM_flight(folder=None, ds=None,
                                    num_tracers=num_tracers, rxn_nums=rxn_nums,
                                    Username=Username,)
 
+
 def reprocess_split_pf_output_over_2_lines(folder, save_original_file=True):
     """
     Combine planeflight dat file lines where output split over 2 lines
@@ -577,7 +580,7 @@ def reprocess_split_pf_output_over_2_lines(folder, save_original_file=True):
     for file2use in files2use:
         with open(file2use, 'r') as file:
             lines = [i.strip() for i in file]
-        file.close() # Force close
+        file.close()  # Force close
         if save_original_file:
             os.rename(file2use, file2use+'.orig')
         else:

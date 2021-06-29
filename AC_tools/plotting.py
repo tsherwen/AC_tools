@@ -90,7 +90,7 @@ def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson,
         Pstr = "In spatial plot of {}, min={} and max={}"
         min_ = float(ds[var2plot].values.min())
         max_ = float(ds[var2plot].values.max())
-        print(Pstr.format(var2plot, min_, max_ ) )
+        print(Pstr.format(var2plot, min_, max_))
     # Call plot via imshow...
     im = ds[var2plot].plot.imshow(x=LonVar, y=LatVar, ax=ax,
                                   transform=ccrs.PlateCarree(),
@@ -154,13 +154,13 @@ def ds2zonal_plot(ds=None, var2plot=None, StateMet=None, AltVar='lev',
 #    StateMet['Met_PMID']
     LatLonAlt_dict = gchemgrid(rtn_dict=True)
     alt_array = LatLonAlt_dict['c_km_geos5']
-    ds2plot = ds2plot.assign_coords({'lev':alt_array[:len(ds.lev.values)]})
+    ds2plot = ds2plot.assign_coords({'lev': alt_array[:len(ds.lev.values)]})
     # print out the min and max of plotted values
     if verbose:
         Pstr = "In zonal plot of {}, min={}, max={}"
         min_ = float(ds2plot[var2plot].values.min())
         max_ = float(ds2plot[var2plot].values.max())
-        print(Pstr.format(var2plot, min_, max_ ) )
+        print(Pstr.format(var2plot, min_, max_))
     # Now call plot via xr.dataset
     lat = np.array(ds2plot.lat.values)
     alt = np.array(ds2plot.lev.values)
@@ -176,7 +176,7 @@ def ds2zonal_plot(ds=None, var2plot=None, StateMet=None, AltVar='lev',
     # Update axis labels
     ax.set_xlabel('Latitude ($^{\circ}$N)')
     if debug:
-        print( 'plt_ylabel', plt_ylabel)
+        print('plt_ylabel', plt_ylabel)
     if plt_ylabel:
         ax.set_ylabel('Altitude (km)')
     else:
@@ -327,8 +327,6 @@ def plt_df_X_vs_Y_hexbin(x=None, y=None, c=None, xscale='linear',
         plt.show()
 
 
-
-
 def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
                            dfs=None, color_dict={'Obs.': 'k', 'Model': 'r'},
                            stat2plot='50%', title=None,
@@ -374,7 +372,7 @@ def plot_up_diel_by_season(spec='O3', sub_str='UK+EIRE', fig=None,
         'DJF'
     ])
     season2text = {
-    'DJF':'Dec-Jan-Feb', 'MAM': 'Mar-Apr-May', 'JJA': 'Jun-Jul-Aug', 'SON':'Sep-Oct-Nov', None: None,
+        'DJF': 'Dec-Jan-Feb', 'MAM': 'Mar-Apr-May', 'JJA': 'Jun-Jul-Aug', 'SON': 'Sep-Oct-Nov', None: None,
     }
     if use_letters4months:
         pass
@@ -534,7 +532,6 @@ def BASIC_diel_plot(fig=None, ax=None, dates=None, data=None, color='red',
         print((df.head(), df.index[:5], df.shape))
     time_labels = df['data'][stat2plot].index.values
     time_labels = [str(int(i)) for i in time_labels]
-
 
     # make sure the values with leading zeros drop these
     index = [float(i) for i in time_labels]
@@ -914,7 +911,7 @@ def plot_zonal_figure(arr, fixcb=None, cb_sigfig=2, ax=None,
     if any([arr.shape[0] == i for i in (72, 144, 121, 177)]):
         #        arr = arr.mean(axis=0)
         arr = molec_weighted_avg_BPCH(arr, weight_lon=True, res=res,
-                                 trop_limit=trop_limit, rm_strat=False, wd=wd)
+                                      trop_limit=trop_limit, rm_strat=False, wd=wd)
 
     # Create figure if not provided
     if isinstance(fig, type(None)):
@@ -945,7 +942,7 @@ def plot_zonal_figure(arr, fixcb=None, cb_sigfig=2, ax=None,
 
     # If log plot - overwrite  lvls
     if log:
-            # Get logarithmically spaced integers
+        # Get logarithmically spaced integers
         lvls = np.logspace(np.log10(fixcb[0]), np.log10(fixcb[1]),
                            num=nticks)
         # Normalise to Log space
@@ -2207,7 +2204,7 @@ def mk_discrete_cmap(lvls=None, cmap=None, rtn_norm=False,
     # Extract colors linearly from colormap
     cmaplist = cmap(np.linspace(0, 1, nticks))
     # Create the new discrete colormap object
-    cmap_name = '{}_{}'.format( cmap.name, str(nticks) )
+    cmap_name = '{}_{}'.format(cmap.name, str(nticks))
     cmap = cmap.from_list(cmap_name, cmaplist, nticks)
     # Make a normalisation object... -  define the bins and normalize
     if rtn_norm:
@@ -2296,6 +2293,7 @@ def get_CB_color_cycle():
         '#999999', '#e41a1c', '#dede00'
     ]
     return CB_color_cycle
+
 
 def plot_vertical_fam_loss_by_route(fam='LOx', ref_spec='O3',
                                     wd=None, Mechanism='Halogens',
@@ -2453,8 +2451,8 @@ def plt_box_area_on_global_map(ds=None, var2use='DXYP__DXYP',
     # Just get an example dataset
     ds = ds[[var2use]]
     # Check input values for lat and lon range to plotting box extent
-    assert y0<y1, 'y0 must be less than y1'
-    assert x0<x1, 'x0 must be less than x1'
+    assert y0 < y1, 'y0 must be less than y1'
+    assert x0 < x1, 'x0 must be less than x1'
     # Set values region
     bool1 = ((ds.lon >= x0) & (ds.lon <= x1)).values
     bool2 = ((ds.lat >= y0) & (ds.lat <= y1)).values
@@ -2470,11 +2468,11 @@ def plt_box_area_on_global_map(ds=None, var2use='DXYP__DXYP',
     ax = fig.add_subplot(111, projection=projection, aspect=aspect,
                          alpha=alpha)
     ds[var2use].plot.imshow(x=LonVar, y=LatVar, ax=ax, cmap=cmap,
-                             transform=ccrs.PlateCarree())
+                            transform=ccrs.PlateCarree())
     # Beautify the figure/plot
     ax.coastlines()
     # Force global perspective
-    ax.set_global() # this will force a global perspective
+    ax.set_global()  # this will force a global perspective
     # Remove the colour-bar and force a tighter layout around map
     fig.delaxes(fig.axes[-1])
     plt.tight_layout()

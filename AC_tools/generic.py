@@ -322,6 +322,7 @@ def get_linear_ODR(x=None, y=None, maxit=5000, beta0=(0, 1),
     """
     import scipy.odr
     # Setup linear model to fit
+
     def f(B, x):
         '''Linear function y = m*x + b'''
         # B is a vector of the parameters.
@@ -992,7 +993,7 @@ def rm_file(folder=None, filename=None, verbose=False, debug=False):
     except FileNotFoundError:
         pstr = "WARNING: File was not removed as it doesn't exit: {}"
         if verbose:
-            print( pstr.format(folder+filename) )
+            print(pstr.format(folder+filename))
 
 
 def get_stats_on_files_in_folder_as_dict(folder=None):
@@ -1002,7 +1003,7 @@ def get_stats_on_files_in_folder_as_dict(folder=None):
     # Setup a dictionary to hold info on the files
     d = {}
     # list all files in the folder
-    files = glob.glob( '{}/*'.format(folder) )
+    files = glob.glob('{}/*'.format(folder))
     nfiles = len(files)
     d['#'] = nfiles
     if len(files) == 0:
@@ -1101,7 +1102,7 @@ def calc_4D_idx_in_ds(ds=None, df=None, LonVar='lon', LatVar='lat',
     hPa_idx = [find_nearest(ds_hPa, i) for i in df[AltVar].values]
     time_idx = [find_nearest(ds_time, i) for i in df.index.values]
     # Return a dictionary of the values
-    return {LatVar:lat_idx, LonVar:lon_idx, TimeVar:time_idx, AltVar:hPa_idx}
+    return {LatVar: lat_idx, LonVar: lon_idx, TimeVar: time_idx, AltVar: hPa_idx}
 
 
 def extract_ds4df_locs(ds=None, df=None, LonVar='lon', LatVar='lat',
@@ -1143,8 +1144,8 @@ def extract_ds4df_locs(ds=None, df=None, LonVar='lon', LatVar='lat',
                           dsLonVar=dsLonVar, dsLatVar=dsLatVar,
                           dsTimeVar=dsTimeVar)
     # Loop by timestamp
-    times2use =  df.index.values
-    for n, time in enumerate( times2use ):
+    times2use = df.index.values
+    for n, time in enumerate(times2use):
         # get the times for a specific data
         lat_idx = d[LatVar][n]
         lon_idx = d[LonVar][n]
@@ -1153,7 +1154,7 @@ def extract_ds4df_locs(ds=None, df=None, LonVar='lon', LatVar='lat',
         # en masse extract indexes
         ds_tmp = ds.isel(lat=lat_idx, lon=lon_idx, time=time_idx,
                          lev=lev_idx)
-        vals = [ ds_tmp[i].data for i in vars2extract ]
+        vals = [ds_tmp[i].data for i in vars2extract]
         vals = np.array(vals)
         for nval, val in enumerate(vals):
             dfN.loc[vars2extract[nval], time] = vals[nval]
@@ -1179,13 +1180,13 @@ def save_ds2disk_then_reload(ds, savename='TEMP_NetCDF.nc', folder='./',
     """
     if debug:
         PrtStr = 'Saving NetCDF {} @ {} with dims: {}'
-        print( PrtStr.format(savename, datetime.datetime.now(), ds.dims ) )
-        print( '... and variables: {}'.format( list(ds.data_vars) ) )
+        print(PrtStr.format(savename, datetime.datetime.now(), ds.dims))
+        print('... and variables: {}'.format(list(ds.data_vars)))
     # Save the dataset to disk
     ds.to_netcdf(folder+savename)
     if debug:
         PrtStr = 'Saved NetCDF {} @ {} with dims: {}'
-        print( PrtStr.format(savename, datetime.datetime.now(), ds.dims ) )
+        print(PrtStr.format(savename, datetime.datetime.now(), ds.dims))
     # Delete the dataset
     if delete_ds:
         del ds
@@ -1260,7 +1261,7 @@ def get_table_from_copernicus_article(URL=None, TableNum=5,
     tree = ET.parse(urllib.request.urlopen(URL))
     root = tree.getroot()
     # Tables for Copernicus publications are in the Oasis namespace
-    tags = [elem.tag for elem in root.iter() ]
+    tags = [elem.tag for elem in root.iter()]
     tags2use = [i for i in tags if 'oasis' in i.lower()]
     TableTag = '{http://docs.oasis-open.org/ns/oasis-exchange/table}table'
     ColNameVar = 'colname'
@@ -1268,8 +1269,8 @@ def get_table_from_copernicus_article(URL=None, TableNum=5,
     tables = [i for i in root.iter(tag=TableTag)]
     # Select table from list (update article number to python index)
     AssStr = 'WARNING: Table # {} requested, but only {} tables in article.'
-    assert TableNum<=len(tables), AssStr.format(TableNum, len(tables))
-    table = tables[ TableNum-1 ]
+    assert TableNum <= len(tables), AssStr.format(TableNum, len(tables))
+    table = tables[TableNum-1]
     if debug:
         print(table)
     table_dict = {}
@@ -1291,5 +1292,3 @@ def get_table_from_copernicus_article(URL=None, TableNum=5,
             print(key, table_dict[key])
         df[key] = table_dict[key].split()
     return df
-
-
