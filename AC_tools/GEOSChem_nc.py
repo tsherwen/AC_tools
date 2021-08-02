@@ -884,6 +884,24 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
 
     # - Add Ozone production and loss...
 
+    # - Add lightning source if in HEMCO output
+    var2use = 'EmisNO_Lightning'
+    varName = 'Lightning (Tg N/yr)'
+    try:
+    # TODO -  add check for HEMCO NetCDF files in the output folder
+#    if True:
+        dsH = {}
+        for key in run_dict.keys():
+            dsH[key] = get_HEMCO_diags_as_ds(wd=run_dict[key])
+            ds = ds[key]
+            val = (ds[var2use].mean(dim='time').sum(dim='lev') * ds['AREA'] )
+            val2 = val.values.sum() * 60 * 60 * 24 * 365 # => /yr
+            df.loc[key,varName] = val2*1E3/1E12
+    except KeyError:
+        pass
+        df.loc[key,varName] = np.nan
+
+
     # - Surface concentrations
     core_surface_specs = ['O3', 'NO', 'NO2', 'N2O5']
     prefix = 'SpeciesConc_'
