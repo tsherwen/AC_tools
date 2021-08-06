@@ -1,7 +1,7 @@
 AC_tools: Atmospheric Chemistry (AC) tools
 ======================================
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4789902.svg
-   :target: https://doi.org/10.5281/zenodo.4789902
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4789901.svg
+   :target: https://doi.org/10.5281/zenodo.4789901
 
 **Atmospheric Chemistry Tools (AC_Tools)** contains functions and scripts used for 
 working with atmospheric model output and observational data. 
