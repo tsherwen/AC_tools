@@ -469,14 +469,16 @@ def latex_spec_name(input_x, debug=False):
         'IONO': 'INO$_{2}$', 'HIO3': 'HIO$_{3}$', 'ICl': 'ICl',
         'I2O3': 'I$_{2}$O$_{3}$', 'I2O4': 'I$_{2}$O$_{4}$',
         'I2O5': 'I$_{2}$O$_{5}$', 'INO': 'INO', 'I2O': 'I$_{2}$O',
-        'IBr': 'IBr', 'I2O2': 'I$_{2}$O$_{2}$', 'IONO2': 'INO$_{3}$', 'HI': 'HI',
+        'IBr': 'IBr', 'I2O2': 'I$_{2}$O$_{2}$', 'IONO2': 'INO$_{3}$',
+        'HI': 'HI',
         'BrO': 'BrO', 'Br': 'Br', 'HOBr': 'HOBr', 'Br2': 'Br$_{2}$',
         'CH3Br': 'CH$_{3}$Br', 'CH2Br2': 'CH$_{2}$Br$_{2}$',
         'CHBr3': 'CHBr$_{3}$', 'O3': 'O$_{3}$', 'CO': 'CO', 'DMS': 'DMS',
         'NO': 'NO', 'NO2': 'NO$_{2}$',
         'NO3': 'NO$_{3}$', 'HNO3': 'HNO$_{3}$', 'HNO4': 'HNO$_{4}$',
         'PAN': 'PAN', 'HNO2': 'HONO', 'N2O5': 'N$_{2}$O$_{5}$',
-        'ALK4': '$\geq$C4 alkanes', 'ISOP': 'Isoprene', 'H2O2': 'H$_{2}$O$_{2}$',
+        'ALK4': '$\geq$C4 alkanes', 'ISOP': 'Isoprene',
+        'H2O2': 'H$_{2}$O$_{2}$',
         'ACET': 'CH$_{3}$C(O)CH$_{3}$', 'MEK': '>C3 ketones',
         'RCHO': 'CH$_{3}$CH$_{2}$CHO',
         'MVK': 'CH$_{2}$=CHC(O)CH$_{3}$', 'MACR': 'Methacrolein',
@@ -493,8 +495,10 @@ def latex_spec_name(input_x, debug=False):
         'BrNO3': 'BrNO$_{3}$', 'MPN': 'CH$_{3}$O$_{2}$NO$_{2}$',
         'ISOPN': 'ISOPN', 'MOBA': 'MOBA', 'PROPNN': 'PROPNN',
         'HAC': 'HAC', 'GLYC': 'GLYC', 'MMN': 'MMN', 'RIP': 'RIP',
-        'IEPOX': 'IEPOX', 'MAP': 'MAP', 'AERI': 'Aerosol Iodine', 'Cl2': 'Cl$_{2}$',
-        'Cl': 'Cl', 'HOCl': 'HOCl', 'ClO': 'ClO', 'OClO': 'OClO', 'BrCl': 'BrCl',
+        'IEPOX': 'IEPOX', 'MAP': 'MAP', 'AERI': 'Aerosol Iodine',
+        'Cl2': 'Cl$_{2}$',
+        'Cl': 'Cl', 'HOCl': 'HOCl', 'ClO': 'ClO', 'OClO': 'OClO',
+        'BrCl': 'BrCl',
         'HI+OIO+IONO+INO': 'HI+OIO+INO$_{2}$+INO',
         'CH2IX': 'CH$_{2}$IX (X=Cl, Br, I)',
         'IxOy': 'I$_{2}$O$_{X}$ ($_{X}$=2,3,4)',
@@ -531,7 +535,8 @@ def latex_spec_name(input_x, debug=False):
         'CH2BR2': 'CH$_{2}$Br$_{2}$',\
         # Cly names
         'ClOO': 'ClOO', 'Cl2': 'Cl$_{2}$', \
-        'BrCl': 'BrCl', 'ICl': 'ICl', 'HOCl': 'HOCl', 'ClO': 'ClO', 'ClOO': 'ClOO', \
+        'BrCl': 'BrCl', 'ICl': 'ICl', 'HOCl': 'HOCl', 'ClO': 'ClO',
+        'ClOO': 'ClOO', \
         'OClO': 'OClO', 'Cl2O2': 'Cl$_{2}$O$_{2}$', 'HCl': 'HCl', \
         'ClNO2': 'ClNO$_{2}$', 'ClNO3': 'ClNO$_{3}$', 'Cl': 'Cl',\
         'CH3Cl': 'CH$_{3}$Cl',  'CH2Cl2': 'CH$_{2}$Cl$_{2}$', \
@@ -626,7 +631,8 @@ def species_mass(spec):
         'NO2': 46.0, 'NO3': 62.0, 'N2O5': 105.0, 'H2O2': 34.0, 'DST4': 29.0,
         'DST3': 29.0, 'DST2': 29.0, 'DST1': 29.0, 'MMN': 149.0, 'HOCl': 52.0,
         'NITs': 62.0, 'RCHO': 58.0,  'MPN': 93.0, 'INO': 157.0,
-        'MP': 48.0, 'CH2Br2': 174.0, 'SALC': 31.4, 'NH3': 17.0, 'CH2ICl': 167.0,
+        'MP': 48.0, 'CH2Br2': 174.0, 'SALC': 31.4, 'NH3': 17.0,
+        'CH2ICl': 167.0,
         'IEPOX': 118.0, 'ClO': 51.0, 'NO': 30.0, 'SALA': 31.4, 'MOBA': 114.0,
         'R4N2': 119.0, 'BrCl': 115.0, 'OClO': 67.0, 'PMN': 147.0, 'CO': 28.0,
         'MVK': 70.0, 'BrNO2': 126.0,
@@ -655,7 +661,8 @@ def species_mass(spec):
         'AERI_AVG': ((286.0+302.0+318.0)/3)/2, 'SO4S': 96.0,
         'IO3': 127.+(3.*16.), 'SSBr2': 160.0, 'C': 12.0,
         # Add families for ease of processing
-        'Iodine': 127.0, 'Iy': 127., 'Bromine': 80.0, 'Bry': 80.0, 'Chlorine': 35.0,
+        'Iodine': 127.0, 'Iy': 127., 'Bromine': 80.0, 'Bry': 80.0,
+        'Chlorine': 35.0,
         'Cly': 35.0, 'NOy': 14.0, 'NOx': 14.0, 'SOx': 32.0,\
         'Sulfate': 32.0, 'sulfur': 32.0, 'VOCs': 12.0,
         # v11-01 standard extra tracers...
@@ -674,7 +681,8 @@ def species_mass(spec):
         'CFC113': 187.0, 'HCFC141b': 117.0, 'CFC115': 187.0, 'OCS': 60.0, \
         'XYLE': 106.16, 'H2402': 260.0, 'HCFC142b': 117.0, 'HCFC123': 117.0, \
         # Extra species in v12.x
-        'GLYX': 58.0, 'MGLY': 72.0, 'SOAP': 150.0, 'SOAS': 150.0, 'NPMN': 147.0, \
+        'GLYX': 58.0, 'MGLY': 72.0, 'SOAP': 150.0, 'SOAS': 150.0,
+        'NPMN': 147.0, \
         u'RIPB': 118.0, u'LVOCOA': 154.0, u'IEPOXD': 118.0, u'IEPOXB': 118.0, \
         u'IEPOXA': 118.0, u'RIPD': 118.0, u'LVOC': 154.0, u'INDIOL': 102.0, \
         u'RIPA': 118.0, u'IPMN': 147.0, u'DHDN': 226.0, u'HPALD': 116.0, \
@@ -975,17 +983,21 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,
         'Cl': 'ppbv', 'I2O2': 'pptv', 'I2O3': 'pptv', 'I2O4': 'pptv',
         'I2O5': 'pptv', 'MEK': 'ppbC', 'MMN': 'ppbv', 'ISOPN': 'ppbv',
         'SO4s': 'ppbv', 'I2O': 'pptv', 'ALK4': 'ppbC', 'MSA': 'ppbv',
-        'I2': 'pptv', 'Br2': 'pptv', 'IBr': 'pptv', 'MACR': 'ppbv', 'I': 'pptv',
+        'I2': 'pptv', 'Br2': 'pptv', 'IBr': 'pptv', 'MACR': 'ppbv',
+        'I': 'pptv',
         'AERI': 'pptv', 'HOI': 'pptv', 'BrO': 'pptv', 'NH4': 'ppbv',
         'SO2': 'ppbv', 'SO4': 'ppbv', 'IO': 'pptv', 'H2O2': 'ppbv',
         'BCPI': 'ppbv', 'ICl': 'pptv', 'GLYC': 'ppbv', 'ISALA': 'pptv',
         'ISALC': 'pptv',
         # Extra diagnostics to allow for simplified processing
-        'CH3I': 'pptv', 'Iy': 'pptv', 'PSURF': 'hPa', 'OH': 'pptv', 'HO2': 'pptv', \
-        'MO2': 'pptv', 'NOy': 'ppbv', 'EOH': 'ppbv', 'CO': 'ppbv', 'CH4': 'ppbv', \
+        'CH3I': 'pptv', 'Iy': 'pptv', 'PSURF': 'hPa', 'OH': 'pptv',
+        'HO2': 'pptv', \
+        'MO2': 'pptv', 'NOy': 'ppbv', 'EOH': 'ppbv', 'CO': 'ppbv',
+        'CH4': 'ppbv', \
         'TSKIN': 'K', 'GMAO_TEMP': 'K', 'GMAO_VWND': 'm/s',\
         'GMAO_UWND': 'm/s', 'RO2': 'pptv', 'U10M': 'm/s', 'V10M': 'm/s',\
-        'PRESS': 'hPa', 'CH2OO': 'pptv', 'Bry': 'ppbv', 'NOx': 'ppbv', 'HOx': 'HOx',
+        'PRESS': 'hPa', 'CH2OO': 'pptv', 'Bry': 'ppbv', 'NOx': 'ppbv',
+        'HOx': 'HOx',
         'VOC': 'ppbC', 'TNO3': 'ppbv', 'GLYX': 'pptv',
         'GMAO_SURF': 'surface area',  # cm2/cm3?
         'GMAO_ABSH': 'frac.',
@@ -1032,7 +1044,7 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,
     try:
         units = tra_unit[x]
     except KeyError:
-        LogStr = 'provided species/tracer ({}) not in unit dictionary (assuming {})'
+        LogStr = 'provided species/tracer ({}) not in unit dict (assuming {})'
         units = 'pptv'
         logging.info(LogStr.format(x, units))
 
@@ -1504,7 +1516,8 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
             'O3', 'NO2', 'NO', 'NO3', 'N2O5', 'HNO4', 'HNO3', 'HNO2', 'PAN', \
             'PPN', 'PMN', 'H2O2', 'HO2', 'OH', 'RO2', 'SO2', 'SO4', \
             'GMAO_TEMP', 'GMAO_UWND', 'GMAO_VWND', 'I2', 'HOI', \
-            'IO', 'I', 'HI', 'OIO', 'INO', 'IONO', 'IONO2', 'I2O2', 'I2O4', 'I2O3',\
+            'IO', 'I', 'HI', 'OIO', 'INO', 'IONO', 'IONO2', 'I2O2', 'I2O4',
+            'I2O3',\
             'CH3IT', 'CH2I2', 'CH2ICl', 'CH2IBr'],
         # Photolysis/Fast-J
         'FastJ_lower': [ \
@@ -1540,7 +1553,8 @@ def GC_var(input_x=None, rtn_dict=False, debug=False):
         'OH_loss_rxns4cl_comp': [
         ],
         'Cl_ox_org_rxns': [
-            'LR63', 'LR51', 'LR54', 'LR59', 'LR52', 'LR64', 'LR58', 'LR57', 'LR50', \
+            'LR63', 'LR51', 'LR54', 'LR59', 'LR52', 'LR64', 'LR58', 'LR57',
+            'LR50', \
             'LR60', 'LR53', 'LR55', 'LR49', 'LR56', 'LR123', 'LR122'],
         'ClO_ox': [
             'LR68', 'LR61', 'LR69', 'LR74', 'LR48', 'LR73', 'LR70',

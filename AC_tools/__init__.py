@@ -15,12 +15,14 @@ from . mask import *
 from . observations import *
 from . planeflight import *
 from . plotting import *
-from . SMVGEAR import *
+# from . SMVGEAR import *
 from . variables import *
 # include the redundant files for now
 from . obsolete.plotting_REDUNDANT import *
 from . obsolete.variables_REDUNDANT import *
 from . obsolete.misc_REDUNDANT import *
+from . obsolete.SMVGEAR_REDUNDANT import *
+
 
 """
 AC_tools is a module of functions started by Tomas, and contributed to by others in the York Atmospheric Modelling group, and hopefully maintained by the Group.

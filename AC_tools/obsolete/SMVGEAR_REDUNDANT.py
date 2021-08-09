@@ -24,14 +24,15 @@ import datetime as datetime
 from datetime import datetime as datetime_
 
 # AC_tools imports
-from .GEOSChem_bpch import *
-from .GEOSChem_nc import *
+from .. GEOSChem_bpch import *
+from .. GEOSChem_nc import *
 
 
 # -------------- Smvgear input/output file Processing
 # NOTE: this is now redundant as GEOS-Chem uses KPP going forward. procssing/parsing
 #       scripts are  also present in AC_tools for KPP.
-def prt_Prod_Loss_list4input_geos(spec_list=None, prefix_list=None, start_num=1):
+def prt_Prod_Loss_list4input_geos(spec_list=None, prefix_list=None,
+                                  start_num=1):
     """
     Print to screen lines to be inserted into input.geos to track prod/loss of species
 
@@ -404,7 +405,8 @@ def get_p_l_tags(rxns, debug=False):
     return tagsl
 
 
-def p_l_species_input_geos(wd, ver='1.7', rm_multiple_tagged_rxs=False, debug=False):
+def p_l_species_input_geos(wd, ver='1.7', rm_multiple_tagged_rxs=False,
+                           debug=False):
     """
     Extract prod/loss species (input.geos) and reaction tags (globchem.dat)
 
@@ -502,13 +504,12 @@ def tags_from_smvlog(wd):  # , spec='LOX' ):
             except:
                 rxns = [row]
 
-    # -- remove 'NMBR'
+    # Remove 'NMBR'
     rxns = [i for i in rxns if ('NBR' not in i)]
     rxns = [rxn[1] for rxn in rxns]
-
-    # --- only consider tags
-    return [i for i in rxns if any([x in i
-                                    for x in ('PD', 'RD', 'PO3', 'LO3', 'LR')])]
+    # Only consider tags and return
+    inclusions = ('PD', 'RD', 'PO3', 'LO3', 'LR')
+    return [i for i in rxns if any([x in i for x in inclusions])]
 
 
 def PDs_from_smvlog(wd, spec='LOX'):
@@ -540,9 +541,8 @@ def PDs_from_smvlog(wd, spec='LOX'):
             except:
                 rxns = [row]
 
-    # -- remove 'NMBR'
-    exceptions = [
-        'SPECIES', '===============================================================================', 'Families']
+    # Remove 'NMBR'
+    exceptions = ['SPECIES', '='*79, 'Families']
     rxns = [i for i in rxns if all([(ii not in i) for ii in exceptions])]
     rxns = [j for k in rxns for j in k]
     return rxns
@@ -590,7 +590,8 @@ def rxns4tag(tag, rdict=None, ver='1.7', wd=None):
     return rxns
 
 
-def get_tag_details(wd, tag=None, PDs=None,  rdict=None, PHOTOPROCESS=None, ver='1.7',
+def get_tag_details(wd, tag=None, PDs=None,  rdict=None, PHOTOPROCESS=None,
+                    ver='1.7',
                     LaTeX=False, print_details=False, debug=False):
     """
     Retriveve prod/loss tag details from smv.log
@@ -683,7 +684,8 @@ def get_rxn_Coe(wd, num, tag, nums=None, rxns=None, tags=None, Coe=None, spec='L
     return Coe
 
 
-def get_pldict_reactants(pl_dict=None, only_rtn_tracers=True, rm_OH=True, rm_Cl=True,
+def get_pldict_reactants(pl_dict=None, only_rtn_tracers=True, rm_OH=True,
+                         rm_Cl=True,
                          tags=None, debug=False):
     """
     Get reactant from smv2.log dictionary
@@ -732,7 +734,8 @@ def get_pldict_reactants(pl_dict=None, only_rtn_tracers=True, rm_OH=True, rm_Cl=
     return strs
 
 
-def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5', verbose=False, debug=False):
+def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5', verbose=False,
+               debug=False):
     """
     Converts globchem.dat tracer to PD/LD from prod/loss diag in input.geos
 
@@ -755,7 +758,8 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5', verbose=False, debug=
 
         # Get list of assigned PDs for vars
         PDs, vars = p_l_species_input_geos(wd, ver=ver,
-                                           rm_multiple_tagged_rxs=True, debug=debug)
+                                           rm_multiple_tagged_rxs=True,
+                                           debug=debug)
 
         # Add other (non 'PD') vars for ease of processing
         non_PDs = [
@@ -774,7 +778,8 @@ def PLO3_to_PD(PL, fp=True, wd=None, ver='1.6', res='4x5', verbose=False, debug=
         print('update programme - manual PLdict now obsolete. ')
 
 
-def get_pl_dict(wd, spec='LOX', rmx2=False, ver='1.7', rm_redundant_ClBrI_tags=False,
+def get_pl_dict(wd, spec='LOX', rmx2=False, ver='1.7',
+                rm_redundant_ClBrI_tags=False,
                 debug=False):
     """
     Get reaction IDs for each rxn. in spec (p/l, e.g. LOX). This is the driver for
