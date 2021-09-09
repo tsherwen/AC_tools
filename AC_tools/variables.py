@@ -994,8 +994,10 @@ def tra_unit(x, scale=False, adjustment=False, adjust=True, global_unit=False,
         'HO2': 'pptv', \
         'MO2': 'pptv', 'NOy': 'ppbv', 'EOH': 'ppbv', 'CO': 'ppbv',
         'CH4': 'ppbv', \
-        'TSKIN': 'K', 'GMAO_TEMP': 'K', 'GMAO_VWND': 'm/s',\
-        'GMAO_UWND': 'm/s', 'RO2': 'pptv', 'U10M': 'm/s', 'V10M': 'm/s',\
+        'TSKIN': 'K', 'GMAO_TEMP': 'K', 'T': '$^{\circ}$C',
+        'RO2': 'pptv',
+        'GMAO_VWND': 'm/s', 'GMAO_UWND': 'm/s',
+        'U10M': 'm/s', 'V10M': 'm/s', 'U': 'm/s', 'V': 'm/s',
         'PRESS': 'hPa', 'CH2OO': 'pptv', 'Bry': 'ppbv', 'NOx': 'ppbv',
         'HOx': 'HOx',
         'VOC': 'ppbC', 'TNO3': 'ppbv', 'GLYX': 'pptv',
