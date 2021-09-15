@@ -1292,3 +1292,23 @@ def get_table_from_copernicus_article(URL=None, TableNum=5,
             print(key, table_dict[key])
         df[key] = table_dict[key].split()
     return df
+
+
+def add_suffix2all_strs_in_dict(d, PrefixStr='OutputDir/'):
+    """
+    Add a suffix to all values for all keys in dictionary
+
+    Returns
+    -------
+    (dict)
+
+    Returns
+    -------
+     - example use is adding output subfolder location to all folder strings
+    """
+    for key in d.keys():
+        str = d[key]
+        str += PrefixStr
+        d[key] = str
+    return d
+
