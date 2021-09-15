@@ -981,7 +981,7 @@ def get_ref_spec(spec='LIOx'):
     This is for use in conbination  with functions that calculate relative values
     (e.g. in units of Ox, I, etc)
     """
-    d = read_yaml_file('reference_families_for_speciess.yml')
+    d = read_yaml_file('reference_families_for_species.yml')
     try:
         return d[spec]
     except KeyError:
@@ -992,8 +992,7 @@ def get_ref_spec(spec='LIOx'):
 
 def GC_var(input_x=None, rtn_dict=False, debug=False):
     """
-    General Dictionary to manage common variables used by GC
-    analysis programmes.
+    return common variables variables lists (e.g. species in a family like NOx)
 
     Parameters
     ----------
