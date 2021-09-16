@@ -23,6 +23,7 @@ Iy: I
 IxOy: I
 SO4: S
 NIT: N
+NIT-all: N
 NITD1: N
 NITD2: N
 NITD3: N
@@ -32,6 +33,11 @@ NH4: N
 ISOP: C
 'NO': N
 NO2: N
+NOx: N
+NOy: N
+NOz: N
+NOy-gas: N
+NOy-all: N
 N2O5: N
 O3: O3
 SO2: S
