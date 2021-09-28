@@ -1523,9 +1523,11 @@ def prt_lines4species_database_yml(tags, extr_str=''):
     a = open(FileStr.format(extr_str), 'w')
     pstr1 = '{}:'
     pstr2 = '  Is_Gas: true'
+    pstr3 = '  FullName: Dummy species to track production rate'
     for tag in tags:
         print(pstr1.format(tag), file=a)
         print(pstr2, file=a)
+        print(pstr3, file=a)
 
 
 def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',
