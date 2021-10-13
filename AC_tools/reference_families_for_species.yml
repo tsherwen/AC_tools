@@ -22,6 +22,11 @@ I: I
 Iy: I
 IxOy: I
 SO4: S
+SO4-all: S
+SO4D1: S
+SO4D2: S
+SO4D3: S
+SO4D4: S
 NIT: N
 NIT-all: N
 NITD1: N
