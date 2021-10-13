@@ -22,6 +22,7 @@ HI: pptv
 CH2I2: pptv
 IONO2: pptv
 NIT: ppbv
+NIT-all: ppbv
 CH3Br: pptv
 C3H7I: pptv
 C3H8: ppbC
@@ -89,6 +90,7 @@ BrO: pptv
 NH4: ppbv
 SO2: ppbv
 SO4: ppbv
+SO4-all: ppbv
 IO: pptv
 H2O2: ppbv
 BCPI: ppbv
