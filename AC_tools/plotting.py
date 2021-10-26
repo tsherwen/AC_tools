@@ -114,6 +114,8 @@ def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson,
     # Add a generic title if one is not provided
     if isinstance(title, type(None)):
         plt.title('Spatial plot of {}'.format(var2plot))
+    else:
+        plt.title(title)
     # save the plot?
     if save_plot:
         if isinstance(savename, type(None)):
