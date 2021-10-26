@@ -837,6 +837,40 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
         attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
+    elif fam == 'SO4-all':
+        fam2use = 'SO4-all'
+        CopyVar = 'SO4'
+        vars2use = GC_var(fam2use)
+        ds[prefix+fam2use] = ds[prefix+CopyVar].copy()
+        vars2use.pop(vars2use.index(CopyVar))
+        # Add dust sulfates if present.
+        for var in vars2use:
+            try:
+                ds[prefix+fam2use] = ds[prefix+fam2use] + ds[prefix+var]
+            except KeyError:
+                pass
+        # Copy and update attributes
+        attrs = ds[prefix+CopyVar].attrs
+        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        ds[prefix+fam2use].attrs = attrs
+
+    elif fam == 'SOx':
+        fam2use = 'SOx'
+        CopyVar = 'SO2'
+        vars2use = GC_var(fam2use)
+        ds[prefix+fam2use] = ds[prefix+CopyVar].copy()
+        vars2use.pop(vars2use.index(CopyVar))
+        # Add extra variables if present (check family definition for SOx)
+        for var in vars2use:
+            try:
+                ds[prefix+fam2use] = ds[prefix+fam2use] + ds[prefix+var]
+            except KeyError:
+                pass
+        # Copy and update attributes
+        attrs = ds[prefix+CopyVar].attrs
+        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        ds[prefix+fam2use].attrs = attrs
+
     elif fam == 'Cly':
         fam2use = 'Cly'
         ref_spec = 'Cl'
@@ -956,14 +990,8 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     for FamilyName in FamilyNames:
         if FamilyName in ALLSp:
             families2use += [FamilyName]
-    print(families2use)
-#     NIT_all_vars = GC_var('NIT-all')
-#     NOy_gas_vars = GC_var('NOy-gas')
-#     NOy_vars = GC_var('NOy')
-#     Cly_vars = GC_var('Cly')
-#     Bry_vars = GC_var('Bry')
-#     Iy_vars = GC_var('Iy')
-
+    if verbose or debug:
+        print(families2use)
     # Core dataframe for storing calculated stats on runs
     df = pd.DataFrame()
     # - Get core data required
@@ -1007,42 +1035,8 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
         # Save the values for run to central DataFrame
         df[key] = S
 
-
-    # - Now add families...
     # Transpose dataframe
     df = df.T
-    # Get NOx burden
-#     BurdenStr = '{} burden ({})'
-#     NO2_varname = BurdenStr.format('NO2', mass_unit)
-#     NO_varname = BurdenStr.format('NO', mass_unit)
-#     NOx_varname = BurdenStr.format('NOx', mass_unit)
-#     PtrStr = 'NOx family not added for trop. df columns: {}'
-#     try:
-#         df[NOx_varname] = df[NO2_varname] + df[NO_varname]
-#     except KeyError:
-#         if debug:
-#             print(PtrStr.format(', '.join(list(df.columns))))
-
-    # Sum the NOy (all inc. NITs)
-
-
-    # Sum the NOy-gas
-
-
-    # Sum the aerosol nitrates (NIT+NITs)
-#     PtrStr = 'NIT-all family not added for surface. df columns: {}'
-#     if ('NITs' in specs2use) and ('NIT' in specs2use):
-#         NIT_varname = BurdenStr.format('NIT', mass_unit)
-# #        NITs_varname = BurdenStr.format('NITs', mass_unit)
-#         NITS_all_varname = BurdenStr.format('NIT-all', mass_unit)
-#         df[NITS_all_varname] = df[NIT_varname].copy()
-#         for var in NIT_all_vars[1:]:
-#             TEMPvarname = BurdenStr.format(var, mass_unit)
-#             try:
-#                 df[NITS_all_varname] = df[NITS_all_varname] + df[TEMPvarname]
-#             except KeyError:
-#                 if debug:
-#                     print(PtrStr.format(', '.join(list(df.columns))))
 
     # Scale units
     for col_ in df.columns:
@@ -1092,17 +1086,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
             val = get_avg_2D_conc_of_X_weighted_by_Y(ds, Xvar=var, Yvar='AREA')
             # Save calculated values to dataframe
             df.loc[varname, key] = val
-    # Get NOx [surface]
-#     SurfaceStr = '{} surface ({})'
-#     NO2_varname = SurfaceStr.format('NO2', 'ppbv')
-#     NO_varname = SurfaceStr.format('NO', 'ppbv')
-#     NOx_varname = SurfaceStr.format('NOx', 'ppbv')
-#     try:
-#         df[NOx_varname] = df[NO2_varname] + (df[NO_varname]*1E3)
-#     except KeyError:
-#         if debug:
-#             PtrStr = 'NOx family not added for trop. df columns: {}'
-#             print(PtrStr.format(', '.join(list(df.columns))))
+
     # Transpose dataframe
     df = df.T
     # Scale units
