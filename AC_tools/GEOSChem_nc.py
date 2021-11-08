@@ -42,6 +42,7 @@ from .variables import *
 #from .Scripts.bpch2netCDF import convert_to_netCDF
 import gc
 
+
 def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
                              collection=None, dates2use=None,
                              parallel=True, data_vars="minimal",
@@ -184,7 +185,7 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None,
     if len(NotInDataset) > 1:
         print('WARNING: not extracing variables not in ds: ', NotInDataset)
         vars2use = [i for i in vars2use if (i not in NotInDataset)]
-    dsL = dsL[ vars2use ]
+    dsL = dsL[vars2use]
     MXUnits = 'mol mol-1 dry'
     # Covert all species into burdens (Gg)
     if isinstance(spec_var, type(None)) and isinstance(spec, type(None)):
@@ -194,7 +195,7 @@ def get_Gg_trop_burden(ds=None, spec=None, spec_var=None, StateMet=None,
             spec = spec_var.replace(spec_conc_prefix, '')
             if debug:
                 PStr = 'Attempting in ds conversion of {} ({}, type: {})'
-                print(PStr.format(spec, spec_var, type(dsL[spec_var]) ) )
+                print(PStr.format(spec, spec_var, type(dsL[spec_var])))
                 print(dsL[spec_var].attrs)
             # Check units
             SpecUnits = dsL[spec_var].units
@@ -878,7 +879,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
         CopyVar = vars2use[0]
         stoich = spec_stoich(CopyVar, ref_spec=ref_spec)
         vars2use = GC_var(fam2use)
-        ds[prefix+fam2use] = ds[prefix+CopyVar].copy()* stoich
+        ds[prefix+fam2use] = ds[prefix+CopyVar].copy() * stoich
         # Add dust nitrates if present.
         for var in vars2use[1:]:
             stoich = spec_stoich(var, ref_spec=ref_spec)
@@ -898,7 +899,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
         CopyVar = vars2use[0]
         stoich = spec_stoich(CopyVar, ref_spec=ref_spec)
         vars2use = GC_var(fam2use)
-        ds[prefix+fam2use] = ds[prefix+CopyVar].copy()* stoich
+        ds[prefix+fam2use] = ds[prefix+CopyVar].copy() * stoich
         # Add dust nitrates if present.
         for var in vars2use[1:]:
             stoich = spec_stoich(var, ref_spec=ref_spec)
@@ -918,7 +919,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
         CopyVar = vars2use[0]
         stoich = spec_stoich(CopyVar, ref_spec=ref_spec)
         vars2use = GC_var(fam2use)
-        ds[prefix+fam2use] = ds[prefix+CopyVar].copy()* stoich
+        ds[prefix+fam2use] = ds[prefix+CopyVar].copy() * stoich
         # Add dust nitrates if present.
         for var in vars2use[1:]:
             stoich = spec_stoich(var, ref_spec=ref_spec)
@@ -1063,7 +1064,6 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
 #     except KeyError:
 #         pass
 #         df.loc[key,varName] = np.nan
-
 
     # - Surface concentrations
     specs2use = list(set(core_specs+['N2O5']+extra_surface_specs))

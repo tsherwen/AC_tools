@@ -169,7 +169,7 @@ def ds2zonal_plot(ds=None, var2plot=None, StateMet=None, AltVar='lev',
     if debug:
         print('lat:', len(lat), lat.shape)
         print('alt:', len(alt), lalton.shape)
-        print('data:', ds2plot[var2plot].values.shape )
+        print('data:', ds2plot[var2plot].values.shape)
     im = ax.pcolor(lat, alt, ds2plot[var2plot].values, **kwargs)
 #    im = ds2plot[var2plot].plot.imshow(ax=ax, **kwargs)
     # Limit the axis to a value (e.g. 18km to just show tropospheric values)
@@ -2079,6 +2079,7 @@ def get_human_readable_gradations(lvls=None, vmax=10, vmin=0,
 
     # significant figure ( sig. fig. ) rounding func.
 
+
     def round_to_n(x, n): return round(x, -int(floor(log10(x))) + (n - 1))
 #    round_to_n = lambda x, n: get_sigfig(x,n)
 
@@ -2489,11 +2490,11 @@ def plt_box_area_on_global_map(ds=None, var2use='DXYP__DXYP',
 
 
 def plt_spatial_diff_between_runs_at_lvl(dsD, REF=None, DIFF=None, lvl_idx=0,
-                                        savetitle=None,
-                                        pcent=False, vars2plot=None,
-                                        debug=False, verbose=True,
-                                        show_plot=False,
-                                        dpi=320, **kwargs):
+                                         savetitle=None,
+                                         pcent=False, vars2plot=None,
+                                         debug=False, verbose=True,
+                                         show_plot=False,
+                                         dpi=320, **kwargs):
     """
     Plot up spatal difference between two datasets for a list of variables
 
@@ -2533,12 +2534,12 @@ def plt_spatial_diff_between_runs_at_lvl(dsD, REF=None, DIFF=None, lvl_idx=0,
         ds2 = dsD[DIFF][[var2plot]].isel(lev=lvl_idx).mean(dim='time')
 
         if pcent:
-            ds2plot = (ds2-ds1)/ds1 *100
+            ds2plot = (ds2-ds1)/ds1 * 100
         else:
             ds2plot = (ds2-ds1)
         # Plot
         quick_map_plot(ds2plot, var2plot=var2plot, show_plot=False,
-                          verbose=verbose)
+                       verbose=verbose)
         # Save to PDF
         plot2pdfmulti(pdff, savetitle, dpi=dpi, tight=True)
         if show_plot:
@@ -2610,7 +2611,7 @@ def plt_zonal_diff_between_runs(dsD, REF=None, DIFF=None, vars2plot=None,
         # Plot
         ds2zonal_plot(ds2plot, var2plot=var2plot,
                       StateMet=StateMet,
-#                    show_plot=False,
+                      #                    show_plot=False,
                       AltVar=AltVar, LatVar=LatVar,
                       fig=fig, ax=ax,
                       limit_yaxis2=limit_yaxis2,
@@ -2639,8 +2640,8 @@ def adjustFigAspect(fig, aspect=1):
     Credit: Yann (https://stackoverflow.com/questions/7965743/how-can-i-set-the-aspect-ratio-in-matplotlib)
 
     '''
-    xsize,ysize = fig.get_size_inches()
-    minsize = min(xsize,ysize)
+    xsize, ysize = fig.get_size_inches()
+    minsize = min(xsize, ysize)
     xlim = .4*minsize/xsize
     ylim = .4*minsize/ysize
     if aspect < 1:
@@ -2651,4 +2652,3 @@ def adjustFigAspect(fig, aspect=1):
                         right=.5+xlim,
                         bottom=.5-ylim,
                         top=.5+ylim)
-

@@ -1326,7 +1326,6 @@ def get_CVAO_Africa_nest_Masked(res='0.25x0.3125', ):
     return mask
 
 
-
 # def get_north_sea_unmasked( res='0.25x0.3125' ):
 #     """
 #     A rough Mask of the North Sea for use with ~0.5/~0.25 mdodel output.
