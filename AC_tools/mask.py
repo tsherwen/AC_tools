@@ -1142,7 +1142,8 @@ def lon2lon_2D_unmasked(lowerlon, higherlon, res='2x2.5', debug=False):
 
     # Fill all lat and lon True or False
     m = np.zeros(get_dims4res(res))[:, :, 0]
-    print((m.shape, np.sum(m)))
+    if debug:
+        print((m.shape, np.sum(m)))
     for i in lons:
         m[i, :] = 1
     m = np.ma.masked_not_equal(m, 1)
@@ -1296,6 +1297,25 @@ def get_Southern_Africa_Masked(res='0.25x0.3125', ):
     higherlat = 0
     lowerlon = -10
     higherlon = 55
+    # Get a mask for lat and lon range, then combine
+    mask1 = lat2lat_2D_unmasked(res=res, lowerlat=lowerlat,
+                                higherlat=higherlat)
+    mask2 = lon2lon_2D_unmasked(res=res, lowerlon=lowerlon,
+                                higherlon=higherlon)
+    mask = np.ma.mask_or(mask1, mask2)
+
+    return mask
+
+
+def get_CVAO_Africa_nest_Masked(res='0.25x0.3125', ):
+    """
+    Create a mask of sub equatorial africa
+    """
+    # Sub equatorial africa
+    lowerlat = 0.0
+    higherlat = 34.0
+    lowerlon = -32.0
+    higherlon = 15.0
     # Get a mask for lat and lon range, then combine
     mask1 = lat2lat_2D_unmasked(res=res, lowerlat=lowerlat,
                                 higherlat=higherlat)

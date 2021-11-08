@@ -114,6 +114,8 @@ def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson,
     # Add a generic title if one is not provided
     if isinstance(title, type(None)):
         plt.title('Spatial plot of {}'.format(var2plot))
+    else:
+        plt.title(title)
     # save the plot?
     if save_plot:
         if isinstance(savename, type(None)):
@@ -164,6 +166,10 @@ def ds2zonal_plot(ds=None, var2plot=None, StateMet=None, AltVar='lev',
     # Now call plot via xr.dataset
     lat = np.array(ds2plot.lat.values)
     alt = np.array(ds2plot.lev.values)
+    if debug:
+        print('lat:', len(lat), lat.shape)
+        print('alt:', len(alt), lalton.shape)
+        print('data:', ds2plot[var2plot].values.shape)
     im = ax.pcolor(lat, alt, ds2plot[var2plot].values, **kwargs)
 #    im = ds2plot[var2plot].plot.imshow(ax=ax, **kwargs)
     # Limit the axis to a value (e.g. 18km to just show tropospheric values)
@@ -2073,6 +2079,7 @@ def get_human_readable_gradations(lvls=None, vmax=10, vmin=0,
 
     # significant figure ( sig. fig. ) rounding func.
 
+
     def round_to_n(x, n): return round(x, -int(floor(log10(x))) + (n - 1))
 #    round_to_n = lambda x, n: get_sigfig(x,n)
 
@@ -2480,3 +2487,168 @@ def plt_box_area_on_global_map(ds=None, var2use='DXYP__DXYP',
     if isinstance(savename, type(None)):
         savename = 'spatial_plot_of_region'
     plt.savefig(savename+'.png', dpi=dpi)
+
+
+def plt_spatial_diff_between_runs_at_lvl(dsD, REF=None, DIFF=None, lvl_idx=0,
+                                         savetitle=None,
+                                         pcent=False, vars2plot=None,
+                                         debug=False, verbose=True,
+                                         show_plot=False,
+                                         dpi=320, **kwargs):
+    """
+    Plot up spatal difference between two datasets for a list of variables
+
+    Parameters
+    -------
+    dsD (dict): dictionary of xr.datasets
+    savetitle (str):
+    lvl_idx (int):
+    REF (str): key in dict of datasets to use as "reference"
+    DIFF (str): key in dict of datasets to calculate difference to "reference"
+    vars2plot (list):
+    pcent (bool):
+    show_plot (bool)
+    dpi (int)
+    verbose (bool):
+    debug (bool):
+
+    Returns
+    -------
+    (None)
+    """
+    if isinstance(REF, type(None)):
+        REF = list(sorted(dsD.keys()))[0]
+    if isinstance(DIFF, type(None)):
+        DIFF = list(sorted(dsD.keys()))[-1]
+    if isinstance(vars2plot, type(None)):
+        vars2plot = list(dsD[REF].data_vars)
+    if isinstance(savetitle, type(None)):
+        savetitle = 'surface_plots_{}_vs_{}'.format(REF, DIFF)
+        savetitle = rm_spaces_and_chars_from_str(savetitle)
+    if debug:
+        print(DIFF, REF, vars2plot)
+
+    pdff = plot2pdfmulti(title=savetitle, open=True, dpi=dpi)
+    for var2plot in vars2plot:
+        ds1 = dsD[REF][[var2plot]].isel(lev=lvl_idx).mean(dim='time')
+        ds2 = dsD[DIFF][[var2plot]].isel(lev=lvl_idx).mean(dim='time')
+
+        if pcent:
+            ds2plot = (ds2-ds1)/ds1 * 100
+        else:
+            ds2plot = (ds2-ds1)
+        # Plot
+        quick_map_plot(ds2plot, var2plot=var2plot, show_plot=False,
+                       verbose=verbose)
+        # Save to PDF
+        plot2pdfmulti(pdff, savetitle, dpi=dpi, tight=True)
+        if show_plot:
+            plt.show()
+        plt.close()
+        # Do some memory management...
+        gc.collect()
+
+    # Save entire pdf
+    plot2pdfmulti(pdff, savetitle, close=True, dpi=dpi)
+    plt.close('all')
+
+
+def plt_zonal_diff_between_runs(dsD, REF=None, DIFF=None, vars2plot=None,
+                                savetitle=None, StateMet=None,
+                                pcent=False, AvgOverTime=True,
+                                debug=False, verbose=True,
+                                AltVar='lev', LatVar='lat',
+                                fig=None, ax=None, limit_yaxis2=20,
+                                plt_ylabel=True, rm_strat=False,
+                                dpi=320, **kwargs):
+    """
+    Plot up zonal difference between two datasets for a list of variables
+
+    Parameters
+    -------
+    dsD (dict): dictionary of xr.datasets
+    savetitle (str):
+    lvl_idx (int):
+    REF (str): key in dict of datasets to use as "reference"
+    DIFF (str): key in dict of datasets to calculate difference to "reference"
+    vars2plot (list):
+    pcent (bool):
+    show_plot (bool)
+    dpi (int)
+    verbose (bool):
+    debug (bool):
+
+    Returns
+    -------
+    (None)
+    """
+    if isinstance(REF, type(None)):
+        REF = list(sorted(dsD.keys()))[0]
+    if isinstance(DIFF, type(None)):
+        DIFF = list(sorted(dsD.keys()))[-1]
+    if isinstance(vars2plot, type(None)):
+        vars2plot = list(dsD[REF].data_vars)
+    if isinstance(savetitle, type(None)):
+        savetitle = 'surface_plots_{}_vs_{}'.format(REF, DIFF)
+        savetitle = rm_spaces_and_chars_from_str(savetitle)
+    AssStr = 'NOTE: StateMet required for zonal plotter'
+    assert not isinstance(StateMet, type(None)), AssStr
+    if debug:
+        print(DIFF, REF, vars2plot)
+
+    pdff = plot2pdfmulti(title=savetitle, open=True, dpi=dpi)
+    for var2plot in vars2plot:
+        ds1 = dsD[REF][[var2plot]]
+        ds2 = dsD[DIFF][[var2plot]]
+        if AvgOverTime:
+            ds1 = ds1.mean(dim='time')
+            ds2 = ds2.mean(dim='time')
+
+        if pcent:
+            ds2plot = (ds2-ds1) / ds1 * 100
+        else:
+            ds2plot = (ds2-ds1)
+        # Plot
+        ds2zonal_plot(ds2plot, var2plot=var2plot,
+                      StateMet=StateMet,
+                      #                    show_plot=False,
+                      AltVar=AltVar, LatVar=LatVar,
+                      fig=fig, ax=ax,
+                      limit_yaxis2=limit_yaxis2,
+                      plt_ylabel=plt_ylabel, rm_strat=rm_strat,
+                      verbose=verbose,
+                      **kwargs)
+
+        # Save to PDF
+        plot2pdfmulti(pdff, savetitle, dpi=dpi, tight=True)
+        if show_plot:
+            plt.show()
+        plt.close()
+        # Do some memory management...
+        gc.collect()
+
+    # Save entire pdf
+    plot2pdfmulti(pdff, savetitle, close=True, dpi=dpi)
+    plt.close('all')
+
+
+def adjustFigAspect(fig, aspect=1):
+    '''
+    Adjust the subplot parameters so that the figure has the correct
+    aspect ratio.
+
+    Credit: Yann (https://stackoverflow.com/questions/7965743/how-can-i-set-the-aspect-ratio-in-matplotlib)
+
+    '''
+    xsize, ysize = fig.get_size_inches()
+    minsize = min(xsize, ysize)
+    xlim = .4*minsize/xsize
+    ylim = .4*minsize/ysize
+    if aspect < 1:
+        xlim *= aspect
+    else:
+        ylim /= aspect
+    fig.subplots_adjust(left=.5-xlim,
+                        right=.5+xlim,
+                        bottom=.5-ylim,
+                        top=.5+ylim)

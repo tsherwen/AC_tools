@@ -225,25 +225,22 @@ def get_LWI_map(res='4x5', date=None, wd=None, rtn_ds=False,
         '0.25x0.3125': 'LANDMAP_LWI_ctm_025x03125',
         '0.125x0.125': 'LANDMAP_LWI_ctm_0125x0125',
     }[res]
-    land_dir = dwd + dir
+    land_dir = os.path.join(dwd, dir)
     if debug:
-        logging.info(land_file)
+        logging.info(land_dir)
 
     # NetCDF approach unless
     if res == '0.125x0.125':
         #
-        ds = xr.open_dataset(land_dir+'ctm.nc')
+        ds = xr.open_dataset(os.path.join(land_dir, 'ctm.nc'))
         # No date? Just use annual average
         if isinstance(date, type(None)):
             if average_over_time:
-                landmap = ds['LWI'].mean(dim='time')
-            else:
-                landmap = ds['LWI']
-
+                ds = ds.mean(dim='time')
             if rtn_ds:
-                landmap
+                return ds
             else:
-                landmap.values
+                return ds['LWI'].values
         if isinstance(date, int):
             import glob
             # find nearest datetime
@@ -255,21 +252,19 @@ def get_LWI_map(res='4x5', date=None, wd=None, rtn_ds=False,
             landmap = ds['LWI'][ind, ...].values
             # transpose (as PyGChem read was re-ordering COARDS NetCDF)
             landmap = landmap.T
-        else:
-            landmap = ds['LWI']
+            return landmap
 
     else:
         if rtn_ds:
-            landmap = xr.open_dataset(land_dir+'/ctm.nc')
+            return xr.open_dataset(os.path.join(land_dir, 'ctm.nc'))
         else:
-            landmap = get_GC_output(wd=land_dir, vars=['LANDMAP__LWI'])
+            return get_GC_output(wd=land_dir, vars=['LANDMAP__LWI'])
         # Just use NetCDF4 instead of AC_tools function
 #            landmap = Dataset(land_dir+'ctm.nc', 'r')['LANDMAP__LWI'][:]
 
-    return landmap
 
-
-def get_air_mass_np(wd=None, times=None, trop_limit=True, AirMassVar='BXHGHT_S__AD',
+def get_air_mass_np(wd=None, times=None, trop_limit=True,
+                    AirMassVar='BXHGHT_S__AD',
                     debug=False):
     """
     Get array of air mass (4D) in kg
