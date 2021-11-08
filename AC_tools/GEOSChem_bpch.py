@@ -225,14 +225,14 @@ def get_LWI_map(res='4x5', date=None, wd=None, rtn_ds=False,
         '0.25x0.3125': 'LANDMAP_LWI_ctm_025x03125',
         '0.125x0.125': 'LANDMAP_LWI_ctm_0125x0125',
     }[res]
-    land_dir = os.path.join( dwd, dir )
+    land_dir = os.path.join(dwd, dir)
     if debug:
         logging.info(land_dir)
 
     # NetCDF approach unless
     if res == '0.125x0.125':
         #
-        ds = xr.open_dataset( os.path.join(land_dir, 'ctm.nc') )
+        ds = xr.open_dataset(os.path.join(land_dir, 'ctm.nc'))
         # No date? Just use annual average
         if isinstance(date, type(None)):
             if average_over_time:
@@ -256,7 +256,7 @@ def get_LWI_map(res='4x5', date=None, wd=None, rtn_ds=False,
 
     else:
         if rtn_ds:
-            return xr.open_dataset(os.path.join(land_dir,'ctm.nc'))
+            return xr.open_dataset(os.path.join(land_dir, 'ctm.nc'))
         else:
             return get_GC_output(wd=land_dir, vars=['LANDMAP__LWI'])
         # Just use NetCDF4 instead of AC_tools function
