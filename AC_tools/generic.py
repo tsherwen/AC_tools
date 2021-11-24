@@ -1102,7 +1102,8 @@ def calc_4D_idx_in_ds(ds=None, df=None, LonVar='lon', LatVar='lat',
     hPa_idx = [find_nearest(ds_hPa, i) for i in df[AltVar].values]
     time_idx = [find_nearest(ds_time, i) for i in df.index.values]
     # Return a dictionary of the values
-    return {LatVar: lat_idx, LonVar: lon_idx, TimeVar: time_idx, AltVar: hPa_idx}
+    d = {LatVar: lat_idx, LonVar: lon_idx, TimeVar: time_idx, AltVar: hPa_idx}
+    return d
 
 
 def extract_ds4df_locs(ds=None, df=None, LonVar='lon', LatVar='lat',

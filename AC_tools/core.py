@@ -464,18 +464,30 @@ def hPa_to_Km(input, reverse=False, debug=False):
 
     Parameters
     ----------
-    input (list): list of values (float) to convert
+    input (list/array): list of values (float) to convert
     reverse (bool): Set "reverse" to True to convert Km to hPa
     debug (bool): legacy debug option, replaced by python logging
 
     Returns
     -------
     (list)
+
+    Notes
+    -------
+     - Redundant function retained for back compatibility,
     """
     if reverse:
-        return [np.exp(np.float(i) / -7.6)*1013. for i in input]
+        return [km2hPa(i) for i in input]
     else:
-        return [-7.6*np.log(float(i) / 1013.) for i in input]
+        return [hPa2Km(i) for i in input]
+
+
+def km2hPa(input):
+    return np.exp( input / -7.6 ) * 1013.
+
+
+def hPa2Km(input):
+    return -7.6 * np.log( input  / 1013. )
 
 
 def km2nautical_miles(input):
