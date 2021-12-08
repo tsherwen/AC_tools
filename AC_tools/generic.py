@@ -1021,10 +1021,33 @@ def get_stats_on_files_in_folder_as_dict(folder=None):
         # largest size
         d['Max. size'] = np.max(sizes)
         # mean size
-        d['Mean size'] = AC.myround(np.mean(sizes), base=0.1, integer=False)
+        d['Mean size'] = myround(np.mean(sizes), base=0.1, integer=False)
         # mediun size
         d['Medium size'] = np.percentile(sizes, 50)
         return d
+
+
+def get_directory_size(start_path='.'):
+    """
+    Get total size of a directory
+
+    Returns
+    -------
+    (float)
+
+    Notes
+    -------
+    credit: https://stackoverflow.com/a/1392549/2543267
+    """
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(start_path):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            # skip if it is symbolic link
+            if not os.path.islink(fp):
+                total_size += os.path.getsize(fp)
+
+    return total_size
 
 
 def get_avg_2D_conc_of_X_weighted_by_Y(ds, Xvar=None, Yvar='AREA', Yda=None):
