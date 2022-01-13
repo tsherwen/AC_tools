@@ -596,3 +596,14 @@ def solartime(observer, sun=None):
     # sidereal time == ra (right ascension) is the highest point (noon)
     hour_angle = observer.sidereal_time() - sun.ra
     return ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h
+
+
+
+def update_year(x, year=2017):
+    """
+    helper function to update years in pd.DataFrame index
+    """
+    timetuple = list(tuple(x.timetuple()))
+    timetuple[0] = year
+    return datetime.datetime(*timetuple[:7])
+
