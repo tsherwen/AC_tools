@@ -3416,7 +3416,8 @@ def convert_v_v_2_molec_cm3(arr=None, wd=None, vol=None, a_m=None,
 
 
 def convert_molec_cm3_2_v_v(arr=None, wd=None, vol=None, a_m=None,
-                            mols=None, res='4x5', trop_limit=True, press=None, T=None,
+                            mols=None, res='4x5', trop_limit=True, press=None,
+                            T=None,
                             explicitly_calc=False, debug=False):
     """
     Covnerts number density (molec/cm3) into mixing ratio (v/v).
@@ -4648,8 +4649,9 @@ def get_general_stats4run_dict_as_df_bpch(run_dict=None, extra_str='',
         varname = '{} burden ({})'.format(spec, mass_unit)
         ref_spec = get_ref_spec(spec)
         # get arrrays
-        ars = [get_trop_burden(spec=spec, t_p=t_p, wd=i, all_data=False, res=res).sum()
-               for i in wds]
+        ars = [get_trop_burden(spec=spec, t_p=t_p, wd=i,
+                               all_data=False, res=res).sum()
+                               for i in wds]
         # convert to N equivalent
         ars = [i/species_mass(spec)*species_mass(ref_spec) for i in ars]
         df[varname] = ars
