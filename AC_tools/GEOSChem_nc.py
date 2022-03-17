@@ -953,6 +953,26 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
         attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
+    elif fam == 'Ox':
+        fam2use = 'Ox'
+        ref_spec = 'O3'
+        vars2use = GC_var(fam2use)
+        CopyVar = vars2use[0]
+        stoich = spec_stoich(CopyVar, ref_spec=ref_spec)
+        vars2use = GC_var(fam2use)
+        ds[prefix+fam2use] = ds[prefix+CopyVar].copy() * stoich
+        # Add dust nitrates if present.
+        for var in vars2use[1:]:
+            stoich = spec_stoich(var, ref_spec=ref_spec)
+            try:
+                ds[prefix+fam2use] = ds[prefix+fam2use] + ds[prefix+var]*stoich
+            except KeyError:
+                pass
+        # Copy and update attributes
+        attrs = ds[prefix+CopyVar].attrs
+        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        ds[prefix+fam2use].attrs = attrs
+
     else:
         print('TODO - setup family and stoich conversion for {}'.format(fam))
 
