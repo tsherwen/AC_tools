@@ -344,7 +344,7 @@ def get_loc(loc=None, rtn_dict=False, debug=False):
         'MAR': (27.48, -25.70, 1170),  # abrev. Marikana
         'Elandsfontein': (29.42, -26.25, 1750),
         'ELA': (29.42, -26.25, 1750),  # abrev. Elandsfontein
-        'BMW':  (64.75, 32.32, 53), # Tudor Hill Atmospheric observatory
+        'BMW':  (64.75, 32.32, 53),  #  Tudor Hill Atmospheric observatory
         # - Global GAW sites
         'ASK': (5.63, 23.27, 2710.0000000000005),
         'BRW': (-156.6, 71.32, 10.999999999999746),

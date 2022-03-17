@@ -483,11 +483,11 @@ def hPa_to_Km(input, reverse=False, debug=False):
 
 
 def km2hPa(input):
-    return np.exp( input / -7.6 ) * 1013.
+    return np.exp(input / -7.6) * 1013.
 
 
 def hPa2Km(input):
-    return -7.6 * np.log( input  / 1013. )
+    return -7.6 * np.log(input / 1013.)
 
 
 def km2nautical_miles(input):
