@@ -39,7 +39,7 @@ def get_day_fraction(date):
     return secs/dsecs
 
 
-def dt64_2_dt(dt64):
+def dt64_2_dt(dt64, RtnAsArray=True):
     """
     Convert numpy.datetime64 to datetime.datetime (assuming UTC )
 
@@ -52,7 +52,11 @@ def dt64_2_dt(dt64):
      - TODO: Convert this to work as a lamdba function for scalability
     """
     ns = 1e-9  # number of seconds in a nanosecond
-    return [datetime_.utcfromtimestamp(i.astype(int) * ns) for i in dt64]
+    dt = [datetime_.utcfromtimestamp(i.astype(int) * ns) for i in dt64]
+    if RtnAsArray:
+        return np.array(dt)
+    else:
+        return dt
 
 
 def nonISOdate2ISO(ds):
@@ -592,3 +596,14 @@ def solartime(observer, sun=None):
     # sidereal time == ra (right ascension) is the highest point (noon)
     hour_angle = observer.sidereal_time() - sun.ra
     return ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h
+
+
+
+def update_year(x, year=2017):
+    """
+    helper function to update years in pd.DataFrame index
+    """
+    timetuple = list(tuple(x.timetuple()))
+    timetuple[0] = year
+    return datetime.datetime(*timetuple[:7])
+
