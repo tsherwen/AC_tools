@@ -1220,9 +1220,10 @@ def get_stats4RunDict_as_df(RunDict=None,
                     loss *= StateMet['Met_AIRVOL'] * 1E6 / constants('AVG')
                     # mol/s-1 => g/s => Tg/s
                     loss *= species_mass(species2calc) / 1E12
-
+                    # sum over lat, lon, and lev... but not time
+                    loss = loss.sum(dim=['lat', 'lon', 'lev'])
                     # (e.g. years for CH4, NO2 in minutes ....)
-                    lifetime = burden / np.nansum(loss[PLvar].values)
+                    lifetime = burden / np.nanmean(loss[PLvar].values)
                     LifeimeInDays = ['CO', 'Ox', 'NOx', 'NO', 'NO2']
                     if (species2calc in LifeimeInDays):
                         lifetime = lifetime / 60/60/24
