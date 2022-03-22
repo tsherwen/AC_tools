@@ -1165,8 +1165,8 @@ def get_stats4RunDict_as_df(RunDict=None,
                     df.loc[SaveVar, key] = loss
                 # Include net chemical production
                 SaveVar = '{} ({})'.format('POx-LOx', units)
-                LVar = '{} ({})'.format('Prod_Ox', units)
-                PVar = '{} ({})'.format('Loss_Ox', units)
+                PVar = '{} ({})'.format('Prod_Ox', units)
+                LVar = '{} ({})'.format('Loss_Ox', units)
                 df.loc[SaveVar, key] = df.loc[PVar, key] - df.loc[LVar, key]
             except KeyError:
                 print('Key error whilst retrieving P/L diags for Ox')
