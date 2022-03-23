@@ -1774,3 +1774,106 @@ def GC_OHCO(A0, B0, C0, NUMDEN=1E4, TEMP=298.0, PRESS=1000.0):
     KCO2 = KLO2*0.6**FEXP2/(1.e+0+XYRAT2)
     KCO = KCO1+KCO2
     return KCO
+
+
+def GCJPLPR(A0=0.0, B0=0.0, C0=0.0, A1=0.0, B1=0.0, C1=0.0, FV=0.0, FCT1=0.0,
+            FCT2=0.0, NUMDEN=1E4, TEMP=298.0, PRESS=1000.0):
+    """
+    Reproduction of GEOS-Chem's KPP function GCJPLPR in Python
+
+    REAL(kind=dp) FUNCTION GCJPLPR(A0,B0,C0,A1,B1,C1,FV,FCT1,FCT2)
+    ! * PRESSURE-DEPENDENT EFFECTS
+    ! * ADD THE THIRD BODY EFFECT FOR PRESSURE DEPENDENCE OF RATE
+    ! * COEFFICIENTS.
+    ! A0 B0, & C0 are the Arrhenius parameters for the lower-limit
+    ! rate. A1, B1 & C1 are the upper-limit parameters.
+    ! FV is the falloff curve paramter, (SEE ATKINSON ET. AL (1992)
+    ! J. PHYS. CHEM. REF. DATA 21, P. 1145). USUALLY = 0.6
+    !
+    REAL A0,B0,C0,A1,B1,C1,FV,FCT1,FCT2
+    REAL FCT,XYRAT,BLOG,RLOW,RHIGH,FEXP
+
+    RLOW  = GCARR( A0,B0,C0 )*NUMDEN
+    RHIGH = GCARR( A1,B1,C1 )
+
+    IF     (FCT2.NE.0.) THEN
+         FCT            = EXP(-TEMP / FCT1) + EXP(-FCT2 / TEMP)
+         XYRAT          = RLOW/RHIGH
+         BLOG           = LOG10(XYRAT)
+         FEXP           = 1.e+0_dp / (1.e+0_dp + BLOG * BLOG)
+         GCJPLPR        = RLOW*FCT**FEXP/(1e+0_dp+XYRAT)
+    ELSEIF (FCT1.NE.0.) THEN
+         FCT            = EXP(-TEMP / FCT1)
+         XYRAT          = RLOW/RHIGH
+         BLOG           = LOG10(XYRAT)
+         FEXP           = 1.e+0_dp / (1.e+0_dp + BLOG * BLOG)
+         GCJPLPR        = RLOW*FCT**FEXP/(1e+0_dp+XYRAT)
+    ELSE
+         XYRAT          = RLOW/RHIGH
+         BLOG           = LOG10(XYRAT)
+         FEXP           = 1.e+0_dp / (1.e+0_dp + BLOG * BLOG)
+         GCJPLPR        = RLOW*FV**FEXP/(1e+0_dp+XYRAT)
+    ENDIF
+    """
+    RLOW  = GCARR( A0, B0, C0, TEMP=TEMP )*NUMDEN
+    RHIGH = GCARR( A1, B1, C1, TEMP=TEMP )
+
+    if (FCT2 != 0.0):
+         FCT            = np.exp(-TEMP / FCT1) + np.exp(-FCT2 / TEMP)
+         XYRAT          = RLOW / RHIGH
+         BLOG           = np.log10(XYRAT)
+         FEXP           = 1.0 / (1.0 + BLOG * BLOG)
+         k              = RLOW * FCT ** FEXP / (1.0 + XYRAT)
+    elif (FCT1 != 0.0):
+         FCT            = np.exp( -TEMP / FCT1 )
+         XYRAT          = RLOW / RHIGH
+         BLOG           = np.log10(XYRAT)
+         FEXP           = 1.0 / (1.0 + BLOG * BLOG)
+         k              = RLOW * FCT ** FEXP / (1.0 + XYRAT)
+    else:
+         XYRAT          = RLOW / RHIGH
+         BLOG           = np.log10( XYRAT )
+         FEXP           = 1.0 / (1.0 + BLOG * BLOG)
+         k              = RLOW * FV ** FEXP / (1.0 + XYRAT)
+    return k
+
+
+def GEOS_P(A0, B0, C0, A1, B1, C1, FCV, FCT1, FCT2,
+           Tstd=298., NUMDEN=1E4):
+    """
+    GEOS-Chem pressure dependent TROE falloff equation
+
+    if (FCT2 != 0.000000e+00):
+      CF = exp(-TEMP / FCT1) + exp(-FCT2 / TEMP)
+    elif (FCT1 != 0.000000e+00):
+      CF = exp(-TEMP / FCT1)
+    else:
+      CF = FCV
+
+    K0M = GEOS_STD(A0, B0, C0) * M
+
+    K1 = GEOS_STD(A1, B1, C1)
+    K1 = K0M / K1
+
+    return (K0M / (1.0 + K1))*   \
+           (CF)**(1.0 / (1.0 + (log10(K1))**2))
+
+    """
+    # REAL A0, B0, C0, A1, B1, C1 ,CF
+    # REAL FCV, FCT1, FCT2
+    # REAL(kind=dp) K0M, K1
+    INVTEMP = 1./Tstd
+    if (FCT2 != 0.000000e+00):
+        CF = exp(-Tstd / FCT1) + exp(-FCT2 * INVTEMP)
+    elif (FCT1 != 0.000000e+00):
+        CF = exp(-Tstd / FCT1)
+    else:
+        CF = FCV
+        #
+    K0M = GCARR(A0, B0, C0) * NUMDEN
+    # calculate K1
+    K1 = GCARR(A1, B1, C1)
+    K1 = K0M / K1
+    # Return the rates
+    return (K0M / (1.0 + K1)) *   \
+           (CF)**(1.0 / (1.0 + (np.log10(K1))**2))
