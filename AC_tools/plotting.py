@@ -141,7 +141,10 @@ def ds2zonal_plot(ds=None, var2plot=None, StateMet=None, AltVar='lev',
         ax = fig.add_subplot(1, 1, 1)
     # Calculate number of molecules
     MolecVar = 'Met_MOLCES'
-    StateMet = add_molec_den2ds(StateMet, MolecVar=MolecVar)
+    try:
+        StateMet[MolecVar]
+    except KeyError:
+        StateMet = add_molec_den2ds(StateMet, MolecVar=MolecVar)
     # Remove troposphere
     if rm_strat:
         ds2plot = rm_fractional_troposphere(ds[[var2plot]].copy(),
@@ -168,7 +171,7 @@ def ds2zonal_plot(ds=None, var2plot=None, StateMet=None, AltVar='lev',
     alt = np.array(ds2plot.lev.values)
     if debug:
         print('lat:', len(lat), lat.shape)
-        print('alt:', len(alt), lalton.shape)
+        print('alt:', len(alt), alt.shape)
         print('data:', ds2plot[var2plot].values.shape)
     im = ax.pcolor(lat, alt, ds2plot[var2plot].values, **kwargs)
 #    im = ds2plot[var2plot].plot.imshow(ax=ax, **kwargs)
