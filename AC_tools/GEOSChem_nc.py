@@ -1772,3 +1772,43 @@ def get_specieslist_from_input_geos(folder=None, filename='input.geos'):
 
     species = [i.split(':')[-1].strip() for i in species_lines]
     return species
+
+
+def get_GEOSChem_H2O(units='molec/cm3', wd=None, rm_strat=True,
+                     rtn_units=False, MolecVar='Met_MOLCES',
+                     MetH2OVar='Met_AVGW', NewH2OVar='H2O',
+                     StateMet=None):
+    """
+    Retrieve array of H2O from GEOS-Chem output
+    """
+    # Get StateMet object
+    if isinstance(StateMet, type(None)):
+        StateMet = AC.get_StateMet_ds(wd=wd)
+    # Get Water vapour in molecules/cm3
+    # NOTE: Butkovskaya used: 4 × 10E-17 molec cm-3 (∼50% relative humidity)
+    try:
+        StateMet[MolecVar]
+    except:
+        StateMet = AC.add_molec_den2ds(StateMet)
+    # Select molecules variables and Water vapor volume mixing ratio
+    ds = StateMet[[MolecVar, MetH2OVar]]
+    if rm_strat:
+        ds = AC.rm_fractional_troposphere(ds, vars2use=[MolecVar],
+                                          StateMet=StateMet)
+    ds[NewVar] = ds[MetH2OVar].copy()
+    attrs = ds[MetH2OVar].attrs
+    # Convert units
+    if (units == 'molec/cm3'):
+        ds[NewVar] = ds[NewVar] * ds[MolecVar]
+        long_name = '[Water vapour] calculated from H2O mixing ratio'
+        long_name += ' (w/r/t dry air) in {}'
+        attrs['long_name'] = long_name.format(units)
+        attrs['units'] = units
+        ds[MetH2OVar].attrs = attrs
+    else:
+        units = 'vol H2O/vol dry air'
+    # return the xr.dataset object
+    if rtn_units:
+        return {NewH2OVar:ds, 'units':units}
+    else:
+        return ds
