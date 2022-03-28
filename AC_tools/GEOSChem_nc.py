@@ -1795,11 +1795,11 @@ def get_GEOSChem_H2O(units='molec/cm3', wd=None, rm_strat=True,
     if rm_strat:
         ds = rm_fractional_troposphere(ds, vars2use=[MolecVar],
                                           StateMet=StateMet)
-    ds[NewVar] = ds[MetH2OVar].copy()
+    ds[NewH2OVar] = ds[MetH2OVar].copy()
     attrs = ds[MetH2OVar].attrs
     # Convert units
     if (units == 'molec/cm3'):
-        ds[NewVar] = ds[NewVar] * ds[MolecVar]
+        ds[NewH2OVar] = ds[NewH2OVar] * ds[MolecVar]
         long_name = '[Water vapour] calculated from H2O mixing ratio'
         long_name += ' (w/r/t dry air) in {}'
         attrs['long_name'] = long_name.format(units)
