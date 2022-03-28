@@ -1783,17 +1783,17 @@ def get_GEOSChem_H2O(units='molec/cm3', wd=None, rm_strat=True,
     """
     # Get StateMet object
     if isinstance(StateMet, type(None)):
-        StateMet = AC.get_StateMet_ds(wd=wd)
+        StateMet = get_StateMet_ds(wd=wd)
     # Get Water vapour in molecules/cm3
     # NOTE: Butkovskaya used: 4 × 10E-17 molec cm-3 (∼50% relative humidity)
     try:
         StateMet[MolecVar]
     except:
-        StateMet = AC.add_molec_den2ds(StateMet)
+        StateMet = add_molec_den2ds(StateMet)
     # Select molecules variables and Water vapor volume mixing ratio
     ds = StateMet[[MolecVar, MetH2OVar]]
     if rm_strat:
-        ds = AC.rm_fractional_troposphere(ds, vars2use=[MolecVar],
+        ds = rm_fractional_troposphere(ds, vars2use=[MolecVar],
                                           StateMet=StateMet)
     ds[NewVar] = ds[MetH2OVar].copy()
     attrs = ds[MetH2OVar].attrs
