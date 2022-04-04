@@ -2246,7 +2246,7 @@ def close_plot():
 
 
 def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'],
-              tight=False, dpi=320):
+              dpi=320, **kwargs):
     """
     Save a plot to disk
 
@@ -2255,14 +2255,16 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'],
     title (str): plot title
     location (str): String of directory to save output
     extensions (list):  List of strings of file extensions. (e.g. ['png'])
-    tight (bool): use tight layout - redundant?
 
     Returns
     -------
     (None)
+
+    Notes
+    -------
+     - kwargs (e.g. bbox_inches) passed to plt.savefig to control things like
+    "tight layout" approaches
     """
-    if tight:
-        plt.tight_layout()
     if not os.path.isdir(location):
         os.mkdir(location)
         logging.warning("Plotting location not found")
@@ -2270,7 +2272,7 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'],
 
     for extension in extensions:
         filename = os.path.join(location, title+"."+extension)
-        plt.savefig(filename, dpi=dpi)
+        plt.savefig(filename, dpi=dpi, **kwargs)
         logging.info("Plot saved to {location}".format(location=filename))
     return
 

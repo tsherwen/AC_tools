@@ -1036,6 +1036,7 @@ def get_stats4RunDict_as_df(RunDict=None,
     HOx_vars = ['HO2', 'OH', 'HOx']
     SCprefix = 'SpeciesConc_'
     CACsuffix = 'concAfterChem'
+    MolecVar = 'Met_MOLCES'
     prefix = SCprefix
     ALLSp = core_specs + extra_burden_specs + extra_surface_specs
     # Also add all families and specs in 'DiagVars' to this list
@@ -1071,7 +1072,6 @@ def get_stats4RunDict_as_df(RunDict=None,
         dsD[key] = ds
 
     # Get the StateMet object(s)
-    MolecVar = 'Met_MOLCES'
     dsS = {}
     if use_REF_wd4Met:
         # Set working directory for shared variables
@@ -1252,6 +1252,12 @@ def get_stats4RunDict_as_df(RunDict=None,
     prefix = SCprefix
     if (len(ratios2calc) >= 1):
         for key in RunDict.keys():
+            # Get StateMet object
+            if use_REF_wd4Met:
+                StateMet = dsS[RunDict_r[REF_wd]]
+            else:
+                StateMet = dsS[key]
+            # Loop by (already extracted) ratios calculations requested
             for var2calc in ratios2calc:
                 var1 = '{}{}'.format(prefix, var2calc.split(':')[0])
                 var2 = '{}{}'.format(prefix, var2calc.split(':')[-1])
@@ -1263,11 +1269,6 @@ def get_stats4RunDict_as_df(RunDict=None,
                 attrs = ds[var1].attrs
                 attrs['long_name'] = long_nameStr.format(var2calc, var1, var2)
                 dsD[key] = ds
-                # Get StateMet object
-                if use_REF_wd4Met:
-                    StateMet = dsS[RunDict_r[REF_wd]]
-                else:
-                    StateMet = dsS[key]
                 # Calculate molecular weighted values
                 avg = ds[[var2calc]] * StateMet[MolecVar]
                 # Only consider troposphere?
@@ -1337,17 +1338,30 @@ def get_stats4RunDict_as_df(RunDict=None,
     if IncConcAfterChemDiags:
         # Hardcore stast on HOx
         vars2use = HOx_vars
+        HO2var = '{}{}'.format('HO2', CACsuffix)
+        NewVar = '{}{}'.format('HOx', CACsuffix)
+        OHvar = '{}{}'.format('OH', CACsuffix)
         AttStr = '{} concentration immediately after chemistry'
         ErrStr = "Failed to include '{}' diagnostics in df output ('{}')"
         dsCC = {}
         for key in RunDict.keys():
+            # Get StateMet object
+            if use_REF_wd4Met:
+                StateMet = dsS[RunDict_r[REF_wd]]
+            else:
+                StateMet = dsS[key]
+            # Attempt to add in the HO2, OH, and HOx diagnostics
             try:
                 ds = GetConcAfterChemDataset(wd=RunDict[key],
                                              dates2use=dates2use)
+                # Convert HO2 into units of molec/cm (from v/v)
+                ds[HO2var] = ds[HO2var] * StateMet[MolecVar]
+                units = 'molec/cm3'
+                attrs['long_name'] = AttStr.format('HO2')
+                attrs['units'] = units
+                ds[HO2var].attrs = attrs
+
                 # Add family value of HOx into  dataset
-                NewVar = '{}{}'.format('HOx', CACsuffix)
-                OHvar = '{}{}'.format('OH', CACsuffix)
-                HO2var = '{}{}'.format('HO2', CACsuffix)
                 ds[NewVar] = ds[OHvar].copy()
                 ds[NewVar] = ds[OHvar] + ds[HO2var]
                 attrs = ds[OHvar].attrs
@@ -1360,8 +1374,8 @@ def get_stats4RunDict_as_df(RunDict=None,
                 ds = ds.rename(name_dict=dict(zip(OldVars, NewVars)))
                 dsCC[key] = ds
 
-#            except KeyError:
-            except:
+            except KeyError:
+#            except:
                 print(ErrStr.format(CACsuffix, key))
 
         # Include surface weighted values in core df
@@ -1513,172 +1527,6 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
                                  verbose=verbose,
                                  debug=debug)
 
-    return df
-
-    # - Define local variables
-    # Mass unit scaling
-    mass_scale = 1E3
-    mass_unit = 'Tg'
-    # Mixing ratio (v/v) scaling?
-    ppbv_unit = 'ppbv'
-    ppbv_scale = 1E9
-    pptv_unit = 'pptv'
-    pptv_scale = 1E12
-    # Setup lists and check for families (NOy, NIT-all, Iy, Cly, Bry, ... )
-    core_specs = ['O3',  'NO', 'NO2']
-    prefix = 'SpeciesConc_'
-    ALLSp = list(set(core_specs+extra_burden_specs+extra_surface_specs))
-    FamilyNames = GC_var('FamilyNames')
-    families2use = []
-    for FamilyName in FamilyNames:
-        if FamilyName in ALLSp:
-            families2use += [FamilyName]
-    if verbose or debug:
-        print(families2use)
-    # Core dataframe for storing calculated stats on runs
-    df = pd.DataFrame()
-    # - Get core data required
-    # Get all of the speciesConcs for runs as list of datasets
-    dsD = {}
-    for key in run_dict.keys():
-        ds = GetSpeciesConcDataset(wd=run_dict[key], dates2use=dates2use)
-        # Add families to Dataset
-        if len(families2use) >= 1:
-            for fam in families2use:
-                ds = AddChemicalFamily2Dataset(ds, fam=fam, prefix=prefix)
-        dsD[key] = ds
-    # - Get burdens for core species
-    avg_over_time = True  # Note: burdens area averaged overtime
-    specs2use = list(set(core_specs+['CO']+extra_burden_specs))
-    vars2use = [prefix+i for i in specs2use]
-    for key in run_dict.keys():
-        # Get StateMet object for 1st of the runs and use this for all runs
-        if use_REF_wd4Met:
-            # Set working directory for shared variables
-            if isinstance(REF_wd, type(None)):
-                REF_wd = run_dict[list(run_dict.keys())[0]]
-            StateMet = get_StateMet_ds(wd=REF_wd, dates2use=dates2use)
-        else:
-            StateMet = get_StateMet_ds(wd=run_dict[key], dates2use=dates2use)
-        # Average burden over time
-        ds = dsD[key]  # .mean(dim='time', keep_attrs=True)
-        S = get_Gg_trop_burden(ds, vars2use=vars2use, StateMet=StateMet,
-                               use_time_in_trop=use_time_in_trop,
-                               avg_over_time=avg_over_time,
-                               rm_strat=rm_strat,
-                               debug=debug)
-        # convert to ref spec equivalent (e.g. N for NO2, C for ACET)
-        for spec in specs2use:
-            ref_spec = get_ref_spec(spec)
-            val = S[prefix+spec]
-            S[prefix+spec] = val/species_mass(spec)*species_mass(ref_spec)
-        # Upate varnames
-        varnames = ['{} burden ({})'.format(i, mass_unit) for i in specs2use]
-        S = S.rename(index=dict(zip(list(S.index.values), varnames)))
-        # Save the values for run to central DataFrame
-        df[key] = S
-
-    # Transpose dataframe
-    df = df.T
-
-    # Scale units
-    for col_ in df.columns:
-        if 'Tg' in col_:
-            df.loc[:, col_] = df.loc[:, col_].values/mass_scale
-    # Transpose back to variables as index
-    df = df.T
-
-    # - Add Ozone production and loss...
-    # try and add prod los of ozone if available
-
-#    if 'POX' [i.lower() for i in DiagVars]:
-#        pass
-
-    # - Add lightning source if in HEMCO output
-#     var2use = 'EmisNO_Lightning'
-#     varName = 'Lightning (Tg N/yr)'
-#     try:
-#     # TODO -  add check for HEMCO NetCDF files in the output folder
-# #    if True:
-#         dsH = {}
-#         for key in run_dict.keys():
-#             dsH[key] = get_HEMCO_diags_as_ds(wd=run_dict[key])
-#             ds = ds[key]
-#             val = (ds[var2use].mean(dim='time').sum(dim='lev') * ds['AREA'] )
-#             val2 = val.values.sum() * 60 * 60 * 24 * 365 # => /yr
-#             df.loc[key,varName] = val2*1E3/1E12
-#     except KeyError:
-#         pass
-#         df.loc[key,varName] = np.nan
-
-    # - Surface concentrations
-    specs2use = list(set(core_specs+['N2O5']+extra_surface_specs))
-    prefix = 'SpeciesConc_'
-    # Loop by run and get stats
-    for key in run_dict.keys():
-        if debug:
-            print(key)
-        ds = dsD[key].copy()
-        # Select surface and average over time
-        ds = ds.mean(dim='time')
-        ds = ds.isel(lev=ds.lev == ds.lev[0])
-        for spec in specs2use:
-            # Get units and scaling
-            units, scale = tra_unit(spec, scale=True)
-            # Surface ozone
-            varname = '{} surface ({})'.format(spec, units)
-            var = prefix+spec
-            # Save values on a per species basis to series
-            val = get_avg_2D_conc_of_X_weighted_by_Y(ds, Xvar=var, Yvar='AREA')
-            # Save calculated values to dataframe
-            df.loc[varname, key] = val
-
-    # Transpose dataframe
-    df = df.T
-    # Scale units
-    for col_ in df.columns:
-        if 'ppb' in col_:
-            df.loc[:, col_] = df.loc[:, col_].values*ppbv_scale
-        if 'ppt' in col_:
-            df.loc[:, col_] = df.loc[:, col_].values*pptv_scale
-
-    # - OH concentrations
-    if IncConcAfterChemDiags:
-        try:
-            pass
-        except:
-            pass
-
-    # - Add lifetime calculations for species
-    lifetimes2calc = [i for i in DiagVars if ('lifetime' in i.lower())]
-    if (lifetimes2calc >= 1):
-        for var2calc in lifetimes2calc:
-            species2calc = var2calc.split('lifetine')
-
-    # - Processing and save?
-    # Calculate % change from base case for each variable
-    if not isinstance(REF1, type(None)):
-        for col_ in df.columns:
-            pcent_var = col_+' (% vs. {})'.format(REF1)
-            df[pcent_var] = (df[col_]-df[col_][REF1]) / df[col_][REF1] * 100
-    if not isinstance(REF2, type(None)):
-        for col_ in df.columns:
-            pcent_var = col_+' (% vs. {})'.format(REF2)
-            df[pcent_var] = (df[col_]-df[col_][REF2]) / df[col_][REF2] * 100
-
-    # Transpose back to variables as index
-    df = df.T
-    # Re-order columns
-    df = df.reindex(sorted(df.columns), axis=1)
-    # Reorder index
-    df = df.T.reindex(sorted(df.T.columns), axis=1).T
-    # Now round the numbers
-    df = df.round(round)
-    # Save csv to disk
-    if save2csv:
-        csv_filename = '{}_summary_statistics{}.csv'.format(prefix, extra_str)
-        df.to_csv(csv_filename)
-    # Return the DataFrame too
     return df
 
 
