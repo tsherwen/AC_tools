@@ -1343,6 +1343,7 @@ def get_stats4RunDict_as_df(RunDict=None,
         OHvar = '{}{}'.format('OH', CACsuffix)
         AttStr = '{} concentration immediately after chemistry'
         ErrStr = "Failed to include '{}' diagnostics in df output ('{}')"
+        units = 'molec/cm3'
         dsCC = {}
         for key in RunDict.keys():
             # Get StateMet object
@@ -1355,19 +1356,22 @@ def get_stats4RunDict_as_df(RunDict=None,
                 ds = GetConcAfterChemDataset(wd=RunDict[key],
                                              dates2use=dates2use)
                 # Convert HO2 into units of molec/cm (from v/v)
-                ds[HO2var] = ds[HO2var] * StateMet[MolecVar]
-                units = 'molec/cm3'
-                attrs['long_name'] = AttStr.format('HO2')
-                attrs['units'] = units
-                ds[HO2var].attrs = attrs
+#                 attrs = ds[HO2var].attrs.copy()
+#                 ds[HO2var] = ds[HO2var] * StateMet[MolecVar]
+#                 units = 'molec/cm3'
+#                 attrs['long_name'] = AttStr.format('HO2')
+#                 attrs['units'] = units
+#                 ds[HO2var].attrs = attrs
 
                 # Add family value of HOx into  dataset
-                ds[NewVar] = ds[OHvar].copy()
-                ds[NewVar] = ds[OHvar] + ds[HO2var]
-                attrs = ds[OHvar].attrs
-                attrs['long_name'] = AttStr.format('HOx')
-                units = attrs['units']
-                ds[NewVar].attrs = attrs
+#                 ds[NewVar] = ds[OHvar].copy()
+#                 ds[NewVar] = ds[OHvar] + ds[HO2var]
+#                 attrs = ds[OHvar].attrs.copy()
+#                 attrs['long_name'] = AttStr.format('HOx')
+#                 units = attrs['units']
+#                 ds[NewVar].attrs = attrs
+                ds = add_HOx_to_CAC_ds(ds, UpdateHO2units=True,
+                                       StateMet=StateMet, units=units)
                 # rename to drop suffix
                 OldVars = [i for i in ds.data_vars if CACsuffix in i]
                 NewVars = [i.split(CACsuffix)[0] for i in OldVars]
@@ -1660,3 +1664,46 @@ def get_GEOSChem_H2O(units='molec/cm3', wd=None, rm_strat=True,
         return {NewH2OVar:ds, 'units':units}
     else:
         return ds
+
+
+def add_HOx_to_CAC_ds(ds, StateMet=None, MolecVar='Met_MOLCES',
+                      units='molec/cm3', UpdateHO2units=True):
+    """
+    Add HOx family to ConcAfterChem xr.Dataset (update HO2 units too)
+    """
+    # Setup variable names
+    CACsuffix = 'concAfterChem'
+    HO2var = '{}{}'.format('HO2', CACsuffix)
+    HO2varMolecCm3 = '{}{}{}'.format('HO2', CACsuffix, '_MolecCm3')
+    HOxVar = '{}{}'.format('HOx', CACsuffix)
+    OHvar = '{}{}'.format('OH', CACsuffix)
+    AttStr = '{} concentration immediately after chemistry'
+
+    # Ensure the molecule density is in the StateMet object
+    try:
+        StateMet[MolecVar]
+    except:
+        StateMet = add_molec_den2ds(StateMet)
+
+    # Convert HO2 into units of molec/cm (from v/v)
+    attrs = ds[HO2var].attrs.copy()
+    ds[HO2varMolecCm3] = ds[HO2var] * StateMet[MolecVar]
+    units = 'molec/cm3'
+    attrs['long_name'] = AttStr.format('HO2')
+    attrs['units'] = units
+    ds[HO2varMolecCm3].attrs = attrs
+
+    # Add family value of HOx into  dataset
+    ds[HOxVar] = ds[OHvar].copy()
+    ds[HOxVar] = ds[OHvar] + ds[HO2varMolecCm3]
+    attrs = ds[OHvar].attrs.copy()
+    attrs['long_name'] = AttStr.format('HOx')
+    units = attrs['units']
+    ds[HOxVar].attrs = attrs
+
+    # Update the returned HO2 units?
+    if UpdateHO2units:
+        ds[HO2var] = ds[HO2varMolecCm3].copy()
+    del ds[HO2varMolecCm3]
+
+    return ds
