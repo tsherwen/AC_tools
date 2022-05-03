@@ -795,10 +795,15 @@ def get_HEMCO_ds_summary_stats_Gg_yr(ds, vars2use=None, ref_spec=None):
     return df
 
 
-def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
+def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
+                              LongNameStr=None):
     """
     Add a variable to dataset for a chemical family (e.g. NOy, NOx...)
     """
+    # Setup string for new long_name attribute in xr.Dataset
+    if isinstance(LongNameStr, type(None)):
+        LongNameStr = 'Dry mixing ratio of species {}'
+    # Select requested family and add to xr.Dataset
     if fam == 'NOx':
         fam2use = 'NOx'
         CopyVar = 'NO'
@@ -806,7 +811,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
         ds[prefix+fam2use] = ds[prefix+fam2use] + ds[prefix+'NO2']
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     elif fam == 'NOy':
@@ -824,7 +829,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
                 pass
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     elif fam == 'NOy-gas':
@@ -840,7 +845,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
                 pass
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     elif fam == 'NIT-all':
@@ -857,7 +862,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
                 pass
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     elif fam == 'SO4-all':
@@ -874,7 +879,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
                 pass
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     elif fam == 'SOx':
@@ -891,7 +896,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
                 pass
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     elif fam == 'Cly':
@@ -911,7 +916,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
                 pass
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     elif fam == 'Bry':
@@ -931,7 +936,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
                 pass
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     elif fam == 'Iy':
@@ -951,7 +956,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
                 pass
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     elif fam == 'Ox':
@@ -971,7 +976,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
                 pass
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     else:
