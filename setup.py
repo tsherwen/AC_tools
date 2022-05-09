@@ -16,17 +16,15 @@ if on_rtd:
     INSTALL_REQUIRES = []
 else:
     INSTALL_REQUIRES = [
-        'affine',
         'cartopy',
-        'geopandas',
         'matplotlib',
         'netcdf4',
         'numpy',
         'pandas',
         'pytest',
-        'rasterio',
         'scipy',
-        'xarray'
+        'xarray',
+        'pyyaml',
     ]
 
 CLASSIFIERS = [

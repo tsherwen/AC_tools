@@ -25,12 +25,19 @@ from math import radians, sin, cos, asin, sqrt, pi, atan2
 try:
     import geopandas
 except ImportError:
-    print('WARNING: failed to import geopandas')
+    print("WARNING: failed to import Python module 'geopandas'")
 try:
     from rasterio import features
 except ImportError:
-    print('WARNING: failed to import rasterio')
-from affine import Affine
+    print("WARNING: failed to import Python module 'rasterio'")
+try:
+    from affine import Affine
+except ImportError:
+    print("WARNING: failed to import Python module 'affine'")
+try:
+    import xesmf as xe
+except ImportError:
+    print("WARNING: failed to import Python module 'xesmf'")
 
 # The below imports need to be updated,
 # imports should be specific and in individual functions
@@ -141,7 +148,6 @@ def regrid2coarse_res(dsA, res='2x2.5', method='bilinear'):
     """
     Regrid a high resolution dataset to a lower resolution (e.g. 2x2.5)
     """
-    import xesmf as xe
     # Hard code this for now
     grid2use = {
         '2x2.5': '2x2.5_deg_centre_GEOSChem',
