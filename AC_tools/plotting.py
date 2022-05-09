@@ -92,9 +92,11 @@ def quick_map_plot(ds, var2plot=None, extra_str='', projection=ccrs.Robinson,
         max_ = float(ds[var2plot].values.max())
         print(Pstr.format(var2plot, min_, max_))
     # Call plot via imshow...
+    print( ds['lon'], '!!!!!' )
     im = ds[var2plot].plot.imshow(x=LonVar, y=LatVar, ax=ax,
                                   transform=ccrs.PlateCarree(),
                                   **kwargs)
+    print( ds['lon'] )
     # Beautify the figure/plot
     ax.coastlines()
     if set_global:
