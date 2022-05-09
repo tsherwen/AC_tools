@@ -413,7 +413,7 @@ def GetSpeciesConcDataset(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
 
 
 def GetConcAfterChemDataset(file_str='GEOSChem.ConcAfterChem.*.nc4', wd=None,
-                           dates2use=None):
+                            dates2use=None):
     """
     Wrapper to retrive GEOSChem ConcAfterChem NetCDFs as a xr.dataset
 
@@ -794,10 +794,16 @@ def get_HEMCO_ds_summary_stats_Gg_yr(ds, vars2use=None, ref_spec=None):
     return df
 
 
-def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
+
+def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
+                              LongNameStr=None):
     """
     Add a variable to dataset for a chemical family (e.g. NOy, NOx...)
     """
+    # Setup string for new long_name attribute in xr.Dataset
+    if isinstance(LongNameStr, type(None)):
+        LongNameStr = 'Dry mixing ratio of species {}'
+    # Select requested family and add to xr.Dataset
     if fam == 'NOx':
         fam2use = 'NOx'
         CopyVar = 'NO'
@@ -805,7 +811,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
         ds[prefix+fam2use] = ds[prefix+fam2use] + ds[prefix+'NO2']
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     elif fam == 'NOy':
@@ -823,7 +829,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
                 pass
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     elif fam == 'NOy-gas':
@@ -839,7 +845,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
                 pass
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     elif fam == 'NIT-all':
@@ -856,7 +862,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
                 pass
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     elif fam == 'SO4-all':
@@ -873,7 +879,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
                 pass
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     elif fam == 'SOx':
@@ -890,7 +896,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
                 pass
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     elif fam == 'Cly':
@@ -910,7 +916,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
                 pass
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     elif fam == 'Bry':
@@ -930,7 +936,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
                 pass
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     elif fam == 'Iy':
@@ -950,7 +956,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
                 pass
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     elif fam == 'Ox':
@@ -970,7 +976,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_'):
                 pass
         # Copy and update attributes
         attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = 'Dry mixing ratio of species {}'.format(fam2use)
+        attrs['long_name'] = LongNameStr.format(fam2use)
         ds[prefix+fam2use].attrs = attrs
 
     else:
@@ -1035,6 +1041,7 @@ def get_stats4RunDict_as_df(RunDict=None,
     HOx_vars = ['HO2', 'OH', 'HOx']
     SCprefix = 'SpeciesConc_'
     CACsuffix = 'concAfterChem'
+    MolecVar = 'Met_MOLCES'
     prefix = SCprefix
     ALLSp = core_specs + extra_burden_specs + extra_surface_specs
     # Also add all families and specs in 'DiagVars' to this list
@@ -1488,7 +1495,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     ----------
      - See get_stats4RunDict_as_df for documentation
     """
-    # TODO: unpdate below to just pass kwargs?
+    # TODO: update below to just pass kwargs?
     df = get_stats4RunDict_as_df(RunDict=run_dict,
                                  extra_str=extra_str,
                                  REF1=REF1,
@@ -1511,175 +1518,6 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
                                  verbose=verbose,
                                  debug=debug)
 
-    return df
-
-
-    # - Define local variables
-    # Mass unit scaling
-    mass_scale = 1E3
-    mass_unit = 'Tg'
-    # Mixing ratio (v/v) scaling?
-    ppbv_unit = 'ppbv'
-    ppbv_scale = 1E9
-    pptv_unit = 'pptv'
-    pptv_scale = 1E12
-    # Setup lists and check for families (NOy, NIT-all, Iy, Cly, Bry, ... )
-    core_specs = ['O3',  'NO', 'NO2']
-    prefix = 'SpeciesConc_'
-    ALLSp = list(set(core_specs+extra_burden_specs+extra_surface_specs))
-    FamilyNames = GC_var('FamilyNames')
-    families2use = []
-    for FamilyName in FamilyNames:
-        if FamilyName in ALLSp:
-            families2use += [FamilyName]
-    if verbose or debug:
-        print(families2use)
-    # Core dataframe for storing calculated stats on runs
-    df = pd.DataFrame()
-    # - Get core data required
-    # Get all of the speciesConcs for runs as list of datasets
-    dsD = {}
-    for key in run_dict.keys():
-        ds = GetSpeciesConcDataset(wd=run_dict[key], dates2use=dates2use)
-        # Add families to Dataset
-        if len(families2use) >= 1:
-            for fam in families2use:
-                ds = AddChemicalFamily2Dataset(ds, fam=fam, prefix=prefix)
-        dsD[key] = ds
-    # - Get burdens for core species
-    avg_over_time = True  # Note: burdens area averaged overtime
-    specs2use = list(set(core_specs+['CO']+extra_burden_specs))
-    vars2use = [prefix+i for i in specs2use]
-    for key in run_dict.keys():
-        # Get StateMet object for 1st of the runs and use this for all runs
-        if use_REF_wd4Met:
-            # Set working directory for shared variables
-            if isinstance(REF_wd, type(None)):
-                REF_wd = run_dict[list(run_dict.keys())[0]]
-            StateMet = get_StateMet_ds(wd=REF_wd, dates2use=dates2use)
-        else:
-            StateMet = get_StateMet_ds(wd=run_dict[key], dates2use=dates2use)
-        # Average burden over time
-        ds = dsD[key]  # .mean(dim='time', keep_attrs=True)
-        S = get_Gg_trop_burden(ds, vars2use=vars2use, StateMet=StateMet,
-                               use_time_in_trop=use_time_in_trop,
-                               avg_over_time=avg_over_time,
-                               rm_strat=rm_strat,
-                               debug=debug)
-        # convert to ref spec equivalent (e.g. N for NO2, C for ACET)
-        for spec in specs2use:
-            ref_spec = get_ref_spec(spec)
-            val = S[prefix+spec]
-            S[prefix+spec] = val/species_mass(spec)*species_mass(ref_spec)
-        # Upate varnames
-        varnames = ['{} burden ({})'.format(i, mass_unit) for i in specs2use]
-        S = S.rename(index=dict(zip(list(S.index.values), varnames)))
-        # Save the values for run to central DataFrame
-        df[key] = S
-
-    # Transpose dataframe
-    df = df.T
-
-    # Scale units
-    for col_ in df.columns:
-        if 'Tg' in col_:
-            df.loc[:, col_] = df.loc[:, col_].values/mass_scale
-    # Transpose back to variables as index
-    df = df.T
-
-    # - Add Ozone production and loss...
-    # try and add prod los of ozone if available
-
-#    if 'POX' [i.lower() for i in DiagVars]:
-#        pass
-
-    # - Add lightning source if in HEMCO output
-#     var2use = 'EmisNO_Lightning'
-#     varName = 'Lightning (Tg N/yr)'
-#     try:
-#     # TODO -  add check for HEMCO NetCDF files in the output folder
-# #    if True:
-#         dsH = {}
-#         for key in run_dict.keys():
-#             dsH[key] = get_HEMCO_diags_as_ds(wd=run_dict[key])
-#             ds = ds[key]
-#             val = (ds[var2use].mean(dim='time').sum(dim='lev') * ds['AREA'] )
-#             val2 = val.values.sum() * 60 * 60 * 24 * 365 # => /yr
-#             df.loc[key,varName] = val2*1E3/1E12
-#     except KeyError:
-#         pass
-#         df.loc[key,varName] = np.nan
-
-    # - Surface concentrations
-    specs2use = list(set(core_specs+['N2O5']+extra_surface_specs))
-    prefix = 'SpeciesConc_'
-    # Loop by run and get stats
-    for key in run_dict.keys():
-        if debug:
-            print(key)
-        ds = dsD[key].copy()
-        # Select surface and average over time
-        ds = ds.mean(dim='time')
-        ds = ds.isel(lev=ds.lev == ds.lev[0])
-        for spec in specs2use:
-            # Get units and scaling
-            units, scale = tra_unit(spec, scale=True)
-            # Surface ozone
-            varname = '{} surface ({})'.format(spec, units)
-            var = prefix+spec
-            # Save values on a per species basis to series
-            val = get_avg_2D_conc_of_X_weighted_by_Y(ds, Xvar=var, Yvar='AREA')
-            # Save calculated values to dataframe
-            df.loc[varname, key] = val
-
-    # Transpose dataframe
-    df = df.T
-    # Scale units
-    for col_ in df.columns:
-        if 'ppb' in col_:
-            df.loc[:, col_] = df.loc[:, col_].values*ppbv_scale
-        if 'ppt' in col_:
-            df.loc[:, col_] = df.loc[:, col_].values*pptv_scale
-
-    # - OH concentrations
-    if IncConcAfterChemDiags:
-        try:
-            pass
-        except:
-            pass
-
-    # - Add lifetime calculations for species
-    lifetimes2calc = [i for i in DiagVars if ('lifetime' in i.lower())]
-    if (lifetimes2calc >= 1):
-        for var2calc in lifetimes2calc:
-            species2calc = var2calc.split('lifetine')
-
-
-
-    # - Processing and save?
-    # Calculate % change from base case for each variable
-    if not isinstance(REF1, type(None)):
-        for col_ in df.columns:
-            pcent_var = col_+' (% vs. {})'.format(REF1)
-            df[pcent_var] = (df[col_]-df[col_][REF1]) / df[col_][REF1] * 100
-    if not isinstance(REF2, type(None)):
-        for col_ in df.columns:
-            pcent_var = col_+' (% vs. {})'.format(REF2)
-            df[pcent_var] = (df[col_]-df[col_][REF2]) / df[col_][REF2] * 100
-
-    # Transpose back to variables as index
-    df = df.T
-    # Re-order columns
-    df = df.reindex(sorted(df.columns), axis=1)
-    # Reorder index
-    df = df.T.reindex(sorted(df.T.columns), axis=1).T
-    # Now round the numbers
-    df = df.round(round)
-    # Save csv to disk
-    if save2csv:
-        csv_filename = '{}_summary_statistics{}.csv'.format(prefix, extra_str)
-        df.to_csv(csv_filename)
-    # Return the DataFrame too
     return df
 
 
@@ -1773,3 +1611,86 @@ def get_specieslist_from_input_geos(folder=None, filename='input.geos'):
 
     species = [i.split(':')[-1].strip() for i in species_lines]
     return species
+
+
+def get_GEOSChem_H2O(units='molec/cm3', wd=None, rm_strat=True,
+                     rtn_units=False, MolecVar='Met_MOLCES',
+                     MetH2OVar='Met_AVGW', NewH2OVar='H2O',
+                     StateMet=None):
+    """
+    Retrieve array of H2O from GEOS-Chem output
+    """
+    # Get StateMet object
+    if isinstance(StateMet, type(None)):
+        StateMet = get_StateMet_ds(wd=wd)
+    # Get Water vapour in molecules/cm3
+    # NOTE: Butkovskaya used: 4 × 10E-17 molec cm-3 (∼50% relative humidity)
+    try:
+        StateMet[MolecVar]
+    except:
+        StateMet = add_molec_den2ds(StateMet)
+    # Select molecules variables and Water vapor volume mixing ratio
+    ds = StateMet[[MolecVar, MetH2OVar]]
+    if rm_strat:
+        ds = rm_fractional_troposphere(ds, vars2use=[MolecVar],
+                                          StateMet=StateMet)
+    ds[NewH2OVar] = ds[MetH2OVar].copy()
+    attrs = ds[MetH2OVar].attrs
+    # Convert units
+    if (units == 'molec/cm3'):
+        ds[NewH2OVar] = ds[NewH2OVar] * ds[MolecVar]
+        long_name = '[Water vapour] calculated from H2O mixing ratio'
+        long_name += ' (w/r/t dry air) in {}'
+        attrs['long_name'] = long_name.format(units)
+        attrs['units'] = units
+        ds[MetH2OVar].attrs = attrs
+    else:
+        units = 'vol H2O/vol dry air'
+    # return the xr.dataset object
+    if rtn_units:
+        return {NewH2OVar:ds, 'units':units}
+    else:
+        return ds
+
+
+def add_HOx_to_CAC_ds(ds, StateMet=None, MolecVar='Met_MOLCES',
+                      units='molec/cm3', UpdateHO2units=True):
+    """
+    Add HOx family to ConcAfterChem xr.Dataset (update HO2 units too)
+    """
+    # Setup variable names
+    CACsuffix = 'concAfterChem'
+    HO2var = '{}{}'.format('HO2', CACsuffix)
+    HO2varMolecCm3 = '{}{}{}'.format('HO2', CACsuffix, '_MolecCm3')
+    HOxVar = '{}{}'.format('HOx', CACsuffix)
+    OHvar = '{}{}'.format('OH', CACsuffix)
+    AttStr = '{} concentration immediately after chemistry'
+
+    # Ensure the molecule density is in the StateMet object
+    try:
+        StateMet[MolecVar]
+    except:
+        StateMet = add_molec_den2ds(StateMet)
+
+    # Convert HO2 into units of molec/cm (from v/v)
+    attrs = ds[HO2var].attrs.copy()
+    ds[HO2varMolecCm3] = ds[HO2var] * StateMet[MolecVar]
+    units = 'molec/cm3'
+    attrs['long_name'] = AttStr.format('HO2')
+    attrs['units'] = units
+    ds[HO2varMolecCm3].attrs = attrs
+
+    # Add family value of HOx into  dataset
+    ds[HOxVar] = ds[OHvar].copy()
+    ds[HOxVar] = ds[OHvar] + ds[HO2varMolecCm3]
+    attrs = ds[OHvar].attrs.copy()
+    attrs['long_name'] = AttStr.format('HOx')
+    units = attrs['units']
+    ds[HOxVar].attrs = attrs
+
+    # Update the returned HO2 units?
+    if UpdateHO2units:
+        ds[HO2var] = ds[HO2varMolecCm3].copy()
+    del ds[HO2varMolecCm3]
+
+    return ds

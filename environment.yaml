@@ -1,18 +1,14 @@
-name: ac_tools
+name: ac_tools_py3_7_base_TESTv2
 channels:
     - defaults
 dependencies:
     - python=3.7
-    - affine
     - cartopy
-    - geopandas
-    - geos
     - matplotlib
     - netcdf4
     - numpy
     - pandas
-    - proj4
     - pytest
-    - rasterio
     - scipy
+    - pyyaml
     - xarray

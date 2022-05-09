@@ -598,7 +598,6 @@ def solartime(observer, sun=None):
     return ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h
 
 
-
 def update_year(x, year=2017):
     """
     helper function to update years in pd.DataFrame index
@@ -606,4 +605,3 @@ def update_year(x, year=2017):
     timetuple = list(tuple(x.timetuple()))
     timetuple[0] = year
     return datetime.datetime(*timetuple[:7])
-

@@ -4651,7 +4651,8 @@ def get_general_stats4run_dict_as_df_bpch(run_dict=None, extra_str='',
         # get arrrays
         ars = [get_trop_burden(spec=spec, t_p=t_p, wd=i,
                                all_data=False, res=res).sum()
-                               for i in wds]
+               for i in wds]
+
         # convert to N equivalent
         ars = [i/species_mass(spec)*species_mass(ref_spec) for i in ars]
         df[varname] = ars

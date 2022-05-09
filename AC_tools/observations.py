@@ -1,17 +1,20 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-Functions for use with atmospheric observations (e.g. from FAAM BAE146 aircraft)  
+Functions for use with atmospheric observations (e.g. from FAAM BAE146 aircraft)
 
 Use help(<name of function>) to get details on a particular function.
 """
-from bs4 import BeautifulSoup
-import requests
+#from bs4 import BeautifulSoup
+#import requests
 import re
-import wget
+#import wget
 import urllib
 import json
-
+try:
+    import requests
+except ImportError:
+    print("WARNING: failed to import Python module 'requests'")
 
 def get_FAAM_locations_as_df(flight_ID='C225'):
     """

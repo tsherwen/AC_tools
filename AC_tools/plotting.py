@@ -143,7 +143,10 @@ def ds2zonal_plot(ds=None, var2plot=None, StateMet=None, AltVar='lev',
         ax = fig.add_subplot(1, 1, 1)
     # Calculate number of molecules
     MolecVar = 'Met_MOLCES'
-    StateMet = add_molec_den2ds(StateMet, MolecVar=MolecVar)
+    try:
+        StateMet[MolecVar]
+    except KeyError:
+        StateMet = add_molec_den2ds(StateMet, MolecVar=MolecVar)
     # Remove troposphere
     if rm_strat:
         ds2plot = rm_fractional_troposphere(ds[[var2plot]].copy(),
@@ -170,7 +173,7 @@ def ds2zonal_plot(ds=None, var2plot=None, StateMet=None, AltVar='lev',
     alt = np.array(ds2plot.lev.values)
     if debug:
         print('lat:', len(lat), lat.shape)
-        print('alt:', len(alt), lalton.shape)
+        print('alt:', len(alt), alt.shape)
         print('data:', ds2plot[var2plot].values.shape)
     im = ax.pcolor(lat, alt, ds2plot[var2plot].values, **kwargs)
 #    im = ds2plot[var2plot].plot.imshow(ax=ax, **kwargs)
@@ -2245,7 +2248,7 @@ def close_plot():
 
 
 def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'],
-              tight=False, dpi=320):
+              dpi=320, **kwargs):
     """
     Save a plot to disk
 
@@ -2254,14 +2257,16 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'],
     title (str): plot title
     location (str): String of directory to save output
     extensions (list):  List of strings of file extensions. (e.g. ['png'])
-    tight (bool): use tight layout - redundant?
 
     Returns
     -------
     (None)
+
+    Notes
+    -------
+     - kwargs (e.g. bbox_inches) passed to plt.savefig to control things like
+    "tight layout" approaches
     """
-    if tight:
-        plt.tight_layout()
     if not os.path.isdir(location):
         os.mkdir(location)
         logging.warning("Plotting location not found")
@@ -2269,7 +2274,7 @@ def save_plot(title="myplot", location=os.getcwd(),  extensions=['png'],
 
     for extension in extensions:
         filename = os.path.join(location, title+"."+extension)
-        plt.savefig(filename, dpi=dpi)
+        plt.savefig(filename, dpi=dpi, **kwargs)
         logging.info("Plot saved to {location}".format(location=filename))
     return
 

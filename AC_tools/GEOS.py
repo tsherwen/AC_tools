@@ -15,13 +15,9 @@ import sys
 import re
 import glob
 import logging
-import wget
-import requests
 import pandas as pd
 import xarray as xr
-import xesmf as xe
 from netCDF4 import Dataset
-from bs4 import BeautifulSoup
 # Math/Analysis
 import numpy as np
 from time import mktime
@@ -42,6 +38,24 @@ from .AC_time import *
 from .planeflight import prt_PlaneFlight_files_v12_plus
 #from .variables import *
 #from .bpch2netCDF import convert_to_netCDF
+
+# Optional inports
+try:
+    import xesmf as xe
+except ImportError:
+    print("WARNING: failed to import Python module 'xesmf'")
+try:
+    import wget
+except ImportError:
+    print("WARNING: failed to import Python module 'wget'")
+try:
+    import requests
+except ImportError:
+    print("WARNING: failed to import Python module 'requests'")
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    print("WARNING: failed to import Python module 'BeautifulSoup'")
 
 
 def get_GEOSCF_as_ds_via_OPeNDAP(collection='chm_inst_1hr_g1440x721_p23',
