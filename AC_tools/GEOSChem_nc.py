@@ -89,7 +89,6 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
         else:
             format = '%Y%m%d_%H%Mz'
         # Setup a helper function to extract dates from file strings
-
         def get_date_from_filename(x, format=format):
             """
             Extract Dates from filenames
@@ -795,6 +794,7 @@ def get_HEMCO_ds_summary_stats_Gg_yr(ds, vars2use=None, ref_spec=None):
     return df
 
 
+
 def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
                               LongNameStr=None):
     """
@@ -1077,6 +1077,7 @@ def get_stats4RunDict_as_df(RunDict=None,
         dsD[key] = ds
 
     # Get the StateMet object(s)
+    MolecVar = 'Met_MOLCES'
     dsS = {}
     if use_REF_wd4Met:
         # Set working directory for shared variables
@@ -1150,8 +1151,8 @@ def get_stats4RunDict_as_df(RunDict=None,
                     # Loop by spec
                     if use_time_in_trop:
                         ds = rm_fractional_troposphere(ds,
-                                                       vars2use=vars2use,
-                                                       StateMet=StateMet)
+                                                        vars2use=vars2use,
+                                                        StateMet=StateMet)
                     else:
                         ds = ds[PLvar].where(trop_mask)
                 for var in vars2use:
@@ -1170,8 +1171,8 @@ def get_stats4RunDict_as_df(RunDict=None,
                     df.loc[SaveVar, key] = loss
                 # Include net chemical production
                 SaveVar = '{} ({})'.format('POx-LOx', units)
-                PVar = '{} ({})'.format('Prod_Ox', units)
-                LVar = '{} ({})'.format('Loss_Ox', units)
+                LVar = '{} ({})'.format('Prod_Ox', units)
+                PVar = '{} ({})'.format('Loss_Ox', units)
                 df.loc[SaveVar, key] = df.loc[PVar, key] - df.loc[LVar, key]
             except KeyError:
                 print('Key error whilst retrieving P/L diags for Ox')
@@ -1205,8 +1206,8 @@ def get_stats4RunDict_as_df(RunDict=None,
                         # Loop by spec
                         if use_time_in_trop:
                             ds = rm_fractional_troposphere(ds,
-                                                           vars2use=[PLvar],
-                                                           StateMet=StateMet)
+                                                            vars2use=[PLvar],
+                                                            StateMet=StateMet)
                         else:
                             ds = ds[PLvar].where(trop_mask)
                     loss = ds[[PLvar]]
@@ -1215,7 +1216,7 @@ def get_stats4RunDict_as_df(RunDict=None,
                         print('WARNING: Check units for tropospheric burden')
                     try:
                         BurdenVar = BurdenStr.format(species2calc, 'Tg')
-                        burden = df.loc[BurdenVar, key]
+                        burden = df.loc[ BurdenVar, key]
                     except KeyError:
                         ErrStr = 'WARNING: variable not found in df ({})'
                         print(ErrStr.format(BurdenVar))
@@ -1225,16 +1226,15 @@ def get_stats4RunDict_as_df(RunDict=None,
                     loss *= StateMet['Met_AIRVOL'] * 1E6 / constants('AVG')
                     # mol/s-1 => g/s => Tg/s
                     loss *= species_mass(species2calc) / 1E12
-                    # sum over lat, lon, and lev... but not time
-                    loss = loss.sum(dim=['lat', 'lon', 'lev'])
+
                     # (e.g. years for CH4, NO2 in minutes ....)
-                    lifetime = burden / np.nanmean(loss[PLvar].values)
+                    lifetime = burden / np.nansum( loss[PLvar].values )
                     LifeimeInDays = ['CO', 'Ox', 'NOx', 'NO', 'NO2']
                     if (species2calc in LifeimeInDays):
-                        lifetime = lifetime / 60/60/24
+                        lifetime = lifetime /60/60/24
                         units = 'days'
                     elif species2calc == 'CH4':
-                        lifetime = lifetime / 60/60/24/365
+                        lifetime = lifetime /60/60/24/365
                         units = 'years'
                     else:
                         units = 's'
@@ -1257,15 +1257,9 @@ def get_stats4RunDict_as_df(RunDict=None,
     prefix = SCprefix
     if (len(ratios2calc) >= 1):
         for key in RunDict.keys():
-            # Get StateMet object
-            if use_REF_wd4Met:
-                StateMet = dsS[RunDict_r[REF_wd]]
-            else:
-                StateMet = dsS[key]
-            # Loop by (already extracted) ratios calculations requested
             for var2calc in ratios2calc:
-                var1 = '{}{}'.format(prefix, var2calc.split(':')[0])
-                var2 = '{}{}'.format(prefix, var2calc.split(':')[-1])
+                var1 = '{}{}'.format(prefix, var2calc.split(':')[0] )
+                var2 = '{}{}'.format(prefix, var2calc.split(':')[-1] )
                 if verbose:
                     print(PtrStr.format(var2calc, var1, var2))
                 ds = dsD[key]
@@ -1274,6 +1268,11 @@ def get_stats4RunDict_as_df(RunDict=None,
                 attrs = ds[var1].attrs
                 attrs['long_name'] = long_nameStr.format(var2calc, var1, var2)
                 dsD[key] = ds
+                # Get StateMet object
+                if use_REF_wd4Met:
+                    StateMet = dsS[RunDict_r[REF_wd]]
+                else:
+                    StateMet = dsS[key]
                 # Calculate molecular weighted values
                 avg = ds[[var2calc]] * StateMet[MolecVar]
                 # Only consider troposphere?
@@ -1294,7 +1293,7 @@ def get_stats4RunDict_as_df(RunDict=None,
                 if debug:
                     print(avg)
                     print(avg[var2calc])
-                    print(avg[var2calc].values)
+                    print( avg[var2calc].values )
                 avg = avg[var2calc].values
                 if debug:
                     print(avg)
@@ -1343,55 +1342,38 @@ def get_stats4RunDict_as_df(RunDict=None,
     if IncConcAfterChemDiags:
         # Hardcore stast on HOx
         vars2use = HOx_vars
-        HO2var = '{}{}'.format('HO2', CACsuffix)
-        NewVar = '{}{}'.format('HOx', CACsuffix)
-        OHvar = '{}{}'.format('OH', CACsuffix)
         AttStr = '{} concentration immediately after chemistry'
         ErrStr = "Failed to include '{}' diagnostics in df output ('{}')"
-        units = 'molec/cm3'
         dsCC = {}
         for key in RunDict.keys():
-            # Get StateMet object
-            if use_REF_wd4Met:
-                StateMet = dsS[RunDict_r[REF_wd]]
-            else:
-                StateMet = dsS[key]
-            # Attempt to add in the HO2, OH, and HOx diagnostics
             try:
                 ds = GetConcAfterChemDataset(wd=RunDict[key],
                                              dates2use=dates2use)
-                # Convert HO2 into units of molec/cm (from v/v)
-#                 attrs = ds[HO2var].attrs.copy()
-#                 ds[HO2var] = ds[HO2var] * StateMet[MolecVar]
-#                 units = 'molec/cm3'
-#                 attrs['long_name'] = AttStr.format('HO2')
-#                 attrs['units'] = units
-#                 ds[HO2var].attrs = attrs
-
                 # Add family value of HOx into  dataset
-#                 ds[NewVar] = ds[OHvar].copy()
-#                 ds[NewVar] = ds[OHvar] + ds[HO2var]
-#                 attrs = ds[OHvar].attrs.copy()
-#                 attrs['long_name'] = AttStr.format('HOx')
-#                 units = attrs['units']
-#                 ds[NewVar].attrs = attrs
-                ds = add_HOx_to_CAC_ds(ds, UpdateHO2units=True,
-                                       StateMet=StateMet, units=units)
+                NewVar = '{}{}'.format('HOx', CACsuffix)
+                OHvar = '{}{}'.format('OH', CACsuffix)
+                HO2var = '{}{}'.format('HO2', CACsuffix)
+                ds[NewVar] = ds[OHvar].copy()
+                ds[NewVar] = ds[OHvar] +  ds[HO2var]
+                attrs = ds[OHvar].attrs
+                attrs['long_name'] = AttStr.format('HOx')
+                units = attrs['units']
+                ds[NewVar].attrs = attrs
                 # rename to drop suffix
-                OldVars = [i for i in ds.data_vars if CACsuffix in i]
+                OldVars = [i for i in  ds.data_vars if CACsuffix in i]
                 NewVars = [i.split(CACsuffix)[0] for i in OldVars]
                 ds = ds.rename(name_dict=dict(zip(OldVars, NewVars)))
                 dsCC[key] = ds
 
-            except KeyError:
-#            except:
+#            except KeyError:
+            except:
                 print(ErrStr.format(CACsuffix, key))
 
         # Include surface weighted values in core df
         for key in RunDict.keys():
             ds = dsCC[key].copy()
             #
-            ds = ds.isel(lev=(ds.lev == ds.lev[0])).mean(dim='time')
+            ds = ds.isel(lev=(ds.lev==ds.lev[0])).mean(dim='time')
             for var in vars2use:
                 varname = '{} surface ({})'.format(var, units)
                 # Save values on a per species basis to series
@@ -1431,7 +1413,7 @@ def get_stats4RunDict_as_df(RunDict=None,
                         # Loop by spec
                         if use_time_in_trop:
                             avg = rm_fractional_troposphere(avg,
-                                                            vars2use=[dsVar],
+                                                           vars2use=[dsVar],
                                                             StateMet=StateMet)
                         else:
                             avg = avg[dsVar].where(trop_mask)
@@ -1446,7 +1428,7 @@ def get_stats4RunDict_as_df(RunDict=None,
                 if debug:
                     print(avg)
                     print(avg[dsVar])
-                    print(avg[dsVar].values)
+                    print( avg[dsVar].values )
                 avg = avg[dsVar].values
                 if debug:
                     print(avg)
@@ -1513,7 +1495,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     ----------
      - See get_stats4RunDict_as_df for documentation
     """
-    # TODO: unpdate below to just pass kwargs?
+    # TODO: update below to just pass kwargs?
     df = get_stats4RunDict_as_df(RunDict=run_dict,
                                  extra_str=extra_str,
                                  REF1=REF1,
