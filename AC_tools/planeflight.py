@@ -40,14 +40,11 @@ def update_Planeflight_files(wd=None, num_tracers=103, verbose=True):
     """
     # --- Local variables
     output_data_str = 'Now give the times and locations of the flight'
-    #
-    met_vars = [
-        'GMAO_ABSH', 'GMAO_PSFC', 'GMAO_SURF', 'GMAO_TEMP', 'GMAO_UWND',
-        'GMAO_VWND'
-    ]
+    # Meteorological and aerosol variables
+    met_vars = get_MetAer_vars2use4PF()
     assert isinstance(num_tracers, int), 'num_tracers must be an integer'
     slist = ['TRA_{:0>3}'.format(i) for i in np.arange(1, num_tracers+1)]
-    species = ['OH', 'HO2']
+    species = get_Species_vars2use4PF()
     slist = slist + species + met_vars
 #    slist = pf_var( fill_var_with_zeroes=True, ver=ver )
 
@@ -154,12 +151,10 @@ def prt_PlaneFlight_files(df=None, LAT_var='LAT', LON_var='LON',
         endstr = '99999   END 00-00-0000 00:00    0.00    0.00    0.00'
     # Output a general list of species/tracers/met vars if not provided as arguments
     if isinstance(slist, type(None)):
-        met_vars = [
-            'GMAO_ABSH', 'GMAO_PSFC', 'GMAO_SURF', 'GMAO_TEMP', 'GMAO_UWND', 'GMAO_VWND'
-        ]
+        met_vars = get_MetAer_vars2use4PF()
         assert isinstance(num_tracers, int), 'num_tracers must be an integer'
         slist = ['TRA_{:0>3}'.format(i) for i in np.arange(1, num_tracers+1)]
-        species = ['OH', 'HO2']
+        species = get_Species_vars2use4PF()
         slist = slist + species + met_vars
     # Number of variables to output (needed for fortran read of *dat files)
     nvar = len(slist)
@@ -262,13 +257,10 @@ def prt_PlaneFlight_files_v12_plus(df=None, LAT_var='LAT', LON_var='LON',
         endstr = '99999   END  00-00-0000 00:00   0.00     0.00    0.00      0.00'
     # Output a general list of species/tracers/met vars if not provided as arguments
     if isinstance(slist, type(None)):
-        met_vars = [
-            'GMAO_ABSH', 'GMAO_PSFC', 'GMAO_SURF', 'GMAO_TEMP', 'GMAO_UWND',
-            'GMAO_VWND', 'GMAO_PRES'
-        ]
+        met_vars = get_MetAer_vars2use4PF()
         assert isinstance(num_tracers, int), 'num_tracers must be an integer'
         slist = ['TRA_{:0>3}'.format(i) for i in np.arange(1, num_tracers+1)]
-        species = ['OH', 'HO2']
+        species = get_Species_vars2use4PF()
         slist = slist + species + met_vars
         # Add list of reactions to extract too
         if len(rxn_nums) > 0:
@@ -519,7 +511,7 @@ def get_pf_data_from_NetCDF_table(ncfile=None, req_var='TRA_69', spec='IO',
 
 def mk_planeflight_input4FAAM_flight(folder=None, ds=None,
                                      flight_ID='C216',
-                                     folder4csv=None,
+#                                     folder4csv=None,
                                      PressVar="PS_RVSM",
                                      LonVar='LON_GIN',
                                      LatVar='LAT_GIN', TimeVar='Time',
@@ -593,3 +585,37 @@ def reprocess_split_pf_output_over_2_lines(folder, save_original_file=True):
             Newline = Str2use.format(first_part[n_line], second_part[n_line])
             print(Newline, file=a)
         a.close()
+
+
+def get_MetAer_vars2use4PF():
+    """
+    Retrieve a list of the Meterological/Aerosol PlaneFlight output variables
+
+    Notes
+    ---
+     - all detail on variables on the link below
+    http://wiki.seas.harvard.edu/geos-chem/index.php/Planeflight_diagnostic
+    """
+    met_vars = [
+        'GMAO_ABSH', 'GMAO_PSFC', 'GMAO_SURF', 'GMAO_TEMP', 'GMAO_PRES',
+        'GMAO_UWND', 'GMAO_VWND', 'GMAO_RELH', 'GMAO_AVGW',  'GMAO_THTA',
+        'GMAO_IIEV', 'GMAO_LLEV', 'GMAO_JJEV', 'TIME_LT',
+        'ISOR_HPLUS','ISOR_PH',
+        'AQAER_SURF', 'AQAER_RAD', 'ISOR_AH2O', 'ISOR_HSO4',
+        'AODC_SULF', 'AODC_BLKC', 'AODC_ORGC', 'AODC_SALA', 'AODC_SALC',
+        'AODC_DUST',
+    ]
+    return met_vars
+
+
+def get_Species_vars2use4PF():
+    """
+    Retrieve a list of the Meterological/Aerosol PlaneFlight output variables
+
+    Notes
+    ---
+     - all detail on variables on the link below
+    http://wiki.seas.harvard.edu/geos-chem/index.php/Planeflight_diagnostic
+    """
+    species = ['OH', 'HO2', 'RO2', 'NOy', 'AN']
+    return species
