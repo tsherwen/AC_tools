@@ -851,8 +851,8 @@ def mask_all_but(region='All', M_all=False, saizlopez=False,
 
     Notes
     -----
-    "unmask_all" yeilds completely unmasked array
-    function was oringialyl used to mulitple masks, however, this approch is
+    "unmask_all" yields completely unmasked array
+    function was originally used to mulitple masks, however, this approch is
     unpythonic and therefore reccomended against.
     """
     logging.info('mask_all_but called for region {}'.format(region))
@@ -872,19 +872,20 @@ def mask_all_but(region='All', M_all=False, saizlopez=False,
         'unmask_all': 4,
         'All': 4,
         'global': 4,
+        'Global': 4,
+        'Oceanic': 6,
+        'Ocean': 6,
+        'Ocean Tropics': 13,
+        'Oceanic Tropics': 13,
+        'Ocn. Trop.': 13,
         # NEED TESTING ...
         'Extratropics': 5,
         'Ex. Tropics': 5,
-        'Oceanic': 6,
-        'Ocean': 6,
         'NH': 7,
         'SH': 8,
         'Ice': 10,
         'Land': 11,
         'lat40_2_40': 12,
-        'Ocean Tropics': 13,
-        'Oceanic Tropics': 13,
-        'Ocn. Trop.': 13,
         'Land Tropics': 14,
         'All Sur.': 15,
         'surface': 15,
@@ -911,6 +912,9 @@ def mask_all_but(region='All', M_all=False, saizlopez=False,
         'loc': 30,
         'location': 30,
         'France': 31,
+        'CONUS': 32,
+        'Cape_Verde_Flying': 33,
+        'local_CVAO_area': 34,
     }[region]
 
     # --- This is a simple way of using masks ( as multiplers )
@@ -1079,6 +1083,42 @@ def mask_all_but(region='All', M_all=False, saizlopez=False,
         elif case == 31:  # Rough(!) France map
             # mask
             mask = get_France_unmasked(res=res)
+
+        elif case == 32:  # CONUS
+            lowerlat = 23
+            higherlat = 60
+            lowerlon = -125
+            higherlon = -54
+            # Get a mask for lat and lon range, then combine
+            mask1 = lat2lat_2D_unmasked(res=res, lowerlat=lowerlat,
+                                        higherlat=higherlat)
+            mask2 = lon2lon_2D_unmasked(res=res, lowerlon=lowerlon,
+                                        higherlon=higherlon)
+            mask = np.ma.mask_or(mask1, mask2)
+
+        elif case == 33:  # Cape_Verde_Flying
+            lowerlat = 11.9
+            higherlat = 21.1
+            lowerlon = -29.1
+            higherlon = -15.9
+            # Get a mask for lat and lon range, then combine
+            mask1 = lat2lat_2D_unmasked(res=res, lowerlat=lowerlat,
+                                        higherlat=higherlat)
+            mask2 = lon2lon_2D_unmasked(res=res, lowerlon=lowerlon,
+                                        higherlon=higherlon)
+            mask = np.ma.mask_or(mask1, mask2)
+
+        elif case == 34:  # local_CVAO_area
+            lowerlat = 0
+            higherlat = 25
+            lowerlon = -30
+            higherlon = -10
+            # Get a mask for lat and lon range, then combine
+            mask1 = lat2lat_2D_unmasked(res=res, lowerlat=lowerlat,
+                                        higherlat=higherlat)
+            mask2 = lon2lon_2D_unmasked(res=res, lowerlon=lowerlon,
+                                        higherlon=higherlon)
+            mask = np.ma.mask_or(mask1, mask2)
 
         else:
             print('WARNING - Mask not setup for case={}'.format(case))
