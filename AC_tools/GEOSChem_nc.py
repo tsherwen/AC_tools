@@ -1034,6 +1034,7 @@ def get_stats4RunDict_as_df(RunDict=None,
                             extra_burden_specs=[],
                             extra_surface_specs=[],
                             GC_version='v12.6.0',
+                            SaveFilePrefix=None,
                             DiagVars=[],
                             use_time_in_trop=True, rm_strat=True,
                             dates2use=None, round=3,
@@ -1175,6 +1176,7 @@ def get_stats4RunDict_as_df(RunDict=None,
     PLprefix = 'Loss'
     vars2use = ['Loss_Ox', 'Prod_Ox']
     if IncProdLossDiags:
+        ErrStr = "WARNING: Error retrieving P/L diags for Ox for '{}'"
         for key in RunDict.keys():
             try:
                 # Get StateMet object
@@ -1183,7 +1185,12 @@ def get_stats4RunDict_as_df(RunDict=None,
                 else:
                     StateMet = dsS[key]
                 # Retrieve Prod-loss diagnostics
-                ds = get_ProdLoss_ds(wd=RunDict[key], dates2use=dates2use)
+                try:
+                    ds = get_ProdLoss_ds(wd=RunDict[key], dates2use=dates2use)
+                except AssertionError:
+                    print(ErrStr.format(key))
+                    continue  # Continue here
+
                 # Only consider troposphere?
                 if rm_strat:
                     # Loop by spec
@@ -1213,7 +1220,7 @@ def get_stats4RunDict_as_df(RunDict=None,
                 LVar = '{} ({})'.format('Loss_Ox', units)
                 df.loc[SaveVar, key] = df.loc[PVar, key] - df.loc[LVar, key]
             except KeyError:
-                print('Key error whilst retrieving P/L diags for Ox')
+                print(ErrStr.format(key))
 
     # - Add lifetime calculations for species
     PtrStr1 = "Calculating lifetime for diag ('{}') for '{}' variable"
@@ -1386,7 +1393,7 @@ def get_stats4RunDict_as_df(RunDict=None,
         NewVar = '{}{}'.format('HOx', CACsuffix)
         OHvar = '{}{}'.format('OH', CACsuffix)
         AttStr = '{} concentration immediately after chemistry'
-        ErrStr = "Failed to include '{}' diagnostics in df output ('{}')"
+        ErrStr = "WARNING: Did not include '{}' diagnostics in output ('{}')"
         units = 'molec/cm3'
         dsCC = {}
         for key in RunDict.keys():
@@ -1399,21 +1406,8 @@ def get_stats4RunDict_as_df(RunDict=None,
             try:
                 ds = GetConcAfterChemDataset(wd=RunDict[key],
                                              dates2use=dates2use)
-                # Convert HO2 into units of molec/cm (from v/v)
-#                 attrs = ds[HO2var].attrs.copy()
-#                 ds[HO2var] = ds[HO2var] * StateMet[MolecVar]
-#                 units = 'molec/cm3'
-#                 attrs['long_name'] = AttStr.format('HO2')
-#                 attrs['units'] = units
-#                 ds[HO2var].attrs = attrs
-
-                # Add family value of HOx into  dataset
-#                 ds[NewVar] = ds[OHvar].copy()
-#                 ds[NewVar] = ds[OHvar] + ds[HO2var]
-#                 attrs = ds[OHvar].attrs.copy()
-#                 attrs['long_name'] = AttStr.format('HOx')
-#                 units = attrs['units']
-#                 ds[NewVar].attrs = attrs
+                # Convert HO2 into units of molec/cm (from v/v) and
+                #    Add family value of HOx into  dataset
                 ds = add_HOx_to_CAC_ds(ds, UpdateHO2units=True,
                                        StateMet=StateMet, units=units)
                 # rename to drop suffix
@@ -1422,14 +1416,23 @@ def get_stats4RunDict_as_df(RunDict=None,
                 ds = ds.rename(name_dict=dict(zip(OldVars, NewVars)))
                 dsCC[key] = ds
 
-            except KeyError:
-#            except:
+            except AssertionError:
                 print(ErrStr.format(CACsuffix, key))
+                continue  # Continue here
+
+            except KeyError:
+                print(ErrStr.format(CACsuffix, key))
+                continue  # Continue here
+
 
         # Include surface weighted values in core df
         for key in RunDict.keys():
-            ds = dsCC[key].copy()
-            #
+            try:
+                ds = dsCC[key].copy()
+            except KeyError:
+                continue  # Continue here
+
+            # Select the average surface values
             ds = ds.isel(lev=(ds.lev == ds.lev[0])).mean(dim='time')
             for var in vars2use:
                 varname = '{} surface ({})'.format(var, units)
@@ -1521,8 +1524,8 @@ def get_stats4RunDict_as_df(RunDict=None,
     df = df.round(round)
     # Save csv to disk
     if save2csv:
-        csv_filename = '{}_summary_statistics{}.csv'.format(prefix, extra_str)
-        df.to_csv(csv_filename)
+        csv_filename = '{}_summary_statistics{}.csv'
+        df.to_csv(csv_filename.format(SaveFilePrefix, extra_str))
     # Return the DataFrame too
     return df
 
@@ -1560,7 +1563,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
                                  REF_wd=REF_wd,
                                  res=res,
                                  trop_limit=trop_limit,
-                                 save2csv=save2csv, prefix=prefix,
+                                 save2csv=save2csv,
                                  extra_burden_specs=extra_burden_specs,
                                  extra_surface_specs=extra_surface_specs,
                                  GC_version=GC_version,
@@ -1573,6 +1576,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
                                  IncConcAfterChemDiags=IncConcAfterChemDiags,
                                  IncProdLossDiags=IncProdLossDiags,
                                  verbose=verbose,
+                                 SaveFilePrefix=prefix,
                                  debug=debug)
 
     return df
