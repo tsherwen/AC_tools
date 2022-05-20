@@ -54,9 +54,11 @@ import scipy
 
 
 def plot_lons_lats_spatial_on_map(lons=None, lats=None, p_size=50, color='red',
-                                  title=None, f_size=15, dpi=320, fig=None, ax=None,
+                                  title=None, f_size=15, dpi=320, fig=None,
+                                  ax=None,
                                   label=None,
-                                  return_axis=False, marker='o', alpha=1,  ylabel=True,
+                                  return_axis=False, marker='o', alpha=1,
+                                  ylabel=True,
                                   xlabel=True,
                                   window=False, axis_titles=True,
                                   split_title_if_too_long=False,
@@ -90,7 +92,8 @@ def plot_lons_lats_spatial_on_map(lons=None, lats=None, p_size=50, color='red',
     plt, m = map_plot(arr.T, return_m=True, cmap=plt.cm.binary,
                       f_size=f_size, window=window,
                       fixcb=[0, 0], ax=ax, no_cb=True, resolution=resolution,
-                      ylabel=ylabel, xlabel=xlabel, title=title, axis_titles=axis_titles,
+                      ylabel=ylabel, xlabel=xlabel, title=title,
+                      axis_titles=axis_titles,
                       split_title_if_too_long=split_title_if_too_long)
     # Plot up all sites as a scatter plot of points on basmap
     m.scatter(lons, lats, edgecolors=color, c=color, marker=marker,
@@ -100,17 +103,20 @@ def plot_lons_lats_spatial_on_map(lons=None, lats=None, p_size=50, color='red',
         return m
 
 
-def plot_map(arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=False,
+def plot_map(arr, return_m=False, grid=False, centre=False, cmap=None,
+             no_cb=False,
              cb=None, rotatecbunits='horizontal', fixcb=None, nticks=10,
              mask_invalids=False,
              format='%.2f', adjust_window=0, f_size=20, alpha=1, log=False,
              set_window=False, res=None, ax=None, case='default', units=None,
              drawcountries=True,  set_cb_ticks=True, title=None, lvls=None,
-             interval=15, resolution='c', shrink=0.4, window=False, everyother=1,
+             interval=15, resolution='c', shrink=0.4, window=False,
+             everyother=1,
              extend='neither', degrade_resolution=False, discrete_cmap=False,
              lon_0=None, lon_1=None, lat_0=None, lat_1=None, norm=None,
              cb_sigfig=2, fixcb_buffered=None, ylabel=True,
-             xlabel=True, wd=None, verbose=True, debug=False, tight_layout=False,
+             xlabel=True, wd=None, verbose=True, debug=False,
+             tight_layout=False,
              **Kwargs):
     """
     Make a global/regional 2D (lon, lat) spatial plot
@@ -297,8 +303,10 @@ def plot_map(arr, return_m=False, grid=False, centre=False, cmap=None, no_cb=Fal
     if isinstance(cmap, type(None)):
         # Set readable levels for cb, then use these to dictate cmap
         if isinstance(lvls, type(None)):
-            lvls = get_human_readable_gradations(vmax=fixcb_[1], vmin=fixcb_[0],
-                                                 nticks=nticks, cb_sigfig=cb_sigfig)
+            lvls = get_human_readable_gradations(vmax=fixcb_[1],
+                                                 vmin=fixcb_[0],
+                                                 nticks=nticks,
+                                                 cb_sigfig=cb_sigfig)
 
         # Setup Colormap
         cmap, fixcb_buffered = get_colormap(np.array(fixcb_),
@@ -507,10 +515,12 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None,
                debug=False,
                # redundant arguments?
                rasterized=True, tropics=False,
+               alt=None,
+               press=None,
+               CutOffTrop=True,
                ):
     """
     Create plot of vertical data for sonde observations/model
-
 
     Parameters
     -------
@@ -545,14 +555,19 @@ def sonde_plot(fig, ax, arr, n=0, title=None, subtitle=None,
     """
 
     # Get overall vars
-    alt, press = [gchemgrid(i) for i in ('c_km_geos5_r', 'c_hPa_geos5_r')]
+    if isinstance(press, type(None)):
+        press = gchemgrid('c_hPa_geos5_r')
+    if isinstance(alt, type(None)):
+#        alt = gchemgrid('c_km_geos5_r')
+        alt = hPa_to_Km(press)
 
     # Cut off at Tropopause?
-    if obs:
-        arr = arr[:c_off, :]
-    else:
-        arr = arr[:c_off]
-    alt, press = [i[:c_off] for i in (alt, press)]
+    if CutOffTrop:
+        if obs:
+            arr = arr[:c_off, :]
+        else:
+            arr = arr[:c_off]
+        alt, press = [i[:c_off] for i in (alt, press)]
 
     # if color  not set, get color
     if isinstance(color, type(None)):
