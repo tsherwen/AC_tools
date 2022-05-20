@@ -803,6 +803,16 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
     # Setup string for new long_name attribute in xr.Dataset
     if isinstance(LongNameStr, type(None)):
         LongNameStr = 'Dry mixing ratio of species {}'
+    # Setup Dictionary of CopyVarNames for Familie
+    # TODO: use first species for families with stoichiometry of unity
+    CopyVar4Fam = {
+    'NIT-all': 'NIT',
+    'DST-all': 'DST1',
+    'DSTAL-all': 'DSTAL1',
+    'SAL-all': 'SALA',
+    'SO4-all':'SO4',
+    'SOx': 'SO2',
+    }
     # Select requested family and add to xr.Dataset
     NewVarName = '{}{}'.format(prefix, fam)
     if (fam == 'NOx'):
@@ -836,102 +846,6 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
         CopyVar = 'N2O5'
         vars2use = GC_var(fam)
         ds[NewVarName] = ds[prefix+CopyVar].copy()
-        for var in vars2use:
-            try:
-                ds[NewVarName] = ds[NewVarName] + ds[prefix+var]
-            except KeyError:
-                pass
-        # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = LongNameStr.format(fam)
-        ds[NewVarName].attrs = attrs
-
-    elif fam == 'NIT-all':
-        CopyVar = 'NIT'
-        vars2use = GC_var(fam)
-        ds[NewVarName] = ds[prefix+CopyVar].copy()
-        vars2use.pop(vars2use.index(CopyVar))
-        # Add dust nitrates if present.
-        for var in vars2use:
-            try:
-                ds[NewVarName] = ds[NewVarName] + ds[prefix+var]
-            except KeyError:
-                pass
-        # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = LongNameStr.format(fam)
-        ds[NewVarName].attrs = attrs
-
-    elif fam == 'DST-all':
-        CopyVar = 'DST1'
-        vars2use = GC_var(fam)
-        ds[NewVarName] = ds[prefix+CopyVar].copy()
-        vars2use.pop(vars2use.index(CopyVar))
-        # Add dust nitrates if present.
-        for var in vars2use:
-            try:
-                ds[NewVarName] = ds[NewVarName] + ds[prefix+var]
-            except KeyError:
-                pass
-        # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = LongNameStr.format(fam)
-        ds[NewVarName].attrs = attrs
-
-    elif fam == 'DSTAL-all':
-        CopyVar = 'DSTAL1'
-        vars2use = GC_var(fam)
-        ds[NewVarName] = ds[prefix+CopyVar].copy()
-        vars2use.pop(vars2use.index(CopyVar))
-        # Add dust nitrates if present.
-        for var in vars2use:
-            try:
-                ds[NewVarName] = ds[NewVarName] + ds[prefix+var]
-            except KeyError:
-                pass
-        # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = LongNameStr.format(fam)
-        ds[NewVarName].attrs = attrs
-
-    elif fam == 'SAL-all':
-        CopyVar = 'SALA'
-        vars2use = GC_var(fam)
-        ds[NewVarName] = ds[prefix+CopyVar].copy()
-        vars2use.pop(vars2use.index(CopyVar))
-        # Add dust nitrates if present.
-        for var in vars2use:
-            try:
-                ds[NewVarName] = ds[NewVarName] + ds[prefix+var]
-            except KeyError:
-                pass
-        # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = LongNameStr.format(fam)
-        ds[NewVarName].attrs = attrs
-
-    elif fam == 'SO4-all':
-        CopyVar = 'SO4'
-        vars2use = GC_var(fam)
-        ds[NewVarName] = ds[prefix+CopyVar].copy()
-        vars2use.pop(vars2use.index(CopyVar))
-        # Add dust sulfates if present.
-        for var in vars2use:
-            try:
-                ds[NewVarName] = ds[NewVarName] + ds[prefix+var]
-            except KeyError:
-                pass
-        # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = LongNameStr.format(fam)
-        ds[NewVarName].attrs = attrs
-
-    elif fam == 'SOx':
-        CopyVar = 'SO2'
-        vars2use = GC_var(fam)
-        ds[NewVarName] = ds[prefix+CopyVar].copy()
-        vars2use.pop(vars2use.index(CopyVar))
-        # Add extra variables if present (check family definition for SOx)
         for var in vars2use:
             try:
                 ds[NewVarName] = ds[NewVarName] + ds[prefix+var]
@@ -1018,6 +932,30 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
         attrs['long_name'] = LongNameStr.format(fam)
         ds[NewVarName].attrs = attrs
 
+    elif (fam in CopyVar4Fam.keys()):
+        PrtStr = "WARNING: Attempting to extract family ('{}') raised a {}"
+        try:
+            CopyVar = CopyVar4Fam[fam]
+            vars2use = GC_var(fam)
+            GCVarName = '{}{}'.format(prefix, CopyVar)
+            ds[NewVarName] = ds[GCVarName].copy()
+            vars2use.pop(vars2use.index(CopyVar))
+            # Loop an include all species in family
+            # (e.g. Add dust nitrates to 'NIT-all' if present.)
+            for var in vars2use[1:]:
+                VarName2Add = '{}{}'.format(prefix, var)
+                try:
+                    ds[NewVarName] = ds[NewVarName] + ds[VarName2Add]
+                except KeyError:
+                    pass
+            # Copy and update dataset attributes
+            attrs = ds[GCVarName].attrs
+            attrs['long_name'] = LongNameStr.format(fam)
+            ds[NewVarName].attrs = attrs
+        except ValueError:
+            print(PrtStr.format( fam, 'ValueError', ))
+        except KeyError:
+            print(PrtStr.format( fam, 'KeyError', ))
     else:
         print('TODO - setup family and stoich conversion for {}'.format(fam))
 
