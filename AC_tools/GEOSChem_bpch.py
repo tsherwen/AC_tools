@@ -1114,45 +1114,6 @@ def get_chem_fam_v_v_X(wd=None, fam='Iy', res='4x5', ver='3.0', specs=None,
     return arr, specs
 
 
-def convert_v_v_2_DU(arr, wd=None, a_m=None, trop_limit=True, s_area=None,
-                     molecs=None, verbose=True, debug=False):
-    """
-    Convert a 4D array of v/v for species (or family) to  DU
-
-    Parameters
-    -------
-
-    Returns
-    -------
-
-    Notes
-    -----
-    """
-    # Get DU values for each array (2D not 3D )
-    if isinstance(molecs, type(None)):
-        # If 'a_m' not given, get air mass ('a_m') in kg
-        if isinstance(a_m, type(None)):
-            a_m = get_GC_output(wd=wd, vars=['BXHGHT_S__AD'],
-                                trop_limit=trop_limit, dtype=np.float64)
-        # Get molecs in troposphere
-        molecs = a_m*1E3/constants('RMM_air')*constants('AVG')
-    # Get surface area
-    if isinstance(s_area, type(None)):
-        s_area = get_surface_area(res=res, debug=debug)
-    # Molecules O3 in trop. summed
-    DUarrs = arr*molecs
-    logging.debug([(i.shape, i.sum()) for i in [DUarrs, s_area]])
-    # sum over altitude in 4D array ( lon, lat, alt, time )
-    DUarrs = DUarrs.sum(axis=-2)
-    logging.debug([(i.shape, i.sum()) for i in [DUarrs, s_area]])
-    # adjust to per unit area ( cm3 )
-    DUarrs = DUarrs / s_area
-    logging.debug([(i.shape, i.sum()) for i in (DUarrs, tmp_s_area, s_area)])
-    # convert to DU
-    DUarrs = DUarrs/constants('mol2DU')
-    return DUarrs
-
-
 def get_common_GC_vars(wd=None, trop_limit=True, res='4x5',
                        verbose=True, debug=False):
     """
@@ -2358,80 +2319,6 @@ def split_4D_array_into_seasons(arr, annual_plus_seasons=True,
     return ars, seasons
 
 
-def convert_v_v2ngm3(arr, wd=None, spec='AERI', trop_limit=True,
-                     s_area=None, vol=None, a_m=None, res='4x5', debug=False):
-    """
-    Take v/v array for a species, and conver this to mass loading
-    units used as standard are ng/m3
-
-    Parameters
-    -------
-    spec (str): species/tracer/variable name
-    a_m (np.array): 4D array of air mass
-    vol (array): volume contained in each grid box (cm^-3)
-    trop_limit (bool): limit 4D arrays to troposphere
-    res (str): the resolution if wd not given (e.g. '4x5' )
-
-    Returns
-    -------
-    (array)
-    """
-    # Get volume (m^3, adjusted (x1E6) from cm^3)
-    if not isinstance(vol, np.ndarray):
-        vol = get_volume_np(wd=wd, trop_limit=trop_limit, s_area=s_area,
-                            res=res) / 1E6
-    # Get air mass ( kg )
-    if not isinstance(a_m, np.ndarray):
-        a_m = get_GC_output(wd, vars=['BXHGHT_S__AD'], trop_limit=trop_limit,
-                            dtype=np.float64)
-    # Get moles  ( converting airmass from kg 1st)
-    mols = a_m*1E3/constants('RMM_air')
-    # Adjust to mols, then mass
-    arr = arr*mols*species_mass(spec)
-    if debug:
-        print((species_mass(spec), np.sum(arr)))
-    # Convert to (nano, x1E9)g/m3
-    arr = arr*1E9/vol
-    return arr
-
-
-def convert_v_v2ugm3(arr, wd=None, spec='AERI', trop_limit=True,
-                     s_area=None, vol=None, a_m=None, res='4x5', debug=False):
-    """
-    Take v/v array for a species, and conver this to mass loading
-    units used as standard are ng/m3
-
-    Parameters
-    -------
-    spec (str): species/tracer/variable name
-    a_m (np.array): 4D array of air mass
-    vol (array): volume contained in each grid box (cm^-3)
-    trop_limit (bool): limit 4D arrays to troposphere
-    res (str): the resolution if wd not given (e.g. '4x5' )
-
-    Returns
-    -------
-    (array)
-    """
-    # Get volume (m^3, adjusted (x1E6) from cm^3)
-    if not isinstance(vol, np.ndarray):
-        vol = get_volume_np(wd=wd, trop_limit=trop_limit, s_area=s_area,
-                            res=res) / 1E6
-    # Get air mass ( kg )
-    if not isinstance(a_m, np.ndarray):
-        a_m = get_GC_output(wd, vars=['BXHGHT_S__AD'], trop_limit=trop_limit,
-                            dtype=np.float64)
-    # Get moles  ( converting airmass from kg 1st)
-    mols = a_m*1E3/constants('RMM_air')
-    # Adjust to mols, then mass
-    arr = arr*mols*species_mass(spec)
-    if debug:
-        print((species_mass(spec), np.sum(arr)))
-    # Convert to (micro, x1E9)g/m3
-    arr = arr*1E6/vol
-    return arr
-
-
 def prt_seaonal_values(arr=None, res='4x5', area_weight=True, zonal=False,
                        region='All', monthly=False, mask3D=True,
                        trop_limit=True,
@@ -2930,162 +2817,6 @@ def fam_data_extractor(wd=None, fam=None, trop_limit=True, ver='3.0',
         return arr
 
 
-def convert_tracers2PM10(ars=[], specs=[], region='Europe'):
-    """
-    Aproximate PM10 from PM10 ratios
-
-    Parameters
-    -------
-    ars (list): list of arrays
-    specs (list): list of species to convert
-    region (str): region for which PM2.5 is being approximated? (RH differs)
-
-    Returns
-    -------
-    (list)
-
-    Notes
-    -----
-     - for details see GEOS-Chem wiki:
-http://wiki.seas.harvard.edu/geos-chem/index.php/Particulate_matter_in_GEOS-Chem#PM2.5_in_the_1-yr_benchmark_plots
-     - definition of PM10 is that of PM2.5 + DST + SALC.
-     - SALC uses the same scaling as SALA for hydration.
-    """
-    # - Convert to PM2.5 ('$\mu$g m$^{-3}$')
-    # Note. below list does not contain SOA species
-    if region == 'USA':
-        PM25_convertion_factor = {
-            'NH4': 1.33,
-            'NIT': 1.33,
-            'SO4': 1.33,
-            'BCPI': 1.00,  # no scaling
-            'BCPO': 1.00,  # no scaling
-            'OCPI': 1.16*2.1,
-            'OCPO': 2.1,
-            'DST1': 1.00,  # no scaling
-            'DST2': 1.00,  # no scaling
-            'DST3': 1.00,  # no scaling
-            'DST4': 1.00,  # no scaling
-            'SALA': 1.86,
-            'SALC': 1.86,
-            # Other species
-        }
-    elif region == 'Europe':
-        PM25_convertion_factor = {
-            'NH4': 1.51,
-            'NIT': 1.51,
-            'SO4': 1.51,
-            'BCPI': 1.00,  # no scaling
-            'BCPO': 1.00,  # no scaling
-            'OCPI': 1.24*2.1,
-            'OCPO': 2.1,
-            'DST1': 1.00,  # no scaling
-            'DST2': 1.00,  # no scaling
-            'DST3': 1.00,  # no scaling
-            'DST4': 1.00,  # no scaling
-            'SALA': 2.42,
-            'SALC': 2.42,
-            # Other species
-        }
-    else:
-        print('ERROR - Region not in list - please set available region!!')
-        sys.exit()
-    # RMM of air
-    RMM_air = constants('RMM_air')  # g/mol
-    # assume standard air density
-    # At sea level and at 15 °C air has a density of approximately 1.225 kg/m3
-    # (0.001225 g/cm3, 0.0023769 slug/ft3, 0.0765 lbm/ft3) according to
-    # ISA (International Standard Atmosphere).
-    AIRDEN = 0.001225  # g/cm3
-    # moles per cm3
-    #  (1/(g/mol)) = (mol/g) ; (mol/g) * (g/cm3) = mol/cm3
-    MOLS = (1/RMM_air) * AIRDEN
-    # loop ars and convert to PM2.5 equiv
-    for n, spec in enumerate(specs):
-        # moles * spec RMM * microgram
-        # e.g. v/v * mols/cm3 = mols of X per cm3; / spec RMM = mass
-        # unitless * mols * g/mol * conversion
-        scale = MOLS * species_mass(spec) * 1E6 * 1E6
-        units = '$\mu$g m$^{-3}$'
-        # convert...
-        ars[n] = ars[n]*scale*PM25_convertion_factor[spec]
-    return ars
-
-
-def convert_tracers2PM25(ars=[], specs=[], region='Europe'):
-    """
-    Aproximate PM2.5 from PM2.5 ratios
-
-    Parameters
-    -------
-    ars (list): list of arrays
-    specs (list): list of species to convert
-    region (str): region for which PM2.5 is being approximated? (RH differs)
-
-    Returns
-    -------
-    (list)
-
-    Notes
-    -----
-     - for details see GEOS-Chem wiki:
-    http://wiki.seas.harvard.edu/geos-chem/index.php/Particulate_matter_in_GEOS-Chem#PM2.5_in_the_1-yr_benchmark_plots
-    """
-    # - Convert to PM2.5 ('$\mu$g m$^{-3}$')
-    # Note. below list does not contain SOA species
-    if region == 'USA':
-        PM25_convertion_factor = {
-            'NH4': 1.33,
-            'NIT': 1.33,
-            'SO4': 1.33,
-            'BCPI': 1.00,  # no scaling
-            'BCPO': 1.00,  # no scaling
-            'OCPI': 1.16*2.1,
-            'OCPO': 2.1,
-            'DST1': 1.00,  # no scaling
-            'DST2': 0.38,
-            'SALA': 1.86,
-            # Other species
-        }
-    elif region == 'Europe':
-        PM25_convertion_factor = {
-            'NH4': 1.51,
-            'NIT': 1.51,
-            'SO4': 1.51,
-            'BCPI': 1.00,  # no scaling
-            'BCPO': 1.00,  # no scaling
-            'OCPI': 1.24*2.1,
-            'OCPO': 2.1,
-            'DST1': 1.00,  # no scaling
-            'DST2': 0.38,
-            'SALA': 2.42,
-            # Other species
-        }
-    else:
-        print('ERROR - Region not in list - please set available region!!')
-        sys.exit()
-    # RMM of air
-    RMM_air = constants('RMM_air')  # g/mol
-    # assume standard air density
-    # At sea level and at 15 °C air has a density of approximately 1.225 kg/m3
-    # (0.001225 g/cm3, 0.0023769 slug/ft3, 0.0765 lbm/ft3) according to
-    # ISA (International Standard Atmosphere).
-    AIRDEN = 0.001225  # g/cm3
-    # moles per cm3
-    #  (1/(g/mol)) = (mol/g) ; (mol/g) * (g/cm3) = mol/cm3
-    MOLS = (1/RMM_air) * AIRDEN
-    # loop ars and convert to PM2.5 equiv
-    for n, spec in enumerate(specs):
-        # moles * spec RMM * microgram
-        # e.g. v/v * mols/cm3 = mols of X per cm3; / spec RMM = mass
-        # unitless * mols * g/mol * conversion
-        scale = MOLS * species_mass(spec) * 1E6 * 1E6
-        units = '$\mu$g m$^{-3}$'
-        # convert...
-        ars[n] = ars[n]*scale*PM25_convertion_factor[spec]
-    return ars
-
-
 def fam_data_extractor4ts_bpch_files(spec='NOy', wd=None,
                                      filename='ts_ctm.nc'):
     """
@@ -3214,63 +2945,9 @@ def fam_data_extractor4ts_bpch_files(spec='NOy', wd=None,
         return data, units
 
 
-def convert_spec_v_v_2_ugm3(spec=None, data=None, explicitly_calc=False,
-                            press=None, T=None):
-    """
-    Convert mixing ratio (v/v) to ug m^-3
-
-    Parameters
-    -------
-    spec (str): species/tracer/variable name
-    data (array): array of data
-    press (float or array): pressure (hPa) as a float on array with size of data
-    T (float or array): temperature (K) as a float on array with size of data
-
-    Returns
-    -------
-    (array)
-    """
-    logging.info('convert_spec_v_v_2_ugm3 called for spec={}'.format(spec))
-    # Get Air density
-    if explicitly_calc:
-        # calculate using provide pressions
-        assert_str = 'variable ({}) needed to explicitly caculate!'
-        assert not isinstance(press, type(None)), assert_str.format('press')
-        assert not isinstance(T, type(None)), assert_str.format('T (Kelvin)')
-        # Use the ideal gas law to calculate p (air density kg/m3)
-        # press (pressure in hPa), T (temperature in Kelvin),
-        # R (specific gas constant for dry air (J/(kg·K))),
-        R = constants('Rdry')
-        # Convert pressure to HPa=>Pa & kg=g concurrently
-        AIRDEN = (press*100) / (R*1000 * T)
-    else:
-        # assume standard air density
-        # At sea level and at 15 °C air has a density of
-        # approximately 1.225 kg/m3
-        # (0.001225 g/cm3, 0.0023769 slug/ft3, 0.0765 lbm/ft3) according to
-        # ISA (International Standard Atmosphere).
-        AIRDEN = 0.001225  # g/cm3
-    # RMM of air
-    RMM_air = constants('RMM_air')  # g/mol (of dry air)
-    # moles per cm3
-    #  (1/(g/mol)) = (mol/g) ; (mol/g) * (g/cm3) = mol/cm3
-    MOLS = (1/RMM_air) * AIRDEN
-    # --- convert spec
-    # v/v * mols/cm3 = mols of X per cm3;
-    data *= MOLS
-    # convert to grams of X per cm3; ( * RMM of species )
-    data *= species_mass(spec)
-    # convert to ug per cm3 (*1E6)
-    data *= 1E6
-    # convert to ug per m3 (*1E6)
-    data *= 1E6
-    units = '$\mu$g m$^{-3}$'
-    # scale data and return
-    return data
-
-
 def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None,
-                           filename='ts_ctm.nc', LON=None, LAT=None, rtn_units=False,
+                           filename='ts_ctm.nc', LON=None, LAT=None,
+                           rtn_units=False,
                            LON_ind=None, LAT_ind=None, rtn_ctm_units=False,
                            verbose=True, debug=False):
     """
@@ -3352,124 +3029,6 @@ def get_LOC_df_from_NetCDF(site=None, spec='O3', wd=None, res=None,
         return df, ctm_units
     else:
         return df
-
-
-def convert_v_v_2_molec_cm3(arr=None, wd=None, vol=None, a_m=None,
-                            mols=None, res='4x5', trop_limit=True,
-                            explicitly_calc=True, debug=False):
-    """
-    Converts mixing ratio (v/v) into number density (molec/cm3).
-
-    Parameters
-    ----------
-    arr (array): arrray input
-    a_m (array): array of air mass
-    mols (array): array of molecule number density
-    trop_limit (bool): limit output to "chemical troposphere" (level 38 )
-    res (str): resolution of the model input (e.g. 4x5, 2x2.5 )
-    explicitly_calc (bool): Explicitly calculate the air mass
-
-    Returns
-    -------
-    (array)
-
-    NOTES
-    -------
-    required variables of volume (vol) and airmass (a_m) can be provided as
-    arguements or are extracted online (from provided wd )
-    """
-    logging.info('convert_v_v_2_molec_cm3 called for res={}'.format(res))
-    if explicitly_calc:
-        # Get volume ( cm^3  )
-        if not isinstance(vol, np.ndarray):
-            vol = get_volume_np(wd=wd, res=res, trop_limit=trop_limit,
-                                debug=debug)
-            logging.info('WARNING: extracting volume online')
-        # Get air mass ( kg )
-        if not isinstance(a_m, np.ndarray):
-            a_m = get_GC_output(wd, vars=['BXHGHT_S__AD'],
-                                trop_limit=trop_limit, dtype=np.float64)
-            logging.info('WARNING: extracting air mass online')
-        # Get moles
-        if not isinstance(mols, np.ndarray):
-            mols = a_m*1E3/constants('RMM_air')
-        #  Convert to molecules
-        arr = (arr * mols)*constants('AVG')
-        #  convert to per unit area ( molecs / cm^3  )
-        arr = arr / vol
-    # use an approximation assuming SATP
-    else:
-        # RMM
-        RMM_air = constants('RMM_air')  # g/mol
-        # assume standard air density
-        # At sea level and at 15 °C air has a density
-        # of approximately 1.225 kg/m3
-        # (0.001225 g/cm3, 0.0023769 slug/ft3, 0.0765 lbm/ft3) according to
-        # ISA (International Standard Atmosphere).
-        AIRDEN = 0.001225  # g/cm3
-        # moles per cm3
-        #  (1/(g/mol)) = (mol/g) ; (mol/g) * (g/cm3) = mol/cm3
-        MOLS = (1/RMM_air) * AIRDEN
-        # v/v * mols * AVG's # (to get molecules)
-        arr = arr * MOLS * constants('AVG')
-    return arr
-
-
-def convert_molec_cm3_2_v_v(arr=None, wd=None, vol=None, a_m=None,
-                            mols=None, res='4x5', trop_limit=True, press=None,
-                            T=None,
-                            explicitly_calc=False, debug=False):
-    """
-    Covnerts number density (molec/cm3) into mixing ratio (v/v).
-
-    Parameters
-    ----------
-    arr (array): arrray input
-    a_m (array): array of air mass
-    mols (array): array of molecule number density
-    trop_limit (bool): limit output to "chemical troposphere" (level 38 )
-    res (str): resolution of the model input (e.g. 4x5, 2x2.5 )
-    press (array): pressure in hPa
-
-    Returns
-    -------
-    (array)
-
-    NOTES
-    -------
-    required variables of volume (vol) and airmass (a_m) can be provided as
-    arguements or are extracted online (from provided wd )
-    """
-    logging.info('convert_molec_cm3_2_v_v called for res={}'.format(res))
-    # Get Air density
-    if explicitly_calc:
-        # calculate using provide pressions
-        assert_str = '{} needed to explicitly caculate!'
-        assert not isinstance(press, type(None)), assert_str.format('press')
-        assert not isinstance(T, type(None)), assert_str.format('T (Kelvin)')
-        # Use the ideal gas law to calculate p (air density kg/m3)
-        # press hPa), T (temperature in Kelvin),
-        # R (specific gas constant for dry air (J/(kg·K))),
-        R = constants('Rdry')
-        # convert pressure to HPa=>Pa & kg=g concurrently
-        AIRDEN = (press*100) / (R*1000 * T)
-    else:
-        # assume standard air density
-        # At sea level and at 15 °C air has a density of approximately 1.225 kg/m3
-        # (0.001225 g/cm3, 0.0023769 slug/ft3, 0.0765 lbm/ft3) according to
-        # ISA (International Standard Atmosphere).
-        AIRDEN = 0.001225  # g/cm3
-    # RMM ( g/mol )
-    RMM_air = constants('RMM_air')
-    # moles per cm3
-    #  (1/(g/mol)) = (mol/g) ; (mol/g) * (g/cm3) = mol/cm3
-    MOLS = (1/RMM_air) * AIRDEN
-    # v/v * mols * AVG's # (to get molecules)
-    # get moles/cm3 ( from molecules/cm3 )
-    arr = arr/constants('AVG')
-    # get mol/mol and remove cm3 by dividing by mol/cm3
-    arr = arr / MOLS
-    return arr
 
 
 def mask4troposphere(ars=[], wd=None, t_ps=None, trop_limit=False,
@@ -3610,11 +3169,13 @@ def convert_molec_cm3_s2_molec_per_yr(ars=None, vol=None):
 
 
 def convert_molec_cm3_s_2_g_X_s_BPCH(ars=None, specs=None, ref_spec=None,
-                                     months=None, years=None, vol=None, t_ps=None,
+                                     months=None, years=None, vol=None,
+                                     t_ps=None,
                                      trop_limit=True,
                                      s_area=None, rm_strat=True, wd=None,
                                      res='4x5',
-                                     multiply_method=True, use_time_in_trop=True,
+                                     multiply_method=True,
+                                     use_time_in_trop=True,
                                      conbine_ars=True,
                                      month_eq=False, limit_PL_dim2=38,
                                      verbose=False,  debug=False):
@@ -3760,35 +3321,6 @@ def prt_2D_vals_by_region(specs=None, res='4x5', arrs=None, prt_pcent=False,
             df.to_csv(csv_title)
 
 
-def get_2D_arr_weighted_by_X(arr, spec=None, res='4x5', print_values=False,
-                             s_area=None):
-    """
-    Get weighted average 2D value by another array (e.g. area weighted)
-
-    Parameters
-    ----------
-    arr (array): 2D array to average weighted by 2nd'y array (s_area)
-    res (str): the resolution if wd not given (e.g. '4x5' )
-    print_values (bool): print calculated values
-    s_area (array): array of areas of grid boxes (could be any variable)
-    spec (str): species/tracer/variable name
-
-    Returns
-    -------
-    (float)
-    """
-    # Get surface area if not provided
-    if isinstance(s_area, type(None)):
-        s_area = get_surface_area(res)[..., 0]  # m2 land map
-    # Calculate average and area weighted average
-    area_weighted_avg = (arr*s_area).sum() / s_area.sum()
-    if print_values:
-        print(('mean surface {} conc {}'.format(spec, arr.mean())))
-        print(('area weighted mean surface {} conc {}'.format(
-            spec, area_weighted_avg)))
-    return area_weighted_avg
-
-
 def get_avg_surface_conc_of_X(spec='O3', wd=None, s_area=None, res='4x5'):
     """
     Get area weighted concentration of Y (mean over time)
@@ -3848,7 +3380,8 @@ def get_avg_trop_conc_of_X(spec='O3', wd=None, s_area=None, res='4x5',
     # Area weight and return
     val = molec_weighted_avg_BPCH(arr, res=res, trop_limit=trop_limit, \
                                   #        vol=vol, t_p=t_p, n_air=n_air, molecs=molecs,
-                                  rm_strat=rm_strat, wd=wd, annual_mean=annual_mean)
+                                  rm_strat=rm_strat, wd=wd,
+                                  annual_mean=annual_mean)
     if rtn_units:
         return val, units
     else:
