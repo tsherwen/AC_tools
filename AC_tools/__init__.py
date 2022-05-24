@@ -5,7 +5,6 @@ import sys
 # AC_tools modules
 from . AC_time import *
 from . core import *
-from . generic import *
 from . utils import *
 from . GEOSChem_nc import *
 from . GEOS import *

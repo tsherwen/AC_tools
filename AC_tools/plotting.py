@@ -32,7 +32,6 @@ import gc
 # imports should be specific and in individual functions
 # import tms modules with shared functions
 from . variables import *
-from . generic import *
 from . utils import *
 from . AC_time import *
 from . planeflight import *

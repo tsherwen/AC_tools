@@ -33,7 +33,7 @@ from time import gmtime, strftime
 # imports should be specific and in individual functions
 # import tms modules with shared functions
 from .core import *
-from .generic import *
+from .utils import *
 from .AC_time import *
 from .planeflight import prt_PlaneFlight_files_v12_plus
 #from .variables import *
