@@ -799,6 +799,17 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
                               LongNameStr=None):
     """
     Add a variable to dataset for a chemical family (e.g. NOy, NOx...)
+
+    Notes
+    -------
+    ds (xr.Dataset): data in format and containing necessary variables
+    fam (str): Name of the family to extract (e.g. 'NOy')
+    LongNameStr (str): String to use for long_name attribute in dataset
+    prefix (str): GEOS-Chem NetCDF variable prefix used in dataset
+
+    Returns
+    -------
+    (xr.Dataset)
     """
     # Setup string for new long_name attribute in xr.Dataset
     if isinstance(LongNameStr, type(None)):
@@ -813,8 +824,17 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
     'SO4-all':'SO4',
     'SOx': 'SO2',
     }
-    # Select requested family and add to xr.Dataset
+    # Select requested family and add to xr.Dataset if not already present
     NewVarName = '{}{}'.format(prefix, fam)
+    try:
+        ds[NewVarName]
+        PrtStr = "NOTE: Skipped addition to dataset as variable present: '{}'"
+        if debug:
+            print(PrtStr.format(NewVarName))
+        return ds
+    except KeyError:
+        pass
+
     if (fam == 'NOx'):
         CopyVar = 'NO'
         ds[NewVarName] = ds[prefix+CopyVar].copy()
