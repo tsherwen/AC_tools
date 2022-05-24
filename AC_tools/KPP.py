@@ -26,7 +26,8 @@ from datetime import datetime as datetime_
 import logging
 
 # AC_tools imports
-from . generic import myround
+#from . generic import myround 
+from .utils import myround
 from .GEOSChem_bpch import *
 from .GEOSChem_nc import *
 

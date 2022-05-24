@@ -6,7 +6,7 @@ import sys
 from . AC_time import *
 from . core import *
 from . generic import *
-from . GEOSChem_bpch import *
+from . utils import *
 from . GEOSChem_nc import *
 from . GEOS import *
 from . HEMCO import *
@@ -18,6 +18,7 @@ from . plotting import *
 # from . SMVGEAR import *
 from . variables import *
 # include the redundant files for now
+from . GEOSChem_bpch import *
 from . obsolete.plotting_REDUNDANT import *
 from . obsolete.variables_REDUNDANT import *
 from . obsolete.misc_REDUNDANT import *

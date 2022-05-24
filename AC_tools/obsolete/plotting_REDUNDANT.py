@@ -35,6 +35,7 @@ import gc
 from .. variables import *
 from .. plotting import *
 from .. generic import *
+from .. utils import *
 from .. AC_time import *
 from .. planeflight import *
 from .. GEOSChem_nc import *

@@ -33,6 +33,7 @@ import gc
 # import tms modules with shared functions
 from . variables import *
 from . generic import *
+from . utils import *
 from . AC_time import *
 from . planeflight import *
 from . GEOSChem_nc import *
