@@ -1068,6 +1068,13 @@ def get_GC_aerosol_species(YAML_filename='species_database_GCv12_9.yml',
                 print(PrtStr.format(AerosolVar, key))
     # Include aerosol families in this list too
     AerosolSpecies += ['NIT-all', 'SO4-all', 'DST-all', 'DSTAL-all', 'SAL-all']
+    # Drop DMS if included in this list
+    try:
+        idx = AerosolSpecies.index('DMS')
+        AerosolSpecies.pop(idx)
+    except ValueError:
+        if debug:
+            print("NOTE: speices ('DMS') not present in 'AerosolSpecies' list")
     return AerosolSpecies
 
 
