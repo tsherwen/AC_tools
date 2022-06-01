@@ -1366,7 +1366,7 @@ def get_stats4RunDict_as_df(RunDict=None,
                                              dates2use=dates2use)
                 # Convert HO2 into units of molec/cm (from v/v) and
                 #    Add family value of HOx into  dataset
-                ds = add_HOx_to_CAC_ds(ds, UpdateHO2units=True,
+                ds = add_HOx_to_CAC_ds(ds, UpdateHOxUnits=True,
                                        StateMet=StateMet, units=units)
                 # rename to drop suffix
                 OldVars = [i for i in ds.data_vars if CACsuffix in i]
@@ -1673,7 +1673,8 @@ def get_GEOSChem_H2O(units='molec/cm3', wd=None, rm_strat=True,
 
 
 def add_HOx_to_CAC_ds(ds, StateMet=None, MolecVar='Met_MOLCES',
-                      units='molec/cm3', UpdateHO2units=True):
+                      units='molec/cm3', UpdateHOxUnits=True,
+                      debug=False):
     """
     Add HOx family to ConcAfterChem xr.Dataset (update HO2 units too)
     """
@@ -1681,9 +1682,13 @@ def add_HOx_to_CAC_ds(ds, StateMet=None, MolecVar='Met_MOLCES',
     CACsuffix = 'concAfterChem'
     HO2var = '{}{}'.format('HO2', CACsuffix)
     HO2varMolecCm3 = '{}{}{}'.format('HO2', CACsuffix, '_MolecCm3')
+    OHvarPPT = '{}{}{}'.format('OH', CACsuffix, '_ppt')
     HOxVar = '{}{}'.format('HOx', CACsuffix)
     OHvar = '{}{}'.format('OH', CACsuffix)
     AttStr = '{} concentration immediately after chemistry'
+    PrtStr = 'WARNING: HOx unit conversion not setup for {}'
+    MixingRatioUnits = ['v/v']
+    ConcUnits = ['molec/cm3', 'molec cm-3', 'molecules cm-3']
 
     # Ensure the molecule density is in the StateMet object
     try:
@@ -1691,25 +1696,51 @@ def add_HOx_to_CAC_ds(ds, StateMet=None, MolecVar='Met_MOLCES',
     except:
         StateMet = add_molec_den2ds(StateMet)
 
-    # Convert HO2 into units of molec/cm (from v/v)
+    # Add a variable for HO2 with units of molec/cm (output is in v/v)
     attrs = ds[HO2var].attrs.copy()
     ds[HO2varMolecCm3] = ds[HO2var] * StateMet[MolecVar]
-    units = 'molec/cm3'
     attrs['long_name'] = AttStr.format('HO2')
-    attrs['units'] = units
+    attrs['units'] = 'molec/cm3'
     ds[HO2varMolecCm3].attrs = attrs
+
+    # If requested units are mixing ratio, convert OH
+    if any([i in units for i in MixingRatioUnits]):
+        attrs = ds[OHvar].attrs.copy()
+        ds[OHvarPPT] = ds[OHvar].copy()
+        attrs['long_name'] = AttStr.format('OH')
+        attrs['units'] = 'v/v'
+        ds[OHvarPPT] = ds[OHvar] / StateMet[MolecVar]
+        ds[OHvarPPT].attrs = attrs
 
     # Add family value of HOx into  dataset
     ds[HOxVar] = ds[OHvar].copy()
-    ds[HOxVar] = ds[OHvar] + ds[HO2varMolecCm3]
+    if any([i in units for i in ConcUnits]):
+        ds[HOxVar] = ds[OHvar] + ds[HO2varMolecCm3]
+    elif any([i in units for i in MixingRatioUnits]):
+        ds[HOxVar] = ds[OHvarPPT] + ds[HO2var]
+    else:
+        print(PrtStr.format(units))
+        if debug:
+            print('WARNING: HOx family not added to xr.dataset')
+        sys.exit(0)
     attrs = ds[OHvar].attrs.copy()
     attrs['long_name'] = AttStr.format('HOx')
-    units = attrs['units']
+    attrs['units'] = units # archive string for units HOx
     ds[HOxVar].attrs = attrs
 
-    # Update the returned HO2 units?
-    if UpdateHO2units:
-        ds[HO2var] = ds[HO2varMolecCm3].copy()
-    del ds[HO2varMolecCm3]
+    # Update the returned HOx units? (leaving one variable in specified units)
+    if UpdateHOxUnits:
+        if any([i in units for i in ConcUnits]):
+            ds[HO2var] = ds[HO2varMolecCm3].copy()
+#            del ds[HO2varMolecCm3]
+        elif any([i in units for i in MixingRatioUnits]):
+            ds[OHvar] = ds[OHvarPPT].copy()
+            del ds[OHvarPPT]
+        else:
+            print(PrtStr.format(units))
+            if debug:
+                print('WARNING: HOx units not updated in xr.dataset')
+            sys.exit(0)
+        del ds[HO2varMolecCm3]
 
     return ds
