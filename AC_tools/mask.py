@@ -828,8 +828,7 @@ def mask_all_but(region='All', M_all=False, saizlopez=False,
                  use_multiply_method=True, lat=None, lon=None,
                  verbose=False, debug=False):
     """
-    Mask selector for analysis. global mask provided for with given region
-        unmasked
+    Returns a mask for all but the requested region
 
     Parameters
     -------
@@ -855,273 +854,302 @@ def mask_all_but(region='All', M_all=False, saizlopez=False,
     function was originally used to mulitple masks, however, this approch is
     unpythonic and therefore reccomended against.
     """
-    logging.info('mask_all_but called for region {}'.format(region))
-    # --- Setup cases...
+    logging.info('mask_all_but called for region/MaskName {}'.format(region))
+    # --- Setup MaskNumbers...
+    #
+#    MaskName = region # Switch to using instead of region?
+    # Get Dictionary of mask details
+    MaskDict = GetMaskExtents(None, ReturnDataFrame=True)
+
+    # Get List of Rectangluar masks
+    RectangluarMasks = MaskDict.loc[ MaskDict['Rectangle?']==True, : ]
+
     # ( except None, unmask_all and global to retrive no mask )
-    case = {
-        'Tropics': 0,
-        'tropics': 0,
-        'mid_lats': 1,
-        'Mid Lats': 1,
-        'Mid lats': 1,
-        'south_pole': 2,
-        'south pole': 2,
-        'north_pole': 3,
-        'north pole': 3,
-        None: 4,
-        'unmask_all': 4,
-        'All': 4,
-        'global': 4,
-        'Global': 4,
-        'Oceanic': 6,
-        'Ocean': 6,
-        'Ocean Tropics': 13,
-        'Oceanic Tropics': 13,
-        'Ocn. Trop.': 13,
-        # NEED TESTING ...
-        'Extratropics': 5,
-        'Ex. Tropics': 5,
-        'NH': 7,
-        'SH': 8,
-        'Ice': 10,
-        'Land': 11,
-        'lat40_2_40': 12,
-        'Land Tropics': 14,
-        'All Sur.': 15,
-        'surface': 15,
-        'Ocean Sur.': 16,
-        'Land Sur.': 17,
-        'Ice Sur.': 18,
-        'lat50_2_50': 19,
-        '50S-50N': 19,
-        #    'Oceanic lat50_2_50': 20,
-        'Ocn. 50S-50N': 20,
-        #     'South >60': 2,
-        #      'North >60': 3
-        'North Sea': 21,
-        'Med. Sea': 22,
-        'Mediterranean Sea': 22,
-        'Black Sea': 23,
-        'Irish Sea': 24,
-        'Europe': 25,
-        'EU': 25,
-        #    'Surface BL': 26,
-        'Land Tropics Sur.': 27,
-        'Boreal Land': 28,
-        'Alps':  29,
-        'loc': 30,
-        'location': 30,
-        'France': 31,
-        'CONUS': 32,
-        'Cape_Verde_Flying': 33,
-        'local_CVAO_area': 34,
-    }[region]
+#     MaskDict = {
+#         'Tropics': 0,
+#         'tropics': 0,
+#         'mid_lats': 1,
+#         'Mid Lats': 1,
+#         'Mid lats': 1,
+#         'south_pole': 2,
+#         'south pole': 2,
+#         'north_pole': 3,
+#         'north pole': 3,
+#         None: 4,
+#         'unmask_all': 4,
+#         'All': 4,
+#         'global': 4,
+#         'Global': 4,
+#         'Oceanic': 6,
+#         'Ocean': 6,
+#         'Ocean Tropics': 13,
+#         'Oceanic Tropics': 13,
+#         'Ocn. Trop.': 13,
+#         # NEED TESTING ...
+#         'Extratropics': 5,
+#         'Ex. Tropics': 5,
+#         'NH': 7,
+#         'SH': 8,
+#         'Ice': 10,
+#         'Land': 11,
+#         'lat40_2_40': 12,
+#         'Land Tropics': 14,
+#         'All Sur.': 15,
+#         'surface': 15,
+#         'Ocean Sur.': 16,
+#         'Land Sur.': 17,
+#         'Ice Sur.': 18,
+#         'lat50_2_50': 19,
+#         '50S-50N': 19,
+#         #    'Oceanic lat50_2_50': 20,
+#         'Ocn. 50S-50N': 20,
+#         #     'South >60': 2,
+#         #      'North >60': 3
+#         'North Sea': 21,
+#         'Med. Sea': 22,
+#         'Mediterranean Sea': 22,
+#         'Black Sea': 23,
+#         'Irish Sea': 24,
+#         'Europe': 25,
+#         'EU': 25,
+#         #    'Surface BL': 26,
+#         'Land Tropics Sur.': 27,
+#         'Boreal Land': 28,
+#         'Alps':  29,
+#         'loc': 30,
+#         'location': 30,
+#         'France': 31,
+#         'CONUS': 32,
+#         'Cape_Verde_Flying': 33,
+#         'local_CVAO_area': 34,
+#     }
+    MaskNumber = MaskDict.loc[ MaskDict['MaskName']==region,'ID'].values[0]
+
+    # TODO: overhaul the above "MaskNumber" approach to be more pythonic.
+    #       for now just ensure that a 'MaskNumber' ID is used.
+    #       the eventual approach will not need different capitalisation etc.
 
     # --- This is a simple way of using masks ( as multiplers )
     # i.e. all (future) functions should have use_multiply_method=False
     # and not use the code below
     if use_multiply_method:  # Kludge
         print(('!'*50, 'WARNING: using mulitply method for masking. '))
-
-        # For case, pull mask from case list
-        if case == 0:
+        # For MaskNumber, pull mask from MaskNumber list
+        if MaskNumber == 0:
             mask = tropics_unmasked(res=res, saizlopez=saizlopez)
-        elif case == 1:
+        elif MaskNumber == 1:
             mask = mid_lats_unmasked(res=res)
-        elif case == 2:
+        elif MaskNumber == 2:
             mask = southpole_unmasked(res=res)
-        elif case == 3:
+        elif MaskNumber == 3:
             mask = northpole_unmasked(res=res)
-        elif case == 4:
+        elif MaskNumber == 4:
             #        mask = np.logical_not( all_unmasked( res=res ) )
             mask = all_unmasked(res=res)
-        elif case == 5:
+        elif MaskNumber == 5:
             mask = extratropics_unmasked(res=res)
-        elif case == 6:
+        elif MaskNumber == 6:
             mask = ocean_unmasked(res=res)
-        elif case == 7:
+        elif MaskNumber == 7:
             mask = NH_unmasked(res=res)
-        elif case == 8:
+        elif MaskNumber == 8:
             mask = SH_unmasked(res=res)
-        elif case == 10:
+        elif MaskNumber == 10:
             mask = ice_unmasked(res=res)
-        elif case == 11:
+        elif MaskNumber == 11:
             mask = land_unmasked(res=res)
-        elif case == 12:
+        elif MaskNumber == 12:
             mask = mask_lat40_2_40(res=res)
-        elif case == 13:  # 'Oceanic Tropics'
+        elif MaskNumber == 13:  # 'Oceanic Tropics'
             mask = np.ma.mask_or(ocean_unmasked(res=res),
                                  tropics_unmasked(res=res,
                                                   saizlopez=saizlopez))
-        elif case == 14:  # 'Land Tropics'
+        elif MaskNumber == 14:  # 'Land Tropics'
             mask = np.ma.mask_or(land_unmasked(res=res),
                                  tropics_unmasked(res=res,
                                                   saizlopez=saizlopez))
-        elif case == 15:  # 'All Sur.'
+        elif MaskNumber == 15:  # 'All Sur.'
             mask = surface_unmasked(res=res)
-        elif case == 16:  # 'Ocean Sur.'
+        elif MaskNumber == 16:  # 'Ocean Sur.'
             mask = np.ma.mask_or(surface_unmasked(res=res),
                                  ocean_unmasked(res=res))
-        elif case == 17:  # 'Land Sur.':
+        elif MaskNumber == 17:  # 'Land Sur.':
             mask = np.ma.mask_or(surface_unmasked(res=res),
                                  land_unmasked(res=res))
-        elif case == 18:  # 'Ice Sur.'
+        elif MaskNumber == 18:  # 'Ice Sur.'
             mask = np.ma.mask_or(surface_unmasked(res=res),
                                  ice_unmasked(res=res))
-        elif case == 19:  # '50S-50N'
+        elif MaskNumber == 19:  # '50S-50N'
             mask = lat2lat_2D_unmasked(lowerlat=-50, higherlat=50,
                                        res=res)
-        elif case == 20:  # 'Ocn. 50S-50N'
+        elif MaskNumber == 20:  # 'Ocn. 50S-50N'
             mask = np.ma.mask_or(lat2lat_2D_unmasked(lowerlat=-50,
                                                      higherlat=50, res=res),
                                  ocean_unmasked(res=res)[..., 0])
-        elif case == 21:
+        elif MaskNumber == 21:
             mask = get_north_sea_unmasked(res=res)
-        elif case == 25:
+        elif MaskNumber == 25:
             mask = get_EU_unmasked(res=res)
-#        if case == 26:
+#        if MaskNumber == 26:
 #            mask = get_2D_BL_unmasked( res=res )
-        elif case == 27:  # 'Land Tropics Sur.':
+        elif MaskNumber == 27:  # 'Land Tropics Sur.':
             tmp = np.ma.mask_or(surface_unmasked(res=res),
                                 land_unmasked(res=res))
             mask = np.ma.mask_or(tmp, tropics_unmasked(res=res))
         else:
-            print('WARNING - Mask not setup for case={}'.format(case))
+            PrtStr = 'WARNING - Mask not setup for MaskNumber={}'
+            print( PrtStr.format(MaskNumber) )
             sys.exit()
         # Invert mask to leave exception unmasked if used to multiply
         mask = np.logical_not(mask)
 
     # --- This is a more pythonic way of using masks (Use as preference)
     else:
-        # For case, pull mask from case list
-        if case == 0:
+        # Use a bulk approach for Rectangular masks
+        if region in RectangluarMasks['MaskName'].values:
+            # Retrieve mask extents from dictionary, then construct mask
+            Mask4Region = MaskDict.loc[MaskDict['MaskName']==region]
+            lowerlat = Mask4Region['lowerlat'].values[0]
+            higherlat = Mask4Region['higherlat'].values[0]
+            lowerlon = Mask4Region['lowerlon'].values[0]
+            higherlon = Mask4Region['higherlon'].values[0]
+            # Get a mask for lat and lon range, then combine
+            mask1 = lat2lat_2D_unmasked(res=res, lowerlat=lowerlat,
+                                        higherlat=higherlat)
+            mask2 = lon2lon_2D_unmasked(res=res, lowerlon=lowerlon,
+                                        higherlon=higherlon)
+            mask = np.ma.mask_or(mask1, mask2)
+
+        # For MaskNumber, pull mask from MaskNumber list
+        elif MaskNumber == 0:
             mask = tropics_unmasked(res=res, saizlopez=saizlopez)
-        elif case == 1:
+        elif MaskNumber == 1:
             mask = mid_lats_unmasked(res=res)
-        elif case == 2:
+        elif MaskNumber == 2:
             mask = southpole_unmasked(res=res)
-        elif case == 3:
+        elif MaskNumber == 3:
             mask = northpole_unmasked(res=res)
-        elif case == 4:
+        elif MaskNumber == 4:
             #        mask = np.logical_not( all_unmasked( res=res ) )
             mask = all_unmasked(res=res)
-        elif case == 5:
+        elif MaskNumber == 5:
             mask = extratropics_unmasked(res=res)
-        elif case == 6:
+        elif MaskNumber == 6:
             mask = ocean_unmasked(res=res)
-        elif case == 7:
+        elif MaskNumber == 7:
             mask = NH_unmasked(res=res)
-        elif case == 8:
+        elif MaskNumber == 8:
             mask = SH_unmasked(res=res)
-        elif case == 10:
+        elif MaskNumber == 10:
             mask = ice_unmasked(res=res)
-        elif case == 11:
+        elif MaskNumber == 11:
             mask = land_unmasked(res=res)
-        elif case == 12:
+        elif MaskNumber == 12:
             mask = mask_lat40_2_40(res=res)
-        elif case == 13:
+        elif MaskNumber == 13:
             mask = np.ma.mask_or(ocean_unmasked(res=res),
                                  tropics_unmasked(res=res,
                                                   saizlopez=saizlopez))
-        elif case == 14:
+        elif MaskNumber == 14:
             mask = np.ma.mask_or(land_unmasked(res=res),
                                  tropics_unmasked(res=res,
                                                   saizlopez=saizlopez))
-        elif case == 15:  # 'All Sur.'
+        elif MaskNumber == 15:  # 'All Sur.'
             mask = surface_unmasked(res=res)
-        elif case == 16:  # 'Ocean Sur.'
+        elif MaskNumber == 16:  # 'Ocean Sur.'
             mask = np.ma.mask_or(surface_unmasked(res=res),
                                  ocean_unmasked(res=res))
-        elif case == 17:  # 'Land Sur.':
+        elif MaskNumber == 17:  # 'Land Sur.':
             mask = np.ma.mask_or(surface_unmasked(res=res),
                                  land_unmasked(res=res))
-        elif case == 18:  # 'Ice Sur.'
+        elif MaskNumber == 18:  # 'Ice Sur.'
             mask = np.ma.mask_or(surface_unmasked(res=res),
                                  ice_unmasked(res=res))
-        elif case == 19:
+        elif MaskNumber == 19:
             mask = lat2lat_2D_unmasked(lowerlat=-50, higherlat=50,
                                        res=res)
-        elif case == 20:
+        elif MaskNumber == 20:
             mask = np.ma.mask_or(lat2lat_2D_unmasked(lowerlat=-50,
                                                      higherlat=50, res=res),
                                  ocean_unmasked(res=res)[..., 0])
-        elif case == 21:
+        elif MaskNumber == 21:
             mask = get_north_sea_unmasked(res=res)
-        elif case == 22:
+        elif MaskNumber == 22:
             mask = get_mediterranean_sea_unmasked(res=res)
-        elif case == 23:
+        elif MaskNumber == 23:
             mask = get_unmasked_black_sea(res=res)
-        elif case == 24:
+        elif MaskNumber == 24:
             mask = get_unmasked_irish_sea(res=res)
-        elif case == 25:
+        elif MaskNumber == 25:
             mask = get_EU_unmasked(res=res)
-#        if case == 26:
+#        if MaskNumber == 26:
 #            mask = get_2D_BL_unmasked( res=res )
-        elif case == 27:  # 'Land Tropics Sur.':
+        elif MaskNumber == 27:  # 'Land Tropics Sur.':
             tmp = np.ma.mask_or(surface_unmasked(res=res),
                                 land_unmasked(res=res))
             mask = np.ma.mask_or(tmp, tropics_unmasked(res=res))
-        elif case == 28:
+        elif MaskNumber == 28:
             mask = np.ma.mask_or(lat2lat_2D_unmasked(lowerlat=50,
                                                      higherlat=80, res=res),
                                  land_unmasked(res=res)[..., 0])
-        elif case == 29:  # Alps
-            # Alps mask
-            lowerlat = 43
-            higherlat = 47
-            lowerlon = 5
-            higherlon = 15
-            # Get a mask for lat and lon range, then combine
-            mask1 = lat2lat_2D_unmasked(res=res, lowerlat=lowerlat,
-                                        higherlat=higherlat)
-            mask2 = lon2lon_2D_unmasked(res=res, lowerlon=lowerlon,
-                                        higherlon=higherlon)
-            mask = np.ma.mask_or(mask1, mask2)
-        elif case == 30:  # Location ('loc' )
-            # Alps
+#         elif MaskNumber == 29:  # Alps
+#             # Alps mask
+#             lowerlat = 43
+#             higherlat = 47
+#             lowerlon = 5
+#             higherlon = 15
+#             # Get a mask for lat and lon range, then combine
+#             mask1 = lat2lat_2D_unmasked(res=res, lowerlat=lowerlat,
+#                                         higherlat=higherlat)
+#             mask2 = lon2lon_2D_unmasked(res=res, lowerlon=lowerlon,
+#                                         higherlon=higherlon)
+#             mask = np.ma.mask_or(mask1, mask2)
+        elif MaskNumber == 30:  # Location ('loc' )
             mask = location_unmasked(lat=lat, lon=lon, res=res)
-        elif case == 31:  # Rough(!) France map
-            # mask
+        elif MaskNumber == 31:  # Rough(!) France map
             mask = get_France_unmasked(res=res)
 
-        elif case == 32:  # CONUS
-            lowerlat = 23
-            higherlat = 60
-            lowerlon = -125
-            higherlon = -54
-            # Get a mask for lat and lon range, then combine
-            mask1 = lat2lat_2D_unmasked(res=res, lowerlat=lowerlat,
-                                        higherlat=higherlat)
-            mask2 = lon2lon_2D_unmasked(res=res, lowerlon=lowerlon,
-                                        higherlon=higherlon)
-            mask = np.ma.mask_or(mask1, mask2)
+#         elif MaskNumber == 32:  # CONUS
+#             lowerlat = 23
+#             higherlat = 60
+#             lowerlon = -125
+#             higherlon = -54
+#             # Get a mask for lat and lon range, then combine
+#             mask1 = lat2lat_2D_unmasked(res=res, lowerlat=lowerlat,
+#                                         higherlat=higherlat)
+#             mask2 = lon2lon_2D_unmasked(res=res, lowerlon=lowerlon,
+#                                         higherlon=higherlon)
+#             mask = np.ma.mask_or(mask1, mask2)
 
-        elif case == 33:  # Cape_Verde_Flying
-            lowerlat = 11.9
-            higherlat = 21.1
-            lowerlon = -29.1
-            higherlon = -15.9
-            # Get a mask for lat and lon range, then combine
-            mask1 = lat2lat_2D_unmasked(res=res, lowerlat=lowerlat,
-                                        higherlat=higherlat)
-            mask2 = lon2lon_2D_unmasked(res=res, lowerlon=lowerlon,
-                                        higherlon=higherlon)
-            mask = np.ma.mask_or(mask1, mask2)
-
-        elif case == 34:  # local_CVAO_area
-            lowerlat = 0
-            higherlat = 25
-            lowerlon = -30
-            higherlon = -10
-            # Get a mask for lat and lon range, then combine
-            mask1 = lat2lat_2D_unmasked(res=res, lowerlat=lowerlat,
-                                        higherlat=higherlat)
-            mask2 = lon2lon_2D_unmasked(res=res, lowerlon=lowerlon,
-                                        higherlon=higherlon)
-            mask = np.ma.mask_or(mask1, mask2)
+#         elif MaskNumber == 33:  # Cape_Verde_Flying
+#             # Retrieve spatial extents for MaskName
+#             d = GetMaskExtents()
+#             lowerlat = 11.9
+#             higherlat = 21.1
+#             lowerlon = -29.1
+#             higherlon = -15.9
+#             # Get a mask for lat and lon range, then combine
+#             mask1 = lat2lat_2D_unmasked(res=res, lowerlat=lowerlat,
+#                                         higherlat=higherlat)
+#             mask2 = lon2lon_2D_unmasked(res=res, lowerlon=lowerlon,
+#                                         higherlon=higherlon)
+#             mask = np.ma.mask_or(mask1, mask2)
+#
+#         elif MaskNumber == 34:  # local_CVAO_area
+#             lowerlat = 0
+#             higherlat = 25
+#             lowerlon = -30
+#             higherlon = -10
+#             # Get a mask for lat and lon range, then combine
+#             mask1 = lat2lat_2D_unmasked(res=res, lowerlat=lowerlat,
+#                                         higherlat=higherlat)
+#             mask2 = lon2lon_2D_unmasked(res=res, lowerlon=lowerlon,
+#                                         higherlon=higherlon)
+#             mask = np.ma.mask_or(mask1, mask2)
 
         else:
-            print('WARNING - Mask not setup for case={}'.format(case))
+            PrtStr = 'WARNING - Mask not setup for MaskNumber={}'
+            print(PrtStr.format(MaskNumber))
             sys.exit()
 
     logging.debug('prior to setting dimensions: {}'.format(mask.shape))
@@ -1169,6 +1197,22 @@ def mask_all_but(region='All', M_all=False, saizlopez=False,
     logging.debug('post to setting dimensions: {}'.format(mask.shape))
     logging.info("returning a 'mask' of type:{}".format(type(mask)))
     return mask
+
+
+def GetMaskExtents(MaskName, FileName='spatial_extents4masks.csv', folder='./',
+                   ReturnDataFrame=False):
+    """
+    Retrieve the mask extents from csv file
+    """
+    # Retrieve csv file of mask extents as a pd.DataFram
+    df = pd.read_csv( '{}/{}'.format(folder, FileName) )
+    # Return the extents of all masks, or just the requested one
+    if ReturnDataFrame:
+        return df
+    else:
+        df = df.loc[df['MaskName'] == MaskName, :]
+        # Convert to Series, then return as a dictionary
+        return df.T.iloc[:,0].to_dict()
 
 
 def lon2lon_2D_unmasked(lowerlon, higherlon, res='2x2.5', debug=False):
