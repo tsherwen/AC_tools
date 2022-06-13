@@ -75,7 +75,8 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
         glob_pattern = '{}/{}'.format(wd, file_str)
         is_HEMCO_collection = ('hemco' in file_str.lower())
     files = glob.glob(glob_pattern)
-    assert len(files) >= 1, 'No files found matching-{}'.format(glob_pattern)
+    AsstStr = 'No files found matching-{}'
+    assert len(files) >= 1, AsstStr.format(glob_pattern)
     # Sort the files based on their name (which contains a regular datastring)
     files = list(sorted(files))
     # Only open dates for certain dates?
@@ -89,7 +90,6 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
         else:
             format = '%Y%m%d_%H%Mz'
         # Setup a helper function to extract dates from file strings
-
         def get_date_from_filename(x, format=format):
             """
             Extract Dates from filenames
@@ -116,12 +116,18 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
         # NOTE: Updated to use faster opening settings for
         #       files sharing the same coords
         #       https://github.com/pydata/xarray/issues/1823
-        ds = xr.open_mfdataset(files,
-                               #                           concat_dim='time',
-                               combine=combine,
-                               data_vars=data_vars, coords=coords,
-                               compat=compat, parallel=parallel)
-        #
+        try:
+            ds = xr.open_mfdataset(files,
+                                   #concat_dim='time',
+                                   combine=combine,
+                                   data_vars=data_vars, coords=coords,
+                                   compat=compat, parallel=parallel)
+        except OSError:
+            PrtStr = 'OSError: no files to open - 1st 10 files: {}'
+            print(AsstStr.format(glob_pattern))
+            print(PrtStr.format(files[:10]))
+            print('NOTE: Attempted to find files for dates:', dates2use)
+            sys.exit(0)
 
     return ds
 
