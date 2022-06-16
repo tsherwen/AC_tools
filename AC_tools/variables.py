@@ -210,6 +210,11 @@ def constants(input_x, rtn_dict=False):
         'mol2DU': 2.69E20,
         # Specific gas constant for dry air (J/(kg·K))
         'Rdry': 287.058,
+        # assume standard air density
+        # At sea level and at 15 °C air has a density of approximately 1.225
+        # kg/m3 (0.001225 g/cm3, 0.0023769 slug/ft3, 0.0765 lbm/ft3)
+        # according to ISA (International Standard Atmosphere).
+        'AIRDEN': 0.001225,  # g/cm3
     }
     if rtn_dict:
         return con_dict
