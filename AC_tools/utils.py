@@ -1792,3 +1792,25 @@ def add_suffix2all_strs_in_dict(d, PrefixStr='OutputDir/'):
         str += PrefixStr
         d[key] = str
     return d
+
+
+def mk_presentabletable_from_df(df, dpi=320,
+                                SaveFileName='Stats_table.png'):
+    """
+    Make a more presentable table from a pandas DataFrame
+    """
+    fig, ax =plt.subplots(figsize=(7.5,2.5))
+    ax.axis('tight')
+    ax.axis('off')
+    rcolors = plt.cm.BuPu(np.full(len(df.index), 0.1))
+    ccolors = plt.cm.BuPu(np.full(len(df.columns), 0.1))
+    the_table = ax.table(cellText=df.values,
+            rowLabels=df.index,
+            rowColours=rcolors,
+            rowLoc='right',
+            colColours=ccolors,
+            colLabels=df.columns,
+            loc='center')
+    plt.tight_layout
+    plt.savefig(SaveFileName, dpi=dpi, bbox_inches='tight')
+    plt.close()
