@@ -140,7 +140,7 @@ def ds2zonal_plot(ds=None, var2plot=None, StateMet=None, AltVar='lev',
     if isinstance(ax, type(None)):
         ax = fig.add_subplot(1, 1, 1)
     # Calculate number of molecules
-    MolecVar = 'Met_MOLCES'
+    MolecVar = 'Met_MOLECS'
     try:
         StateMet[MolecVar]
     except KeyError:

@@ -128,7 +128,7 @@ def get_PL_ars4mech_NetCDF(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
     # Weight by molecules?
     if weight_by_molecs:
         # Calculate number of molecules
-        MolecVar = 'Met_MOLCES'
+        MolecVar = 'Met_MOLECS'
         RMM_air = constants('RMM_air')
         StateMet[MolecVar] = StateMet['Met_AIRDEN'].copy()
         # kg/m3 => molecs/cm3
