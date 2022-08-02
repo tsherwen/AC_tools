@@ -802,7 +802,7 @@ def get_HEMCO_ds_summary_stats_Gg_yr(ds, vars2use=None, ref_spec=None):
 
 
 def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
-                              LongNameStr=None):
+                              LongNameStr=None, debug=False):
     """
     Add a variable to dataset for a chemical family (e.g. NOy, NOx...)
 
@@ -968,7 +968,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
             vars2use.pop(vars2use.index(CopyVar))
             # Loop an include all species in family
             # (e.g. Add dust nitrates to 'NIT-all' if present.)
-            for var in vars2use[1:]:
+            for var in vars2use:
                 VarName2Add = '{}{}'.format(prefix, var)
                 try:
                     ds[NewVarName] = ds[NewVarName] + ds[VarName2Add]
@@ -1045,7 +1045,7 @@ def get_stats4RunDict_as_df(RunDict=None,
     HOx_vars = ['HO2', 'OH', 'HOx']
     SCprefix = 'SpeciesConc_'
     CACsuffix = 'concAfterChem'
-    MolecVar = 'Met_MOLCES'
+    MolecVar = 'Met_MOLECS'
     prefix = SCprefix
     ALLSp = core_specs + extra_burden_specs + extra_surface_specs
     # Also add all families and specs in 'DiagVars' to this list
@@ -1546,7 +1546,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
     return df
 
 
-def add_molec_den2ds(ds, MolecVar='Met_MOLCES', AirDenVar='Met_AIRDEN'):
+def add_molec_den2ds(ds, MolecVar='Met_MOLECS', AirDenVar='Met_AIRDEN'):
     """
     Add molecules/cm3 to xr.dataset (must contain AirDenVar)
     """
@@ -1639,7 +1639,7 @@ def get_specieslist_from_input_geos(folder=None, filename='input.geos'):
 
 
 def get_GEOSChem_H2O(units='molec/cm3', wd=None, rm_strat=True,
-                     rtn_units=False, MolecVar='Met_MOLCES',
+                     rtn_units=False, MolecVar='Met_MOLECS',
                      MetH2OVar='Met_AVGW', NewH2OVar='H2O',
                      StateMet=None):
     """
@@ -1678,7 +1678,7 @@ def get_GEOSChem_H2O(units='molec/cm3', wd=None, rm_strat=True,
         return ds
 
 
-def add_HOx_to_CAC_ds(ds, StateMet=None, MolecVar='Met_MOLCES',
+def add_HOx_to_CAC_ds(ds, StateMet=None, MolecVar='Met_MOLECS',
                       units='molec/cm3', UpdateHOxUnits=True,
                       debug=False):
     """
