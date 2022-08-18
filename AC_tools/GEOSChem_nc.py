@@ -816,20 +816,18 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
     Returns
     -------
     (xr.Dataset)
+
+    Notes
+    -------
+     - This function all works on pd.DataFrames
     """
     # Setup string for new long_name attribute in xr.Dataset
     if isinstance(LongNameStr, type(None)):
         LongNameStr = 'Dry mixing ratio of species {}'
     # Setup Dictionary of CopyVarNames for Familie
-    # TODO: use first species for families with stoichiometry of unity
-    CopyVar4Fam = {
-    'NIT-all': 'NIT',
-    'DST-all': 'DST1',
-    'DSTAL-all': 'DSTAL1',
-    'SAL-all': 'SALA',
-    'SO4-all':'SO4',
-    'SOx': 'SO2',
-    }
+    # TODO: use first species for families with stoichiometry of unity,
+    #       which will make it easier to add families via AC_Tools yml files
+    CopyVar4Fam = GC_var('CopyVariable4Family')
     # Select requested family and add to xr.Dataset if not already present
     NewVarName = '{}{}'.format(prefix, fam)
     try:
@@ -846,7 +844,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
         ds[NewVarName] = ds[prefix+CopyVar].copy()
         ds[NewVarName] = ds[NewVarName] + ds[prefix+'NO2']
         # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
+        attrs = ds[prefix+CopyVar].attrs.copy()
         attrs['long_name'] = LongNameStr.format(fam)
         ds[NewVarName].attrs = attrs
 
@@ -863,7 +861,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
             except KeyError:
                 pass
         # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
+        attrs = ds[prefix+CopyVar].attrs.copy()
         attrs['long_name'] = LongNameStr.format(fam)
         ds[NewVarName].attrs = attrs
 
@@ -878,7 +876,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
             except KeyError:
                 pass
         # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
+        attrs = ds[prefix+CopyVar].attrs.copy()
         attrs['long_name'] = LongNameStr.format(fam)
         ds[NewVarName].attrs = attrs
 
@@ -897,7 +895,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
             except KeyError:
                 pass
         # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
+        attrs = ds[prefix+CopyVar].attrs.copy()
         attrs['long_name'] = LongNameStr.format(fam)
         ds[NewVarName].attrs = attrs
 
@@ -916,7 +914,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
             except KeyError:
                 pass
         # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
+        attrs = ds[prefix+CopyVar].attrs.copy()
         attrs['long_name'] = LongNameStr.format(fam)
         ds[NewVarName].attrs = attrs
 
@@ -935,7 +933,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
             except KeyError:
                 pass
         # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
+        attrs = ds[prefix+CopyVar].attrs.copy()
         attrs['long_name'] = LongNameStr.format(fam)
         ds[NewVarName].attrs = attrs
 
@@ -954,11 +952,12 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
             except KeyError:
                 pass
         # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
+        attrs = ds[prefix+CopyVar].attrs.copy()
         attrs['long_name'] = LongNameStr.format(fam)
         ds[NewVarName].attrs = attrs
 
     elif (fam in CopyVar4Fam.keys()):
+        # For families where the stoichometry is equal for all members...
         PrtStr = "WARNING: Attempting to extract family ('{}') raised a {}"
         try:
             CopyVar = CopyVar4Fam[fam]
@@ -975,7 +974,7 @@ def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
                 except KeyError:
                     pass
             # Copy and update dataset attributes
-            attrs = ds[GCVarName].attrs
+            attrs = ds[GCVarName].attrs.copy()
             attrs['long_name'] = LongNameStr.format(fam)
             ds[NewVarName].attrs = attrs
         except ValueError:
@@ -1750,3 +1749,26 @@ def add_HOx_to_CAC_ds(ds, StateMet=None, MolecVar='Met_MOLECS',
         del ds[HO2varMolecCm3]
 
     return ds
+
+
+def update_restart_file_dates(sdate=None, folder='./', TimeVar='time',
+                              FileName='GEOSChem.Restart.20180701_0000z.nc4'):
+    """
+    Update the restart time variable and filename
+    """
+    # open the current NetCDF file
+    ds = xr.open_dataset('{}{}'.format(folder, FileName) )
+
+    # Use a default value if a start date not provided
+    if isinstance(sdate, type(None)):
+        sdate = datetime.datetime(2018, 7, 1)
+    # Ensure the same attrs are used
+    attrs = ds[TimeVar].attrs.copy()
+
+    # Assign the new values
+    ds = ds.assign( {TimeVar: [sdate]} )
+    attrs[TimeVar] = attrs
+    # Save out NetCDF
+    SaveNameStr = 'GEOSChem.Restart.{}{:0>2}{:0>2}_0000z.nc4'
+    SaveName = SaveNameStr.format(sdate.year, sdate.month, sdate.day)
+    ds.to_netcdf( '{}{}'.format(folder, SaveName) )
