@@ -67,16 +67,31 @@ def counter_directory_contains_files(model_path, must_contain):
     return model_ouput_file_counter
 
 
-def replace_strs_in_files(wd, input_str, output_str, debug=False):
+# def replace_strs_in_files(wd, input_str, output_str, debug=False):
+#     """
+#     Replace text in files
+#     """
+#     print((wd, input_str, output_str))
+#     for f in os.listdir(wd):
+#         if not f.startswith('.'):
+#             print(f)
+#             os.rename(wd + f, wd + f.replace(input_str, output_str))
+#             print((f.replace(input_str, output_str)))
+
+def replace_strs_in_file(path2file, input_str, output_str, debug=False):
     """
-    Replace text in files
+    Replace text in file with strings provide
     """
     print((wd, input_str, output_str))
-    for f in os.listdir(wd):
-        if not f.startswith('.'):
-            print(f)
-            os.rename(wd + f, wd + f.replace(input_str, output_str))
-            print((f.replace(input_str, output_str)))
+    with open(path2file, 'r') as OpenedFile:
+        lines = [i for i in OpenedFile]
+    lines = [i.replace(input_str, output_str) for i in lines]
+
+    # Save out new file
+    OutputFile = path2file+'.output'
+    with open(OutputFile, 'w') as OpenedFile:
+        for line in lines:
+            OpenedFile.write(line)
 
 
 def get_xy(Lon, Lat, lon_edges, lat_edges, debug=False):
