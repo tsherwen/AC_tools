@@ -210,6 +210,11 @@ def constants(input_x, rtn_dict=False):
         'mol2DU': 2.69E20,
         # Specific gas constant for dry air (J/(kg·K))
         'Rdry': 287.058,
+        # assume standard air density
+        # At sea level and at 15 °C air has a density of approximately 1.225
+        # kg/m3 (0.001225 g/cm3, 0.0023769 slug/ft3, 0.0765 lbm/ft3)
+        # according to ISA (International Standard Atmosphere).
+        'AIRDEN': 0.001225,  # g/cm3
     }
     if rtn_dict:
         return con_dict
@@ -620,19 +625,18 @@ def species_mass(spec):
 
     Notes
     -----
+     - Use legacy AC_tools yml as default offline yml file for now.
+     - aim switch to GC JSON file outputed by GEOS-Chem
      - C3H5I == C2H5I (this is a vestigle typo, left in to allow for
     use of older model run data  )
     """
-    d = read_yaml_file('species_mass.yml')
-    return d[spec]
-
-
-def get_spec_properties():
-    """
-    Get the species properties using the GEOS-Chem json files in GCPy
-    """
-
-    pass
+    try:
+        d = read_yaml_file('species_mass.yml')
+        return d[spec]
+    except KeyError:
+        d = read_GC_species_database()
+        SpecMassStr = 'MW_g'
+        return d[spec][SpecMassStr]
 
 
 def spec_stoich(spec, IO=False, I=False, NO=False, OH=False, N=False,
@@ -1050,13 +1054,64 @@ def get_conversion_factor_kgX2kgREF(spec=None, ref_spec=None, stioch=None,
     return factor
 
 
-def read_yaml_file(YAML_filename, debug=False):
+def get_GC_aerosol_species(YAML_filename='species_database_GCv12_9.yml',
+                           path=None, AerosolVar='Is_Aerosol',
+                           debug=False):
+    """
+    Retrieve a list of GEOS-Chem aerosol species
+    """
+    d = read_GC_species_database(path=path)
+    AerosolSpecies = []
+    for key in d.keys():
+        try:
+            Is_Aerosol = d[key][AerosolVar]
+            if Is_Aerosol:
+                AerosolSpecies += [key]
+        except KeyError:
+            PrtStr = "WARNING: Aerosol variable '{}' not present for '{}'"
+            if debug:
+                print(PrtStr.format(AerosolVar, key))
+    # Include aerosol families in this list too
+    AerosolSpecies += ['NIT-all', 'SO4-all', 'DST-all', 'DSTAL-all', 'SAL-all']
+    # Drop DMS if included in this list
+    try:
+        idx = AerosolSpecies.index('DMS')
+        AerosolSpecies.pop(idx)
+    except ValueError:
+        if debug:
+            print("NOTE: speices ('DMS') not present in 'AerosolSpecies' list")
+    return AerosolSpecies
+
+
+def read_GC_species_database(YAML_filename='species_database_GCv12_9.yml',
+                             path=None, debug=False
+                             ):
+    """
+    Read in the GEOS-Chem YAML file
+    """
+    d = read_yaml_file(path=path, YAML_filename=YAML_filename, debug=debug)
+    return d
+
+
+def get_spec_properties():
+    """
+    Get the species properties using the GEOS-Chem json files in GCPy
+
+    Notes
+    ----
+     - TODO: remove this function and other duplicates?
+    """
+    return read_GC_species_database()
+
+
+def read_yaml_file(YAML_filename, path=None, debug=False):
     """
     Helper function to read yaml files
     """
     assert type(YAML_filename) == str, 'Passed filename argument must be str!'
     filename = inspect.getframeinfo(inspect.currentframe()).filename
-    path = os.path.dirname(os.path.abspath(filename))
+    if isinstance(path, type(None)):
+        path = os.path.dirname(os.path.abspath(filename))
     with open(os.path.join(path, YAML_filename), "r") as stream:
         try:
             d = yaml.safe_load(stream)

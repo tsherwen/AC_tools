@@ -1,0 +1,53 @@
+MaskName,lowerlat,higherlat,lowerlon,higherlon,ID,Rectangle?,Polygon?
+Tropics,,,,,0,,FALSE
+tropics,,,,,0,,FALSE
+mid_lats,,,,,1,,FALSE
+Mid Lats,,,,,1,,FALSE
+Mid lats,,,,,1,,FALSE
+south_pole,,,,,2,,FALSE
+south pole,,,,,2,,FALSE
+north_pole,,,,,3,,FALSE
+north pole,,,,,3,,FALSE
+,,,,,4,,FALSE
+unmask_all,,,,,4,,FALSE
+All,,,,,4,,FALSE
+global,,,,,4,,FALSE
+Global,,,,,4,,FALSE
+Oceanic,,,,,6,,FALSE
+Ocean,,,,,6,,FALSE
+Ocean Tropics,,,,,13,,FALSE
+Oceanic Tropics,,,,,13,,FALSE
+Ocn. Trop.,,,,,13,,FALSE
+Extratropics,,,,,5,,FALSE
+Ex. Tropics,,,,,5,,FALSE
+NH,,,,,7,,FALSE
+SH,,,,,8,,FALSE
+Ice,,,,,10,,FALSE
+Land,,,,,11,,FALSE
+lat40_2_40,,,,,12,,FALSE
+Land Tropics,,,,,14,,FALSE
+All Sur.,,,,,15,,FALSE
+surface,,,,,15,,FALSE
+Ocean Sur.,,,,,16,,FALSE
+Land Sur.,,,,,17,,FALSE
+Ice Sur.,,,,,18,,FALSE
+lat50_2_50,,,,,19,,FALSE
+50S-50N,,,,,19,,FALSE
+Ocn. 50S-50N,,,,,20,,FALSE
+North Sea,,,,,21,,FALSE
+Med. Sea,,,,,22,,FALSE
+Mediterranean Sea,,,,,22,,FALSE
+Black Sea,,,,,23,,FALSE
+Irish Sea,,,,,24,,FALSE
+Europe,,,,,25,,FALSE
+EU,,,,,25,,FALSE
+Land Tropics Sur.,,,,,27,,FALSE
+Boreal Land,,,,,28,,FALSE
+Alps,43,47,5,15,29,,FALSE
+loc,,,,,30,,FALSE
+location,,,,,30,,FALSE
+France,,,,,31,,FALSE
+CONUS,23,60,-125,-54,32,TRUE,FALSE
+Cape_Verde_Flying,11.9,21.1,-29.1,-15.9,33,TRUE,FALSE
+local_CVAO_area,0,25,-30,-10,34,TRUE,FALSE
+inflow_CVAO_area,0,35,-40,-10,35,TRUE,FALSE

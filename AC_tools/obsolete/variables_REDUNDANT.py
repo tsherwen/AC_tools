@@ -28,6 +28,7 @@ import numpy as np
 # imports should be specific and in individual functions
 # import tms modules with shared functions
 from .. core import *
+from .. utils import *
 from .. variables import get_unit_scaling
 
 

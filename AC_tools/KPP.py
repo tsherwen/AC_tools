@@ -26,7 +26,7 @@ from datetime import datetime as datetime_
 import logging
 
 # AC_tools imports
-from . generic import myround
+from .utils import * # Just using "myround" func?
 from .GEOSChem_bpch import *
 from .GEOSChem_nc import *
 
@@ -128,7 +128,7 @@ def get_PL_ars4mech_NetCDF(fam='LOx', ref_spec='O3', Ox_fam_dict=None,
     # Weight by molecules?
     if weight_by_molecs:
         # Calculate number of molecules
-        MolecVar = 'Met_MOLCES'
+        MolecVar = 'Met_MOLECS'
         RMM_air = constants('RMM_air')
         StateMet[MolecVar] = StateMet['Met_AIRDEN'].copy()
         # kg/m3 => molecs/cm3
@@ -1506,7 +1506,7 @@ def get_Ox_fam_dicts_BPCH(fam='LOx', ref_spec='O3', wd=None, CODE_wd=None,
     return Ox_fam_dict
 
 
-def prt_lines4species_database_yml(tags, extr_str=''):
+def prt_lines4species_database_yml(tags, extr_str='', prefix='P'):
     """
     Print lines for tags to paste into the species_database.yml file
 
@@ -1528,6 +1528,14 @@ def prt_lines4species_database_yml(tags, extr_str=''):
         print(pstr1.format(tag), file=a)
         print(pstr2, file=a)
         print(pstr3, file=a)
+
+    # Also print out lines with the prefix (e.g. "P" for production)
+    pstr1 = '{}{}'.format(prefix, '{}:')
+    for tag in tags:
+        print(pstr1.format(tag), file=a)
+        print(pstr2, file=a)
+        print(pstr3, file=a)
+
 
 
 def calc_fam_loss_by_route(wd=None, fam='LOx', ref_spec='O3',

@@ -32,3 +32,15 @@ def get_FAAM_locations_as_df(flight_ID='C225'):
     d = json.loads(json_acceptable_string)
     # Return as a dataframe
     return pd.DataFrame(d)
+
+
+def sort_sites_by_lat(sites):
+    """
+    Order given list of GAW sties by latitudes
+    """
+    # Get info
+    vars = [gaw_2_loc(s) for s in sites]  # lat, lon, alt, TZ
+    # Sort by lat, index orginal sites list and return
+    lats = [i[0] for i in vars]
+    slats = sorted(lats)[::-1]
+    return [sites[i] for i in [lats.index(ii) for ii in slats]]

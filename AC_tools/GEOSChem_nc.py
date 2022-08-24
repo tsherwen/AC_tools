@@ -35,7 +35,7 @@ from datetime import datetime as datetime_
 # imports should be specific and in individual functions
 # import tms modules with shared functions
 from .core import *
-from .generic import *
+from .utils import *
 from .AC_time import *
 from .planeflight import *
 from .variables import *
@@ -75,7 +75,8 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
         glob_pattern = '{}/{}'.format(wd, file_str)
         is_HEMCO_collection = ('hemco' in file_str.lower())
     files = glob.glob(glob_pattern)
-    assert len(files) >= 1, 'No files found matching-{}'.format(glob_pattern)
+    AsstStr = 'No files found matching-{}'
+    assert len(files) >= 1, AsstStr.format(glob_pattern)
     # Sort the files based on their name (which contains a regular datastring)
     files = list(sorted(files))
     # Only open dates for certain dates?
@@ -115,12 +116,18 @@ def get_GEOSChem_files_as_ds(file_str='GEOSChem.SpeciesConc.*.nc4', wd=None,
         # NOTE: Updated to use faster opening settings for
         #       files sharing the same coords
         #       https://github.com/pydata/xarray/issues/1823
-        ds = xr.open_mfdataset(files,
-                               #                           concat_dim='time',
-                               combine=combine,
-                               data_vars=data_vars, coords=coords,
-                               compat=compat, parallel=parallel)
-        #
+        try:
+            ds = xr.open_mfdataset(files,
+                                   #concat_dim='time',
+                                   combine=combine,
+                                   data_vars=data_vars, coords=coords,
+                                   compat=compat, parallel=parallel)
+        except OSError:
+            PrtStr = 'OSError: no files to open - 1st 10 files: {}'
+            print(AsstStr.format(glob_pattern))
+            print(PrtStr.format(files[:10]))
+            print('NOTE: Attempted to find files for dates:', dates2use)
+            sys.exit(0)
 
     return ds
 
@@ -796,189 +803,185 @@ def get_HEMCO_ds_summary_stats_Gg_yr(ds, vars2use=None, ref_spec=None):
 
 
 def AddChemicalFamily2Dataset(ds, fam='NOy', prefix='SpeciesConc_',
-                              LongNameStr=None):
+                              LongNameStr=None, debug=False):
     """
     Add a variable to dataset for a chemical family (e.g. NOy, NOx...)
+
+    Notes
+    -------
+    ds (xr.Dataset): data in format and containing necessary variables
+    fam (str): Name of the family to extract (e.g. 'NOy')
+    LongNameStr (str): String to use for long_name attribute in dataset
+    prefix (str): GEOS-Chem NetCDF variable prefix used in dataset
+
+    Returns
+    -------
+    (xr.Dataset)
+
+    Notes
+    -------
+     - This function all works on pd.DataFrames
     """
     # Setup string for new long_name attribute in xr.Dataset
     if isinstance(LongNameStr, type(None)):
         LongNameStr = 'Dry mixing ratio of species {}'
-    # Select requested family and add to xr.Dataset
-    if fam == 'NOx':
-        fam2use = 'NOx'
+    # Setup Dictionary of CopyVarNames for Familie
+    # TODO: use first species for families with stoichiometry of unity,
+    #       which will make it easier to add families via AC_Tools yml files
+    CopyVar4Fam = GC_var('CopyVariable4Family')
+    # Select requested family and add to xr.Dataset if not already present
+    NewVarName = '{}{}'.format(prefix, fam)
+    try:
+        ds[NewVarName]
+        PrtStr = "NOTE: Skipped addition to dataset as variable present: '{}'"
+        if debug:
+            print(PrtStr.format(NewVarName))
+        return ds
+    except KeyError:
+        pass
+
+    if (fam == 'NOx'):
         CopyVar = 'NO'
-        ds[prefix+fam2use] = ds[prefix+CopyVar].copy()
-        ds[prefix+fam2use] = ds[prefix+fam2use] + ds[prefix+'NO2']
+        ds[NewVarName] = ds[prefix+CopyVar].copy()
+        ds[NewVarName] = ds[NewVarName] + ds[prefix+'NO2']
         # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = LongNameStr.format(fam2use)
-        ds[prefix+fam2use].attrs = attrs
+        attrs = ds[prefix+CopyVar].attrs.copy()
+        attrs['long_name'] = LongNameStr.format(fam)
+        ds[NewVarName].attrs = attrs
 
     elif fam == 'NOy':
         # Add NOy as defined in GEOS-CF, NOy =
         # no_no2_hno3_hno4_hono_2xn2o5_pan_organicnitrates_aerosolnitrates
         vars2use = GC_var('NOy-all')
-        fam2use = 'NOy'
         CopyVar = 'N2O5'
         # 2 N2O5 in NOy, so 2x via template
-        ds[prefix+fam2use] = ds[prefix+CopyVar].copy()
+        ds[NewVarName] = ds[prefix+CopyVar].copy()
         for var in vars2use:
             try:
-                ds[prefix+fam2use] = ds[prefix+fam2use] + ds[prefix+var]
+                ds[NewVarName] = ds[NewVarName] + ds[prefix+var]
             except KeyError:
                 pass
         # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = LongNameStr.format(fam2use)
-        ds[prefix+fam2use].attrs = attrs
+        attrs = ds[prefix+CopyVar].attrs.copy()
+        attrs['long_name'] = LongNameStr.format(fam)
+        ds[NewVarName].attrs = attrs
 
     elif fam == 'NOy-gas':
         # Add a variable for gas-phase NOy
-        fam2use = 'NOy-gas'
         CopyVar = 'N2O5'
-        vars2use = GC_var(fam2use)
-        ds[prefix+fam2use] = ds[prefix+CopyVar].copy()
+        vars2use = GC_var(fam)
+        ds[NewVarName] = ds[prefix+CopyVar].copy()
         for var in vars2use:
             try:
-                ds[prefix+fam2use] = ds[prefix+fam2use] + ds[prefix+var]
+                ds[NewVarName] = ds[NewVarName] + ds[prefix+var]
             except KeyError:
                 pass
         # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = LongNameStr.format(fam2use)
-        ds[prefix+fam2use].attrs = attrs
-
-    elif fam == 'NIT-all':
-        fam2use = 'NIT-all'
-        CopyVar = 'NIT'
-        vars2use = GC_var(fam2use)
-        ds[prefix+fam2use] = ds[prefix+CopyVar].copy()
-        vars2use.pop(vars2use.index(CopyVar))
-        # Add dust nitrates if present.
-        for var in vars2use:
-            try:
-                ds[prefix+fam2use] = ds[prefix+fam2use] + ds[prefix+var]
-            except KeyError:
-                pass
-        # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = LongNameStr.format(fam2use)
-        ds[prefix+fam2use].attrs = attrs
-
-    elif fam == 'SO4-all':
-        fam2use = 'SO4-all'
-        CopyVar = 'SO4'
-        vars2use = GC_var(fam2use)
-        ds[prefix+fam2use] = ds[prefix+CopyVar].copy()
-        vars2use.pop(vars2use.index(CopyVar))
-        # Add dust sulfates if present.
-        for var in vars2use:
-            try:
-                ds[prefix+fam2use] = ds[prefix+fam2use] + ds[prefix+var]
-            except KeyError:
-                pass
-        # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = LongNameStr.format(fam2use)
-        ds[prefix+fam2use].attrs = attrs
-
-    elif fam == 'SOx':
-        fam2use = 'SOx'
-        CopyVar = 'SO2'
-        vars2use = GC_var(fam2use)
-        ds[prefix+fam2use] = ds[prefix+CopyVar].copy()
-        vars2use.pop(vars2use.index(CopyVar))
-        # Add extra variables if present (check family definition for SOx)
-        for var in vars2use:
-            try:
-                ds[prefix+fam2use] = ds[prefix+fam2use] + ds[prefix+var]
-            except KeyError:
-                pass
-        # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = LongNameStr.format(fam2use)
-        ds[prefix+fam2use].attrs = attrs
+        attrs = ds[prefix+CopyVar].attrs.copy()
+        attrs['long_name'] = LongNameStr.format(fam)
+        ds[NewVarName].attrs = attrs
 
     elif fam == 'Cly':
-        fam2use = 'Cly'
         ref_spec = 'Cl'
-        vars2use = GC_var(fam2use)
+        vars2use = GC_var(fam)
         CopyVar = vars2use[0]
         stoich = spec_stoich(CopyVar, ref_spec=ref_spec)
-        vars2use = GC_var(fam2use)
-        ds[prefix+fam2use] = ds[prefix+CopyVar].copy() * stoich
+        vars2use = GC_var(fam)
+        ds[NewVarName] = ds[prefix+CopyVar].copy() * stoich
         # Add dust nitrates if present.
         for var in vars2use[1:]:
             stoich = spec_stoich(var, ref_spec=ref_spec)
             try:
-                ds[prefix+fam2use] = ds[prefix+fam2use] + ds[prefix+var]*stoich
+                ds[NewVarName] = ds[NewVarName] + ds[prefix+var]*stoich
             except KeyError:
                 pass
         # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = LongNameStr.format(fam2use)
-        ds[prefix+fam2use].attrs = attrs
+        attrs = ds[prefix+CopyVar].attrs.copy()
+        attrs['long_name'] = LongNameStr.format(fam)
+        ds[NewVarName].attrs = attrs
 
     elif fam == 'Bry':
-        fam2use = 'Bry'
         ref_spec = 'Br'
-        vars2use = GC_var(fam2use)
+        vars2use = GC_var(fam)
         CopyVar = vars2use[0]
         stoich = spec_stoich(CopyVar, ref_spec=ref_spec)
-        vars2use = GC_var(fam2use)
-        ds[prefix+fam2use] = ds[prefix+CopyVar].copy() * stoich
+        vars2use = GC_var(fam)
+        ds[NewVarName] = ds[prefix+CopyVar].copy() * stoich
         # Add dust nitrates if present.
         for var in vars2use[1:]:
             stoich = spec_stoich(var, ref_spec=ref_spec)
             try:
-                ds[prefix+fam2use] = ds[prefix+fam2use] + ds[prefix+var]*stoich
+                ds[NewVarName] = ds[NewVarName] + ds[prefix+var]*stoich
             except KeyError:
                 pass
         # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = LongNameStr.format(fam2use)
-        ds[prefix+fam2use].attrs = attrs
+        attrs = ds[prefix+CopyVar].attrs.copy()
+        attrs['long_name'] = LongNameStr.format(fam)
+        ds[NewVarName].attrs = attrs
 
     elif fam == 'Iy':
-        fam2use = 'Iy'
         ref_spec = 'I'
-        vars2use = GC_var(fam2use)
+        vars2use = GC_var(fam)
         CopyVar = vars2use[0]
         stoich = spec_stoich(CopyVar, ref_spec=ref_spec)
-        vars2use = GC_var(fam2use)
-        ds[prefix+fam2use] = ds[prefix+CopyVar].copy() * stoich
+        vars2use = GC_var(fam)
+        ds[NewVarName] = ds[prefix+CopyVar].copy() * stoich
         # Add dust nitrates if present.
         for var in vars2use[1:]:
             stoich = spec_stoich(var, ref_spec=ref_spec)
             try:
-                ds[prefix+fam2use] = ds[prefix+fam2use] + ds[prefix+var]*stoich
+                ds[NewVarName] = ds[NewVarName] + ds[prefix+var]*stoich
             except KeyError:
                 pass
         # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = LongNameStr.format(fam2use)
-        ds[prefix+fam2use].attrs = attrs
+        attrs = ds[prefix+CopyVar].attrs.copy()
+        attrs['long_name'] = LongNameStr.format(fam)
+        ds[NewVarName].attrs = attrs
 
     elif fam == 'Ox':
-        fam2use = 'Ox'
         ref_spec = 'O3'
-        vars2use = GC_var(fam2use)
+        vars2use = GC_var(fam)
         CopyVar = vars2use[0]
         stoich = spec_stoich(CopyVar, ref_spec=ref_spec)
-        vars2use = GC_var(fam2use)
-        ds[prefix+fam2use] = ds[prefix+CopyVar].copy() * stoich
+        vars2use = GC_var(fam)
+        ds[NewVarName] = ds[prefix+CopyVar].copy() * stoich
         # Add dust nitrates if present.
         for var in vars2use[1:]:
             stoich = spec_stoich(var, ref_spec=ref_spec)
             try:
-                ds[prefix+fam2use] = ds[prefix+fam2use] + ds[prefix+var]*stoich
+                ds[NewVarName] = ds[NewVarName] + ds[prefix+var]*stoich
             except KeyError:
                 pass
         # Copy and update attributes
-        attrs = ds[prefix+CopyVar].attrs
-        attrs['long_name'] = LongNameStr.format(fam2use)
-        ds[prefix+fam2use].attrs = attrs
+        attrs = ds[prefix+CopyVar].attrs.copy()
+        attrs['long_name'] = LongNameStr.format(fam)
+        ds[NewVarName].attrs = attrs
 
+    elif (fam in CopyVar4Fam.keys()):
+        # For families where the stoichometry is equal for all members...
+        PrtStr = "WARNING: Attempting to extract family ('{}') raised a {}"
+        try:
+            CopyVar = CopyVar4Fam[fam]
+            vars2use = GC_var(fam)
+            GCVarName = '{}{}'.format(prefix, CopyVar)
+            ds[NewVarName] = ds[GCVarName].copy()
+            vars2use.pop(vars2use.index(CopyVar))
+            # Loop an include all species in family
+            # (e.g. Add dust nitrates to 'NIT-all' if present.)
+            for var in vars2use:
+                VarName2Add = '{}{}'.format(prefix, var)
+                try:
+                    ds[NewVarName] = ds[NewVarName] + ds[VarName2Add]
+                except KeyError:
+                    pass
+            # Copy and update dataset attributes
+            attrs = ds[GCVarName].attrs.copy()
+            attrs['long_name'] = LongNameStr.format(fam)
+            ds[NewVarName].attrs = attrs
+        except ValueError:
+            print(PrtStr.format( fam, 'ValueError', ))
+        except KeyError:
+            print(PrtStr.format( fam, 'KeyError', ))
     else:
         print('TODO - setup family and stoich conversion for {}'.format(fam))
 
@@ -995,6 +998,7 @@ def get_stats4RunDict_as_df(RunDict=None,
                             extra_burden_specs=[],
                             extra_surface_specs=[],
                             GC_version='v12.6.0',
+                            SaveFilePrefix=None,
                             DiagVars=[],
                             use_time_in_trop=True, rm_strat=True,
                             dates2use=None, round=3,
@@ -1041,7 +1045,7 @@ def get_stats4RunDict_as_df(RunDict=None,
     HOx_vars = ['HO2', 'OH', 'HOx']
     SCprefix = 'SpeciesConc_'
     CACsuffix = 'concAfterChem'
-    MolecVar = 'Met_MOLCES'
+    MolecVar = 'Met_MOLECS'
     prefix = SCprefix
     ALLSp = core_specs + extra_burden_specs + extra_surface_specs
     # Also add all families and specs in 'DiagVars' to this list
@@ -1137,6 +1141,7 @@ def get_stats4RunDict_as_df(RunDict=None,
     PLprefix = 'Loss'
     vars2use = ['Loss_Ox', 'Prod_Ox']
     if IncProdLossDiags:
+        ErrStr = "WARNING: Error retrieving P/L diags for Ox for '{}'"
         for key in RunDict.keys():
             try:
                 # Get StateMet object
@@ -1145,7 +1150,12 @@ def get_stats4RunDict_as_df(RunDict=None,
                 else:
                     StateMet = dsS[key]
                 # Retrieve Prod-loss diagnostics
-                ds = get_ProdLoss_ds(wd=RunDict[key], dates2use=dates2use)
+                try:
+                    ds = get_ProdLoss_ds(wd=RunDict[key], dates2use=dates2use)
+                except AssertionError:
+                    print(ErrStr.format(key))
+                    continue  # Continue here
+
                 # Only consider troposphere?
                 if rm_strat:
                     # Loop by spec
@@ -1175,7 +1185,7 @@ def get_stats4RunDict_as_df(RunDict=None,
                 PVar = '{} ({})'.format('Loss_Ox', units)
                 df.loc[SaveVar, key] = df.loc[PVar, key] - df.loc[LVar, key]
             except KeyError:
-                print('Key error whilst retrieving P/L diags for Ox')
+                print(ErrStr.format(key))
 
     # - Add lifetime calculations for species
     PtrStr1 = "Calculating lifetime for diag ('{}') for '{}' variable"
@@ -1343,37 +1353,42 @@ def get_stats4RunDict_as_df(RunDict=None,
         # Hardcore stast on HOx
         vars2use = HOx_vars
         AttStr = '{} concentration immediately after chemistry'
-        ErrStr = "Failed to include '{}' diagnostics in df output ('{}')"
+        ErrStr = "WARNING: Did not include '{}' diagnostics in output ('{}')"
+        units = 'molec/cm3'
         dsCC = {}
         for key in RunDict.keys():
             try:
                 ds = GetConcAfterChemDataset(wd=RunDict[key],
                                              dates2use=dates2use)
-                # Add family value of HOx into  dataset
-                NewVar = '{}{}'.format('HOx', CACsuffix)
-                OHvar = '{}{}'.format('OH', CACsuffix)
-                HO2var = '{}{}'.format('HO2', CACsuffix)
-                ds[NewVar] = ds[OHvar].copy()
-                ds[NewVar] = ds[OHvar] +  ds[HO2var]
-                attrs = ds[OHvar].attrs
-                attrs['long_name'] = AttStr.format('HOx')
-                units = attrs['units']
-                ds[NewVar].attrs = attrs
+                # Convert HO2 into units of molec/cm (from v/v) and
+                #    Add family value of HOx into  dataset
+                ds = add_HOx_to_CAC_ds(ds, UpdateHOxUnits=True,
+                                       StateMet=StateMet, units=units)
                 # rename to drop suffix
                 OldVars = [i for i in  ds.data_vars if CACsuffix in i]
                 NewVars = [i.split(CACsuffix)[0] for i in OldVars]
                 ds = ds.rename(name_dict=dict(zip(OldVars, NewVars)))
                 dsCC[key] = ds
 
-#            except KeyError:
-            except:
+            except AssertionError:
                 print(ErrStr.format(CACsuffix, key))
+                continue  # Continue here
+
+            except KeyError:
+                print(ErrStr.format(CACsuffix, key))
+                continue  # Continue here
+
 
         # Include surface weighted values in core df
         for key in RunDict.keys():
-            ds = dsCC[key].copy()
-            #
-            ds = ds.isel(lev=(ds.lev==ds.lev[0])).mean(dim='time')
+            try:
+                ds = dsCC[key].copy()
+            except KeyError:
+                continue  # Continue here
+
+            # Select the average surface values
+            ds = ds.isel(lev=(ds.lev == ds.lev[0])).mean(dim='time')
+
             for var in vars2use:
                 varname = '{} surface ({})'.format(var, units)
                 # Save values on a per species basis to series
@@ -1464,8 +1479,8 @@ def get_stats4RunDict_as_df(RunDict=None,
     df = df.round(round)
     # Save csv to disk
     if save2csv:
-        csv_filename = '{}_summary_statistics{}.csv'.format(prefix, extra_str)
-        df.to_csv(csv_filename)
+        csv_filename = '{}_summary_statistics{}.csv'
+        df.to_csv(csv_filename.format(SaveFilePrefix, extra_str))
     # Return the DataFrame too
     return df
 
@@ -1503,7 +1518,7 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
                                  REF_wd=REF_wd,
                                  res=res,
                                  trop_limit=trop_limit,
-                                 save2csv=save2csv, prefix=prefix,
+                                 save2csv=save2csv,
                                  extra_burden_specs=extra_burden_specs,
                                  extra_surface_specs=extra_surface_specs,
                                  GC_version=GC_version,
@@ -1516,12 +1531,13 @@ def get_general_stats4run_dict_as_df(run_dict=None, extra_str='', REF1=None,
                                  IncConcAfterChemDiags=IncConcAfterChemDiags,
                                  IncProdLossDiags=IncProdLossDiags,
                                  verbose=verbose,
+                                 SaveFilePrefix=prefix,
                                  debug=debug)
 
     return df
 
 
-def add_molec_den2ds(ds, MolecVar='Met_MOLCES', AirDenVar='Met_AIRDEN'):
+def add_molec_den2ds(ds, MolecVar='Met_MOLECS', AirDenVar='Met_AIRDEN'):
     """
     Add molecules/cm3 to xr.dataset (must contain AirDenVar)
     """
@@ -1614,7 +1630,7 @@ def get_specieslist_from_input_geos(folder=None, filename='input.geos'):
 
 
 def get_GEOSChem_H2O(units='molec/cm3', wd=None, rm_strat=True,
-                     rtn_units=False, MolecVar='Met_MOLCES',
+                     rtn_units=False, MolecVar='Met_MOLECS',
                      MetH2OVar='Met_AVGW', NewH2OVar='H2O',
                      StateMet=None):
     """
@@ -1653,8 +1669,9 @@ def get_GEOSChem_H2O(units='molec/cm3', wd=None, rm_strat=True,
         return ds
 
 
-def add_HOx_to_CAC_ds(ds, StateMet=None, MolecVar='Met_MOLCES',
-                      units='molec/cm3', UpdateHO2units=True):
+def add_HOx_to_CAC_ds(ds, StateMet=None, MolecVar='Met_MOLECS',
+                      units='molec/cm3', UpdateHOxUnits=True,
+                      debug=False):
     """
     Add HOx family to ConcAfterChem xr.Dataset (update HO2 units too)
     """
@@ -1662,9 +1679,13 @@ def add_HOx_to_CAC_ds(ds, StateMet=None, MolecVar='Met_MOLCES',
     CACsuffix = 'concAfterChem'
     HO2var = '{}{}'.format('HO2', CACsuffix)
     HO2varMolecCm3 = '{}{}{}'.format('HO2', CACsuffix, '_MolecCm3')
+    OHvarPPT = '{}{}{}'.format('OH', CACsuffix, '_ppt')
     HOxVar = '{}{}'.format('HOx', CACsuffix)
     OHvar = '{}{}'.format('OH', CACsuffix)
     AttStr = '{} concentration immediately after chemistry'
+    PrtStr = 'WARNING: HOx unit conversion not setup for {}'
+    MixingRatioUnits = ['v/v']
+    ConcUnits = ['molec/cm3', 'molec cm-3', 'molecules cm-3']
 
     # Ensure the molecule density is in the StateMet object
     try:
@@ -1672,25 +1693,74 @@ def add_HOx_to_CAC_ds(ds, StateMet=None, MolecVar='Met_MOLCES',
     except:
         StateMet = add_molec_den2ds(StateMet)
 
-    # Convert HO2 into units of molec/cm (from v/v)
+    # Add a variable for HO2 with units of molec/cm (output is in v/v)
     attrs = ds[HO2var].attrs.copy()
     ds[HO2varMolecCm3] = ds[HO2var] * StateMet[MolecVar]
-    units = 'molec/cm3'
     attrs['long_name'] = AttStr.format('HO2')
-    attrs['units'] = units
+    attrs['units'] = 'molec/cm3'
     ds[HO2varMolecCm3].attrs = attrs
+
+    # If requested units are mixing ratio, convert OH
+    if any([i in units for i in MixingRatioUnits]):
+        attrs = ds[OHvar].attrs.copy()
+        ds[OHvarPPT] = ds[OHvar].copy()
+        attrs['long_name'] = AttStr.format('OH')
+        attrs['units'] = 'v/v'
+        ds[OHvarPPT] = ds[OHvar] / StateMet[MolecVar]
+        ds[OHvarPPT].attrs = attrs
 
     # Add family value of HOx into  dataset
     ds[HOxVar] = ds[OHvar].copy()
-    ds[HOxVar] = ds[OHvar] + ds[HO2varMolecCm3]
+    if any([i in units for i in ConcUnits]):
+        ds[HOxVar] = ds[OHvar] + ds[HO2varMolecCm3]
+    elif any([i in units for i in MixingRatioUnits]):
+        ds[HOxVar] = ds[OHvarPPT] + ds[HO2var]
+    else:
+        print(PrtStr.format(units))
+        if debug:
+            print('WARNING: HOx family not added to xr.dataset')
+        sys.exit(0)
     attrs = ds[OHvar].attrs.copy()
     attrs['long_name'] = AttStr.format('HOx')
-    units = attrs['units']
+    attrs['units'] = units # archive string for units HOx
     ds[HOxVar].attrs = attrs
 
-    # Update the returned HO2 units?
-    if UpdateHO2units:
-        ds[HO2var] = ds[HO2varMolecCm3].copy()
-    del ds[HO2varMolecCm3]
+    # Update the returned HOx units? (leaving one variable in specified units)
+    if UpdateHOxUnits:
+        if any([i in units for i in ConcUnits]):
+            ds[HO2var] = ds[HO2varMolecCm3].copy()
+#            del ds[HO2varMolecCm3]
+        elif any([i in units for i in MixingRatioUnits]):
+            ds[OHvar] = ds[OHvarPPT].copy()
+            del ds[OHvarPPT]
+        else:
+            print(PrtStr.format(units))
+            if debug:
+                print('WARNING: HOx units not updated in xr.dataset')
+            sys.exit(0)
+        del ds[HO2varMolecCm3]
 
     return ds
+
+
+def update_restart_file_dates(sdate=None, folder='./', TimeVar='time',
+                              FileName='GEOSChem.Restart.20180701_0000z.nc4'):
+    """
+    Update the restart time variable and filename
+    """
+    # open the current NetCDF file
+    ds = xr.open_dataset('{}{}'.format(folder, FileName) )
+
+    # Use a default value if a start date not provided
+    if isinstance(sdate, type(None)):
+        sdate = datetime.datetime(2018, 7, 1)
+    # Ensure the same attrs are used
+    attrs = ds[TimeVar].attrs.copy()
+
+    # Assign the new values
+    ds = ds.assign( {TimeVar: [sdate]} )
+    attrs[TimeVar] = attrs
+    # Save out NetCDF
+    SaveNameStr = 'GEOSChem.Restart.{}{:0>2}{:0>2}_0000z.nc4'
+    SaveName = SaveNameStr.format(sdate.year, sdate.month, sdate.day)
+    ds.to_netcdf( '{}{}'.format(folder, SaveName) )
