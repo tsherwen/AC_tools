@@ -414,7 +414,7 @@ def convert_mg_per_m3_2_ppbv(data=None,  spec='O3', rtn_units=False,
 
 
 def convert_spec_v_v_2_ugm3(spec=None, data=None, explicitly_calc=False,
-                            press=None, T=None):
+                            press=None, T=None, reverse=False):
     """
     Convert mixing ratio (v/v) to ug m^-3
 
@@ -424,6 +424,7 @@ def convert_spec_v_v_2_ugm3(spec=None, data=None, explicitly_calc=False,
     data (array): array of data
     press (float or array): pressure (hPa) as a float on array with size of data
     T (float or array): temperature (K) as a float on array with size of data
+    reverse (boolean): do the reverse conversion
 
     Returns
     -------
@@ -454,17 +455,28 @@ def convert_spec_v_v_2_ugm3(spec=None, data=None, explicitly_calc=False,
     # moles per cm3
     #  (1/(g/mol)) = (mol/g) ; (mol/g) * (g/cm3) = mol/cm3
     MOLS = (1/RMM_air) * AIRDEN
-    # --- convert spec
-    # v/v * mols/cm3 = mols of X per cm3;
-    data *= MOLS
-    # convert to grams of X per cm3; ( * RMM of species )
-    data *= species_mass(spec)
-    # convert to ug per cm3 (*1E6)
-    data *= 1E6
-    # convert to ug per m3 (*1E6)
-    data *= 1E6
-    units = '$\mu$g m$^{-3}$'
-    # scale data and return
+    # Convert spec to/from ug/m3 <=> v/v
+    if reverse:
+        # convert to per cm3 from per m3
+        data /= 1E6
+        # convert to g from ug
+        data /= 1E6
+        # convert mols of X per cm3
+        data /= species_mass(spec)
+        # convert to mols/mols (v/v)
+        data /= MOLS
+        units = 'v/v'
+    else:
+        # v/v * mols/cm3 = mols of X per cm3;
+        data *= MOLS
+        # convert to grams of X per cm3; ( * RMM of species )
+        data *= species_mass(spec)
+        # convert to ug per cm3 (*1E6)
+        data *= 1E6
+        # convert to ug per m3 (*1E6)
+        data *= 1E6
+        units = '$\mu$g m$^{-3}$'
+        # scale data and return
     return data
 
 
