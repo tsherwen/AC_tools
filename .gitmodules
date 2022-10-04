@@ -1,4 +1,0 @@
-[submodule "scripts/geos-chem-schedule"]
-	path = scripts/geos-chem-schedule
-	url = git@github.com:wacl-york/geos-chem-schedule.git
-	branch = main
