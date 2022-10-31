@@ -521,6 +521,8 @@ def get_dicts_of_KPP_eqn_file_reactions(folder=None, filename=None,
         #   'NIT', 'PAN', 'ALK', 'EPO',
         'ARRPLUS', 'TUNPLUS',
         '1.33E-13+3.82E-11*exp',  # Why is this function not in gckpp.kpp?
+        #New Specist functions for Hetrogeneous 
+        'uptk','ByAcid','K_MT','K_CLD',
     )
     # Loop lines in file
     with open(folder+filename, 'r') as file_:
